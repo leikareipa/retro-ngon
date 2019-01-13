@@ -1,0 +1,28 @@
+body
+{
+    background-color: rgb(143, 143, 143);
+    margin: 0px;
+    text-align: center;
+}
+
+/* Upscale the n-gon renderer's output with nearest-neighbor interpolation.*/
+.ngon-pixelated-upscale
+{
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: -o-crisp-edges;
+    image-rendering: -webkit-crisp-edges;
+    -ms-interpolation-mode: nearest-neighbor;
+}
+
+/* Styling for the canvas element that holds the n-gon rendering.*/
+.ngon-canvas
+{
+    width: 99vw;
+    height: 99vh;
+    background-color: transparent;
+    padding: 0;
+    margin: 0;
+    border: none;
+    border-radius: 0px;
+}
