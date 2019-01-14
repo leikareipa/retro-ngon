@@ -8,7 +8,7 @@
 
 // A 24-bit texture. Its pixels are an array of consecutive r,g,b values (range 0..255)
 // repeated width*height times (e.g. [0,255,0, 255,0,0] for two pixels, green and red).
-RNGon.rgb_texture = function(data = {width: 0, height: 0, pixels: []})
+Rngon.rgb_texture = function(data = {width: 0, height: 0, pixels: []})
 {
     // The maximum dimensions of a texture.
     const maxWidth = 32768;
@@ -38,10 +38,10 @@ RNGon.rgb_texture = function(data = {width: 0, height: 0, pixels: []})
             const idx = Math.floor((x + y * data.width) * numColorChannels);
             k_assert(((idx + 3) <= data.pixels.length), "Attempting to access a texture pixel out of bounds.");
 
-            return RNGon.color_rgba(data.pixels[idx],
-                              data.pixels[idx + 1],
-                              data.pixels[idx + 2],
-                              255);
+            return Rngon.color_rgba(data.pixels[idx],
+                                    data.pixels[idx + 1],
+                                    data.pixels[idx + 2],
+                                    255);
         }
     });
     return publicInterface;

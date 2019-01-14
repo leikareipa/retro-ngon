@@ -7,7 +7,7 @@
 "use strict"
 
 // Provides an interface for interacting with a HTML5 canvas element for 3d rendering.
-RNGon.canvas = function(canvasElementId = "",              // The DOM id of the canvas element.
+Rngon.canvas = function(canvasElementId = "",              // The DOM id of the canvas element.
                             ngon_fill_f = function(){},        // A function that rasterizes the given ngons onto the canvas.
                             ngon_transform_f = function(){},   // A function that transforms the given ngons into screen-space for the canvas.
                             scaleFactor = 1)
@@ -25,8 +25,8 @@ RNGon.canvas = function(canvasElementId = "",              // The DOM id of the 
     canvasElement.setAttribute("width", surfaceWidth);
     canvasElement.setAttribute("height", surfaceHeight);
 
-    const perspectiveMatrix = RNGon.matrix44.perspective(0.75, (surfaceWidth / surfaceHeight), 1, 1000);
-    const canvasSpaceMatrix = RNGon.matrix44.screen_space(surfaceWidth, surfaceHeight);
+    const perspectiveMatrix = Rngon.matrix44.perspective(0.75, (surfaceWidth / surfaceHeight), 1, 1000);
+    const canvasSpaceMatrix = Rngon.matrix44.screen_space(surfaceWidth, surfaceHeight);
 
     function exposed_render_context()
     {
@@ -50,9 +50,9 @@ RNGon.canvas = function(canvasElementId = "",              // The DOM id of the 
         // transforms, and a camera matrix, which contains the camera's translation and rotation.
         transformed_ngons: function(ngons = [], objectMatrix = [], cameraMatrix = [])
         {
-            const objectSpaceMatrix = RNGon.matrix44.matrices_multiplied(objectMatrix, cameraMatrix);
-            const clipSpaceMatrix = RNGon.matrix44.matrices_multiplied(perspectiveMatrix, objectSpaceMatrix);
-            const screenSpaceMatrix = RNGon.matrix44.matrices_multiplied(canvasSpaceMatrix, clipSpaceMatrix);
+            const objectSpaceMatrix = Rngon.matrix44.matrices_multiplied(objectMatrix, cameraMatrix);
+            const clipSpaceMatrix = Rngon.matrix44.matrices_multiplied(perspectiveMatrix, objectSpaceMatrix);
+            const screenSpaceMatrix = Rngon.matrix44.matrices_multiplied(canvasSpaceMatrix, clipSpaceMatrix);
 
             return ngon_transform_f(ngons, clipSpaceMatrix, screenSpaceMatrix);
         },

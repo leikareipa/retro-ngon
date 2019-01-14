@@ -1,7 +1,7 @@
 "use strict"
 
 // A heavily downsampled and sliced version of NASA's mosaic of the Earth (NASA Visible Earth).
-Textures.earth_nasa = RNGon.rgb_texture(
+Textures.earth_nasa = Rngon.rgb_texture(
 {
     width: 180,
     height: 180,

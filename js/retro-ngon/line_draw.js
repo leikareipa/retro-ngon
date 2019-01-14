@@ -1,19 +1,19 @@
 "use strict"
 
 // Provides functions for drawing lines.
-RNGon.line_draw = (()=>
+Rngon.line_draw = (()=>
 {
     return Object.freeze(
     {
         // Draws a line between the two given vertices into the given array of pixels. It's
         // expected that the pixel array packs the pixels as consecutive RGBA values, each
         // in the range 0..255.
-        into_pixel_buffer: function(vert1 = RNGon.vertex4(),
-                                    vert2 = RNGon.vertex4(),
+        into_pixel_buffer: function(vert1 = Rngon.vertex4(),
+                                    vert2 = Rngon.vertex4(),
                                     pixelBuffer = [],
                                     bufferWidth = 0,
                                     bufferHeight = 0,
-                                    lineColor = RNGon.color_rgba(127, 127, 127, 255))
+                                    lineColor = Rngon.color_rgba(127, 127, 127, 255))
         {
             function put_pixel(x = 0, y = 0)
             {
@@ -68,8 +68,8 @@ RNGon.line_draw = (()=>
         // e.g. the coordinates 5,8 would be represented as array[8] === 5. The yOffset
         // parameter lets you specify a value that'll be subtracted from all y coordinates
         // (i.e. from indices when writing into the array).
-        into_array: function(vert1 = RNGon.vertex4(),
-                             vert2 = RNGon.vertex4(),
+        into_array: function(vert1 = Rngon.vertex4(),
+                             vert2 = Rngon.vertex4(),
                              array = [],
                              yOffset = 0)
         {

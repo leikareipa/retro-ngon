@@ -8,7 +8,7 @@
 
 // Rasterizes the given ngon through the given render context. The given width and height
 // should match the dimensions of the context.
-RNGon.ngon_filler = function(ngons = [], renderContext, renderWidth, renderHeight)
+Rngon.ngon_filler = function(ngons = [], renderContext, renderWidth, renderHeight)
 {
     k_assert((ngons instanceof Array), "Expected an array of ngons to be rasterized.");
     k_assert((renderContext instanceof CanvasRenderingContext2D), "Expected a 2d canvas render context for the ngon filler.");
@@ -42,7 +42,7 @@ RNGon.ngon_filler = function(ngons = [], renderContext, renderWidth, renderHeigh
             // A line segment.
             case 2:
             {
-                RNGon.line_draw.into_pixel_buffer(ngon.vertices[0], ngon.vertices[1], pixelMap.data, renderWidth, renderHeight, ngon.color)
+                Rngon.line_draw.into_pixel_buffer(ngon.vertices[0], ngon.vertices[1], pixelMap.data, renderWidth, renderHeight, ngon.color)
                 return;
             }
 
@@ -103,19 +103,19 @@ RNGon.ngon_filler = function(ngons = [], renderContext, renderWidth, renderHeigh
             let prevVert = leftVerts[0];
             for (let l = 1; l < leftVerts.length; l++)
             {
-                RNGon.line_draw.into_array(prevVert, leftVerts[l], leftEdge, verts[0].y);
+                Rngon.line_draw.into_array(prevVert, leftVerts[l], leftEdge, verts[0].y);
                 prevVert = leftVerts[l];
             }
-            RNGon.line_draw.into_array(prevVert, rightVerts[0], leftEdge, verts[0].y);
+            Rngon.line_draw.into_array(prevVert, rightVerts[0], leftEdge, verts[0].y);
             
             // Right edge.
             prevVert = rightVerts[0];
             for (let r = 1; r < rightVerts.length; r++)
             {
-                RNGon.line_draw.into_array(prevVert, rightVerts[r], rightEdge, verts[0].y);
+                Rngon.line_draw.into_array(prevVert, rightVerts[r], rightEdge, verts[0].y);
                 prevVert = rightVerts[r];
             }
-            RNGon.line_draw.into_array(prevVert, leftVerts[0], rightEdge, verts[0].y);
+            Rngon.line_draw.into_array(prevVert, leftVerts[0], rightEdge, verts[0].y);
         }
 
         // Draw the ngon.
@@ -179,8 +179,8 @@ RNGon.ngon_filler = function(ngons = [], renderContext, renderWidth, renderHeigh
             // Draw a wireframe around any ngons that wish for one.
             if (ngon.hasWireframe)
             {
-                const wireColor = RNGon.color_rgba(0, 0, 0, 255);
-                const putline = function(vert1, vert2){RNGon.line_draw.into_pixel_buffer(vert1, vert2, pixelMap.data, renderWidth, renderHeight, wireColor)};
+                const wireColor = Rngon.color_rgba(0, 0, 0, 255);
+                const putline = function(vert1, vert2){Rngon.line_draw.into_pixel_buffer(vert1, vert2, pixelMap.data, renderWidth, renderHeight, wireColor)};
 
                 // Left edge.
                 let prevVert = leftVerts[0];

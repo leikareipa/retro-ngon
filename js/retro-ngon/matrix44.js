@@ -36,7 +36,7 @@
 "use strict"
 
 // Provides manipulation of 4-by-4 matrices.
-RNGon.matrix44 = (()=>
+Rngon.matrix44 = (()=>
 {
     return Object.freeze({
         scale: function(x = 0, y = 0, z = 0)
@@ -72,8 +72,8 @@ RNGon.matrix44 = (()=>
                         0,            0,           1, 0,
                         0,            0,           0, 1];
 
-            const temp = RNGon.matrix44.matrices_multiplied(my, mz);
-            const mResult = RNGon.matrix44.matrices_multiplied(mx, temp);
+            const temp = Rngon.matrix44.matrices_multiplied(my, mz);
+            const mResult = Rngon.matrix44.matrices_multiplied(mx, temp);
 
             k_assert((mResult.length === 16), "Expected a 4 x 4 matrix.");
             return mResult;

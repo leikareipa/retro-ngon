@@ -8,7 +8,7 @@
 
 // Red, green, blue, alpha; in the range 0..255.
 // NOTE: Expects to remain immutable.
-RNGon.color_rgba = function(red = 55, green = 55, blue = 55, alpha = 255)
+Rngon.color_rgba = function(red = 55, green = 55, blue = 55, alpha = 255)
 {
     k_assert((((red   >= 0) && (red   <= 255)) &&
               ((green >= 0) && (green <= 255)) &&

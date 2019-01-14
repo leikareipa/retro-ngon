@@ -9,7 +9,7 @@
 // Returns a copy of the given list of ngons such that each ngon in the copy
 // has been transformed into screen-space. Any ngons whose vertices (any of them)
 // have negative depth will be excluded from the copy.
-RNGon.ngon_transformer = function(ngons = [], clipSpaceMatrix = [], screenSpaceMatrix = [])
+Rngon.ngon_transformer = function(ngons = [], clipSpaceMatrix = [], screenSpaceMatrix = [])
 {
     if (ngons.length === 0) return;
 

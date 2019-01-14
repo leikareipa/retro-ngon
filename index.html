@@ -43,30 +43,30 @@
                     function(frameCount)
                     {
                         const rotationSpeed = 0.004;
-                        return [RNGon.mesh(MeshTemplates.cube(null, true, false),
-                                RNGon.vector3(0, 0, 70),
-                                RNGon.vector3((1 + (rotationSpeed * frameCount)), (1 + (rotationSpeed * frameCount)), 0),
-                                RNGon.vector3(20, 20, 20))];
+                        return [Rngon.mesh(MeshTemplates.cube(null, true, false),
+                                Rngon.vector3(0, 0, 70),
+                                Rngon.vector3((1 + (rotationSpeed * frameCount)), (1 + (rotationSpeed * frameCount)), 0),
+                                Rngon.vector3(20, 20, 20))];
                     },
 
                     // A textured disc.
                     function(frameCount)
                     {
                         const rotationSpeed = 0.008;
-                        return [RNGon.mesh(MeshTemplates.disc(40, Textures.earth_nasa, true, true),
-                                RNGon.vector3(0, 0, 50),
-                                RNGon.vector3(0, 1 + (rotationSpeed * frameCount), 0),
-                                RNGon.vector3(20, 20, 20))];
+                        return [Rngon.mesh(MeshTemplates.disc(40, Textures.earth_nasa, true, true),
+                                Rngon.vector3(0, 0, 50),
+                                Rngon.vector3(0, 1 + (rotationSpeed * frameCount), 0),
+                                Rngon.vector3(20, 20, 20))];
                     },
 
                     // The Stanford bunny.
                     function(frameCount)
                     {
                         const rotationSpeed = 0.006;
-                        return [RNGon.mesh(MeshTemplates.stanford_bunny_res3(null, true, false),
-                                RNGon.vector3(0, -12, 40),
-                                RNGon.vector3(-0.1, (rotationSpeed * frameCount), 0),
-                                RNGon.vector3(1, 1, 1))];
+                        return [Rngon.mesh(MeshTemplates.stanford_bunny_res3(null, true, false),
+                                Rngon.vector3(0, -12, 40),
+                                Rngon.vector3(-0.1, (rotationSpeed * frameCount), 0),
+                                Rngon.vector3(1, 1, 1))];
                     },
 
                     // An analog clock.
@@ -74,10 +74,10 @@
                     {
                         const rotationSpeed = 0.006;
 
-                        return [RNGon.mesh(MeshTemplates.analog_clock(),
-                                RNGon.vector3(0, 0, 40),
-                                RNGon.vector3(0.3, 0.8, 0.6),
-                                RNGon.vector3(0.8, 0.8, 0.8))];
+                        return [Rngon.mesh(MeshTemplates.analog_clock(),
+                                Rngon.vector3(0, 0, 40),
+                                Rngon.vector3(0.3, 0.8, 0.6),
+                                Rngon.vector3(0.8, 0.8, 0.8))];
                     },
                 ];
 
@@ -98,8 +98,8 @@
                         // and better performance.
                         rendererScale: 0.25,
 
-                        cameraDirection: RNGon.vector3(0, 0, 0),
-                        cameraPosition: RNGon.vector3(0, 0, 0),
+                        cameraDirection: Rngon.vector3(0, 0, 0),
+                        cameraPosition: Rngon.vector3(0, 0, 0),
 
                         // While true, mesh animations (e.g. rotation) won't be updated; although
                         // the canvas will still be continuously rendered over with the meshes'
@@ -110,7 +110,7 @@
                     // Runs the renderer continuously, in sync with the device's refresh rate.
                     (function render_loop(frameCount = 0)
                     {
-                        RNGon.render(canvasId,
+                        Rngon.render(canvasId,
                                      publicInterface.scene(frameCount),
                                      publicInterface.rendererScale,
                                      publicInterface.cameraPosition,

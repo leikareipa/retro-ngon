@@ -8,13 +8,13 @@
 
 // Will create a HTML5 canvas element inside the given container, and render into it
 // the given ngon meshes.
-RNGon.render = function(canvasElementId,
-                        meshes = [RNGon.mesh()],
+Rngon.render = function(canvasElementId,
+                        meshes = [Rngon.mesh()],
                         scaleFactor = 1,
-                        cameraPos = RNGon.vector3(0, 0, 0),
-                        cameraDir = RNGon.vector3(0, 0, 0))
+                        cameraPos = Rngon.vector3(0, 0, 0),
+                        cameraDir = Rngon.vector3(0, 0, 0))
 {
-    const renderSurface = RNGon.canvas(canvasElementId, RNGon.ngon_filler, RNGon.ngon_transformer, scaleFactor);
+    const renderSurface = Rngon.canvas(canvasElementId, Rngon.ngon_filler, Rngon.ngon_transformer, scaleFactor);
 
     // Returns true if any horizontal part of the render surface DOM container is within the page's
     // visible region (accounting for the user having possibly scrolled the page up/down to cause
@@ -37,8 +37,8 @@ RNGon.render = function(canvasElementId,
         // Transform.
         const transformedNgons = [];
         {
-            const cameraMatrix = RNGon.matrix44.matrices_multiplied(RNGon.matrix44.translate(cameraPos.x, cameraPos.y, cameraPos.z),
-                                                                    RNGon.matrix44.rotate(cameraDir.x, cameraDir.y, cameraDir.z));
+            const cameraMatrix = Rngon.matrix44.matrices_multiplied(Rngon.matrix44.translate(cameraPos.x, cameraPos.y, cameraPos.z),
+                                                                    Rngon.matrix44.rotate(cameraDir.x, cameraDir.y, cameraDir.z));
 
             meshes.forEach((mesh)=>
             {
