@@ -10,10 +10,10 @@
 
 // A collection of ngons, with shared translation and rotation.
 // NOTE: Expects to remain immutable.
-Rngon.mesh = function(ngons = [],
-                           translation = Rngon.vector3(0, 0, 0),
-                           rotation = Rngon.vector3(0, 0, 0),
-                           scale = Rngon.vector3(1, 1, 1))
+Rngon.mesh = function(ngons = [Rngon.ngon()],
+                      translation = Rngon.vector3(0, 0, 0),
+                      rotation = Rngon.vector3(0, 0, 0),
+                      scale = Rngon.vector3(1, 1, 1))
 {
     k_assert((ngons instanceof Array), "Expected a list of ngons for creating an ngon mesh.");
 
@@ -36,7 +36,7 @@ Rngon.mesh = function(ngons = [],
 
 // A single n-sided ngon.
 // NOTE: Expects to remain immutable.
-Rngon.ngon = function(vertices = [],
+Rngon.ngon = function(vertices = [Rngon.vertex4()],
                       color = Rngon.color_rgba(127, 127, 127, 255),
                       texture = null,
                       hasSolidFill = true,
