@@ -79,7 +79,7 @@ unit_tester.run_tests("Retro n-gon renderer", ()=>
                              ng.hasWireframe === false), "Creation of an ngon.");
         unit_tester.reject(()=>{ng.vertices = null}, "Immutable ngon.");
 
-        const mesh = Rngon.mesh([ng], Rngon.vector3(1, 1, 1), Rngon.vector3(2, 2, 2), Rngon.vector3(3, 3, 3));
+        const mesh = Rngon.mesh([ng], Rngon.translation_vector(1, 1, 1), Rngon.rotation_vector(2, 2, 2), Rngon.scaling_vector(3, 3, 3));
         unit_tester.require((mesh.ngons.length === 1 &&
                              mesh.translation.x === 1 &&
                              mesh.rotation.x === 2 &&
@@ -143,9 +143,9 @@ unit_tester.run_tests("Retro n-gon renderer", ()=>
                                                  Rngon.vertex4(1, 1, 1),
                                                  Rngon.vertex4(-1, 1, 1)],
                                                  Rngon.color_rgba(colorShade, colorShade, colorShade, colorShade))],
-                                                 Rngon.vector3(0, 0, 0),
-                                                 Rngon.vector3(0, 0, 0),
-                                                 Rngon.vector3(1, 1, 1));
+                                                 Rngon.translation_vector(0, 0, 0),
+                                                 Rngon.rotation_vector(0, 0, 0),
+                                                 Rngon.scaling_vector(1, 1, 1));
  
             // Render the rectangle into the canvas, and check that the canvas came to have correctly-colored pixels.
             {

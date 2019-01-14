@@ -25,10 +25,10 @@ Rngon.mesh = function(ngons = [Rngon.ngon()],
     
     const publicInterface = Object.freeze(
     {
+        ngons,
         rotation,
         translation,
         scale,
-        ngons,
         objectSpaceMatrix,
     });
     return publicInterface;
@@ -100,6 +100,10 @@ Rngon.vector3 = function(x = 0, y = 0, z = 0)
 
     return publicInterface;
 }
+// Convenience aliases for vector3.
+Rngon.translation_vector = Rngon.vector3;
+Rngon.rotation_vector = Rngon.vector3;
+Rngon.scaling_vector = Rngon.vector3;
 
 // NOTE: Expects to remain immutable.
 Rngon.vertex4 = function(x = 0, y = 0, z = 0, w = 1, u = 0, v = 0)
