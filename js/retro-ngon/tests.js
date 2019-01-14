@@ -91,6 +91,12 @@ unit_tester.run_tests("Retro n-gon renderer", ()=>
     {
         const color = Rngon.color_rgba(1, 2, 3, 4);
         unit_tester.require((color.red === 1 && color.green === 2 && color.blue === 3 && color.alpha === 4), "Creation of a color.");
+        unit_tester.require((color.as_hex() === "#01020304"), "Color conversion from RGBA to hex with alpha");
+        unit_tester.require((color.as_hex(0x1110) === "#010203"), "Color conversion from RGBA to hex without alpha");
+        unit_tester.require((color.as_hex(0x1000) === "#010000"), "Color conversion from RGBA to hex without alpha, masking all but red");
+        unit_tester.require((color.as_hex(0x0100) === "#000200"), "Color conversion from RGBA to hex without alpha, masking all but green");
+        unit_tester.require((color.as_hex(0x0010) === "#000003"), "Color conversion from RGBA to hex without alpha, masking all but blue");
+        unit_tester.require((color.as_hex(0x0011) === "#00000304"), "Color conversion from RGBA to hex with alpha, masking all but blue");
         unit_tester.reject(()=>{color.red = 0}, "Immutable color.");
         unit_tester.reject(()=>{Rngon.color_rgba(256)}, "Reject invalid color arguments: red overflow.");
     });
