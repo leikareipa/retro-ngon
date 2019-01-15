@@ -50,7 +50,7 @@ Rngon.canvas = function(canvasElementId = "",              // The DOM id of the 
         // transforms, and a camera matrix, which contains the camera's translation and rotation.
         transformed_ngons: function(ngons = [], objectMatrix = [], cameraMatrix = [])
         {
-            const objectSpaceMatrix = Rngon.matrix44.matrices_multiplied(objectMatrix, cameraMatrix);
+            const objectSpaceMatrix = Rngon.matrix44.matrices_multiplied(cameraMatrix, objectMatrix);
             const clipSpaceMatrix = Rngon.matrix44.matrices_multiplied(perspectiveMatrix, objectSpaceMatrix);
             const screenSpaceMatrix = Rngon.matrix44.matrices_multiplied(canvasSpaceMatrix, clipSpaceMatrix);
 

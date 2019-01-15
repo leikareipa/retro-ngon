@@ -45,7 +45,7 @@
                         const rotationSpeed = 0.004;
                         return [Rngon.mesh(MeshTemplates.cube(null, true, false),
                                            Rngon.translation_vector(0, 0, 70),
-                                           Rngon.rotation_vector((1 + (rotationSpeed * frameCount)), (1 + (rotationSpeed * frameCount)), 0),
+                                           Rngon.rotation_vector((1 - (rotationSpeed * frameCount)), -(1 + (rotationSpeed * frameCount)), 0),
                                            Rngon.scaling_vector(20, 20, 20))];
                     },
 
@@ -55,17 +55,17 @@
                         const rotationSpeed = 0.008;
                         return [Rngon.mesh(MeshTemplates.disc(40, Textures.earth_nasa, true, true),
                                            Rngon.translation_vector(0, 0, 50),
-                                           Rngon.rotation_vector(0, 1 + (rotationSpeed * frameCount), 0),
+                                           Rngon.rotation_vector(0, (1 + (rotationSpeed * frameCount)), 0),
                                            Rngon.scaling_vector(20, 20, 20))];
                     },
 
                     // The Stanford bunny.
                     function(frameCount)
                     {
-                        const rotationSpeed = 0.006;
+                        const rotationSpeed = 0.008;
                         return [Rngon.mesh(MeshTemplates.stanford_bunny_res3(null, true, false),
                                            Rngon.translation_vector(0, -12, 40),
-                                           Rngon.rotation_vector(-0.1, (rotationSpeed * frameCount), 0),
+                                           Rngon.rotation_vector(0.1, (rotationSpeed * frameCount), 0),
                                            Rngon.scaling_vector(1, 1, 1))];
                     },
 
@@ -73,10 +73,9 @@
                     function(frameCount)
                     {
                         const rotationSpeed = 0.006;
-
                         return [Rngon.mesh(MeshTemplates.analog_clock(),
                                            Rngon.translation_vector(0, 0, 40),
-                                           Rngon.rotation_vector(0.3, 0.8, 0.6),
+                                           Rngon.rotation_vector(-0.3, 0.8, -0.6),
                                            Rngon.scaling_vector(0.8, 0.8, 0.8))];
                     },
                 ];

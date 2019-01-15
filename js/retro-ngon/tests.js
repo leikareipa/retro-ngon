@@ -14,7 +14,7 @@ unit_tester.run_tests("Retro n-gon renderer", ()=>
         }
         
         {
-            const m = Rngon.matrix44.rotate(1.6572, 0.3457, 874665.5247);
+            const m = Rngon.matrix44.rotate(-1.6572, 0.3457, -874665.5247);
             unit_tester.require(m.length === 16 && (unit_tester.tr4(m[0])===-0.5131 && unit_tester.tr4(m[4])===-0.7886 && unit_tester.tr4(m[ 8])===-0.3389 && unit_tester.tr4(m[12])===0.0000 && 
                                 unit_tester.tr4(m[1])===0.1118  && unit_tester.tr4(m[5])===0.3300  && unit_tester.tr4(m[ 9])===-0.9373 && unit_tester.tr4(m[13])===0.0000 && 
                                 unit_tester.tr4(m[2])===0.8510  && unit_tester.tr4(m[6])===-0.5188 && unit_tester.tr4(m[10])===-0.0812 && unit_tester.tr4(m[14])===0.0000 && 
