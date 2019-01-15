@@ -154,7 +154,7 @@ unit_tester.run_tests("Retro n-gon renderer", ()=>
                     unit_tester.require((pixelMap.every((p)=>(p !== colorShade))), "Canvas is ready for testing.");
                 }
 
-                Rngon.render(testCanvasId, [mesh], 1, Rngon.vector3(0, 0, 0), Rngon.vector3(0, 0, 0));
+                Rngon.render(testCanvasId, [mesh], Rngon.vector3(0, 0, 0), Rngon.vector3(0, 0, 0), 1);
 
                 {
                     const pixelMap = canvas.getContext("2d").getImageData(0, 0, testCanvasWidth, testCanvasHeight).data;

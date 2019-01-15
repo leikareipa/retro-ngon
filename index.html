@@ -111,9 +111,9 @@
                     {
                         Rngon.render(canvasId,
                                      publicInterface.scene(frameCount),
-                                     publicInterface.rendererScale,
                                      publicInterface.cameraPosition,
-                                     publicInterface.cameraDirection);
+                                     publicInterface.cameraDirection,
+                                     publicInterface.rendererScale);
 
                         window.requestAnimationFrame(()=>render_loop(frameCount + !publicInterface.paused));
                     })();

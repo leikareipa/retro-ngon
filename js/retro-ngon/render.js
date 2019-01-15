@@ -10,9 +10,9 @@
 // the given ngon meshes.
 Rngon.render = function(canvasElementId,
                         meshes = [Rngon.mesh()],
-                        scaleFactor = 1,
                         cameraPos = Rngon.vector3(0, 0, 0),
-                        cameraDir = Rngon.vector3(0, 0, 0))
+                        cameraDir = Rngon.vector3(0, 0, 0),
+                        scaleFactor = 1)
 {
     const renderSurface = Rngon.canvas(canvasElementId, Rngon.ngon_filler, Rngon.ngon_transformer, scaleFactor);
 
