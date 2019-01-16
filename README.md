@@ -84,8 +84,8 @@ Below is a more simplified, step-by-step guide. It'll render a single triangle o
         (function render_loop(frameCount = 0)
         {
             Rngon.render("render-canvas",
-                        [rotatingTriangle(frameCount)],
-                        Rngon.translation_vector(0, 0, 3));
+                         [rotatingTriangle(frameCount)],
+                         Rngon.translation_vector(0, 0, 3));
 
             window.requestAnimationFrame(()=>render_loop(frameCount + 1));
         })();
