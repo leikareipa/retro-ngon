@@ -8,9 +8,9 @@
 
 // Provides an interface for interacting with a HTML5 canvas element for 3d rendering.
 Rngon.canvas = function(canvasElementId = "",              // The DOM id of the canvas element.
-                            ngon_fill_f = function(){},        // A function that rasterizes the given ngons onto the canvas.
-                            ngon_transform_f = function(){},   // A function that transforms the given ngons into screen-space for the canvas.
-                            scaleFactor = 1)
+                        ngon_fill_f = function(){},        // A function that rasterizes the given ngons onto the canvas.
+                        ngon_transform_f = function(){},   // A function that transforms the given ngons into screen-space for the canvas.
+                        scaleFactor = 1)
 {
     k_assert((typeof scaleFactor === "number"), "Expected the scale factor to be a numeric value.");
     k_assert((typeof ngon_fill_f === "function" && typeof ngon_transform_f === "function"), "Expected ngon manipulation functions to be provided.");

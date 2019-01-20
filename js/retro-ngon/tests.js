@@ -98,16 +98,17 @@ unit_tester.run_tests("Retro n-gon renderer", ()=>
         unit_tester.require((color.as_hex(0x0010) === "#000003"), "Color conversion from RGBA to hex without alpha, masking all but blue");
         unit_tester.require((color.as_hex(0x0011) === "#00000304"), "Color conversion from RGBA to hex with alpha, masking all but blue");
         unit_tester.reject(()=>{color.red = 0}, "Immutable color.");
-        unit_tester.reject(()=>{Rngon.color_rgba(256)}, "Reject invalid color arguments: red overflow.");
+        unit_tester.reject(()=>{Rngon.color_rgba(256, 255, 255)}, "Reject invalid color arguments: red overflow.");
+        unit_tester.reject(()=>{Rngon.color_rgba(-1, 255, 255)}, "Reject invalid color arguments: red underflow.");
     });
 
     unit_tester.test_unit("Texture", function()
     {
-        const texture = Rngon.rgb_texture({width: 1, height: 1, pixels: [255, 0, 0]});
+        const texture = Rngon.rgb_texture({width: 1, height: 1, pixels: [255, 22, 1]});
         unit_tester.require((texture.width === 1 && texture.height === 1 &&
                              texture.rgba_pixel_at(0, 0).red === 255 &&
-                             texture.rgba_pixel_at(0, 0).green === 0 &&
-                             texture.rgba_pixel_at(0, 0).blue === 0), "Creation of an RGB texture.");
+                             texture.rgba_pixel_at(0, 0).green === 22 &&
+                             texture.rgba_pixel_at(0, 0).blue === 1), "Creation of an RGB texture.");
         unit_tester.reject(()=>{texture.rgba_pixel_at(1, 0)}, "Reject accessing texture pixels out of bounds.");
         unit_tester.reject(()=>{Rngon.rgb_texture({width: 1, height: 1, pixels: [255, 0, 0, 255, 0, 0]})}, "Reject creating an RGB texture with invalid dimensions.");
         unit_tester.reject(()=>{Rngon.rgb_texture({width: 2, height: 1, pixels: [255, 0, 0]})}, "Reject creating an RGB texture with invalid dimensions.");
