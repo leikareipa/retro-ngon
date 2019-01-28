@@ -12,7 +12,11 @@ Rngon.render = function(canvasElementId,
                         meshes = [Rngon.mesh()],
                         cameraPos = Rngon.vector3(0, 0, 0),
                         cameraDir = Rngon.vector3(0, 0, 0),
-                        scaleFactor = 1)
+                        scaleFactor = 1,
+                        options =
+                        {
+                            depthSort:"painter",
+                        })
 {
     const renderSurface = Rngon.canvas(canvasElementId, Rngon.ngon_filler, Rngon.ngon_transformer, scaleFactor);
 
@@ -45,21 +49,34 @@ Rngon.render = function(canvasElementId,
                 transformedNgons.push(...renderSurface.transformed_ngons(mesh.ngons, mesh.objectSpaceMatrix, cameraMatrix));
             });
 
-            // Sort the transformed ngons by depth, since we don't do depth testing.
-            transformedNgons.sort((ngonA, ngonB)=>
+            // Apply depth sorting to the transformed ngons.
+            switch (options.depthSort)
             {
-                let a = 0;
-                let b = 0;
-                ngonA.vertices.forEach(v => (a += v.z));
-                ngonB.vertices.forEach(v => (b += v.z));
+                case "none": break;
 
-                // Ngons aren't guaranteed to have the same number of vertices each,
-                // so factor out the vertex count.
-                a /= ngonA.vertices.length;
-                b /= ngonB.vertices.length;
+                // Painter's algorithm, i.e. sort by depth.
+                case "painter":
+                {
+                    transformedNgons.sort((ngonA, ngonB)=>
+                    {
+                        let a = 0;
+                        let b = 0;
+                        ngonA.vertices.forEach(v => (a += v.z));
+                        ngonB.vertices.forEach(v => (b += v.z));
+        
+                        // Ngons aren't guaranteed to have the same number of vertices each,
+                        // so factor out the vertex count.
+                        a /= ngonA.vertices.length;
+                        b /= ngonB.vertices.length;
+                        
+                        return ((a === b)? 0 : ((a < b)? 1 : -1));
+                    });
+
+                    break;
+                }
                 
-                return ((a === b)? 0 : ((a < b)? 1 : -1));
-            });
+                default: k_assert(0, "Unknown depth sort option."); break;
+            }
         }
 
         // Rasterize.

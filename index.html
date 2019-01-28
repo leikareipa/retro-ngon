@@ -82,7 +82,6 @@
                     // The Cornell box.
                     function(frameCount)
                     {
-                        const rotationSpeed = 0.006;
                         return [Rngon.mesh(MeshTemplates.cornell_box(true, true),
                                            Rngon.translation_vector(-13.6, -15, 55),
                                            Rngon.rotation_vector(0, 0, 0),
@@ -123,7 +122,8 @@
                                      publicInterface.scene(frameCount),
                                      publicInterface.cameraPosition,
                                      publicInterface.cameraDirection,
-                                     publicInterface.rendererScale);
+                                     publicInterface.rendererScale,
+                                     {depthSort:(publicInterface.scene === scenes[4])? "none" : "painter"});
 
                         window.requestAnimationFrame(()=>render_loop(frameCount + !publicInterface.paused));
                     })();
