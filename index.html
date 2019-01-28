@@ -78,6 +78,16 @@
                                            Rngon.rotation_vector(-0.3, 0.8, -0.6),
                                            Rngon.scaling_vector(0.8, 0.8, 0.8))];
                     },
+
+                    // The Cornell box.
+                    function(frameCount)
+                    {
+                        const rotationSpeed = 0.006;
+                        return [Rngon.mesh(MeshTemplates.cornell_box(true, true),
+                                           Rngon.translation_vector(-13.6, -15, 55),
+                                           Rngon.rotation_vector(0, 0, 0),
+                                           Rngon.scaling_vector(0.05, 0.05, 0.05))];
+                    },
                 ];
 
                 // Creates a mutable interface that both runs the rendering in sync with

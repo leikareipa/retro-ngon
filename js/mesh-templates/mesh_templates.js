@@ -4,6 +4,128 @@
 // which you can then create a mesh.
 const MeshTemplates =
 {
+      // The Cornell box. Adapted from measurements given in https://www.graphics.cornell.edu/online/box/data.html.
+      cornell_box: function(solidFill = true, wireframe = false)
+      {
+            const texture =
+            {
+                  floor: null,
+                  ceiling: null,
+                  light: null,
+                  backWall: null,
+                  leftWall: null,
+                  rightWall: null,
+                  shortBlock: null,
+                  tallBlock: null,
+            }
+
+            const color =
+            {
+                  white: Rngon.color_rgba(220, 220, 220),
+                  green: Rngon.color_rgba(0, 220, 0),
+                  red: Rngon.color_rgba(220, 0, 0),
+                  lightEmitter: Rngon.color_rgba(255, 255, 255),
+            }
+
+            return [
+                  // Floor.
+                  Rngon.ngon([Rngon.vertex4(556-552.8, 0, 0),
+                              Rngon.vertex4(556-0, 0, 0),
+                              Rngon.vertex4(556-0, 0, 559.2),
+                              Rngon.vertex4(556-549.6, 0, 559.2)], color.white,
+                             texture.floor, solidFill, wireframe),
+
+                  // Ceiling.
+                  Rngon.ngon([Rngon.vertex4(556-556, 548.8, 0),
+                              Rngon.vertex4(556-556, 548.8, 559.2),
+                              Rngon.vertex4(556-0, 548.8, 559.2),
+                              Rngon.vertex4(556-0, 548.8, 0)], color.white,
+                             texture.ceiling, solidFill, wireframe),
+
+                  // Light.
+                  Rngon.ngon([Rngon.vertex4(556-343, 548.8, 227),
+                              Rngon.vertex4(556-343, 548.8, 332),
+                              Rngon.vertex4(556-213, 548.8, 332),
+                              Rngon.vertex4(556-213, 548.8, 227)], color.lightEmitter,
+                             texture.light, solidFill, wireframe),
+
+                  // Back wall.
+                  Rngon.ngon([Rngon.vertex4(556-549.6, 0, 559.2),
+                              Rngon.vertex4(556-0, 0, 559.2),
+                              Rngon.vertex4(556-0, 548.8, 559.2),
+                              Rngon.vertex4(556-556, 548.8, 559.2)], color.white,
+                             texture.backWall, solidFill, wireframe),
+
+                  // Right wall.
+                  Rngon.ngon([Rngon.vertex4(556-0, 0, 559.2),
+                              Rngon.vertex4(556-0, 0, 0),
+                              Rngon.vertex4(556-0, 548.8, 0),
+                              Rngon.vertex4(556-0, 548.8, 559.2)], color.green,
+                             texture.rightWall, solidFill, wireframe),
+
+                  // Left wall.
+                  Rngon.ngon([Rngon.vertex4(556-552.8, 0, 0),
+                              Rngon.vertex4(556-549.6, 0, 559.2),
+                              Rngon.vertex4(556-556, 548.8, 559.2),
+                              Rngon.vertex4(556-556, 548.8, 0)], color.red,
+                             texture.leftWall, solidFill, wireframe),
+
+                  // Tall block.
+                  Rngon.ngon([Rngon.vertex4(556-423, 330, 247),
+                              Rngon.vertex4(556-265, 330, 296),
+                              Rngon.vertex4(556-314, 330, 456),
+                              Rngon.vertex4(556-472, 330, 406)], color.white,
+                             texture.tallBlock, solidFill, wireframe),
+                  Rngon.ngon([Rngon.vertex4(556-472, 0, 406),
+                              Rngon.vertex4(556-472, 330, 406),
+                              Rngon.vertex4(556-314, 330, 456),
+                              Rngon.vertex4(556-314, 0, 456)], color.white,
+                             texture.tallBlock, solidFill, wireframe),
+                  Rngon.ngon([Rngon.vertex4(556-423, 0, 247),
+                              Rngon.vertex4(556-423, 330, 247),
+                              Rngon.vertex4(556-472, 330, 406),
+                              Rngon.vertex4(556-472, 0, 406)], color.white,
+                             texture.tallBlock, solidFill, wireframe),
+                  Rngon.ngon([Rngon.vertex4(556-314, 0, 456),
+                              Rngon.vertex4(556-314, 330, 456),
+                              Rngon.vertex4(556-265, 330, 296),
+                              Rngon.vertex4(556-265, 0, 296)], color.white,
+                             texture.tallBlock, solidFill, wireframe),
+                  Rngon.ngon([Rngon.vertex4(556-265, 0, 296),
+                              Rngon.vertex4(556-265, 330, 296),
+                              Rngon.vertex4(556-423, 330, 247),
+                              Rngon.vertex4(556-423, 0, 247)], color.white,
+                             texture.tallBlock, solidFill, wireframe),
+
+                  // Short block.
+                  Rngon.ngon([Rngon.vertex4(556-240, 0, 272),
+                              Rngon.vertex4(556-240, 165, 272),
+                              Rngon.vertex4(556-82, 165, 225),
+                              Rngon.vertex4(556-82, 0, 225)], color.white,
+                             texture.shortBlock, solidFill, wireframe),
+                  Rngon.ngon([Rngon.vertex4(556-290, 0, 114),
+                              Rngon.vertex4(556-290, 165, 114),
+                              Rngon.vertex4(556-240, 165, 272),
+                              Rngon.vertex4(556-240, 0, 272)], color.white,
+                             texture.shortBlock, solidFill, wireframe),
+                  Rngon.ngon([Rngon.vertex4(556-130, 0, 65),
+                              Rngon.vertex4(556-130, 165, 65),
+                              Rngon.vertex4(556-290, 165, 114),
+                              Rngon.vertex4(556-290, 0, 114)], color.white,
+                             texture.shortBlock, solidFill, wireframe),
+                  Rngon.ngon([Rngon.vertex4(556-82, 0, 225),
+                              Rngon.vertex4(556-82, 165, 225),
+                              Rngon.vertex4(556-130, 165, 65),
+                              Rngon.vertex4(556-130, 0, 65)], color.white,
+                             texture.shortBlock, solidFill, wireframe),
+                  Rngon.ngon([Rngon.vertex4(556-130, 165, 65),
+                              Rngon.vertex4(556-82, 165, 225),
+                              Rngon.vertex4(556-240, 165, 272),
+                              Rngon.vertex4(556-290, 165, 114)], color.white,
+                             texture.shortBlock, solidFill, wireframe),
+            ];
+      },
+
       cube: function(texture = null, solidFill = true, wireframe = false)
       {
             return [
