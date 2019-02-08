@@ -33,6 +33,7 @@ Below is a more simplified, step-by-step guide. It'll render a single triangle o
 **Step 3.** Include the renderer's JavaScript source files.
 
     <script src="js/retro-ngon/retro_ngon.js"></script>
+    <script src="js/retro-ngon/log.js"></script>
     <script src="js/retro-ngon/color.js"></script>
     <script src="js/retro-ngon/geometry.js"></script>
     <script src="js/retro-ngon/line_draw.js"></script>
