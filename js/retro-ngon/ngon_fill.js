@@ -10,9 +10,9 @@
 // should match the dimensions of the context.
 Rngon.ngon_filler = function(ngons = [], renderContext, renderWidth, renderHeight)
 {
-    k_assert((ngons instanceof Array), "Expected an array of ngons to be rasterized.");
-    k_assert((renderContext instanceof CanvasRenderingContext2D), "Expected a 2d canvas render context for the ngon filler.");
-    k_assert(((renderWidth > 0) && (renderHeight > 0)), "The transform surface can't have zero width or height.");
+    Rngon.assert((ngons instanceof Array), "Expected an array of ngons to be rasterized.");
+    Rngon.assert((renderContext instanceof CanvasRenderingContext2D), "Expected a 2d canvas render context for the ngon filler.");
+    Rngon.assert(((renderWidth > 0) && (renderHeight > 0)), "The transform surface can't have zero width or height.");
     if (ngons.length === 0) return;
 
     // We'll rasterize the ngon on top of whatever else exists in the context's
@@ -24,7 +24,7 @@ Rngon.ngon_filler = function(ngons = [], renderContext, renderWidth, renderHeigh
         // Deal with ngons that have fewer than 3 vertices.
         switch (ngon.vertices.length)
         {
-            case 0: k_assert(0, "Received an n-gon with no vertices. Can't deal with it."); return;
+            case 0: Rngon.assert(0, "Received an n-gon with no vertices. Can't deal with it."); return;
 
             // A single point.
             case 1:
@@ -78,7 +78,7 @@ Rngon.ngon_filler = function(ngons = [], renderContext, renderWidth, renderHeigh
             // and same for the right side.
             for (let i = 1; i < (verts.length - 1); i++)
             {
-                const lr = k_lerp(topVert.x, bottomVert.x, ((verts[i].y - topVert.y) / (bottomVert.y - topVert.y)));
+                const lr = Rngon.lerp(topVert.x, bottomVert.x, ((verts[i].y - topVert.y) / (bottomVert.y - topVert.y)));
                 ((verts[i].x >= lr)? rightVerts : leftVerts).push(verts[i]);
             }
 
@@ -88,8 +88,8 @@ Rngon.ngon_filler = function(ngons = [], renderContext, renderWidth, renderHeigh
             leftVerts.sort((a, b)=>((a.y === b.y)? 0 : ((a.y < b.y)? -1 : 1)));
             rightVerts.sort((a, b)=>((a.y === b.y)? 0 : ((a.y > b.y)? -1 : 1)));
 
-            k_assert(((leftVerts.length !== 0) && (rightVerts.length !== 0)), "Expected each side list to have at least one vertex.");
-            k_assert(((leftVerts.length + rightVerts.length) === verts.length), "Vertices appear to have gone missing.");
+            Rngon.assert(((leftVerts.length !== 0) && (rightVerts.length !== 0)), "Expected each side list to have at least one vertex.");
+            Rngon.assert(((leftVerts.length + rightVerts.length) === verts.length), "Vertices appear to have gone missing.");
         }
 
         // Create an array for each edge, where the index represents the y coordinate and the

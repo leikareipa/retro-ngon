@@ -36,7 +36,7 @@
 
 "use strict";
 
-k_assert = function(condition = false, explanation = "(no reason given)")
+Rngon.assert = function(condition = false, explanation = "(no reason given)")
 {
     if (!condition) throw Error(explanation);
 }
@@ -52,7 +52,7 @@ const unit_tester = Object.freeze(
     // Used by tests to evaluate conditions which must be true.
     require: function(condition = false, failMessage = "")
     {
-        k_assert((failMessage.length > 0), "Empty fail strings are discouraged.");
+        Rngon.assert((failMessage.length > 0), "Empty fail strings are discouraged.");
         
         if (!condition)
         {
@@ -74,8 +74,8 @@ const unit_tester = Object.freeze(
     ///        with non-illegal operations.
     reject: function(illegal_f = Function, failMessage = "")
     {
-        k_assert((illegal_f instanceof Function), "Expected a function.");
-        k_assert((failMessage.length > 0), "Empty fail strings are discouraged.");
+        Rngon.assert((illegal_f instanceof Function), "Expected a function.");
+        Rngon.assert((failMessage.length > 0), "Empty fail strings are discouraged.");
 
         let rejected = false;
         try
@@ -125,8 +125,8 @@ const unit_tester = Object.freeze(
     // a pass or fail, accordingly, using the unit name provided.
     test_unit: function(unitName = "", individual_tests_f = Function)
     {
-        k_assert((individual_tests_f instanceof Function), "Expected a function.");
-        k_assert((unitName.length > 0), "No name string provided.");
+        Rngon.assert((individual_tests_f instanceof Function), "Expected a function.");
+        Rngon.assert((unitName.length > 0), "No name string provided.");
 
         unit_tester.testList.length = 0;
         
@@ -263,7 +263,7 @@ const unit_tester = Object.freeze(
             // Adds the display name of the totality of the tests at the top of the table.
             unit_tester.resultsTable.insert_header = function(text = "")
             {
-                k_assert((text.length > 0), "No header text given.");
+                Rngon.assert((text.length > 0), "No header text given.");
                 
                 const header = document.createElement("tr");
                 const data = document.createElement("td");
@@ -301,8 +301,8 @@ const unit_tester = Object.freeze(
     // Call this with a function containing the unit tests you want run.
     run_tests: function(testName = "", tests_f = Function,)
     {
-        k_assert((tests_f instanceof Function), "Expected a function containing the unit tests to run.");
-        k_assert((testName.length > 0), "Empty test names are discouraged.");
+        Rngon.assert((tests_f instanceof Function), "Expected a function containing the unit tests to run.");
+        Rngon.assert((testName.length > 0), "Empty test names are discouraged.");
 
         unit_tester.initialize_html_report(testName);
         unit_tester.verify_tester_functionality();

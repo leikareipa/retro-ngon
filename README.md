@@ -33,7 +33,6 @@ Below is a more simplified, step-by-step guide. It'll render a single triangle o
 **Step 3.** Include the renderer's JavaScript source files.
 
     <script src="js/retro-ngon/retro_ngon.js"></script>
-    <script src="js/retro-ngon/log.js"></script>
     <script src="js/retro-ngon/color.js"></script>
     <script src="js/retro-ngon/geometry.js"></script>
     <script src="js/retro-ngon/line_draw.js"></script>
@@ -43,7 +42,6 @@ Below is a more simplified, step-by-step guide. It'll render a single triangle o
     <script src="js/retro-ngon/transform.js"></script>
     <script src="js/retro-ngon/texture.js"></script>
     <script src="js/retro-ngon/canvas.js"></script>
-    <script src="js/common.js"></script>
 
 **Step 4.** Create a triangle object. We'll assign the triangle a yellow color, and ask it to be drawn with a wireframe around it.
 

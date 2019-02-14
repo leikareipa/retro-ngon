@@ -15,7 +15,7 @@ Rngon.mesh = function(ngons = [Rngon.ngon()],
                       rotation = Rngon.vector3(0, 0, 0),
                       scale = Rngon.vector3(1, 1, 1))
 {
-    k_assert((ngons instanceof Array), "Expected a list of ngons for creating an ngon mesh.");
+    Rngon.assert((ngons instanceof Array), "Expected a list of ngons for creating an ngon mesh.");
 
     // A matrix by which the ngons of this mesh should be transformed to get the ngongs into
     // the mesh's object space.
@@ -42,7 +42,7 @@ Rngon.ngon = function(vertices = [Rngon.vertex4()],
                       hasSolidFill = true,
                       hasWireframe = false)
 {
-    k_assert((vertices instanceof Array), "Expected an array of vertices to make an ngon.");
+    Rngon.assert((vertices instanceof Array), "Expected an array of vertices to make an ngon.");
 
     const publicInterface = Object.freeze(
     {
@@ -68,7 +68,7 @@ Rngon.ngon = function(vertices = [Rngon.vertex4()],
 // NOTE: Expects to remain immutable.
 Rngon.vector3 = function(x = 0, y = 0, z = 0)
 {
-    k_assert((typeof x === "number" && typeof y === "number" && typeof z === "number"),
+    Rngon.assert((typeof x === "number" && typeof y === "number" && typeof z === "number"),
              "Expected numbers as parameters to the vector3 factory.");
 
     const publicInterface = Object.freeze(
@@ -108,7 +108,7 @@ Rngon.scaling_vector = Rngon.vector3;
 // NOTE: Expects to remain immutable.
 Rngon.vertex4 = function(x = 0, y = 0, z = 0, w = 1, u = 0, v = 0)
 {
-    k_assert((typeof x === "number" && typeof y === "number" && typeof z === "number" &&
+    Rngon.assert((typeof x === "number" && typeof y === "number" && typeof z === "number" &&
               typeof w === "number" && typeof u === "number" && typeof v === "number"),
              "Expected numbers as parameters to the vevertex4ctor3 factory.");
 
@@ -124,7 +124,7 @@ Rngon.vertex4 = function(x = 0, y = 0, z = 0, w = 1, u = 0, v = 0)
         // Returns a copy of the vertex transformed by the given matrix.
         transformed: function(m = [])
         {
-            k_assert((m.length === 16), "Expected a 4 x 4 matrix to transform the vertex by.");
+            Rngon.assert((m.length === 16), "Expected a 4 x 4 matrix to transform the vertex by.");
             
             const x_ = ((m[0] * x) + (m[4] * y) + (m[ 8] * z) + (m[12] * w));
             const y_ = ((m[1] * x) + (m[5] * y) + (m[ 9] * z) + (m[13] * w));

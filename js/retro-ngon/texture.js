@@ -17,14 +17,14 @@ Rngon.rgb_texture = function(data = {width: 0, height: 0, pixels: []})
     // Three channels, RGB.
     const numColorChannels = 3;
 
-    k_assert((typeof data.width === "number" && typeof data.height === "number"), "Expected texture width and height to be numbers.");
-    k_assert((data.width > 0 && data.height > 0), "Expected texture width and height to be greater than zero.")
-    k_assert((data.width <= maxWidth && data.height <= maxHeight), "Expected texture width/height to be no more than " + maxWidth + "/" + maxHeight + ".");
+    Rngon.assert((typeof data.width === "number" && typeof data.height === "number"), "Expected texture width and height to be numbers.");
+    Rngon.assert((data.width > 0 && data.height > 0), "Expected texture width and height to be greater than zero.")
+    Rngon.assert((data.width <= maxWidth && data.height <= maxHeight), "Expected texture width/height to be no more than " + maxWidth + "/" + maxHeight + ".");
 
-    k_assert((data.pixels instanceof Array), "Expected an array of pixel color values.");
-    k_assert((data.pixels.length > 0), "Detected a request for a texture with no pixels.");
-    k_assert(((data.pixels.length % 3) === 0), "Expected texture pixel data to be RGB.");
-    k_assert((data.pixels.length === (data.width * data.height * numColorChannels)), "The given pixel array's size doesn't match the given width and height.");
+    Rngon.assert((data.pixels instanceof Array), "Expected an array of pixel color values.");
+    Rngon.assert((data.pixels.length > 0), "Detected a request for a texture with no pixels.");
+    Rngon.assert(((data.pixels.length % 3) === 0), "Expected texture pixel data to be RGB.");
+    Rngon.assert((data.pixels.length === (data.width * data.height * numColorChannels)), "The given pixel array's size doesn't match the given width and height.");
     
     const publicInterface = Object.freeze(
     {
@@ -33,10 +33,10 @@ Rngon.rgb_texture = function(data = {width: 0, height: 0, pixels: []})
         
         rgba_pixel_at: function(x, y)
         {
-            k_assert((numColorChannels === 3), "Expected three color channels for RGB.");
+            Rngon.assert((numColorChannels === 3), "Expected three color channels for RGB.");
 
             const idx = Math.floor((x + y * data.width) * numColorChannels);
-            k_assert(((idx + 3) <= data.pixels.length), "Attempting to access a texture pixel out of bounds.");
+            Rngon.assert(((idx + 3) <= data.pixels.length), "Attempting to access a texture pixel out of bounds.");
 
             return Rngon.color_rgba(data.pixels[idx],
                                     data.pixels[idx + 1],

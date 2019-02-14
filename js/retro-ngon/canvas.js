@@ -12,16 +12,16 @@ Rngon.canvas = function(canvasElementId = "",              // The DOM id of the 
                         ngon_transform_f = function(){},   // A function that transforms the given ngons into screen-space for the canvas.
                         scaleFactor = 1)
 {
-    k_assert((typeof scaleFactor === "number"), "Expected the scale factor to be a numeric value.");
-    k_assert((typeof ngon_fill_f === "function" && typeof ngon_transform_f === "function"), "Expected ngon manipulation functions to be provided.");
+    Rngon.assert((typeof scaleFactor === "number"), "Expected the scale factor to be a numeric value.");
+    Rngon.assert((typeof ngon_fill_f === "function" && typeof ngon_transform_f === "function"), "Expected ngon manipulation functions to be provided.");
 
     const canvasElement = document.getElementById(canvasElementId);
-    k_assert((canvasElement !== null), "Can't find the given canvas element.");
+    Rngon.assert((canvasElement !== null), "Can't find the given canvas element.");
 
     // The pixel dimensions of the render surface.
     const surfaceWidth = Math.floor(parseInt(window.getComputedStyle(canvasElement).getPropertyValue("width")) * scaleFactor);
     const surfaceHeight = Math.floor(parseInt(window.getComputedStyle(canvasElement).getPropertyValue("height")) * scaleFactor);
-    k_assert(!isNaN(surfaceWidth) && !isNaN(surfaceHeight), "Failed to extract the canvas size.");
+    Rngon.assert(!isNaN(surfaceWidth) && !isNaN(surfaceHeight), "Failed to extract the canvas size.");
     canvasElement.setAttribute("width", surfaceWidth);
     canvasElement.setAttribute("height", surfaceHeight);
 

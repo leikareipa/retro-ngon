@@ -32,7 +32,7 @@ Rngon.line_draw = (()=>
             const x1 = Math.floor(vert2.x);
             const y1 = Math.floor(vert2.y);
 
-            k_assert((!isNaN(x0) && !isNaN(x1) && !isNaN(y0) && !isNaN(y1)),
+            Rngon.assert((!isNaN(x0) && !isNaN(x1) && !isNaN(y0) && !isNaN(y1)),
                         "Invalid vertex coordinates for line-drawing.")
 
             // Bresenham line algo. Adapted from https://stackoverflow.com/a/4672319.
@@ -80,7 +80,7 @@ Rngon.line_draw = (()=>
             const x1 = Math.floor(vert2.x);
             const y1 = Math.floor(vert2.y);
 
-            k_assert((!isNaN(x0) && !isNaN(x1) && !isNaN(y0) && !isNaN(y1)),
+            Rngon.assert((!isNaN(x0) && !isNaN(x1) && !isNaN(y0) && !isNaN(y1)),
                      "Invalid vertex coordinates for line-drawing.")
 
             // If true, we won't touch non-null elements in the array. Useful in preventing certain

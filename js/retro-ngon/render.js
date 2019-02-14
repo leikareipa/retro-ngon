@@ -27,7 +27,7 @@ Rngon.render = function(canvasElementId,
     {
         const viewHeight = window.innerHeight;
         const containerRect = document.getElementById(canvasElementId).getBoundingClientRect();
-        k_assert((containerRect != null), "Couldn't find the canvas container element.");
+        Rngon.assert((containerRect != null), "Couldn't find the canvas container element.");
 
         return Boolean((containerRect.top > -containerRect.height) &&
                        (containerRect.top < viewHeight));
@@ -75,7 +75,7 @@ Rngon.render = function(canvasElementId,
                     break;
                 }
                 
-                default: k_assert(0, "Unknown depth sort option."); break;
+                default: Rngon.assert(0, "Unknown depth sort option."); break;
             }
         }
 

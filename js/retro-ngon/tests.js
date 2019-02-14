@@ -120,13 +120,13 @@ unit_tester.run_tests("Retro n-gon renderer", ()=>
         const testCanvasId = "test-canvas";
         const testCanvasWidth = 10;
         const testCanvasHeight = 10;
-        k_assert((document.getElementById(testCanvasId) == null), "Expected the test canvas to not exist.");
+        Rngon.assert((document.getElementById(testCanvasId) == null), "Expected the test canvas to not exist.");
         const canvas = document.createElement("canvas");
         canvas.setAttribute("id", testCanvasId);
         canvas.style.width = (testCanvasWidth + "px");
         canvas.style.height = (testCanvasHeight + "px");
         document.body.appendChild(canvas);
-        k_assert((document.getElementById(testCanvasId) !== null), "Failed to create the test canvas.");
+        Rngon.assert((document.getElementById(testCanvasId) !== null), "Failed to create the test canvas.");
         
         unit_tester.test_unit("Render surface", function()
         {

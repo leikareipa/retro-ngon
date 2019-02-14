@@ -13,8 +13,8 @@ Rngon.ngon_transformer = function(ngons = [], clipSpaceMatrix = [], screenSpaceM
 {
     if (ngons.length === 0) return;
 
-    k_assert((clipSpaceMatrix.length === 16), "Expected a 4 x 4 camera matrix.");
-    k_assert((screenSpaceMatrix.length === 16), "Expected a 4 x 4 perspective matrix.");
+    Rngon.assert((clipSpaceMatrix.length === 16), "Expected a 4 x 4 camera matrix.");
+    Rngon.assert((screenSpaceMatrix.length === 16), "Expected a 4 x 4 perspective matrix.");
 
     return ngons.map((ngon)=>(ngon.in_screen_space(screenSpaceMatrix)))
                 .filter((ngon)=>
