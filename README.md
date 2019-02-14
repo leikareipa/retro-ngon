@@ -4,7 +4,7 @@ A minimalist 3d renderer that draws n-sided polygons (as well as lines and point
 You can view a live sample of the renderer's output at [http://tarpeeksihyvaesoft.com/s/retro-ngon/](http://tarpeeksihyvaesoft.com/s/retro-ngon/). It cycles through various 3d models.
 
 ## Usage
-You can find a practical example of the renderer's usage in `index.html`.
+You can find a practical example of the renderer's usage in [sample1.html](sample1.html).
 
 Below is a more simplified, step-by-step guide. It'll render a single triangle onto a canvas on the page.
 
