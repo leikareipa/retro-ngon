@@ -4,7 +4,7 @@
  *
  */
 
-"use strict"
+"use strict";
 
 // Red, green, blue, alpha; in the range 0..255.
 // NOTE: Expects to remain immutable.

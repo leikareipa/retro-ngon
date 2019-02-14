@@ -1,4 +1,4 @@
-"use strict"
+"use strict";
 
 unit_tester.run_tests("Retro n-gon renderer", ()=>
 {

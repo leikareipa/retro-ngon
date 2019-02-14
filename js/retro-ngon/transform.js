@@ -4,7 +4,7 @@
  *
  */
 
-"use strict"
+"use strict";
 
 // Returns a copy of the given list of ngons such that each ngon in the copy
 // has been transformed into screen-space. Any ngons whose vertices (any of them)

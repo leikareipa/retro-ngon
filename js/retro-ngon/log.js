@@ -6,7 +6,7 @@
  * 
  */
 
-"use strict"
+"use strict";
 
 Rngon.log = function(message = "Hello there.")
 {

@@ -4,7 +4,7 @@
  *
  */
 
-"use strict"
+"use strict";
 
 // Provides an interface for interacting with a HTML5 canvas element for 3d rendering.
 Rngon.canvas = function(canvasElementId = "",              // The DOM id of the canvas element.

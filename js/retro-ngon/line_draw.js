@@ -1,4 +1,4 @@
-"use strict"
+"use strict";
 
 // Provides functions for drawing lines.
 Rngon.line_draw = (()=>

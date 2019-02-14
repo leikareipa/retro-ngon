@@ -1,4 +1,4 @@
-"use strict"
+"use strict";
 
 // Provides basic 3d objects for rendering. Note that these return an array of ngons, out of
 // which you can then create a mesh.

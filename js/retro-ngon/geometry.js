@@ -6,7 +6,7 @@
  *
  */
 
-"use strict"
+"use strict";
 
 // A collection of ngons, with shared translation and rotation.
 // NOTE: Expects to remain immutable.

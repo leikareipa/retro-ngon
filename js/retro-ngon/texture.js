@@ -4,7 +4,7 @@
  * 
  */
 
-"use strict"
+"use strict";
 
 // A 24-bit texture. Its pixels are an array of consecutive r,g,b values (range 0..255)
 // repeated width*height times (e.g. [0,255,0, 255,0,0] for two pixels, green and red).

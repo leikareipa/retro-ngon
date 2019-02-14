@@ -33,7 +33,7 @@
  *
  */
 
-"use strict"
+"use strict";
 
 // Provides manipulation of 4-by-4 matrices.
 Rngon.matrix44 = (()=>

@@ -1,4 +1,4 @@
-"use strict"
+"use strict";
 
 // The Stanford bunny (Stanford University Computer Graphics Laboratory, http://graphics.stanford.edu/data/3Dscanrep/).
 // Converted from the original mesh data with slight changes (vertex coordinates * 100, and most of the triangles made

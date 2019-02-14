@@ -4,7 +4,7 @@
  * 
  */
 
-"use strict"
+"use strict";
 
 // Rasterizes the given ngon through the given render context. The given width and height
 // should match the dimensions of the context.

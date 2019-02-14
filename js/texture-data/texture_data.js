@@ -1,4 +1,4 @@
-"use strict"
+"use strict";
 
 // Provides textures for 3d rendering.
 const Textures =

@@ -4,7 +4,7 @@
  * 
  */
 
-"use strict"
+"use strict";
 
 // Will create a HTML5 canvas element inside the given container, and render into it
 // the given ngon meshes.

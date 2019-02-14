@@ -34,7 +34,7 @@
  *
  */
 
-"use strict"
+"use strict";
 
 k_assert = function(condition = false, explanation = "(no reason given)")
 {
