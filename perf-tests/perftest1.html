@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width">
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <title>Barebones perf tester - Retro n-gon renderer</title>
+        <style>
+            body
+            {
+                background-color: black;
+                color: lightgray;
+                text-align: center;
+                margin-bottom: 50px;
+            }
+        </style>
+    </head>
+    <body>
+        <script src="../js/retro-ngon/retro_ngon.js"></script>
+        <script src="../js/retro-ngon/color.js"></script>
+        <script src="../js/retro-ngon/geometry.js"></script>
+        <script src="../js/retro-ngon/line_draw.js"></script>
+        <script src="../js/retro-ngon/matrix44.js"></script>
+        <script src="../js/retro-ngon/ngon_fill.js"></script>
+        <script src="../js/retro-ngon/render.js"></script>
+        <script src="../js/retro-ngon/transform.js"></script>
+        <script src="../js/retro-ngon/texture.js"></script>
+        <script src="../js/retro-ngon/canvas.js"></script>
+
+        <script src="./perftest1.js"></script>
+        <script>
+            const texture = Rngon.rgb_texture({width:32, height:32,
+                                               pixels: Array(32*32*3).fill(0).map((pixel, idx)=>(idx%255))});
+
+            const quadVerts = [Rngon.vertex4(-0.5, -0.5, 0),
+                               Rngon.vertex4(0.5, -0.5, 0),
+                               Rngon.vertex4(0.5, 0.5, 0),
+                               Rngon.vertex4(-0.5, 0.5, 0)];
+
+            const wireframeQuad = Rngon.ngon(quadVerts, Rngon.color_rgba(127, 0, 127), null, false, true);
+            const untexturedQuad = Rngon.ngon(quadVerts, Rngon.color_rgba(127, 0, 127), null, true, false);
+            const texturedQuad = Rngon.ngon(quadVerts, Rngon.color_rgba(127, 0, 127), texture, true, false);
+
+            rngon_perftest1("Wireframe quads", wireframeQuad, 30, 1000, (polycount)=>(polycount*2))
+            .then(()=>rngon_perftest1("Solid quads", untexturedQuad, 30, 1000, (polycount)=>(polycount*2)))
+            .then(()=>rngon_perftest1("Textured quads", texturedQuad, 30, 1000, (polycount)=>(polycount*2)));
+        </script>
+    </body>
+</html>
