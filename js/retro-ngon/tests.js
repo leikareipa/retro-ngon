@@ -104,14 +104,14 @@ unit_tester.run_tests("Retro n-gon renderer", ()=>
 
     unit_tester.test_unit("Texture", function()
     {
-        const texture = Rngon.rgb_texture({width: 1, height: 1, pixels: [255, 22, 1]});
+        const texture = Rngon.texture_rgb({width: 1, height: 1, pixels: [255, 22, 1]});
         unit_tester.require((texture.width === 1 && texture.height === 1 &&
                              texture.rgba_pixel_at(0, 0).red === 255 &&
                              texture.rgba_pixel_at(0, 0).green === 22 &&
                              texture.rgba_pixel_at(0, 0).blue === 1), "Creation of an RGB texture.");
         unit_tester.reject(()=>{texture.rgba_pixel_at(1, 0)}, "Reject accessing texture pixels out of bounds.");
-        unit_tester.reject(()=>{Rngon.rgb_texture({width: 1, height: 1, pixels: [255, 0, 0, 255, 0, 0]})}, "Reject creating an RGB texture with invalid dimensions.");
-        unit_tester.reject(()=>{Rngon.rgb_texture({width: 2, height: 1, pixels: [255, 0, 0]})}, "Reject creating an RGB texture with invalid dimensions.");
+        unit_tester.reject(()=>{Rngon.texture_rgb({width: 1, height: 1, pixels: [255, 0, 0, 255, 0, 0]})}, "Reject creating an RGB texture with invalid dimensions.");
+        unit_tester.reject(()=>{Rngon.texture_rgb({width: 2, height: 1, pixels: [255, 0, 0]})}, "Reject creating an RGB texture with invalid dimensions.");
     });
 
     // The renderer.

@@ -28,7 +28,7 @@
 
         <script src="./perftest1.js"></script>
         <script>
-            const texture = Rngon.rgb_texture({width:32, height:32,
+            const texture = Rngon.texture_rgb({width:32, height:32,
                                                pixels: Array(32*32*3).fill(0).map((pixel, idx)=>(idx%255))});
 
             const quadVerts = [Rngon.vertex4(-0.5, -0.5, 0),
