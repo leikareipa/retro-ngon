@@ -11,17 +11,8 @@
 // have negative depth will be excluded from the copy.
 Rngon.ngon_transformer = function(ngons = [], clipSpaceMatrix = [], screenSpaceMatrix = [])
 {
-    if (ngons.length === 0) return;
-
-    Rngon.assert((clipSpaceMatrix.length === 16), "Expected a 4 x 4 camera matrix.");
-    Rngon.assert((screenSpaceMatrix.length === 16), "Expected a 4 x 4 perspective matrix.");
-
-    return ngons.map((ngon)=>(ngon.in_screen_space(screenSpaceMatrix)))
-                .filter((ngon)=>
-                {
-                    // Filter out ngons whose vertices (any of them) have negative depth.
-                    // We do this as a cheap alternative to clipping, to prevent graphical
-                    // errors when clipping isn't used.
-                    return ngon.vertices.every(v => (v.w > 0));
-                });
+    return ngons.map(ngon=>ngon.in_screen_space(screenSpaceMatrix))
+                // Filter out ngons whose vertices (any of them) have negative depth.
+                // We do this as a cheap alternative to clipping.
+                .filter(ngon=>ngon.vertices.every(v=>(v.w > 0)));
 }

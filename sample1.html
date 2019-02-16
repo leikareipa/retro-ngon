@@ -48,8 +48,8 @@
 
             <script>
                 const triangle = Rngon.ngon([Rngon.vertex4(-0.5, -0.5, 0),
-                                            Rngon.vertex4(0.5, -0.5, 0),
-                                            Rngon.vertex4(0.5, 0.5, 0)],
+                                             Rngon.vertex4(0.5, -0.5, 0),
+                                             Rngon.vertex4(0.5, 0.5, 0)],
                                             Rngon.color_rgba(255, 255, 0),
                                             null /*no texture*/,
                                             true /*solid fill*/,
@@ -66,10 +66,10 @@
 
             <script>
                 Rngon.render("render-canvas",
-                            [Rngon.mesh([triangle])],
-                            Rngon.translation_vector(0, 0, 3) /*camera position*/,
-                            Rngon.rotation_vector(0, 0, 0)    /*camera direction*/,
-                            1 /*scale of the rendered image, relative to the size of the canvas*/);
+                             [Rngon.mesh([triangle])],
+                             Rngon.translation_vector(0, 0, 3) /*camera position*/,
+                             Rngon.rotation_vector(0, 0, 0)    /*camera direction*/,
+                             1 /*scale of the rendered image, relative to the size of the canvas*/);
             </script>
 
         <!--Step 6. That's it. When you load the page, you should see a 300 x 300 light gray box
@@ -84,9 +84,9 @@
                 {
                     const rotationSpeed = 0.01;
                     return Rngon.mesh([triangle],
-                                    Rngon.translation_vector(0, 0, 0),
-                                    Rngon.rotation_vector(0, (frameCount * rotationSpeed), 0),
-                                    Rngon.scaling_vector(1, 1, 1));
+                                      Rngon.translation_vector(0, 0, 0),
+                                      Rngon.rotation_vector(0, (frameCount * rotationSpeed), 0),
+                                      Rngon.scaling_vector(1, 1, 1));
                 };
 
                 // A function that executes repeatedly, at the device's refresh rate. On each execution,
@@ -95,8 +95,8 @@
                 (function render_loop(frameCount = 0)
                 {
                     Rngon.render("render-canvas",
-                                [rotatingTriangle(frameCount)],
-                                Rngon.translation_vector(0, 0, 3));
+                                 [rotatingTriangle(frameCount)],
+                                 Rngon.translation_vector(0, 0, 3));
 
                     window.requestAnimationFrame(()=>render_loop(frameCount + 1));
                 })();

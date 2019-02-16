@@ -70,8 +70,8 @@ const rngon_perftest1 = function(title = "", polygon, numClones, maxNumClones, c
         (function render_loop(frameCount = 1)
         {
             Rngon.render(html.canvasElement.getAttribute("id"), meshes,
-                        Rngon.translation_vector(0, 0, 7),
-                        Rngon.rotation_vector(frameCount/50, 0, frameCount/100), 1);
+                         Rngon.translation_vector(0, 0, 7),
+                         Rngon.rotation_vector(frameCount/50, 0, frameCount/100), 1);
 
             if (frameCount >= numFrames) done();
             else window.requestAnimationFrame(()=>render_loop(frameCount + 1));
