@@ -190,4 +190,4 @@ Below are results from [perf-tests/perftest1.html](perf-tests/perftest1.html) as
 - Frustum clipping (n-gons behind the camera will result in odd behavior)
 - Depth testing (painter's sorting is used)
 
-Convex n-gons are also not supported.
+Also, convex n-gons are not supported.

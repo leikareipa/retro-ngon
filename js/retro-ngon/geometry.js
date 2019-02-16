@@ -48,7 +48,7 @@ Rngon.ngon = function(vertices = [Rngon.vertex4()],
     {
         color,
         texture,
-        vertices,
+        vertices:Object.freeze(vertices),
         hasSolidFill,
         hasWireframe,
 

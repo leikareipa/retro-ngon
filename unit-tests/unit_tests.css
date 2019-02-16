@@ -1,78 +1,32 @@
 body
 {
+    margin-top: 10px;
     text-align: center;
-    font-size: 13pt;
-    padding-top: 30px;
-    width: 100%;
-    height: 100%;
-    margin: 0;
-    margin-top: 30px;
-    color: rgb(168, 156, 156);
-    background-color: #4e3939;
-    overflow-y: scroll;
+    background-color: #222222;
 }
 
-.results_table
+table
 {
-    white-space: nowrap;
-    padding: 38px;
-    padding-top: 25px;
-    padding-bottom: 14px;
-    width: 50vw;
-    border-radius: 2px;
-    display: inline-table;
-    text-align: center;
-    background-color: rgba(255, 0, 0, 0.08);
-    box-shadow: -8px 5px 45px -5px rgba(0, 0, 0, 0.363);
-    background-image: linear-gradient(to right, #5e3636, #5f3636);
-}
-
-.date_stamp
-{
-    font-size: 80%;
+    color: black;
+    margin: 0 auto;
+    margin-bottom: 20px;
     text-align: left;
-    color: rgba(255, 255, 255, 0.4);
+    border-collapse:collapse;
+    width: 250px;
 }
 
-/* Will be displayed for tests that pass.*/
-.tag_test_success
+table td, th
 {
-    vertical-align: top;
-    text-align: left;
-    padding: 12px;
-    width: 100%;
-    border-radius: 2px;
-    color: #dae4d5;
-    background-color: rgb(33, 136, 64);
-    cursor: pointer;
-    transition: height 0.2s linear;
-    height: 0px;
+    padding: 10px;
+    border: none;
 }
 
-.tag_test_success:hover
+.pass
 {
-    background-color: rgb(35, 141, 67);
+    background-color: rgb(60, 179, 96);
 }
 
-/* Will be displayed for tests that fail.*/
-.tag_test_fail
+.fail
 {
-    vertical-align: top;
-    text-align: left;
-    padding: 12px;
-    width: 100%;
-    border-radius: 2px;
-    color: #d3c6c6;
-    background-color: rgb(156, 62, 0);
-}
-
-.small_text
-{
-    font-size: 80%;
-}
-
-.large_text
-{
-    font-size: 160%;
-    font-weight: bold;
+    background-color: crimson;
 }
