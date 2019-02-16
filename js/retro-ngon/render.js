@@ -13,11 +13,18 @@ Rngon.render = function(canvasElementId,
                         cameraPos = Rngon.vector3(0, 0, 0),
                         cameraDir = Rngon.vector3(0, 0, 0),
                         scaleFactor = 1,
-                        options =
-                        {
-                            depthSort:"painter",
-                        })
+                        userOptions = {})
 {
+    // Combine default options with user-supplied ones.
+    const options =
+    {
+        ...{
+            depthSort:"painter",
+            hibernateWhenNotOnScreen:true // If true, rendering is skipped when no part of the render surface's bounding rect is in view.
+        },
+        ...userOptions
+    };
+
     const renderSurface = Rngon.canvas(canvasElementId, Rngon.ngon_filler, Rngon.ngon_transformer, scaleFactor);
 
     // Returns true if any horizontal part of the render surface DOM container is within the page's
@@ -34,7 +41,7 @@ Rngon.render = function(canvasElementId,
     }
 
     // Render a single frame onto the render surface.
-    if (is_surface_in_view())
+    if ((!options.hibernateWhenNotOnScreen || is_surface_in_view()))
     {
         renderSurface.wipe_clean();
 
