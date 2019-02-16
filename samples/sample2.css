@@ -12,7 +12,6 @@ body
     image-rendering: -moz-crisp-edges;
     image-rendering: -o-crisp-edges;
     image-rendering: -webkit-crisp-edges;
-    -ms-interpolation-mode: nearest-neighbor;
 }
 
 /* Styling for the canvas element that holds the n-gon rendering.*/
