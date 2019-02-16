@@ -30,18 +30,21 @@
                 }
             </style>
 
-        <!--Step 3. Include the renderer's JavaScript source files.-->
+        <!--Step 3. Include the renderer's JavaScript source files. Note that we're giving the
+            path here as relative to the current directory, which we assume is one folder above
+            where the renderer's source files are (e.g. "rngon/samples/", and the JavaScript is
+            in "rngon/js/").-->
 
-            <script src="./js/retro-ngon/retro_ngon.js"></script>
-            <script src="./js/retro-ngon/color.js"></script>
-            <script src="./js/retro-ngon/geometry.js"></script>
-            <script src="./js/retro-ngon/line_draw.js"></script>
-            <script src="./js/retro-ngon/matrix44.js"></script>
-            <script src="./js/retro-ngon/ngon_fill.js"></script>
-            <script src="./js/retro-ngon/render.js"></script>
-            <script src="./js/retro-ngon/transform.js"></script>
-            <script src="./js/retro-ngon/texture.js"></script>
-            <script src="./js/retro-ngon/canvas.js"></script>
+            <script src="../js/retro-ngon/retro_ngon.js"></script>
+            <script src="../js/retro-ngon/color.js"></script>
+            <script src="../js/retro-ngon/geometry.js"></script>
+            <script src="../js/retro-ngon/line_draw.js"></script>
+            <script src="../js/retro-ngon/matrix44.js"></script>
+            <script src="../js/retro-ngon/ngon_fill.js"></script>
+            <script src="../js/retro-ngon/render.js"></script>
+            <script src="../js/retro-ngon/transform.js"></script>
+            <script src="../js/retro-ngon/texture.js"></script>
+            <script src="../js/retro-ngon/canvas.js"></script>
 
         <!--Step 4. Create a triangle object. We'll assign the triangle a yellow color, and ask
             it to be drawn with a wireframe around it.-->
