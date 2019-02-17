@@ -148,16 +148,17 @@ const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
     unit("Texture", ()=>
     {
         const texture = Rngon.texture_rgba({width: 1, height: 1, pixels: [255, 22, 1, 255]});
-        const textureSeethrough = Rngon.texture_rgba({width: 1, height: 1, pixels: [255, 22, 1, 0]});
+        const textureSeethrough = Rngon.texture_rgba({width: 1, height: 1, pixels: [255, 22, 1, 1]});
 
         expect_true([texture.width === 1,
                      texture.height === 1,
-                     (texture.rgb_channels_at(0, 0) instanceof Array),
-                     texture.rgb_channels_at(0, 0).length === 3,
-                     texture.rgb_channels_at(0, 0)[0] === 255,
-                     texture.rgb_channels_at(0, 0)[1] === 22,
-                     texture.rgb_channels_at(0, 0)[2] === 1,
-                     textureSeethrough.rgb_channels_at(0, 0) === null]);
+                     (texture.rgba_channels_at(0, 0) instanceof Array),
+                     texture.rgba_channels_at(0, 0).length === 4,
+                     texture.rgba_channels_at(0, 0)[0] === 255,
+                     texture.rgba_channels_at(0, 0)[1] === 22,
+                     texture.rgba_channels_at(0, 0)[2] === 1,
+                     texture.rgba_channels_at(0, 0)[3] === 255,
+                     textureSeethrough.rgba_channels_at(0, 0)[3] === 1]);
 
         // Immutability.
         expect_fail([()=>{texture.width = 0},
@@ -166,7 +167,7 @@ const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
                      ()=>{texture.pixels[0] = 0}]);
 
         // Invalid values.
-        expect_fail([()=>{texture.rgb_channels_at(2, 0)},
+        expect_fail([()=>{texture.rgba_channels_at(2, 0)},
                      ()=>{Rngon.texture_rgba({width: 1, height: 1, pixels: [255, 0, 0, 255, 0, 0]})},
                      ()=>{Rngon.texture_rgba({width: 2, height: 1, pixels: [255, 0, 0]})}]);
     });
