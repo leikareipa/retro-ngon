@@ -28,17 +28,32 @@
 
         <script src="./perftest1.js"></script>
         <script>
-            const texture = Rngon.texture_rgb({width:32, height:32,
-                                               pixels: Array(32*32*3).fill(0).map((pixel, idx)=>(idx%255))});
+            const texture = Rngon.texture_rgba({width:32, height:32,
+                                                pixels: Array(32*32*4).fill(0).map((pixel, idx)=>((idx+1)%4===0? 255 : idx%256))});
 
             const quadVerts = [Rngon.vertex4(-0.5, -0.5, 0),
                                Rngon.vertex4(0.5, -0.5, 0),
                                Rngon.vertex4(0.5, 0.5, 0),
                                Rngon.vertex4(-0.5, 0.5, 0)];
 
-            const wireframeQuad = Rngon.ngon(quadVerts, Rngon.color_rgba(127, 0, 127), null, false, true);
-            const untexturedQuad = Rngon.ngon(quadVerts, Rngon.color_rgba(127, 0, 127), null, true, false);
-            const texturedQuad = Rngon.ngon(quadVerts, Rngon.color_rgba(127, 0, 127), texture, true, false);
+            const wireframeQuad = Rngon.ngon(quadVerts, {
+                                                 color: Rngon.color_rgba(127, 0, 127),
+                                                 texture: null,
+                                                 hasSolidFill: false,
+                                                 hasWireframe: true
+                                             });
+            const untexturedQuad = Rngon.ngon(quadVerts, {
+                                                 color: Rngon.color_rgba(127, 0, 127),
+                                                 texture: null,
+                                                 hasSolidFill: true,
+                                                 hasWireframe: false
+                                             });
+            const texturedQuad = Rngon.ngon(quadVerts, {
+                                                 color: Rngon.color_rgba(127, 0, 127),
+                                                 texture: texture,
+                                                 hasSolidFill: true,
+                                                 hasWireframe: false
+                                             });
 
             rngon_perftest1("Wireframe quads", wireframeQuad, 30, 1000, (polycount)=>(polycount*2))
             .then(()=>rngon_perftest1("Solid quads", untexturedQuad, 30, 1000, (polycount)=>(polycount*2)))

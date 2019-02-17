@@ -160,10 +160,14 @@ Rngon.ngon_filler = function(ngons = [], renderContext, renderWidth, renderHeigh
                                 else
                                 {
                                     const texelColorChannels = ngon.texture.rgb_channels_at(u, v);
-                                    pixelMap.data[idx + 0] = texelColorChannels[0];
-                                    pixelMap.data[idx + 1] = texelColorChannels[1];
-                                    pixelMap.data[idx + 2] = texelColorChannels[2];
-                                    pixelMap.data[idx + 3] = 255;
+
+                                    if (texelColorChannels !== null)
+                                    {
+                                        pixelMap.data[idx + 0] = texelColorChannels[0];
+                                        pixelMap.data[idx + 1] = texelColorChannels[1];
+                                        pixelMap.data[idx + 2] = texelColorChannels[2];
+                                        pixelMap.data[idx + 3] = 255;
+                                    }
                                 }
                             }
                         }
