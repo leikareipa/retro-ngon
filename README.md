@@ -11,7 +11,7 @@ A slightly more involved example is provided in [samples/sample2.html](samples/s
 ## Performance
 The renderer is not intended for real-time display of high-polycount scenes, nor for real-time high-resolution rendering. Its principal target is 320 x 200 &ndash; upscaled by whichever amount &ndash; and spartan 3d scenes.
 
-Below are test results from [perf-tests/perftest1.html](perf-tests/perftest1.html) as of [9b61659](https://github.com/leikareipa/retro-ngon/tree/9b616595d11c19308090b5ac26064c9bcb29a6a7) running on a Xeon E3-1230 v3 desktop PC in Chrome and Firefox. The values given in the matrices are frames per second (FPS) for polycounts 30, 60, ..., 1920. An empty cell indicates that no test was run for that polycount; a bullet notes that the FPS was at least 60, the screen's refresh rate during the tests.
+Below are test results from [perf-tests/perftest1.html](perf-tests/perftest1.html) as of [ca1fe03](https://github.com/leikareipa/retro-ngon/tree/ca1fe039caebec4c631d4ce5955139f4f6ff4cd8) running on a Xeon E3-1230 v3 desktop PC in Chrome and Firefox. The values given in the matrices are frames per second (FPS) for polycounts 30, 60, ..., 1920. An empty cell indicates that no test was run for that polycount; a bullet notes that the FPS was at least 60, the screen's refresh rate during the tests.
 
 <table>
     <tr>
@@ -48,11 +48,11 @@ Below are test results from [perf-tests/perftest1.html](perf-tests/perftest1.htm
         <th align="left">Textured</th>
         <td align="center">&bull;</td>
         <td align="center">&bull;</td>
-        <td align="center">55</td>
-        <td align="center">35</td>
-        <td align="center">19</td>
-        <td align="center">10</td>
-        <td align="center"></td>
+        <td align="center">&bull;</td>
+        <td align="center">&bull;</td>
+        <td align="center">57</td>
+        <td align="center">38</td>
+        <td align="center">18</td>
     </tr>
 </table>
 <br>
@@ -89,17 +89,17 @@ Below are test results from [perf-tests/perftest1.html](perf-tests/perftest1.htm
     </tr>
     <tr>
         <th align="left">Textured</th>
-        <td align="center">46</td>
-        <td align="center">28</td>
-        <td align="center">15</td>
-        <td align="center">8</td>
-        <td align="center">4</td>
-        <td align="center"></td>
+        <td align="center">&bull;</td>
+        <td align="center">&bull;</td>
+        <td align="center">59</td>
+        <td align="center">44</td>
+        <td align="center">25</td>
+        <td align="center">13</td>
         <td align="center"></td>
     </tr>
 </table>
 
-The gist of these data is that the renderer performs better on Chrome than it does on Firefox, most notably so when texturing is enabled. On Chrome, polycounts of roughly 100 to 300 could be maintained at 60 FPS; or about 250-1000 at 30 FPS.
+The gist of these data is that the renderer performs better on Chrome than it does on Firefox, most notably so when texturing is enabled. On Chrome, polycounts of roughly 300 could be maintained at 60 FPS; or about 1000 at 30 FPS.
 
 Below are results from [perf-tests/perftest1.html](perf-tests/perftest1.html) as of [9b61659](https://github.com/leikareipa/retro-ngon/tree/9b616595d11c19308090b5ac26064c9bcb29a6a7) running on a G4560 desktop PC in Chrome. The notes from the tests above apply.
 
@@ -133,12 +133,12 @@ Below are results from [perf-tests/perftest1.html](perf-tests/perftest1.html) as
     </tr>
     <tr>
         <th align="left">Textured</th>
-        <td align="center">&bull;</td>
-        <td align="center">56</td>
-        <td align="center">56</td>
-        <td align="center">36</td>
-        <td align="center">19</td>
-        <td align="center">9</td>
+        <td align="center"></td>
+        <td align="center"></td>
+        <td align="center"></td>
+        <td align="center"></td>
+        <td align="center"></td>
+        <td align="center"></td>
     </tr>
 </table>
 
@@ -174,9 +174,9 @@ Below are results from [perf-tests/perftest1.html](perf-tests/perftest1.html) as
     </tr>
     <tr>
         <th align="left">Textured</th>
-        <td align="center">21</td>
-        <td align="center">12</td>
-        <td align="center">6</td>
+        <td align="center"></td>
+        <td align="center"></td>
+        <td align="center"></td>
         <td align="center"></td>
         <td align="center"></td>
         <td align="center"></td>
