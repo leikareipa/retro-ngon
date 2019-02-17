@@ -52,10 +52,12 @@
                 const triangle = Rngon.ngon([Rngon.vertex4(-0.5, -0.5, 0),
                                              Rngon.vertex4(0.5, -0.5, 0),
                                              Rngon.vertex4(0.5, 0.5, 0)],
-                                            Rngon.color_rgba(255, 255, 0),
-                                            null /*no texture*/,
-                                            true /*solid fill*/,
-                                            true /*with a wireframe around the triangle*/);
+                                            {
+                                                color: Rngon.color_rgba(255, 255, 0),
+                                                texture: null,
+                                                hasSolidFill: true,
+                                                hasWireframe: true,
+                                            });
             </script>
 
         <!--Step 5. Render the triangle onto the canvas. Note that we first construct a mesh that

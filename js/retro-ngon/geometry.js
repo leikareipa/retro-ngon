@@ -36,21 +36,30 @@ Rngon.mesh = function(ngons = [Rngon.ngon()],
 
 // A single n-sided ngon.
 // NOTE: Expects to remain immutable.
-Rngon.ngon = function(vertices = [Rngon.vertex4()],
-                      color = Rngon.color_rgba(127, 127, 127, 255),
-                      texture = null,
-                      hasSolidFill = true,
-                      hasWireframe = false)
+Rngon.ngon = function(vertices = [Rngon.vertex4()], userOptions = {})
 {
     Rngon.assert((vertices instanceof Array), "Expected an array of vertices to make an ngon.");
+    Rngon.assert((userOptions instanceof Object), "Expected an object containing user-supplied options.");
+
+    // Combine default options with user-supplied ones.
+    const options =
+    {
+        ...{
+            color: Rngon.color_rgba(127, 127, 127, 255),
+            texture: null,
+            hasSolidFill: true,
+            hasWireframe: false
+        },
+        ...userOptions
+    };
 
     const publicInterface = Object.freeze(
     {
-        color,
-        texture,
         vertices:Object.freeze(vertices),
-        hasSolidFill,
-        hasWireframe,
+        color: options.color,
+        texture: options.texture,
+        hasSolidFill: options.hasSolidFill,
+        hasWireframe: options.hasWireframe,
 
         // Transforms the ngon into screen-space, such that each vertex's x,y coordinate pair
         // corresponds directly with x,y coordinates on the screen (or screen buffer). Note that
@@ -58,8 +67,7 @@ Rngon.ngon = function(vertices = [Rngon.vertex4()],
         // is possible given the ngon's current space.
         in_screen_space: function(matrixToScreenSpace)
         {
-            return Rngon.ngon(vertices.map(vertex => vertex.transformed(matrixToScreenSpace).perspective_divided()),
-                              color, texture, hasSolidFill, hasWireframe);
+            return Rngon.ngon(vertices.map(vertex => vertex.transformed(matrixToScreenSpace).perspective_divided()), options);
         },
     });
     return publicInterface;

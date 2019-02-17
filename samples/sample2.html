@@ -68,16 +68,6 @@
                                            Rngon.scaling_vector(1, 1, 1))];
                     },
 
-                    // An analog clock.
-                    function(frameCount)
-                    {
-                        const rotationSpeed = 0.006;
-                        return [Rngon.mesh(MeshTemplates.analog_clock(),
-                                           Rngon.translation_vector(0, 0, 40),
-                                           Rngon.rotation_vector(-0.3, 0.8, -0.6),
-                                           Rngon.scaling_vector(0.8, 0.8, 0.8))];
-                    },
-
                     // The Cornell box.
                     function(frameCount)
                     {
@@ -122,7 +112,7 @@
                                      publicInterface.cameraPosition,
                                      publicInterface.cameraDirection,
                                      publicInterface.rendererScale,
-                                     {depthSort:(publicInterface.scene === scenes[4])? "none" : "painter"});
+                                     {depthSort:(publicInterface.scene === scenes[3])? "none" : "painter"});
 
                         window.requestAnimationFrame(()=>render_loop(frameCount + !publicInterface.paused));
                     })();

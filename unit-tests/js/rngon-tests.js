@@ -85,7 +85,8 @@ const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
                      ()=>{vector.y = 0},
                      ()=>{vector.z = 0}]);
 
-        const ng = Rngon.ngon([vertex], Rngon.color_rgba(0, 111, 222), null, true, false);
+        const ng = Rngon.ngon([vertex],
+                              {color: Rngon.color_rgba(0, 111, 222), texture: null, hasSolidFill: true, hasWireframe: false});
 
         expect_true([ng.vertices.length === 1,
                      ng.vertices[0] === vertex,
@@ -200,14 +201,20 @@ const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
 
             // Create a colored rectangle that fills the entire canvas when rendered.
             const colorShade = 222;
-            const mesh = Rngon.mesh([Rngon.ngon([Rngon.vertex4(-1, -1, 1),
-                                                 Rngon.vertex4(1, -1, 1),
-                                                 Rngon.vertex4(1, 1, 1),
-                                                 Rngon.vertex4(-1, 1, 1)],
-                                                Rngon.color_rgba(colorShade, colorShade, colorShade, colorShade))],
-                                                Rngon.translation_vector(0, 0, 0),
-                                                Rngon.rotation_vector(0, 0, 0),
-                                                Rngon.scaling_vector(1, 1, 1));
+            const ngon = Rngon.ngon([Rngon.vertex4(-1, -1, 1),
+                                     Rngon.vertex4(1, -1, 1),
+                                     Rngon.vertex4(1, 1, 1),
+                                     Rngon.vertex4(-1, 1, 1)],
+                                    {
+                                        color: Rngon.color_rgba(colorShade, colorShade, colorShade, colorShade),
+                                        texture: null,
+                                        hasSolidFill: true,
+                                        hasWireframe: false
+                                    });
+            const mesh = Rngon.mesh([ngon],
+                                    Rngon.translation_vector(0, 0, 0),
+                                    Rngon.rotation_vector(0, 0, 0),
+                                    Rngon.scaling_vector(1, 1, 1));
  
             // Render the rectangle into the canvas, and check that the canvas came to have correctly-colored pixels.
             {
