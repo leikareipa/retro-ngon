@@ -159,11 +159,11 @@ Rngon.ngon_filler = function(ngons = [], renderContext, renderWidth, renderHeigh
                                 // Textured fill.
                                 else
                                 {
-                                    const color = ngon.texture.rgba_pixel_at(Math.floor(u), Math.floor(v));
-                                    pixelMap.data[idx + 0] = color.red;
-                                    pixelMap.data[idx + 1] = color.green;
-                                    pixelMap.data[idx + 2] = color.blue;
-                                    pixelMap.data[idx + 3] = color.alpha;
+                                    const texelColorChannels = ngon.texture.rgb_channels_at(u, v);
+                                    pixelMap.data[idx + 0] = texelColorChannels[0];
+                                    pixelMap.data[idx + 1] = texelColorChannels[1];
+                                    pixelMap.data[idx + 2] = texelColorChannels[2];
+                                    pixelMap.data[idx + 3] = 255;
                                 }
                             }
                         }
