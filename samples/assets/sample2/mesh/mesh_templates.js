@@ -213,61 +213,131 @@ const MeshTemplates =
             Rngon.ngon([Rngon.vertex4(-0.5, -0.5, -0.5),
                         Rngon.vertex4(-0.5, 0.5, -0.5),
                         Rngon.vertex4(0.5, 0.5, -0.5),
-                        Rngon.vertex4(0.5, -0.5, -0.5)], {color: Rngon.color_rgba(180, 180, 180), texture, hasSolidFill, hasWireframe}),
+                        Rngon.vertex4(0.5, -0.5, -0.5)],
+                       {
+                           color: Rngon.color_rgba(180, 180, 180),
+                           texture,
+                           hasSolidFill,
+                           hasWireframe
+                       }),
 
             // Back.
             Rngon.ngon([Rngon.vertex4(0.5, -0.5, 0.5),
                         Rngon.vertex4(0.5, 0.5, 0.5),
                         Rngon.vertex4(-0.5, 0.5, 0.5),
-                        Rngon.vertex4(-0.5, -0.5, 0.5)], {color: Rngon.color_rgba(170, 170, 170), texture, hasSolidFill, hasWireframe}),
+                        Rngon.vertex4(-0.5, -0.5, 0.5)],
+                       {
+                           color: Rngon.color_rgba(170, 170, 170),
+                           texture,
+                           hasSolidFill,
+                           hasWireframe
+                       }),
 
             // Left.
             Rngon.ngon([Rngon.vertex4(-0.5, -0.5, 0.5),
                         Rngon.vertex4(-0.5, 0.5, 0.5),
                         Rngon.vertex4(-0.5, 0.5, -0.5),
-                        Rngon.vertex4(-0.5, -0.5, -0.5)], {color: Rngon.color_rgba(135, 135, 135), texture, hasSolidFill, hasWireframe}),
+                        Rngon.vertex4(-0.5, -0.5, -0.5)],
+                       {
+                           color: Rngon.color_rgba(135, 135, 135),
+                           texture,
+                           hasSolidFill,
+                           hasWireframe
+                       }),
 
             // Right.
             Rngon.ngon([Rngon.vertex4(0.5, -0.5, -0.5),
                         Rngon.vertex4(0.5, 0.5, -0.5),
                         Rngon.vertex4(0.5, 0.5, 0.5),
-                        Rngon.vertex4(0.5, -0.5, 0.5)], {color: Rngon.color_rgba(110, 110, 110), texture, hasSolidFill, hasWireframe}),
+                        Rngon.vertex4(0.5, -0.5, 0.5)],
+                       {
+                           color: Rngon.color_rgba(110, 110, 110),
+                           texture,
+                           hasSolidFill,
+                           hasWireframe
+                       }),
 
             // Top.
             Rngon.ngon([Rngon.vertex4(0.5, -0.5, -0.5),
                         Rngon.vertex4(0.5, -0.5, 0.5),
                         Rngon.vertex4(-0.5, -0.5, 0.5),
-                        Rngon.vertex4(-0.5, -0.5, -0.5)], {color: Rngon.color_rgba(200, 200, 200), texture, hasSolidFill, hasWireframe}),
+                        Rngon.vertex4(-0.5, -0.5, -0.5)],
+                       {
+                           color: Rngon.color_rgba(200, 200, 200),
+                           texture,
+                           hasSolidFill,
+                           hasWireframe
+                       }),
 
             // Bottom.
             Rngon.ngon([Rngon.vertex4(-0.5, 0.5, 0.5),
                         Rngon.vertex4(0.5, 0.5, 0.5),
                         Rngon.vertex4(0.5, 0.5, -0.5),
-                        Rngon.vertex4(-0.5, 0.5, -0.5)], {color: Rngon.color_rgba(160, 160, 160), texture, hasSolidFill, hasWireframe}),
+                        Rngon.vertex4(-0.5, 0.5, -0.5)],
+                       {
+                           color: Rngon.color_rgba(160, 160, 160),
+                           texture,
+                           hasSolidFill,
+                           hasWireframe
+                       }),
         ];
     },
 
     pyramid: function(texture = null, hasSolidFill = true, hasWireframe = false)
     {
         return [
+            // Sides.
             Rngon.ngon([Rngon.vertex4(-0.5, 0.5, -0.5),
                         Rngon.vertex4(0.5, 0.5, -0.5),
-                        Rngon.vertex4(0, -0.5, 0)], {color: Rngon.color_rgba(180, 180, 180), texture, hasSolidFill, hasWireframe}),
+                        Rngon.vertex4(0, -0.5, 0)],
+                       {
+                           color: Rngon.color_rgba(180, 180, 180),
+                           texture,
+                           hasSolidFill,
+                           hasWireframe
+                       }),
+
             Rngon.ngon([Rngon.vertex4(-0.5, 0.5, 0.5),
                         Rngon.vertex4(0.5, 0.5, 0.5),
-                        Rngon.vertex4(0, -0.5, 0)], {color: Rngon.color_rgba(170, 170, 170), texture, hasSolidFill, hasWireframe}),
+                        Rngon.vertex4(0, -0.5, 0)],
+                       {
+                           color: Rngon.color_rgba(170, 170, 170),
+                           texture,
+                           hasSolidFill,
+                           hasWireframe
+                       }),
+
             Rngon.ngon([Rngon.vertex4(-0.5, 0.5, -0.5),
                         Rngon.vertex4(-0.5, 0.5, 0.5),
-                        Rngon.vertex4(0, -0.5, 0)], {color: Rngon.color_rgba(135, 135, 135), texture, hasSolidFill, hasWireframe}),
+                        Rngon.vertex4(0, -0.5, 0)],
+                       {
+                           color: Rngon.color_rgba(135, 135, 135),
+                           texture,
+                           hasSolidFill,
+                           hasWireframe
+                       }),
+
             Rngon.ngon([Rngon.vertex4(0.5, 0.5, -0.5),
-                    Rngon.vertex4(0.5, 0.5, 0.5),
-                    Rngon.vertex4(0, -0.5, 0)], {color: Rngon.color_rgba(110, 110, 110), texture, hasSolidFill, hasWireframe}),
+                        Rngon.vertex4(0.5, 0.5, 0.5),
+                        Rngon.vertex4(0, -0.5, 0)],
+                       {
+                           color: Rngon.color_rgba(110, 110, 110),
+                           texture,
+                           hasSolidFill,
+                           hasWireframe
+                       }),
 
             // Bottom.
             Rngon.ngon([Rngon.vertex4(-0.5, 0.5, 0.5),
                         Rngon.vertex4(0.5, 0.5, 0.5),
                         Rngon.vertex4(0.5, 0.5, -0.5),
-                        Rngon.vertex4(-0.5, 0.5, -0.5)], {color: Rngon.color_rgba(160, 160, 160), texture, hasSolidFill, hasWireframe}),
+                        Rngon.vertex4(-0.5, 0.5, -0.5)],
+                       {
+                           color: Rngon.color_rgba(160, 160, 160),
+                           texture,
+                           hasSolidFill,
+                           hasWireframe
+                       }),
         ]
     },
 
@@ -278,7 +348,13 @@ const MeshTemplates =
                          .map((v, i)=>(Rngon.vertex4((Math.cos(i * angleDelta) * 0.5),
                                                      (Math.sin(i * angleDelta) * 0.5),
                                                      0)));
-
-        return [Rngon.ngon(vertices, {color: Rngon.color_rgba(180, 180, 180), texture, hasSolidFill, hasWireframe})];
+                                                     
+        return [Rngon.ngon(vertices,
+                           {
+                               color: Rngon.color_rgba(180, 180, 180),
+                               texture,
+                               hasSolidFill,
+                               hasWireframe
+                           })];
     },
 };
