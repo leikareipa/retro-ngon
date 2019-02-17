@@ -67,7 +67,7 @@ Rngon.ngon = function(vertices = [Rngon.vertex4()], userOptions = {})
         // is possible given the ngon's current space.
         in_screen_space: function(matrixToScreenSpace)
         {
-            return Rngon.ngon(vertices.map(vertex => vertex.transformed(matrixToScreenSpace).perspective_divided()), options);
+            return Rngon.ngon(vertices.map(vertex=>vertex.transformed(matrixToScreenSpace).perspective_divided()), options);
         },
     });
     return publicInterface;
@@ -117,8 +117,8 @@ Rngon.scaling_vector = Rngon.vector3;
 Rngon.vertex4 = function(x = 0, y = 0, z = 0, w = 1, u = 0, v = 0)
 {
     Rngon.assert((typeof x === "number" && typeof y === "number" && typeof z === "number" &&
-              typeof w === "number" && typeof u === "number" && typeof v === "number"),
-             "Expected numbers as parameters to the vevertex4ctor3 factory.");
+                 typeof w === "number" && typeof u === "number" && typeof v === "number"),
+                "Expected numbers as parameters to the vertex4 factory.");
 
     const publicInterface = Object.freeze(
     {

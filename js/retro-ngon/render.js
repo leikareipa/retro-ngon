@@ -68,8 +68,8 @@ Rngon.render = function(canvasElementId,
                     {
                         let a = 0;
                         let b = 0;
-                        ngonA.vertices.forEach(v => (a += v.z));
-                        ngonB.vertices.forEach(v => (b += v.z));
+                        ngonA.vertices.forEach(v=>{a += v.z});
+                        ngonB.vertices.forEach(v=>{b += v.z});
         
                         // Ngons aren't guaranteed to have the same number of vertices each,
                         // so factor out the vertex count.

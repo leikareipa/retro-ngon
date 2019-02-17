@@ -6,18 +6,11 @@
 
 "use strict";
 
-// Rasterizes the given ngon through the given render context. The given width and height
-// should match the dimensions of the context.
-Rngon.ngon_filler = function(ngons = [], renderContext, renderWidth, renderHeight)
+// Rasterizes the given ngons into the given RGBA pixel buffer of the given width and height.
+Rngon.ngon_filler = function(ngons = [], pixelBuffer, renderWidth, renderHeight)
 {
     Rngon.assert((ngons instanceof Array), "Expected an array of ngons to be rasterized.");
-    Rngon.assert((renderContext instanceof CanvasRenderingContext2D), "Expected a 2d canvas render context for the ngon filler.");
     Rngon.assert(((renderWidth > 0) && (renderHeight > 0)), "The transform surface can't have zero width or height.");
-    if (ngons.length === 0) return;
-
-    // We'll rasterize the ngon on top of whatever else exists in the context's
-    // pixel array.
-    const pixelMap = renderContext.getImageData(0, 0, renderWidth, renderHeight);
 
     ngons.forEach((ngon)=>
     {
@@ -30,10 +23,10 @@ Rngon.ngon_filler = function(ngons = [], renderContext, renderWidth, renderHeigh
             case 1:
             {
                 const idx = ((Math.floor(ngon.vertices[0].x) + Math.floor(ngon.vertices[0].y) * renderWidth) * 4);
-                pixelMap.data[idx + 0] = ngon.color.red;
-                pixelMap.data[idx + 1] = ngon.color.green;
-                pixelMap.data[idx + 2] = ngon.color.blue;
-                pixelMap.data[idx + 3] = ngon.color.alpha;
+                pixelBuffer[idx + 0] = ngon.color.red;
+                pixelBuffer[idx + 1] = ngon.color.green;
+                pixelBuffer[idx + 2] = ngon.color.blue;
+                pixelBuffer[idx + 3] = ngon.color.alpha;
 
                 // Move on to the next iteration in the forEach() chain.
                 return;
@@ -42,7 +35,7 @@ Rngon.ngon_filler = function(ngons = [], renderContext, renderWidth, renderHeigh
             // A line segment.
             case 2:
             {
-                Rngon.line_draw.into_pixel_buffer(ngon.vertices[0], ngon.vertices[1], pixelMap.data, renderWidth, renderHeight, ngon.color)
+                Rngon.line_draw.into_pixel_buffer(ngon.vertices[0], ngon.vertices[1], pixelBuffer, renderWidth, renderHeight, ngon.color)
                 return;
             }
 
@@ -151,10 +144,10 @@ Rngon.ngon_filler = function(ngons = [], renderContext, renderWidth, renderHeigh
                                 // Solid fill.
                                 if (ngon.texture == null)
                                 {
-                                    pixelMap.data[idx + 0] = ngon.color.red;
-                                    pixelMap.data[idx + 1] = ngon.color.green;
-                                    pixelMap.data[idx + 2] = ngon.color.blue;
-                                    pixelMap.data[idx + 3] = ngon.color.alpha;
+                                    pixelBuffer[idx + 0] = ngon.color.red;
+                                    pixelBuffer[idx + 1] = ngon.color.green;
+                                    pixelBuffer[idx + 2] = ngon.color.blue;
+                                    pixelBuffer[idx + 3] = ngon.color.alpha;
                                 }
                                 // Textured fill.
                                 else
@@ -163,10 +156,10 @@ Rngon.ngon_filler = function(ngons = [], renderContext, renderWidth, renderHeigh
 
                                     if (texelColorChannels[3] === 255)
                                     {
-                                        pixelMap.data[idx + 0] = texelColorChannels[0];
-                                        pixelMap.data[idx + 1] = texelColorChannels[1];
-                                        pixelMap.data[idx + 2] = texelColorChannels[2];
-                                        pixelMap.data[idx + 3] = texelColorChannels[3];
+                                        pixelBuffer[idx + 0] = texelColorChannels[0];
+                                        pixelBuffer[idx + 1] = texelColorChannels[1];
+                                        pixelBuffer[idx + 2] = texelColorChannels[2];
+                                        pixelBuffer[idx + 3] = texelColorChannels[3];
                                     }
                                 }
                             }
@@ -184,7 +177,7 @@ Rngon.ngon_filler = function(ngons = [], renderContext, renderWidth, renderHeigh
             if (ngon.hasWireframe)
             {
                 const wireColor = Rngon.color_rgba(0, 0, 0, 255);
-                const putline = function(vert1, vert2){Rngon.line_draw.into_pixel_buffer(vert1, vert2, pixelMap.data, renderWidth, renderHeight, wireColor)};
+                const putline = function(vert1, vert2){Rngon.line_draw.into_pixel_buffer(vert1, vert2, pixelBuffer, renderWidth, renderHeight, wireColor)};
 
                 // Left edge.
                 let prevVert = leftVerts[0];
@@ -206,6 +199,4 @@ Rngon.ngon_filler = function(ngons = [], renderContext, renderWidth, renderHeigh
             }
         }
     });
-
-    renderContext.putImageData(pixelMap, 0, 0);
 }

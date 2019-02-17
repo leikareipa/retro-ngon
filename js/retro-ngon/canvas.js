@@ -60,7 +60,12 @@ Rngon.canvas = function(canvasElementId = "",              // The DOM id of the 
         // Draw the given ngons onto this render surface.
         draw_ngons: function(ngons = [])
         {
-            ngon_fill_f(ngons, exposed_render_context(), surfaceWidth, surfaceHeight);
+            const renderContext = exposed_render_context();
+            const pixelBuffer = renderContext.getImageData(0, 0, surfaceWidth, surfaceHeight);
+
+            ngon_fill_f(ngons, pixelBuffer.data, surfaceWidth, surfaceHeight);
+
+            renderContext.putImageData(pixelBuffer, 0, 0);
         },
     });
     return publicInterface;
