@@ -1,7 +1,7 @@
 # The retro n-gon renderer
 A minimalist 3d renderer that draws n-sided polygons (as well as lines and points) onto a user-supplied HTML5 canvas. Its intended use cases include ones where a retro aesthetic is preferred.
 
-You can view a live sample of the renderer's output at [http://tarpeeksihyvaesoft.com/s/retro-ngon/](http://tarpeeksihyvaesoft.com/s/retro-ngon/).
+You can view a live sample of the renderer's output at [http://tarpeeksihyvaesoft.com/s/retro-ngon/samples/sample2.html](http://tarpeeksihyvaesoft.com/s/retro-ngon/samples/sample2.html).
 
 ## Usage
 An introductory example of the renderer's usage is given in [samples/sample1.html](samples/sample1.html). Its source code walks you through a basic setup for rendering a spinning triangle on screen.
