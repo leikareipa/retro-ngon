@@ -190,7 +190,7 @@ Below are results from [perf-tests/perftest1.html](perf-tests/perftest1.html) as
 - Frustum clipping (n-gons behind the camera will result in odd behavior)
 - Depth testing (painter's sorting is used)
 
-Note also that convex n-gons are not supported.
+Note also that concave n-gons are not supported.
 
 ## Browser compatibility
 At the moment, versions of Chrome and Firefox released in the last year or so are supported; although, as per the performance tests above, Chrome is preferred.
