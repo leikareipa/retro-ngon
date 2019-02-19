@@ -10,7 +10,8 @@ MeshTemplates.stanford_bunny_res3 = function(texture = null, hasSolidFill = true
 	const c = Rngon.color_rgba
 	const o = {texture, hasSolidFill, hasWireframe}
 
-	return [
+	return Object.freeze(
+	[
 		n([v(-0.297651,13.104600,0.884967),
 			v(-0.295953,13.027200,0.279699),
 			v(-0.884271,12.940300,0.305159),
@@ -8461,5 +8462,5 @@ MeshTemplates.stanford_bunny_res3 = function(texture = null, hasSolidFill = true
 			v(-0.886749,3.893940,-0.890173),
 			v(-0.301526,3.910610,-0.886496),
 			v(-0.299262,3.895820,-0.292437)],{...o,color:c(53,53,53)}),
-	];
+	]);
 }

@@ -27,7 +27,8 @@ const MeshTemplates =
             lightEmitter: Rngon.color_rgba(255, 255, 255),
         }
 
-        return [
+        return Object.freeze(
+        [
             // Floor.
             Rngon.ngon([Rngon.vertex4(556-552.8, 0, 0),
                         Rngon.vertex4(556-0, 0, 0),
@@ -203,12 +204,13 @@ const MeshTemplates =
                            hasSolidFill,
                            hasWireframe
                        }),
-        ];
+        ]);
     },
 
     cube: function(texture = null, hasSolidFill = true, hasWireframe = false)
     {
-        return [
+        return Object.freeze(
+        [
             // Front.
             Rngon.ngon([Rngon.vertex4(-0.5, -0.5, -0.5),
                         Rngon.vertex4(-0.5, 0.5, -0.5),
@@ -280,12 +282,13 @@ const MeshTemplates =
                            hasSolidFill,
                            hasWireframe
                        }),
-        ];
+        ]);
     },
 
     pyramid: function(texture = null, hasSolidFill = true, hasWireframe = false)
     {
-        return [
+        return Object.freeze(
+        [
             // Sides.
             Rngon.ngon([Rngon.vertex4(-0.5, 0.5, -0.5),
                         Rngon.vertex4(0.5, 0.5, -0.5),
@@ -338,7 +341,7 @@ const MeshTemplates =
                            hasSolidFill,
                            hasWireframe
                        }),
-        ]
+        ]);
     },
 
     disc: function(numSides = 20, texture = null, hasSolidFill = true, hasWireframe = false)
@@ -349,12 +352,15 @@ const MeshTemplates =
                                                      (Math.sin(i * angleDelta) * 0.5),
                                                      0)));
                                                      
-        return [Rngon.ngon(vertices,
-                           {
-                               color: Rngon.color_rgba(180, 180, 180),
-                               texture,
-                               hasSolidFill,
-                               hasWireframe
-                           })];
+        return Object.freeze(
+        [
+            Rngon.ngon(vertices,
+                       {
+                           color: Rngon.color_rgba(180, 180, 180),
+                           texture,
+                           hasSolidFill,
+                           hasWireframe
+                       })
+        ]);
     },
 };

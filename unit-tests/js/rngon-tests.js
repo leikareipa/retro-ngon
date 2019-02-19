@@ -12,19 +12,12 @@ const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
     unit("4x4 matrix", ()=>
     {
         {
-            const m = Rngon.matrix44.identity();
-            expect_true([m.length === 16 && m[0]===1 && m[4]===0 && m[ 8]===0 && m[12]===0 &&
-                                            m[1]===0 && m[5]===1 && m[ 9]===0 && m[13]===0 &&
-                                            m[2]===0 && m[6]===0 && m[10]===1 && m[14]===0 &&
-                                            m[3]===0 && m[7]===0 && m[11]===0 && m[15]===1]);
-        }
-        
-        {
             const m = Rngon.matrix44.rotate(-1.6572, 0.3457, -874665.5247);
             expect_true([m.length === 16 && (trunc4(m[0])===-0.5131 && trunc4(m[4])===-0.7886 && trunc4(m[ 8])===-0.3389 && trunc4(m[12])===0.0000 && 
                                              trunc4(m[1])===0.1118  && trunc4(m[5])===0.3300  && trunc4(m[ 9])===-0.9373 && trunc4(m[13])===0.0000 && 
                                              trunc4(m[2])===0.8510  && trunc4(m[6])===-0.5188 && trunc4(m[10])===-0.0812 && trunc4(m[14])===0.0000 && 
                                              trunc4(m[3])===0.0000  && trunc4(m[7])===0.0000  && trunc4(m[11])===0.0000  && trunc4(m[15])===1.0000)]);
+            expect_true([Object.isFrozen(m)]);
         }
 
         {
@@ -33,6 +26,7 @@ const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
                                              trunc4(m[1])===0.0000 && trunc4(m[5])===1.0000 && trunc4(m[ 9])===0.0000 && trunc4(m[13])===2.5412    && 
                                              trunc4(m[2])===0.0000 && trunc4(m[6])===0.0000 && trunc4(m[10])===1.0000 && trunc4(m[14])===8745.1645 && 
                                              trunc4(m[3])===0.0000 && trunc4(m[7])===0.0000 && trunc4(m[11])===0.0000 && trunc4(m[15])===1.0000)]);
+            expect_true([Object.isFrozen(m)]);
         }
 
         {
@@ -41,6 +35,7 @@ const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
                                              trunc4(m[1])===0.0000 && trunc4(m[5])===2.5238 && trunc4(m[ 9])===0.0000 && trunc4(m[13])===0.0000  && 
                                              trunc4(m[2])===0.0000 && trunc4(m[6])===0.0000 && trunc4(m[10])===1.0000 && trunc4(m[14])===-1.8276 && 
                                              trunc4(m[3])===0.0000 && trunc4(m[7])===0.0000 && trunc4(m[11])===1.0000 && trunc4(m[15])===0.0000)]);
+            expect_true([Object.isFrozen(m)]);
         }
 
         {
@@ -49,6 +44,7 @@ const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
                                              trunc4(m[1])===0.0000    && trunc4(m[5])===-1.5642 && trunc4(m[ 9])===0.0000 && trunc4(m[13])===1.0642    && 
                                              trunc4(m[2])===0.0000    && trunc4(m[6])===0.0000  && trunc4(m[10])===1.0000 && trunc4(m[14])===0.0000    && 
                                              trunc4(m[3])===0.0000    && trunc4(m[7])===0.0000  && trunc4(m[11])===0.0000 && trunc4(m[15])===1.0000)]);
+            expect_true([Object.isFrozen(m)]);
         }
 
         {
@@ -58,65 +54,84 @@ const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
                                              trunc4(m[1])===0.0000 && trunc4(m[5])===2.5238 && trunc4(m[ 9])===2.5412    && trunc4(m[13])===0.0000  && 
                                              trunc4(m[2])===0.0000 && trunc4(m[6])===0.0000 && trunc4(m[10])===8746.1645 && trunc4(m[14])===-1.8276 && 
                                              trunc4(m[3])===0.0000 && trunc4(m[7])===0.0000 && trunc4(m[11])===1.0000    && trunc4(m[15])===0.0000)]);
+            expect_true([Object.isFrozen(m)]);
         }
     });
 
     unit("Geometry", function()
     {
-        const vertex = Rngon.vertex4(1.1, 2.2, 3.3);
+        // Vertices.
+        {
+            const vertex = Rngon.vertex4(1.1, 2.2, 3.3);
 
-        expect_true([vertex.x === 1.1,
-                     vertex.y === 2.2,
-                     vertex.z === 3.3]);
+            expect_true([vertex.x === 1.1,
+                         vertex.y === 2.2,
+                         vertex.z === 3.3]);
 
-        // Immutability.
-        expect_fail([()=>{vertex.x = 0},
-                     ()=>{vertex.y = 0},
-                     ()=>{vertex.z = 0}]);
+            // Immutability.
+            expect_fail([()=>{vertex.x = 0},
+                         ()=>{vertex.y = 0},
+                         ()=>{vertex.z = 0}]);
+        }
 
-        const vector = Rngon.vector3(1.1, 2.2, 3.3);
+        // Vectors.
+        {
+            const vector = Rngon.vector3(1.1, 2.2, 3.3);
 
-        expect_true([vector.x === 1.1,
-                     vector.y === 2.2,
-                     vector.z === 3.3]);
+            expect_true([vector.x === 1.1,
+                         vector.y === 2.2,
+                         vector.z === 3.3]);
 
-        // Immutability.
-        expect_fail([()=>{vector.x = 0},
-                     ()=>{vector.y = 0},
-                     ()=>{vector.z = 0}]);
+            // Immutability.
+            expect_fail([()=>{vector.x = 0},
+                         ()=>{vector.y = 0},
+                         ()=>{vector.z = 0}]);
+        }
 
-        const ng = Rngon.ngon([vertex],
-                              {color: Rngon.color_rgba(0, 111, 222), texture: null, hasSolidFill: true, hasWireframe: false});
+        // N-gons.
+        {
+            const vertex = Rngon.vertex4(1.1, 2.2, 3.3);
+            const ngon = Rngon.ngon([vertex],
+                                    {color: Rngon.color_rgba(0, 111, 222), texture: null, hasSolidFill: true, hasWireframe: false});
 
-        expect_true([ng.vertices.length === 1,
-                     ng.vertices[0] === vertex,
-                     ng.color.red === 0,
-                     ng.color.green === 111,
-                     ng.color.blue === 222,
-                     ng.texture === null,
-                     ng.hasSolidFill === true,
-                     ng.hasWireframe === false]);
+            expect_true([ngon.vertices.length === 1,
+                         ngon.vertices[0] === vertex,
+                         ngon.color.red === 0,
+                         ngon.color.green === 111,
+                         ngon.color.blue === 222,
+                         ngon.texture === null,
+                         ngon.hasSolidFill === true,
+                         ngon.hasWireframe === false]);
 
-        // Immutability.
-        expect_fail([()=>{ng.vertices = 0},
-                     ()=>{ng.vertices[0] = 0},
-                     ()=>{ng.texture = 0},
-                     ()=>{ng.color = 0},
-                     ()=>{ng.hasSolidFill = 0},
-                     ()=>{ng.hasWireframe = 0}]);
+            // Immutability.
+            expect_fail([()=>{ngon.vertices = 0},
+                         ()=>{ngon.vertices[0] = 0},
+                         ()=>{ngon.texture = 0},
+                         ()=>{ngon.color = 0},
+                         ()=>{ngon.hasSolidFill = 0},
+                         ()=>{ngon.hasWireframe = 0}]);
+        }
 
-        const mesh = Rngon.mesh([ng], Rngon.translation_vector(1, 1, 1), Rngon.rotation_vector(2, 2, 2), Rngon.scaling_vector(3, 3, 3));
+        // Meshes.
+        {
+            const vertex = Rngon.vertex4(1.1, 2.2, 3.3);
+            const ngon = Rngon.ngon([vertex],
+                                    {color: Rngon.color_rgba(0, 111, 222), texture: null, hasSolidFill: true, hasWireframe: false});
+            const mesh = Rngon.mesh([ngon], Rngon.translation_vector(1, 1, 1), Rngon.rotation_vector(2, 2, 2), Rngon.scaling_vector(3, 3, 3));
 
-        expect_true([mesh.ngons.length === 1,
-                     mesh.translation.x === 1,
-                     mesh.rotation.x === 2,
-                     mesh.scale.x === 3]);
+            expect_true([mesh.ngons.length === 1,
+                         mesh.translation.x === 1,
+                         mesh.rotation.x === 2,
+                         mesh.scale.x === 3]);
 
-        // Immutability.
-        expect_fail([()=>{mesh.ngons = 0},
-                     ()=>{mesh.rotation = 0},
-                     ()=>{mesh.translation = 0},
-                     ()=>{mesh.objectSpaceMatrix = 0}]);
+            // Immutability.
+            expect_fail([()=>{mesh.ngons = 0},
+                         ()=>{mesh.ngons[0] = 0},
+                         ()=>{mesh.rotation = 0},
+                         ()=>{mesh.translation = 0},
+                         ()=>{mesh.objectSpaceMatrix = 0},
+                         ()=>{mesh.objectSpaceMatrix[0] = 0}]);
+        }
     });
 
     unit("Color", ()=>

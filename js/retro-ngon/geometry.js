@@ -25,7 +25,7 @@ Rngon.mesh = function(ngons = [Rngon.ngon()],
     
     const publicInterface = Object.freeze(
     {
-        ngons,
+        ngons: Object.freeze(ngons),
         rotation,
         translation,
         scale,
@@ -55,7 +55,7 @@ Rngon.ngon = function(vertices = [Rngon.vertex4()], userOptions = {})
 
     const publicInterface = Object.freeze(
     {
-        vertices:Object.freeze(vertices),
+        vertices: Object.freeze(vertices),
         color: options.color,
         texture: options.texture,
         hasSolidFill: options.hasSolidFill,
@@ -77,7 +77,7 @@ Rngon.ngon = function(vertices = [Rngon.vertex4()], userOptions = {})
 Rngon.vector3 = function(x = 0, y = 0, z = 0)
 {
     Rngon.assert((typeof x === "number" && typeof y === "number" && typeof z === "number"),
-             "Expected numbers as parameters to the vector3 factory.");
+                 "Expected numbers as parameters to the vector3 factory.");
 
     const publicInterface = Object.freeze(
     {
@@ -117,8 +117,8 @@ Rngon.scaling_vector = Rngon.vector3;
 Rngon.vertex4 = function(x = 0, y = 0, z = 0, w = 1, u = 0, v = 0)
 {
     Rngon.assert((typeof x === "number" && typeof y === "number" && typeof z === "number" &&
-                 typeof w === "number" && typeof u === "number" && typeof v === "number"),
-                "Expected numbers as parameters to the vertex4 factory.");
+                  typeof w === "number" && typeof u === "number" && typeof v === "number"),
+                 "Expected numbers as parameters to the vertex4 factory.");
 
     const publicInterface = Object.freeze(
     {
