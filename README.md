@@ -4,9 +4,29 @@ A minimalist 3d renderer that draws n-sided polygons (as well as lines and point
 You can view a live sample of the renderer's output at [http://tarpeeksihyvaesoft.com/s/retro-ngon/samples/sample2.html](http://tarpeeksihyvaesoft.com/s/retro-ngon/samples/sample2.html).
 
 ## Usage
+Below, you'll find practical examples of how to use the renderer. But first, a theoretical example gives a bird's-eye overview of how the renderer operates.
+
+### The theoretical gist of it
+At the heart of the renderer is the `render()` function, which transforms and rasterizes a set of n-gons onto a HTML5 canvas. You call it with the HTML id of the canvas you want the image rendered into, an array of the n-gon meshes you want rendered, and additional, optional parameters to define the position and orientation of the camera, etc.
+
+The following JavaScript pseudocode renders a triangle onto a canvas:
+```
+<canvas id="render-target"></canvas>
+
+triangle = Rngon.ngon(...)
+mesh = Rngon.mesh([triangle]);
+
+camera = Rngon.camera(...)
+Rngon.render("render-target", [mesh], camera)
+```
+This produces a static image of the triangle. If you wanted to animate it, you'd simply call `render()` repeatedly (e.g. with `window.requestAnimationFrame()`), each time altering the triangle mesh's orientation, etc.
+
+Before proceeding onto the practical examples, below, it's good to note that the renderer prefers immutable data. For instance, to produce a rotating mesh, you'll see that the examples re-create the mesh for each frame, rather than altering some mutable parameter in it. This isn't ideal for performance, but is the style I fancied writing the renderer in.
+
+### Practical examples
 An introductory example of the renderer's usage is given in [samples/sample1.html](samples/sample1.html). Its source code walks you through a basic setup for rendering a spinning triangle on screen.
 
-A slightly more involved example is provided in [samples/sample2.html](samples/sample2.html). It renders miscellaneous 3d meshes of varying complexity.
+A slightly more involved example is provided in [samples/sample2.html](samples/sample2.html). It renders miscellaneous 3d meshes with a pixelated style.
 
 ## Performance
 The renderer is not intended for real-time display of high-polycount scenes, nor for real-time high-resolution rendering. Its principal target is 320 x 200 &ndash; upscaled by whichever amount &ndash; and spartan 3d scenes.
