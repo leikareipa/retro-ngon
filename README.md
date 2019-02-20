@@ -156,7 +156,48 @@ Below are results from [perf-tests/perftest1.html](perf-tests/perftest1.html) as
 The gist of these data is that the renderer performs better on Chrome than it does on Firefox, most notably so when texturing is enabled. On Chrome, polycounts of roughly 100 to 300 could be maintained at 60 FPS; or about 1000 at 30 FPS.
 
 ### Performance on mobile
-Below are results from [perf-tests/perftest1.html](perf-tests/perftest1.html) as of [5bb8960](https://github.com/leikareipa/retro-ngon/tree/5bb8960f433e99d615253ad56014abf3f19f6b4c) running on a (2014? 2015?) Huawei MediaPad T1-A21L tablet in Chrome. The notes from the tests above apply.
+Below are results from [perf-tests/perftest1.html](perf-tests/perftest1.html) as of [f340393](https://github.com/leikareipa/retro-ngon/tree/f340393162243b4a6808f31a2db2843bac29833a) running on a Honor View20 (2019) phone in Chrome. The notes from the tests above apply.
+
+<table>
+    <tr>
+        <td align="left">View20</td>
+        <th align="center">30</th>
+        <th align="center">60</th>
+        <th align="center">120</th>
+        <th align="center">240</th>
+        <th align="center">480</th>
+        <th align="center">960</th>
+    </tr>
+    <tr>
+        <th align="left">Wireframe</th>
+        <td align="center">&bull;</td>
+        <td align="center">&bull;</td>
+        <td align="center">&bull;</td>
+        <td align="center">&bull;</td>
+        <td align="center">54</td>
+        <td align="center">27</td>
+    </tr>
+    <tr>
+        <th align="left">Solid fill</th>
+        <td align="center">&bull;</td>
+        <td align="center">&bull;</td>
+        <td align="center">&bull;</td>
+        <td align="center">59</td>
+        <td align="center">41</td>
+        <td align="center">20</td>
+    </tr>
+    <tr>
+        <th align="left">Textured</th>
+        <td align="center">&bull;</td>
+        <td align="center">&bull;</td>
+        <td align="center">&bull;</td>
+        <td align="center">56</td>
+        <td align="center">33</td>
+        <td align="center">17</td>
+    </tr>
+</table>
+
+Below are results from [perf-tests/perftest1.html](perf-tests/perftest1.html) as of [5bb8960](https://github.com/leikareipa/retro-ngon/tree/5bb8960f433e99d615253ad56014abf3f19f6b4c) running on a Huawei MediaPad T1-A21L (2014? 2015?) tablet in Chrome. The notes from the tests above apply.
 
 <table>
     <tr>
