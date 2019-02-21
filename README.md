@@ -6,7 +6,7 @@ You can view a live sample of the renderer's output at [http://tarpeeksihyvaesof
 ## Usage
 Below, you'll find practical examples of how to use the renderer. But first, a theoretical example gives a bird's-eye overview of how the renderer operates.
 
-### The theoretical gist of it
+### The gist of it in theory
 At the heart of the renderer is the `render()` function, which transforms and rasterizes a set of n-gons onto a HTML5 canvas. You call it with the HTML id of the canvas you want the image rendered into, an array of the n-gon meshes you want rendered, and additional, optional parameters to define the position and orientation of the camera, etc.
 
 The following JavaScript pseudocode renders a triangle onto a canvas:
@@ -156,7 +156,7 @@ Below are results from [perf-tests/perftest1.html](perf-tests/perftest1.html) as
 The gist of these data is that the renderer performs better on Chrome than it does on Firefox, most notably so when texturing is enabled. On Chrome, polycounts of roughly 100 to 300 could be maintained at 60 FPS; or about 1000 at 30 FPS.
 
 ### Performance on mobile
-Below are results from [perf-tests/perftest1.html](perf-tests/perftest1.html) as of [f340393](https://github.com/leikareipa/retro-ngon/tree/f340393162243b4a6808f31a2db2843bac29833a) running on a Honor View20 (2019) phone in Chrome. The notes from the tests above apply.
+Below are results from [perf-tests/perftest1.html](perf-tests/perftest1.html) as of [f340393](https://github.com/leikareipa/retro-ngon/tree/f340393162243b4a6808f31a2db2843bac29833a) running on an Honor View20 (2019) phone in Chrome. The notes from the tests above apply.
 
 <table>
     <tr>
