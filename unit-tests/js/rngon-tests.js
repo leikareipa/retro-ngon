@@ -12,11 +12,11 @@ const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
     unit("4x4 matrix", ()=>
     {
         {
-            const m = Rngon.matrix44.rotate(-1.6572, 0.3457, -874665.5247);
-            expect_true([()=>(m.length === 16 && (trunc4(m[0])===-0.5131 && trunc4(m[4])===-0.7886 && trunc4(m[ 8])===-0.3389 && trunc4(m[12])===0.0000 && 
-                                                  trunc4(m[1])===0.1118  && trunc4(m[5])===0.3300  && trunc4(m[ 9])===-0.9373 && trunc4(m[13])===0.0000 && 
-                                                  trunc4(m[2])===0.8510  && trunc4(m[6])===-0.5188 && trunc4(m[10])===-0.0812 && trunc4(m[14])===0.0000 && 
-                                                  trunc4(m[3])===0.0000  && trunc4(m[7])===0.0000  && trunc4(m[11])===0.0000  && trunc4(m[15])===1.0000))]);
+            const m = Rngon.matrix44.rotate(Rngon.trig.deg(10), Rngon.trig.deg(18), Rngon.trig.deg(380));
+            expect_true([()=>(m.length === 16 && (trunc4(m[0])===0.8958  && trunc4(m[4])===0.3205  && trunc4(m[ 8])===-0.3078 && trunc4(m[12])===0.0000 && 
+                                                  trunc4(m[1])===-0.2824 && trunc4(m[5])===0.9454  && trunc4(m[ 9])===0.1627 && trunc4(m[13])===0.0000 && 
+                                                  trunc4(m[2])===0.3432  && trunc4(m[6])===-0.0588 && trunc4(m[10])===0.9374 && trunc4(m[14])===0.0000 && 
+                                                  trunc4(m[3])===0.0000  && trunc4(m[7])===0.0000  && trunc4(m[11])===0.0000 && trunc4(m[15])===1.0000))]);
             expect_true([()=>(Object.isFrozen(m))]);
         }
 
@@ -117,12 +117,12 @@ const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
             const vertex = Rngon.vertex4(1.1, 2.2, 3.3);
             const ngon = Rngon.ngon([vertex],
                                     {color: Rngon.color_rgba(0, 111, 222), texture: null, hasSolidFill: true, hasWireframe: false});
-            const mesh = Rngon.mesh([ngon], Rngon.translation_vector(1, 1, 1), Rngon.rotation_vector(2, 2, 2), Rngon.scaling_vector(3, 3, 3));
+            const mesh = Rngon.mesh([ngon], Rngon.translation_vector(1, 2, 3), Rngon.rotation_vector(4, 5, 6), Rngon.scaling_vector(7, 8, 9));
 
             expect_true([()=>(mesh.ngons.length === 1),
-                         ()=>(mesh.translation.x === 1),
-                         ()=>(mesh.rotation.x === 2),
-                         ()=>(mesh.scale.x === 3)]);
+                         ()=>((mesh.translation.x === 1 && mesh.translation.y === 2 && mesh.translation.z === 3)),
+                         ()=>((mesh.rotation.x === Rngon.trig.deg(4) && mesh.rotation.y === Rngon.trig.deg(5)) && mesh.rotation.z === Rngon.trig.deg(6)),
+                         ()=>((mesh.scale.x === 7 && mesh.scale.y === 8 && mesh.scale.z === 9))]);
 
             // Immutability.
             expect_fail([()=>{mesh.ngons = 0},

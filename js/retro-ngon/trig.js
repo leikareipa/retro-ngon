@@ -22,6 +22,7 @@ Rngon.trig = (function()
         // Transforms the given value 0..359 to the range 0..65535, which can, for
         // instance, be fed into the sin() and cos() helper functions, above.
         // Will wrap the input value to the correct range.
+        // The magic number 182.04166666666666 is 65535/360.
         deg: (deg)=>(182.04166666666666 * (deg >= 0? (deg % 360) : (360 - (Math.abs(deg) % 360)))),
     });
 
