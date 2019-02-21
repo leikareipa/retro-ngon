@@ -30,11 +30,14 @@ function unit_tests(title = "", tests_f = ()=>{/*Tests*/})
     }
 
     // Takes in an array of values; each of which is expected to evaluate to true.
-    function expect_true(values = [1 === true])
+    function expect_true(values = [()=>(1 === true)])
     {
         assert((values instanceof Array), "Expected an array of variables.");
 
-        if (values.some(v=>(v !== true))) trip("Expected all values to evaluate to true, but some didn't.");
+        values.forEach((v, i)=>
+        {
+            if (v() !== true) trip("Expected all functions to return true, but " + v + " did not.");
+        })
     }
 
     // Takes in an array of functions; the execution of each of the functions is
@@ -67,13 +70,13 @@ function unit_tests(title = "", tests_f = ()=>{/*Tests*/})
     {
         try
         {
-            expect_true([(1 + 1) === 2]);
+            expect_true([()=>((1 + 1) === 2)]);
             expect_fail([()=>{const i = 0; i = 1;}]);
 
-            expect_true([trunc4(14568.787566) === 14568.7876,
-                         trunc4(-14568.787566) === -14568.7876,
-                         trunc4(0.00001) === 0,
-                         trunc4(0.00005) === 0.0001]);
+            expect_true([()=>(trunc4(14568.787566) === 14568.7876),
+                         ()=>(trunc4(-14568.787566) === -14568.7876),
+                         ()=>(trunc4(0.00001) === 0),
+                         ()=>(trunc4(0.00005) === 0.0001)]);
         }
         catch (err)
         {

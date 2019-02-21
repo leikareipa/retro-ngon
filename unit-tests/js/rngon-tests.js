@@ -13,48 +13,48 @@ const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
     {
         {
             const m = Rngon.matrix44.rotate(-1.6572, 0.3457, -874665.5247);
-            expect_true([m.length === 16 && (trunc4(m[0])===-0.5131 && trunc4(m[4])===-0.7886 && trunc4(m[ 8])===-0.3389 && trunc4(m[12])===0.0000 && 
-                                             trunc4(m[1])===0.1118  && trunc4(m[5])===0.3300  && trunc4(m[ 9])===-0.9373 && trunc4(m[13])===0.0000 && 
-                                             trunc4(m[2])===0.8510  && trunc4(m[6])===-0.5188 && trunc4(m[10])===-0.0812 && trunc4(m[14])===0.0000 && 
-                                             trunc4(m[3])===0.0000  && trunc4(m[7])===0.0000  && trunc4(m[11])===0.0000  && trunc4(m[15])===1.0000)]);
-            expect_true([Object.isFrozen(m)]);
+            expect_true([()=>(m.length === 16 && (trunc4(m[0])===-0.5131 && trunc4(m[4])===-0.7886 && trunc4(m[ 8])===-0.3389 && trunc4(m[12])===0.0000 && 
+                                                  trunc4(m[1])===0.1118  && trunc4(m[5])===0.3300  && trunc4(m[ 9])===-0.9373 && trunc4(m[13])===0.0000 && 
+                                                  trunc4(m[2])===0.8510  && trunc4(m[6])===-0.5188 && trunc4(m[10])===-0.0812 && trunc4(m[14])===0.0000 && 
+                                                  trunc4(m[3])===0.0000  && trunc4(m[7])===0.0000  && trunc4(m[11])===0.0000  && trunc4(m[15])===1.0000))]);
+            expect_true([()=>(Object.isFrozen(m))]);
         }
 
         {
             const m = Rngon.matrix44.translate(452.8541, 2.5412, 8745.1645);
-            expect_true([m.length === 16 && (trunc4(m[0])===1.0000 && trunc4(m[4])===0.0000 && trunc4(m[ 8])===0.0000 && trunc4(m[12])===452.8541  && 
-                                             trunc4(m[1])===0.0000 && trunc4(m[5])===1.0000 && trunc4(m[ 9])===0.0000 && trunc4(m[13])===2.5412    && 
-                                             trunc4(m[2])===0.0000 && trunc4(m[6])===0.0000 && trunc4(m[10])===1.0000 && trunc4(m[14])===8745.1645 && 
-                                             trunc4(m[3])===0.0000 && trunc4(m[7])===0.0000 && trunc4(m[11])===0.0000 && trunc4(m[15])===1.0000)]);
-            expect_true([Object.isFrozen(m)]);
+            expect_true([()=>(m.length === 16 && (trunc4(m[0])===1.0000 && trunc4(m[4])===0.0000 && trunc4(m[ 8])===0.0000 && trunc4(m[12])===452.8541  && 
+                                                  trunc4(m[1])===0.0000 && trunc4(m[5])===1.0000 && trunc4(m[ 9])===0.0000 && trunc4(m[13])===2.5412    && 
+                                                  trunc4(m[2])===0.0000 && trunc4(m[6])===0.0000 && trunc4(m[10])===1.0000 && trunc4(m[14])===8745.1645 && 
+                                                  trunc4(m[3])===0.0000 && trunc4(m[7])===0.0000 && trunc4(m[11])===0.0000 && trunc4(m[15])===1.0000))]);
+            expect_true([()=>(Object.isFrozen(m))]);
         }
 
         {
             const m = Rngon.matrix44.perspective(0.7545, 1.7155, 0.9138, 97852.8647);
-            expect_true([m.length === 16 && (trunc4(m[0])===1.4712 && trunc4(m[4])===0.0000 && trunc4(m[ 8])===0.0000 && trunc4(m[12])===0.0000  && 
-                                             trunc4(m[1])===0.0000 && trunc4(m[5])===2.5238 && trunc4(m[ 9])===0.0000 && trunc4(m[13])===0.0000  && 
-                                             trunc4(m[2])===0.0000 && trunc4(m[6])===0.0000 && trunc4(m[10])===1.0000 && trunc4(m[14])===-1.8276 && 
-                                             trunc4(m[3])===0.0000 && trunc4(m[7])===0.0000 && trunc4(m[11])===1.0000 && trunc4(m[15])===0.0000)]);
-            expect_true([Object.isFrozen(m)]);
+            expect_true([()=>(m.length === 16 && (trunc4(m[0])===1.4712 && trunc4(m[4])===0.0000 && trunc4(m[ 8])===0.0000 && trunc4(m[12])===0.0000  && 
+                                                  trunc4(m[1])===0.0000 && trunc4(m[5])===2.5238 && trunc4(m[ 9])===0.0000 && trunc4(m[13])===0.0000  && 
+                                                  trunc4(m[2])===0.0000 && trunc4(m[6])===0.0000 && trunc4(m[10])===1.0000 && trunc4(m[14])===-1.8276 && 
+                                                  trunc4(m[3])===0.0000 && trunc4(m[7])===0.0000 && trunc4(m[11])===1.0000 && trunc4(m[15])===0.0000))]);
+            expect_true([()=>(Object.isFrozen(m))]);
         }
 
         {
             const m = Rngon.matrix44.screen_space(4567.2434, 3.1284);
-            expect_true([m.length === 16 && (trunc4(m[0])===2283.6217 && trunc4(m[4])===0.0000  && trunc4(m[ 8])===0.0000 && trunc4(m[12])===2283.1217 && 
-                                             trunc4(m[1])===0.0000    && trunc4(m[5])===-1.5642 && trunc4(m[ 9])===0.0000 && trunc4(m[13])===1.0642    && 
-                                             trunc4(m[2])===0.0000    && trunc4(m[6])===0.0000  && trunc4(m[10])===1.0000 && trunc4(m[14])===0.0000    && 
-                                             trunc4(m[3])===0.0000    && trunc4(m[7])===0.0000  && trunc4(m[11])===0.0000 && trunc4(m[15])===1.0000)]);
-            expect_true([Object.isFrozen(m)]);
+            expect_true([()=>(m.length === 16 && (trunc4(m[0])===2283.6217 && trunc4(m[4])===0.0000  && trunc4(m[ 8])===0.0000 && trunc4(m[12])===2283.1217 && 
+                                                  trunc4(m[1])===0.0000    && trunc4(m[5])===-1.5642 && trunc4(m[ 9])===0.0000 && trunc4(m[13])===1.0642    && 
+                                                  trunc4(m[2])===0.0000    && trunc4(m[6])===0.0000  && trunc4(m[10])===1.0000 && trunc4(m[14])===0.0000    && 
+                                                  trunc4(m[3])===0.0000    && trunc4(m[7])===0.0000  && trunc4(m[11])===0.0000 && trunc4(m[15])===1.0000))]);
+            expect_true([()=>(Object.isFrozen(m))]);
         }
 
         {
             const m = Rngon.matrix44.matrices_multiplied(Rngon.matrix44.translate(452.8541, 2.5412, 8745.1645),
                                                          Rngon.matrix44.perspective(0.7545, 1.7155, 0.9138, 97852.8647));
-            expect_true([m.length === 16 && (trunc4(m[0])===1.4712 && trunc4(m[4])===0.0000 && trunc4(m[ 8])===452.8541  && trunc4(m[12])===0.0000  && 
-                                             trunc4(m[1])===0.0000 && trunc4(m[5])===2.5238 && trunc4(m[ 9])===2.5412    && trunc4(m[13])===0.0000  && 
-                                             trunc4(m[2])===0.0000 && trunc4(m[6])===0.0000 && trunc4(m[10])===8746.1645 && trunc4(m[14])===-1.8276 && 
-                                             trunc4(m[3])===0.0000 && trunc4(m[7])===0.0000 && trunc4(m[11])===1.0000    && trunc4(m[15])===0.0000)]);
-            expect_true([Object.isFrozen(m)]);
+            expect_true([()=>(m.length === 16 && (trunc4(m[0])===1.4712 && trunc4(m[4])===0.0000 && trunc4(m[ 8])===452.8541  && trunc4(m[12])===0.0000  && 
+                                                  trunc4(m[1])===0.0000 && trunc4(m[5])===2.5238 && trunc4(m[ 9])===2.5412    && trunc4(m[13])===0.0000  && 
+                                                  trunc4(m[2])===0.0000 && trunc4(m[6])===0.0000 && trunc4(m[10])===8746.1645 && trunc4(m[14])===-1.8276 && 
+                                                  trunc4(m[3])===0.0000 && trunc4(m[7])===0.0000 && trunc4(m[11])===1.0000    && trunc4(m[15])===0.0000))]);
+            expect_true([()=>(Object.isFrozen(m))]);
         }
     });
 
@@ -64,9 +64,9 @@ const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
         {
             const vertex = Rngon.vertex4(1.1, 2.2, 3.3);
 
-            expect_true([vertex.x === 1.1,
-                         vertex.y === 2.2,
-                         vertex.z === 3.3]);
+            expect_true([()=>(vertex.x === 1.1),
+                         ()=>(vertex.y === 2.2),
+                         ()=>(vertex.z === 3.3)]);
 
             // Immutability.
             expect_fail([()=>{vertex.x = 0},
@@ -78,9 +78,9 @@ const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
         {
             const vector = Rngon.vector3(1.1, 2.2, 3.3);
 
-            expect_true([vector.x === 1.1,
-                         vector.y === 2.2,
-                         vector.z === 3.3]);
+            expect_true([()=>(vector.x === 1.1),
+                         ()=>(vector.y === 2.2),
+                         ()=>(vector.z === 3.3)]);
 
             // Immutability.
             expect_fail([()=>{vector.x = 0},
@@ -94,14 +94,14 @@ const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
             const ngon = Rngon.ngon([vertex],
                                     {color: Rngon.color_rgba(0, 111, 222), texture: null, hasSolidFill: true, hasWireframe: false});
 
-            expect_true([ngon.vertices.length === 1,
-                         ngon.vertices[0] === vertex,
-                         ngon.color.red === 0,
-                         ngon.color.green === 111,
-                         ngon.color.blue === 222,
-                         ngon.texture === null,
-                         ngon.hasSolidFill === true,
-                         ngon.hasWireframe === false]);
+            expect_true([()=>(ngon.vertices.length === 1),
+                         ()=>(ngon.vertices[0] === vertex),
+                         ()=>(ngon.color.red === 0),
+                         ()=>(ngon.color.green === 111),
+                         ()=>(ngon.color.blue === 222),
+                         ()=>(ngon.texture === null),
+                         ()=>(ngon.hasSolidFill === true),
+                         ()=>(ngon.hasWireframe === false)]);
 
             // Immutability.
             expect_fail([()=>{ngon.vertices = 0},
@@ -119,10 +119,10 @@ const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
                                     {color: Rngon.color_rgba(0, 111, 222), texture: null, hasSolidFill: true, hasWireframe: false});
             const mesh = Rngon.mesh([ngon], Rngon.translation_vector(1, 1, 1), Rngon.rotation_vector(2, 2, 2), Rngon.scaling_vector(3, 3, 3));
 
-            expect_true([mesh.ngons.length === 1,
-                         mesh.translation.x === 1,
-                         mesh.rotation.x === 2,
-                         mesh.scale.x === 3]);
+            expect_true([()=>(mesh.ngons.length === 1),
+                         ()=>(mesh.translation.x === 1),
+                         ()=>(mesh.rotation.x === 2),
+                         ()=>(mesh.scale.x === 3)]);
 
             // Immutability.
             expect_fail([()=>{mesh.ngons = 0},
@@ -138,17 +138,17 @@ const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
     {
         const color = Rngon.color_rgba(1, 2, 3, 4);
 
-        expect_true([color.red === 1,
-                     color.green === 2,
-                     color.blue === 3,
-                     color.alpha === 4]);
+        expect_true([()=>(color.red === 1),
+                     ()=>(color.green === 2),
+                     ()=>(color.blue === 3),
+                     ()=>(color.alpha === 4)]);
 
-        expect_true([color.as_hex() === "#01020304",
-                     color.as_hex(0x1110) === "#010203",
-                     color.as_hex(0x1000) === "#010000",
-                     color.as_hex(0x0100) === "#000200",
-                     color.as_hex(0x0010) === "#000003",
-                     color.as_hex(0x0011) === "#00000304"])
+        expect_true([()=>(color.as_hex() === "#01020304"),
+                     ()=>(color.as_hex(0x1110) === "#010203"),
+                     ()=>(color.as_hex(0x1000) === "#010000"),
+                     ()=>(color.as_hex(0x0100) === "#000200"),
+                     ()=>(color.as_hex(0x0010) === "#000003"),
+                     ()=>(color.as_hex(0x0011) === "#00000304")])
 
         // Immutability.
         expect_fail([()=>{color.red = 1},
@@ -165,15 +165,15 @@ const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
         const texture = Rngon.texture_rgba({width: 1, height: 1, pixels: [255, 22, 1, 255]});
         const textureSeethrough = Rngon.texture_rgba({width: 1, height: 1, pixels: [255, 22, 1, 1]});
 
-        expect_true([texture.width === 1,
-                     texture.height === 1,
-                     (texture.rgba_channels_at(0, 0) instanceof Array),
-                     texture.rgba_channels_at(0, 0).length === 4,
-                     texture.rgba_channels_at(0, 0)[0] === 255,
-                     texture.rgba_channels_at(0, 0)[1] === 22,
-                     texture.rgba_channels_at(0, 0)[2] === 1,
-                     texture.rgba_channels_at(0, 0)[3] === 255,
-                     textureSeethrough.rgba_channels_at(0, 0)[3] === 1]);
+        expect_true([()=>(texture.width === 1),
+                     ()=>(texture.height === 1),
+                     ()=>((texture.rgba_channels_at(0, 0) instanceof Array)),
+                     ()=>(texture.rgba_channels_at(0, 0).length === 4),
+                     ()=>(texture.rgba_channels_at(0, 0)[0] === 255),
+                     ()=>(texture.rgba_channels_at(0, 0)[1] === 22),
+                     ()=>(texture.rgba_channels_at(0, 0)[2] === 1),
+                     ()=>(texture.rgba_channels_at(0, 0)[3] === 255),
+                     ()=>(textureSeethrough.rgba_channels_at(0, 0)[3] === 1)]);
 
         // Immutability.
         expect_fail([()=>{texture.width = 0},
@@ -201,12 +201,12 @@ const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
         
         unit("Render surface", ()=>
         {
-            expect_true([document.getElementById(testCanvasId) !== null]);
+            expect_true([()=>(document.getElementById(testCanvasId) !== null)]);
 
             const renderSurface = Rngon.canvas(testCanvasId, Rngon.ngon_filler, Rngon.ngon_transformer, 1);
 
-            expect_true([renderSurface.width === testCanvasWidth,
-                         renderSurface.height === testCanvasHeight]);
+            expect_true([()=>(renderSurface.width === testCanvasWidth),
+                         ()=>(renderSurface.height === testCanvasHeight)]);
 
             // Immutability.
             expect_fail([()=>{renderSurface.width = 0},
@@ -215,7 +215,7 @@ const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
         
         unit("Renderer", function()
         {
-            expect_true([document.getElementById(testCanvasId) !== null]);
+            expect_true([()=>(document.getElementById(testCanvasId) !== null)]);
 
             // Create a colored rectangle that fills the entire canvas when rendered.
             const colorShade = 222;
@@ -238,14 +238,14 @@ const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
             {
                 {
                     const pixelMap = canvas.getContext("2d").getImageData(0, 0, testCanvasWidth, testCanvasHeight).data;
-                    expect_true([pixelMap.every((p)=>(p !== colorShade))]);
+                    expect_true([()=>(pixelMap.every((p)=>(p !== colorShade)))]);
                 }
 
                 Rngon.render(testCanvasId, [mesh], Rngon.vector3(0, 0, 0), Rngon.vector3(0, 0, 0), 1);
 
                 {
                     const pixelMap = canvas.getContext("2d").getImageData(0, 0, testCanvasWidth, testCanvasHeight).data;
-                    expect_true([pixelMap.every((p)=>(p === colorShade))]);
+                    expect_true([()=>(pixelMap.every((p)=>(p === colorShade)))]);
                 }
             }
         });
