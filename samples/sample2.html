@@ -42,30 +42,36 @@
                     // A cube.
                     function(frameCount)
                     {
-                        const rotationSpeed = 0.004;
+                        const rotationSpeed = 0.35;
                         return [Rngon.mesh(MeshTemplates.cube(null, true, false),
                                            Rngon.translation_vector(0, 0, 70),
-                                           Rngon.rotation_vector((1 - (rotationSpeed * frameCount)), -(1 + (rotationSpeed * frameCount)), 0),
+                                           Rngon.rotation_vector(rotationSpeed * frameCount,
+                                                                 rotationSpeed * frameCount,
+                                                                 0),
                                            Rngon.scaling_vector(20, 20, 20))];
                     },
 
                     // A textured disc.
                     function(frameCount)
                     {
-                        const rotationSpeed = 0.008;
+                        const rotationSpeed = 0.5;
                         return [Rngon.mesh(MeshTemplates.disc(40, Textures.earth_nasa, true, true),
                                            Rngon.translation_vector(0, 0, 50),
-                                           Rngon.rotation_vector(0, (1 + (rotationSpeed * frameCount)), 0),
+                                           Rngon.rotation_vector(0,
+                                                                 rotationSpeed * frameCount,
+                                                                 0),
                                            Rngon.scaling_vector(20, 20, 20))];
                     },
 
                     // The Stanford bunny.
                     function(frameCount)
                     {
-                        const rotationSpeed = 0.008;
+                        const rotationSpeed = 1;
                         return [Rngon.mesh(MeshTemplates.stanford_bunny_res3(null, true, false),
-                                           Rngon.translation_vector(0, -12, 40),
-                                           Rngon.rotation_vector(0.1, (rotationSpeed * frameCount), 0),
+                                           Rngon.translation_vector(0, -10, 45),
+                                           Rngon.rotation_vector(10,
+                                                                 rotationSpeed * frameCount,
+                                                                 0),
                                            Rngon.scaling_vector(1, 1, 1))];
                     },
 

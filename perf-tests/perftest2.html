@@ -74,10 +74,10 @@
 
             function bunnyMesh(frameCount)
             {
-                const rotationSpeed = 0.008;
+                const rotationSpeed = 0.5;
                 return [Rngon.mesh(stanford_bunny_res3(texture, true, false),
                                    Rngon.translation_vector(0, -12, 40),
-                                   Rngon.rotation_vector(0.1,(rotationSpeed * frameCount), 0),
+                                   Rngon.rotation_vector(5, (rotationSpeed * frameCount), 0),
                                    Rngon.scaling_vector(1, 1, 1))];
             };
         </script>

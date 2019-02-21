@@ -73,7 +73,7 @@
                 Rngon.render("render-canvas",
                              [Rngon.mesh([triangle])],
                              Rngon.translation_vector(0, 0, 3) /*camera position*/,
-                             Rngon.rotation_vector(0, 0, 0)    /*camera direction*/,
+                             Rngon.rotation_vector(0, 0, 0)    /*camera direction; values in degrees 0-359*/,
                              1 /*scale of the rendered image, relative to the size of the canvas*/);
             </script>
 
@@ -87,7 +87,7 @@
                 // each successive frame.
                 const rotatingTriangle = (frameCount)=>
                 {
-                    const rotationSpeed = 0.01;
+                    const rotationSpeed = 1;
                     return Rngon.mesh([triangle],
                                       Rngon.translation_vector(0, 0, 0),
                                       Rngon.rotation_vector(0, (frameCount * rotationSpeed), 0),

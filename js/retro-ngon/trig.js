@@ -9,10 +9,6 @@
 // Trigonometric lookup tables, and helper functions for accessing them.
 Rngon.trig = (function()
 {
-    // The outer edge of the range of degree values allowed in the trig helper
-    // functions; such that this value is equal to 359 degrees.
-    const maxVal = 65535;
-
     const publicInterface = Object.freeze(
     {
         // Returns approximations of sin() and cos() for degrees 0..359 given in
@@ -26,9 +22,7 @@ Rngon.trig = (function()
         // Transforms the given value 0..359 to the range 0..65535, which can, for
         // instance, be fed into the sin() and cos() helper functions, above.
         // Will wrap the input value to the correct range.
-        deg: (deg)=>((maxVal / 360) * (deg >= 0? (deg % 360) : (360 - (Math.abs(deg) % 360)))),
-
-        maxVal,
+        deg: (deg)=>(182.04166666666666 * (deg >= 0? (deg % 360) : (360 - (Math.abs(deg) % 360)))),
     });
 
     // Range: 0-1023 for sin() + 256 for approximating cos().

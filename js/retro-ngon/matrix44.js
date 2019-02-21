@@ -58,20 +58,23 @@ Rngon.matrix44 = (()=>
 
         rotate: function(x = 0, y = 0, z = 0)
         {
-            const mx = [1,            0,            0,            0,
-                        0,            Math.cos(x),  -Math.sin(x), 0,
-                        0,            Math.sin(x),  Math.cos(x),  0,
-                        0,            0,            0,            1];
+            const cos = Rngon.trig.cos;
+            const sin = Rngon.trig.sin;
 
-            const my = [Math.cos(y),  0,            Math.sin(y),  0,
-                        0,            1,            0,            0,
-                        -Math.sin(y), 0,            Math.cos(y),  0,
-                        0,            0,            0,            1];
+            const mx = [1,       0,       0,       0,
+                        0,       cos(x),  -sin(x), 0,
+                        0,       sin(x),  cos(x),  0,
+                        0,       0,       0,       1];
 
-            const mz = [Math.cos(z),  -Math.sin(z), 0,            0,
-                        Math.sin(z),  Math.cos(z),  0,            0,
-                        0,            0,            1,            0,
-                        0,            0,            0,            1];
+            const my = [cos(y),  0,       sin(y),  0,
+                        0,       1,       0,       0,
+                        -sin(y), 0,       cos(y),  0,
+                        0,       0,       0,       1];
+
+            const mz = [cos(z),  -sin(z), 0,       0,
+                        sin(z),  cos(z),  0,       0,
+                        0,       0,       1,       0,
+                        0,       0,       0,       1];
 
             const temp = Rngon.matrix44.matrices_multiplied(my, mz);
             const mResult = Rngon.matrix44.matrices_multiplied(mx, temp);

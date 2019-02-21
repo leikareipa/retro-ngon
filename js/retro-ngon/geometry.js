@@ -110,7 +110,7 @@ Rngon.vector3 = function(x = 0, y = 0, z = 0)
 }
 // Convenience aliases for vector3.
 Rngon.translation_vector = Rngon.vector3;
-Rngon.rotation_vector = Rngon.vector3;
+Rngon.rotation_vector = (x, y, z)=>Rngon.vector3(Rngon.trig.deg(x), Rngon.trig.deg(y), Rngon.trig.deg(z));
 Rngon.scaling_vector = Rngon.vector3;
 
 // NOTE: Expects to remain immutable.
