@@ -6,9 +6,7 @@
 
 "use strict";
 
-// A 32-bit texture. Its pixels are an array of consecutive r,g,b,a values (range 0..255)
-// repeated width*height times (e.g. [0,255,0,255, 255,0,0,255] for two pixels, green and red).
-// Note that an alpha of 255 means fully opaque, and an alpha of !255 means fully transparent.
+// A 32-bit texture.
 Rngon.texture_rgba = function(data = {width: 0, height: 0, pixels: []})
 {
     // The maximum dimensions of a texture.
@@ -23,11 +21,44 @@ Rngon.texture_rgba = function(data = {width: 0, height: 0, pixels: []})
                  "Expected texture width and height to be greater than zero.")
     Rngon.assert((data.width <= maxWidth && data.height <= maxHeight),
                  "Expected texture width/height to be no more than " + maxWidth + "/" + maxHeight + ".");
-    Rngon.assert((data.pixels instanceof Array),
-                 "Expected an array of pixel color values.");
-    Rngon.assert((data.pixels.length === (data.width * data.height * numColorChannels)),
-                 "The given pixel array's size doesn't match the given width and height.");
-    
+
+    // If necessary, decode the pixel data into raw RGBA/8888.
+    if (data.encoding !== "none")
+    {
+        // In Base64-encoded data, each pixel's RGBA is expected to be given as a 16-bit
+        // value, where each of the RGB channels takes up 5 bits and the alpha channel
+        // 1 bit.
+        if (data.encoding === "base64")
+        {
+            Rngon.assert((data.channels === "rgba:5+5+5+1"), "Expected Base64-encoded data to be in RGBA 5551 format.");
+
+            data.pixels = (()=>
+            {
+                const rgba = [];
+                const decoded = atob(data.pixels);
+
+                // We should have an array where each pixel is a 2-byte value.
+                Rngon.assert(decoded.length === (data.width * data.height * 2), "Unexpected data length for a Base64-encoded texture.");
+
+                for (let i = 0; i < (data.width * data.height * 2); i += 2)
+                {
+                    const p = (decoded.charCodeAt(i) | (decoded.charCodeAt(i+1)<<8));
+
+                    rgba.push((p         & 0x1f) * 8);  // Red.
+                    rgba.push(((p >> 5)  & 0x1f) * 8);  // Green.
+                    rgba.push(((p >> 10) & 0x1f) * 8);  // Blue.
+                    rgba.push(((p >> 15) & 1) * 255);   // Alpha.
+                }
+
+                return rgba;
+            })();
+        }
+        else if (data.encoding !== "none")
+        {
+            Rngon.assert(0, "Unknown texture data encoding '" + data.encoding + "'.");
+        }
+    }
+        
     const publicInterface = Object.freeze(
     {
         width: data.width,
@@ -38,8 +69,7 @@ Rngon.texture_rgba = function(data = {width: 0, height: 0, pixels: []})
         rgba_channels_at: function(x, y)
         {
             const idx = ((Math.floor(x) + Math.floor(y) * data.width) * numColorChannels);
-            Rngon.assert(((idx + numColorChannels) <= data.pixels.length),
-                         "Attempting to access a texture pixel out of bounds.");
+            Rngon.assert(((idx + numColorChannels) <= data.pixels.length), "Attempting to access a texture pixel out of bounds.");
 
             // Note: For performance reasons, the array isn't returned frozen. You can try freezing it
             // and running a perf test with textured rendering to see the effect.

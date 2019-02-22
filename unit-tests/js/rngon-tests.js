@@ -162,8 +162,8 @@ const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
 
     unit("Texture", ()=>
     {
-        const texture = Rngon.texture_rgba({width: 1, height: 1, pixels: [255, 22, 1, 255]});
-        const textureSeethrough = Rngon.texture_rgba({width: 1, height: 1, pixels: [255, 22, 1, 1]});
+        const texture = Rngon.texture_rgba({width: 1, height: 1, encoding: "none", pixels: [255, 22, 1, 255]});
+        const textureSeethrough = Rngon.texture_rgba({width: 1, height: 1, encoding: "none", pixels: [255, 22, 1, 1]});
 
         expect_true([()=>(texture.width === 1),
                      ()=>(texture.height === 1),
