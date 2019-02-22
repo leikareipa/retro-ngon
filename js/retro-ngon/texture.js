@@ -23,7 +23,7 @@ Rngon.texture_rgba = function(data = {width: 0, height: 0, pixels: []})
                  "Expected texture width/height to be no more than " + maxWidth + "/" + maxHeight + ".");
 
     // If necessary, decode the pixel data into raw RGBA/8888.
-    if (data.encoding !== "none")
+    if (typeof data.encoding !== "undefined" && data.encoding !== "none")
     {
         // In Base64-encoded data, each pixel's RGBA is expected to be given as a 16-bit
         // value, where each of the RGB channels takes up 5 bits and the alpha channel
@@ -58,6 +58,9 @@ Rngon.texture_rgba = function(data = {width: 0, height: 0, pixels: []})
             Rngon.assert(0, "Unknown texture data encoding '" + data.encoding + "'.");
         }
     }
+
+    Rngon.assert((data.pixels.length === (data.width * data.height * numColorChannels)),
+                 "The texture's pixel array size doesn't match its width and height.");
         
     const publicInterface = Object.freeze(
     {
