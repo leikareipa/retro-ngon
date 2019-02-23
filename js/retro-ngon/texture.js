@@ -84,3 +84,21 @@ Rngon.texture_rgba = function(data = {width: 0, height: 0, pixels: []})
     });
     return publicInterface;
 }
+
+// Returns a Promise of a texture whose data is loaded from the given file. The actual
+// texture is returned once the data has been loaded.
+// Note: Only supports JSON files at the moment, expecting them to contain a valid
+// object to be passed as-is into texture_rgba().
+Rngon.texture_rgba.create_with_data_from_file = function(filename)
+{
+    return new Promise((resolve, reject)=>
+    {
+        fetch(filename)
+        .then((response)=>response.json())
+        .then((data)=>
+        {
+            resolve(Rngon.texture_rgba(data));
+        })
+        .catch((error)=>{Rngon.assert(0, "Failed to create a texture with data from file '" + filename + "'. Error: '" + error + "'.")});
+    });
+}
