@@ -56,9 +56,12 @@
                                                  hasWireframe: false
                                              });
 
-            rngon_perftest1("Wireframe quads", wireframeQuad, 30, 1000, (polycount)=>(polycount*2))
-            .then(()=>rngon_perftest1("Solid quads", untexturedQuad, 30, 1000, (polycount)=>(polycount*2)))
-            .then(()=>rngon_perftest1("Textured quads", texturedQuad, 30, 1000, (polycount)=>(polycount*2)));
+            (async()=>
+            {
+                await rngon_perftest1("Wireframe quads", wireframeQuad, 30, 1000, (polycount)=>(polycount*2));
+                await rngon_perftest1("Solid quads", untexturedQuad, 30, 1000, (polycount)=>(polycount*2));
+                await rngon_perftest1("Textured quads", texturedQuad, 30, 1000, (polycount)=>(polycount*2));
+            })();
         </script>
     </body>
 </html>
