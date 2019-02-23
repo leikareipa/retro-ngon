@@ -34,19 +34,19 @@
     <body>
         <canvas id="render-canvas" class="ngon-canvas ngon-pixelated-upscale"></canvas>
 
-        <script src="../js/retro-ngon/retro_ngon.js"></script>
+        <script src="../js/retro-ngon/retro-ngon.js"></script>
         <script src="../js/retro-ngon/trig.js"></script>
         <script src="../js/retro-ngon/color.js"></script>
         <script src="../js/retro-ngon/geometry.js"></script>
-        <script src="../js/retro-ngon/line_draw.js"></script>
+        <script src="../js/retro-ngon/line-draw.js"></script>
         <script src="../js/retro-ngon/matrix44.js"></script>
-        <script src="../js/retro-ngon/ngon_fill.js"></script>
+        <script src="../js/retro-ngon/ngon-fill.js"></script>
         <script src="../js/retro-ngon/render.js"></script>
         <script src="../js/retro-ngon/transform.js"></script>
         <script src="../js/retro-ngon/texture.js"></script>
         <script src="../js/retro-ngon/canvas.js"></script>
 
-        <script src="./assets/stanford_bunny_res3.js"></script>
+        <script src="./assets/stanford-bunny-res3.js"></script>
         <script>
             const texture = Rngon.texture_rgba({width:32, height:32,
                                                 pixels: Array(32*32*4).fill(0).map((pixel, idx)=>((idx+1)%4===0? 255 : idx%64))});
