@@ -26,7 +26,7 @@ Before proceeding onto the practical examples, below, it's good to note that the
 ### Practical examples
 An introductory example of the renderer's usage is given in [samples/sample1.html](samples/sample1.html). Its source code walks you through a basic setup for rendering a spinning triangle on screen.
 
-A slightly more involved example is provided in [samples/sample2.html](samples/sample2.html). It renders miscellaneous 3d meshes with a pixelated style.
+A slightly more involved example is provided in [samples/sample2.html](samples/sample2.html). It loads a simple, Blender-exported, textured model from disk and renders it.
 
 ## Performance
 The renderer is not intended for real-time display of high-polycount scenes, nor for real-time high-resolution rendering. Its principal target is 320 x 200 &ndash; upscaled by whichever amount &ndash; and spartan 3d scenes.

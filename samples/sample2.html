@@ -4,13 +4,11 @@
         <meta name="viewport" content="width=device-width">
         <meta http-equiv="content-type" content="text/html; charset=UTF-8">
         <link rel="stylesheet" type="text/css" href="sample2.css">
-        <title>Sample #2: various objects rendered - Retro n-gon renderer</title>
+        <title>Sample #2: a textured 3d model - Retro n-gon renderer</title>
     </head>
     <body>
-        <!-- The retro n-gon renderer will render into this canvas.-->
-        <canvas id="ngon-sample" class="ngon-canvas ngon-pixelated-upscale"></canvas>
+        <canvas id="rngon-canvas" class="ngon-canvas ngon-pixelated-upscale"></canvas>
 
-        <!-- The retro n-gon renderer's JS.-->
         <script src="../js/retro-ngon/retro-ngon.js"></script>
         <script src="../js/retro-ngon/trig.js"></script>
         <script src="../js/retro-ngon/color.js"></script>
@@ -23,113 +21,42 @@
         <script src="../js/retro-ngon/texture.js"></script>
         <script src="../js/retro-ngon/canvas.js"></script>
 
-        <!-- Various 3d assets.-->
-        <script src="./assets/sample2/mesh/mesh-templates.js"></script>
-        <script src="./assets/sample2/mesh/stanford-bunny-res3.js"></script>
-        <script src="./assets/sample2/texture/texture-data.js"></script>
-        <script src="./assets/sample2/texture/earth-nasa.js"></script>
+        <script src="./assets/sample2/textured-cube.rngon-model.js"></script>
 
-        <!-- Sample usage of the retro n-gon renderer.-->
         <script>
+            // Initialize the sample model's n-gons. This will also load into memory any
+            // textures etc. associated with the model. We can then call the .ngons property
+            // to access the n-gon array for rendering the model and so on.
+            // Note: The n-gon array is populated asynchronously (pending network access
+            // for texture data etc.) and so will remain uninitialized for some time after
+            // the call.
+            texturedCubeModel.initialize();
+
+            // A function that wraps the cube model in a mesh object, which can then be made
+            // to rotate.
+            const cubeRotated = (frameCount)=>
             {
-                // A collection of functions that return an array of ngons. You'd pass one
-                // of these functions to the renderer, which then calls the function to get the
-                // set of ngons we want it to render. When calling the function, the renderer
-                // will pass in its current count of frames rendered; which we use here to maintain
-                // a rotating animation.
-                const scenes =
-                [
-                    // A cube.
-                    function(frameCount)
-                    {
-                        const rotationSpeed = 0.30;
-                        return [Rngon.mesh(MeshTemplates.cube(null, true, false),
-                                           Rngon.translation_vector(0, 0, 70),
-                                           Rngon.rotation_vector(rotationSpeed * frameCount,
-                                                                 rotationSpeed * frameCount,
-                                                                 0),
-                                           Rngon.scaling_vector(20, 20, 20))];
-                    },
+                const rotationSpeed = 0.3;
+                return Rngon.mesh(texturedCubeModel.ngons,
+                                  Rngon.translation_vector(0, 0, 0),
+                                  Rngon.rotation_vector(20, (-50 + rotationSpeed * frameCount), 0),
+                                  Rngon.scaling_vector(20, 20, 20));
+            };
 
-                    // A textured disc.
-                    function(frameCount)
-                    {
-                        const rotationSpeed = 0.5;
-                        return [Rngon.mesh(MeshTemplates.disc(40, Textures.earth_nasa, true, true),
-                                           Rngon.translation_vector(0, 0, 50),
-                                           Rngon.rotation_vector(0,
-                                                                 rotationSpeed * frameCount,
-                                                                 0),
-                                           Rngon.scaling_vector(20, 20, 20))];
-                    },
+            // Runs the renderer continuously, in sync with the device's refresh rate.
+            (function render_loop(frameCount = 0)
+            {
+                const rendererScale = 0.2;
+                const cameraDirection = Rngon.vector3(0, 0, 0);
+                const cameraPosition = Rngon.vector3(0, 0, 170);
 
-                    // The Stanford bunny.
-                    function(frameCount)
-                    {
-                        const rotationSpeed = 1;
-                        return [Rngon.mesh(MeshTemplates.stanford_bunny_res3(null, true, false),
-                                           Rngon.translation_vector(0, -10, 45),
-                                           Rngon.rotation_vector(10,
-                                                                 rotationSpeed * frameCount,
-                                                                 0),
-                                           Rngon.scaling_vector(1, 1, 1))];
-                    },
+                Rngon.render("rngon-canvas", [cubeRotated(frameCount)],
+                             cameraPosition,
+                             cameraDirection,
+                             rendererScale);
 
-                    // The Cornell box.
-                    function(frameCount)
-                    {
-                        return [Rngon.mesh(MeshTemplates.cornell_box(true, true),
-                                           Rngon.translation_vector(-13.6, -14, 55),
-                                           Rngon.rotation_vector(0, 0, 0),
-                                           Rngon.scaling_vector(0.05, 0.05, 0.05))];
-                    },
-                ];
-
-                // Creates a mutable interface that both runs the rendering in sync with
-                // the display's refresh rate, and lets us adjust the renderer's parameters.
-                // The renderer object itself is created anew each frame, based on the
-                // adjustable parameters of this interface.
-                const ngonSampleRenderer = ((canvasId, scene = function(){}, stopped = false)=>
-                {
-                    const publicInterface =
-                    {
-                        // A function that returns as an array the meshes to be rendered.
-                        scene,
-
-                        // The factor by which the canvas' CSS width and height are multiplied
-                        // to get the render resolution. The rendering is then upscaled to fit
-                        // the CSS dimensions. Higher values of this factor produce more pixelation
-                        // and better performance.
-                        rendererScale: 0.25,
-
-                        cameraDirection: Rngon.vector3(0, 0, 0),
-                        cameraPosition: Rngon.vector3(0, 0, 0),
-
-                        // While true, mesh animations (e.g. rotation) won't be updated; although
-                        // the canvas will still be continuously rendered over with the meshes'
-                        // state at the time of pausing.
-                        paused: false,
-                    };
-
-                    // Runs the renderer continuously, in sync with the device's refresh rate.
-                    (function render_loop(frameCount = 0)
-                    {
-                        Rngon.render(canvasId,
-                                     publicInterface.scene(frameCount),
-                                     publicInterface.cameraPosition,
-                                     publicInterface.cameraDirection,
-                                     publicInterface.rendererScale,
-                                     {depthSort:(publicInterface.scene === scenes[3])? "none" : "painter"});
-
-                        window.requestAnimationFrame(()=>render_loop(frameCount + !publicInterface.paused));
-                    })();
-
-                    return publicInterface;
-                })("ngon-sample", scenes[0]);
-
-                // Loop through the scenes on a timer.
-                setInterval(()=>{ngonSampleRenderer.scene = scenes[(scenes.indexOf(ngonSampleRenderer.scene) + 1) % scenes.length]}, 7000);
-            }
+                window.requestAnimationFrame(()=>render_loop(frameCount + 1));
+            })();
         </script>
     </body>
 </html>
