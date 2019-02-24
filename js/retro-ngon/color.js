@@ -15,12 +15,16 @@ Rngon.color_rgba = function(red = 55, green = 55, blue = 55, alpha = 255)
                   ((blue  >= 0) && (blue  <= 255)) &&
                   ((alpha >= 0) && (alpha <= 255))), "The given color values are out of range.");
 
+    const unitRange = Object.freeze({red:red/255, green:green/255, blue:blue/255, alpha:alpha/255});
+
     const publicInterface = Object.freeze(
     {
         red,
         green,
         blue,
         alpha,
+
+        unitRange,
 
         // Returns the color as a "#rrggbbaa" string. You can mask out a particular color
         // channel by providing a bitmask where the corresponding bits are zero. For instance,

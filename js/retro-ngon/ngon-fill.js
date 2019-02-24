@@ -156,10 +156,10 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, renderWidth, renderHeight)
 
                                     if (texelColorChannels[3] === 255)
                                     {
-                                        pixelBuffer[idx + 0] = texelColorChannels[0];
-                                        pixelBuffer[idx + 1] = texelColorChannels[1];
-                                        pixelBuffer[idx + 2] = texelColorChannels[2];
-                                        pixelBuffer[idx + 3] = texelColorChannels[3];
+                                        pixelBuffer[idx + 0] = (texelColorChannels[0] * ngon.color.unitRange.red);
+                                        pixelBuffer[idx + 1] = (texelColorChannels[1] * ngon.color.unitRange.green);
+                                        pixelBuffer[idx + 2] = (texelColorChannels[2] * ngon.color.unitRange.blue);
+                                        pixelBuffer[idx + 3] = (texelColorChannels[3] * ngon.color.unitRange.alpha);
                                     }
                                 }
                             }

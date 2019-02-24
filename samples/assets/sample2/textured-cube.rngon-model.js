@@ -25,8 +25,8 @@ const texturedCubeModel =
 
 		// Set up the materials.
 		const m = {
-			"crate":{color:c(163,163,163),texture:t["wood.png"],},
-			"painting":{color:c(163,163,163),texture:t["painting.png"],},
+			"crate":{color:c(255,255,255),texture:t["wood.png"],},
+			"painting":{color:c(255,255,255),texture:t["painting.png"],},
 		};
 
 		// N-gons.
