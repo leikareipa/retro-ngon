@@ -22,10 +22,12 @@ Rngon.mesh = function(ngons = [Rngon.ngon()],
     const objectSpaceMatrix = Rngon.matrix44.matrices_multiplied(Rngon.matrix44.matrices_multiplied(Rngon.matrix44.translate(translation.x, translation.y, translation.z),
                                                                                                     Rngon.matrix44.rotate(rotation.x, rotation.y,  rotation.z)),
                                                                  Rngon.matrix44.scale(scale.x, scale.y, scale.z));
+
+    ngons = Object.freeze(ngons);
     
     const publicInterface = Object.freeze(
     {
-        ngons: Object.freeze(ngons),
+        ngons,
         rotation,
         translation,
         scale,
@@ -53,9 +55,11 @@ Rngon.ngon = function(vertices = [Rngon.vertex4()], material = {})
         ...material
     };
 
+    vertices = Object.freeze(vertices);
+
     const publicInterface = Object.freeze(
     {
-        vertices: Object.freeze(vertices),
+        vertices,
         color: material.color,
         texture: material.texture,
         hasSolidFill: material.hasSolidFill,
