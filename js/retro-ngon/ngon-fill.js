@@ -177,7 +177,12 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, renderWidth, renderHeight)
             if (ngon.hasWireframe)
             {
                 const wireColor = Rngon.color_rgba(0, 0, 0, 255);
-                const putline = function(vert1, vert2){Rngon.line_draw.into_pixel_buffer(vert1, vert2, pixelBuffer, renderWidth, renderHeight, wireColor)};
+                const putline = (vert1, vert2)=>
+                {
+                    Rngon.line_draw.into_pixel_buffer(vert1, vert2,
+                                                      pixelBuffer, renderWidth, renderHeight,
+                                                      ngon.wireframeColor)
+                };
 
                 // Left edge.
                 let prevVert = leftVerts[0];

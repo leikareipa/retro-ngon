@@ -44,26 +44,29 @@ Rngon.ngon = function(vertices = [Rngon.vertex4()], material = {})
     Rngon.assert((material instanceof Object), "Expected an object containing user-supplied options.");
 
     // Combine default material options with the user-supplied ones.
-    material =
+    material = Object.freeze(
     {
         ...{
             color: Rngon.color_rgba(127, 127, 127, 255),
             texture: null,
             hasSolidFill: true,
-            hasWireframe: false
+            hasWireframe: false,
+            wireframeColor: Rngon.color_rgba(0, 0, 0),
         },
         ...material
-    };
+    });
 
     vertices = Object.freeze(vertices);
 
     const publicInterface = Object.freeze(
     {
         vertices,
+
         color: material.color,
         texture: material.texture,
         hasSolidFill: material.hasSolidFill,
         hasWireframe: material.hasWireframe,
+        wireframeColor: material.wireframeColor,
 
         // Transforms the ngon into screen-space, such that each vertex's x,y coordinate pair
         // corresponds directly with x,y coordinates on the screen (or screen buffer). Note that
