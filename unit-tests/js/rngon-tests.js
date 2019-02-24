@@ -160,7 +160,7 @@ const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
                      ()=>{Rngon.color_rgba(-1, 255, 255)}]);
     });
 
-    unit("Texture", ()=>
+    unit("Texture (RGBA)", ()=>
     {
         const texture = Rngon.texture_rgba({width: 1, height: 1, encoding: "none", pixels: [255, 22, 1, 255]});
         const textureSeethrough = Rngon.texture_rgba({width: 1, height: 1, encoding: "none", pixels: [255, 22, 1, 1]});
@@ -182,9 +182,13 @@ const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
                      ()=>{texture.pixels[0] = 0}]);
 
         // Invalid values.
-        expect_fail([()=>{texture.rgba_channels_at(2, 0)},
-                     ()=>{Rngon.texture_rgba({width: 1, height: 1, pixels: [255, 0, 0, 255, 0, 0]})},
-                     ()=>{Rngon.texture_rgba({width: 2, height: 1, pixels: [255, 0, 0]})}]);
+        expect_fail([()=>{Rngon.texture_rgba({width: 1, height: 1, encoding: "none", pixels: [255, 0, 0, 0]}).rgba_channels_at(1, 0)}, // Access out of bounds.
+                     ()=>{Rngon.texture_rgba({width: 1, height: 1, encoding: "none", pixels: [255, 0, 0, 0, 255, 0, 0, 0]})}, // Too many pixels for given resolution.
+                     ()=>{Rngon.texture_rgba({width: 2, height: 1, encoding: "none", pixels: [255, 0, 0, 0]})}, // Not enough pixels for given resolution.
+                     ()=>{Rngon.texture_rgba({width: 1, height: 1, encoding: "none", pixels: [255, 22, 1]})}, // Missing pixel alpha channel.
+                     ()=>{Rngon.texture_rgba({width: -1, height: 1, encoding: "none", pixels: [255, 22, 1, 0]})}, // Negative height.
+                     ()=>{Rngon.texture_rgba({width: 1, height: 1, encoding: "base64", pixels: "D"})}, // Missing pixel channels.
+                     ()=>{Rngon.texture_rgba({width: 1, height: 1, encoding: "qzxwesdxcdrfvgyhnmjiklp"})}]); // Invalid encoder id.
     });
 
     // The renderer.
