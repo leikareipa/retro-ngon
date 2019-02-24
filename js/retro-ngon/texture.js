@@ -42,7 +42,7 @@ Rngon.texture_rgba = function(data = {width: 0, height: 0, pixels: []})
 
                 for (let i = 0; i < (data.width * data.height * 2); i += 2)
                 {
-                    const p = (decoded.charCodeAt(i) | (decoded.charCodeAt(i+1)<<8));
+                    const p = (decoded.charCodeAt(i) | (decoded.charCodeAt(i+1)<<8));
 
                     rgba.push((p         & 0x1f) * 8);  // Red.
                     rgba.push(((p >> 5)  & 0x1f) * 8);  // Green.
