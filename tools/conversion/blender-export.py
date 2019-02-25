@@ -38,7 +38,7 @@ with open(outFilename, 'w') as f:
     f.write("//    - now you can access the n-gons via .ngons\n");
     f.write("//    - if you need .initialize() to finish before you start rendering, call it with await inside an async()=>{} wrapper\n");
 
-    f.write("const %s =\n{\n", modelName);
+    f.write("const %s =\n{\n" % modelName);
     f.write("\tngons:[],\n");
     f.write("\tinitialize: async function()\n\t{\n");
 
