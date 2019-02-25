@@ -48,8 +48,8 @@ Rngon.render = function(canvasElementId,
         // Transform.
         const transformedNgons = [];
         {
-            const cameraMatrix = Rngon.matrix44.matrices_multiplied(Rngon.matrix44.translate(cameraPos.x, cameraPos.y, cameraPos.z),
-                                                                    Rngon.matrix44.rotate(cameraDir.x, cameraDir.y, cameraDir.z));
+            const cameraMatrix = Rngon.matrix44.matrices_multiplied(Rngon.matrix44.rotate(cameraDir.x, cameraDir.y, cameraDir.z),
+                                                                    Rngon.matrix44.translate(cameraPos.x, cameraPos.y, cameraPos.z));
 
             meshes.forEach((mesh)=>
             {
