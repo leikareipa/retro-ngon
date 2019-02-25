@@ -13,7 +13,8 @@ Rngon.canvas = function(canvasElementId = "",              // The DOM id of the 
                         scaleFactor = 1)
 {
     Rngon.assert((typeof scaleFactor === "number"), "Expected the scale factor to be a numeric value.");
-    Rngon.assert((typeof ngon_fill_f === "function" && typeof ngon_transform_f === "function"), "Expected ngon manipulation functions to be provided.");
+    Rngon.assert((typeof ngon_fill_f === "function" &&
+                  typeof ngon_transform_f === "function"), "Expected ngon-manipulation functions to be provided.");
 
     const canvasElement = document.getElementById(canvasElementId);
     Rngon.assert((canvasElement !== null), "Can't find the given canvas element.");
@@ -54,7 +55,7 @@ Rngon.canvas = function(canvasElementId = "",              // The DOM id of the 
             const clipSpaceMatrix = Rngon.matrix44.matrices_multiplied(perspectiveMatrix, objectSpaceMatrix);
             const screenSpaceMatrix = Rngon.matrix44.matrices_multiplied(canvasSpaceMatrix, clipSpaceMatrix);
 
-            return ngon_transform_f(ngons, clipSpaceMatrix, screenSpaceMatrix);
+            return ngon_transform_f(ngons, screenSpaceMatrix);
         },
 
         // Draw the given ngons onto this render surface.

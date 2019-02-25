@@ -68,13 +68,14 @@ Rngon.ngon = function(vertices = [Rngon.vertex4()], material = {})
         hasWireframe: material.hasWireframe,
         wireframeColor: material.wireframeColor,
 
-        // Transforms the ngon into screen-space, such that each vertex's x,y coordinate pair
-        // corresponds directly with x,y coordinates on the screen (or screen buffer). Note that
-        // you need to provide the function with a valid matrix with which this transformation
-        // is possible given the ngon's current space.
-        in_screen_space: function(matrixToScreenSpace)
+        perspective_divided: function()
         {
-            return Rngon.ngon(vertices.map(vertex=>vertex.transformed(matrixToScreenSpace).perspective_divided()), material);
+            return Rngon.ngon(vertices.map(v=>v.perspective_divided()), material);
+        },
+
+        transformed: function(matrix44)
+        {
+            return Rngon.ngon(vertices.map(vertex=>vertex.transformed(matrix44)), material);
         },
     });
     return publicInterface;
