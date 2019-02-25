@@ -14,7 +14,7 @@ The retro n-gon renderer encourages very low resolutions, very low polycounts, a
 - Retro 3d games with sparse, simple environments (e.g. an Asteroids clone)
 - Visualizing 3d models in a wobbly, old-fashioned manner
 
-## How to use it
+# How to use the renderer
 In this section, you'll find both practical and theoretical examples of how to use the retro n-gon renderer. You don't need to read all of it, though &ndash; you can dig directly into the practical examples under [samples/](samples/), if you want to figure it out as you go; then return here for the details.
 
 ### The gist of it
@@ -32,7 +32,7 @@ Rngon.render("render-target", [mesh], camera)
 ```
 This produces a static image of the triangle. If you wanted to animate it, you'd simply call `render()` repeatedly (e.g. with `window.requestAnimationFrame()`), each time altering the triangle mesh's orientation, etc.
 
-### Some practical examples
+### Practical examples
 An introductory example of the renderer's usage is given in [samples/sample1.html](samples/sample1.html). Its source code walks you through a basic setup for rendering a spinning triangle on screen.
 
 A slightly more involved example is provided in [samples/sample2.html](samples/sample2.html). It loads a simple, Blender-exported, textured model from disk and renders it. Note that, on Chrome, and possibly some other browsers, the HTML file needs to be accessed via a server rather than opened directly from disk. If you want to access the file locally, you can set up a simple test server, e.g. via `php -S localhost:8000`.
@@ -97,7 +97,7 @@ A simple-to-use PHP script for converting PNG images into a compatible Base64-en
 
 Only RGBA textures are supported, at this time; the alpha channel being either fully opaque (255) or fully transparent (any value but 255).
 
-## Performance
+# Performance
 As suggested in the sections, above, the retro n-gon renderer is not intended for real-time display of high-polycount scenes, nor for real-time high-resolution rendering. Its principal target resolution is along the lines of 320 x 200 &ndash; upscaled by whichever amount &ndash; with spartan 3d scenes.
 
 With that in mind, here's some performance figures on various platforms.
@@ -309,7 +309,7 @@ Below are results from [perf-tests/perftest1.html](perf-tests/perftest1.html) as
     </tr>
 </table>
 
-## Which features typical of 3d engines are missing?
+# Which features typical of 3d engines are missing?
 - Lighting
 - Per-vertex attributes
 - Perspective-correct texture-mapping
@@ -318,7 +318,7 @@ Below are results from [perf-tests/perftest1.html](perf-tests/perftest1.html) as
 
 Note also that concave n-gons are not supported.
 
-## Browser compatibility
+# Browser compatibility
 At the moment, versions of Chrome and Firefox released in the last year or so are supported; although, as per the performance tests above, Chrome is preferred.
 
 Safari is untested for, but newer versions of it should work.
