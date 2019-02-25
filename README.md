@@ -1,9 +1,20 @@
 # The retro n-gon renderer
-A minimalist 3d renderer that draws n-sided polygons (as well as lines and points) onto a user-supplied HTML5 canvas. Its intended use cases include ones where a retro aesthetic is preferred.
+A minimalist 3d renderer that draws n-sided polygons (as well as lines and points) onto a user-supplied HTML5 canvas. Its intended use cases are mainly those where a minimalist retro aesthetic is preferred.
 
 You can view a live sample of the renderer's output at [http://tarpeeksihyvaesoft.com/s/retro-ngon/samples/sample2.html](http://tarpeeksihyvaesoft.com/s/retro-ngon/samples/sample2.html).
 
-## Usage
+### Suggested use cases
+It's worth noting, first, that the retro n-gon renderer is not intended as a general-purpose software 3d renderer. It omits several key features &ndash; more of which elsewhere in this document &ndash; in favor of a legit retro look and feel. I've made several other open-source software renderers, some of which might fit your needs better:
+- [Wray](https://github.com/leikareipa/wray/) for path-tracing in JavaScript
+- [RallySportED](https://github.com/leikareipa/rallysported-diverse/)'s renderer in C++ using Qt and the Win32 API (also w/ support for OpenGL and Glide)
+- [Vond](https://github.com/leikareipa/vond/) for a hybrid voxel/polygon software renderer in C++
+
+The retro n-gon renderer encourages low resolutions, low polycounts, and designing around considerable visual limitations &ndash; like in the old days of software rendering. You might use the renderer for some of the following:
+- Engagment in feature minimalism
+- Retro 3d games with sparse, simple environments (e.g. an Asteroids clone)
+- Visualizing invidual objects in wobbly 3d
+
+## How to use it
 Below, you'll find practical examples of how to use the renderer. But first, a theoretical example gives a bird's-eye overview of how the renderer operates.
 
 ### The gist of it in theory
@@ -23,7 +34,7 @@ This produces a static image of the triangle. If you wanted to animate it, you'd
 
 Before proceeding onto the practical examples, below, it's good to note that the renderer prefers immutable data. For instance, to produce a rotating mesh, you'll see that the examples re-create the mesh for each frame, rather than altering some mutable parameter in it. This isn't ideal for performance, but is the style I fancied writing the renderer in.
 
-### Practical examples
+### Some practical examples
 An introductory example of the renderer's usage is given in [samples/sample1.html](samples/sample1.html). Its source code walks you through a basic setup for rendering a spinning triangle on screen.
 
 A slightly more involved example is provided in [samples/sample2.html](samples/sample2.html). It loads a simple, Blender-exported, textured model from disk and renders it. Note that, on Chrome, and possibly some other browsers, the HTML file needs to be accessed via a server rather than opened directly from disk. If you want to access the file locally, you can set up a simple test server, e.g. via `php -S localhost:8000`.
