@@ -3,6 +3,12 @@ A minimalist 3d renderer that draws n-sided polygons (as well as lines and point
 
 You can view a live sample of the renderer's output at [http://tarpeeksihyvaesoft.com/s/retro-ngon/samples/sample2.html](http://tarpeeksihyvaesoft.com/s/retro-ngon/samples/sample2.html).
 
+### Features
+- Genuine retro aesthetics
+- Natively renders convex n-sided polygons
+- Immutable data structures
+- Simple to use
+
 ### Suggested use cases
 The retro n-gon renderer is not intended as a general-purpose software 3d renderer. It omits several modern features &ndash; more of which elsewhere in this document &ndash; in favor of a legit retro look, feel, and experience. I've made a number of other open-source software renderers, some of which might fit your needs better:
 - [Wray](https://github.com/leikareipa/wray/) for path-tracing in JavaScript
