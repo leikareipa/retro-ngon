@@ -38,7 +38,7 @@ An introductory example of the renderer's usage is given in [samples/sample1.htm
 A slightly more involved example is provided in [samples/sample2.html](samples/sample2.html). It loads a simple, Blender-exported, textured model from disk and renders it. Note that, on Chrome, and possibly some other browsers, the HTML file needs to be accessed via a server rather than opened directly from disk. If you want to access the file locally, you can set up a simple test server, e.g. via `php -S localhost:8000`.
 
 ### A how-to of 3d modeling
-*N-gons* (polygons of _n_ sides, but also points and lines) are the building-blocks of 3d models in the retro n-gon renderer. Each n-gon includes one or more vertices, and a material that describes how the n-gon should look when rendered (its color, texture, and so on). A red 1-gon object could be created like so:
+**N-gons** (polygons of _n_ sides, but also points and lines) are the building-blocks of 3d models in the retro n-gon renderer. Each n-gon includes one or more vertices, and a material that describes how the n-gon should look when rendered (its color, texture, and so on). A red 1-gon object could be created like so:
 ```
 const ngon = Rngon.ngon([Rngon.vertex4(1, 0, 0)],
                         {
@@ -47,7 +47,7 @@ const ngon = Rngon.ngon([Rngon.vertex4(1, 0, 0)],
                         });
 ```
 
-*Meshes* are one step up from n-gons, being collections of n-gons that share a purpose (e.g. the n-gons that make up a model of a spoon). A mesh thus consists of the n-gons belonging to it, and a set of 3d transformations, like rotation and translation, that can be used to transform the n-gons in unison. A mesh object containing one n-gon could be created like so:
+**Meshes** are one step up from n-gons, being collections of n-gons that share a purpose (e.g. the n-gons that make up a model of a spoon). A mesh thus consists of the n-gons belonging to it, and a set of 3d transformations, like rotation and translation, that can be used to transform the n-gons in unison. A mesh object containing one n-gon could be created like so:
 ```
 const mesh = Rngon.mesh([ngon],
                         Rngon.translation_vector(0, 0, 0),
@@ -57,7 +57,7 @@ const mesh = Rngon.mesh([ngon],
 
 To render n-gons, you first wrap them up in one or more `mesh` objects, then feed those meshes into the `render()` function.
 
-*Models* describe a list of related n-gons and of any materials, texture resources, etc. that go along with those n-gons. For instance, if you create a 3d scene in Blender and export it using the retro n-gon renderer's Blender export script, you get a model file, which provides a JavaScript factory function that ultimately returns an array of n-gons corresponding to the 3d scene. You can then wrap those n-gons in a `mesh` object and render it with `render()`.
+**Models** describe a list of related n-gons and of any materials, texture resources, etc. that go along with those n-gons. For instance, if you create a 3d scene in Blender and export it using the retro n-gon renderer's Blender export script, you get a model file, which provides a JavaScript factory function that ultimately returns an array of n-gons corresponding to the 3d scene. You can then wrap those n-gons in a `mesh` object and render it with `render()`.
 
 You can think of models as functions that translate external 3d assets into the renderer's native n-gon format.
 

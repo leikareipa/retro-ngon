@@ -3,6 +3,7 @@ body
     background-color: rgb(143, 143, 143);
     margin: 0px;
     text-align: center;
+    overflow: hidden;
 }
 
 /* Upscale the n-gon renderer's output with nearest-neighbor interpolation.*/
@@ -17,8 +18,8 @@ body
 /* Styling for the canvas element that holds the n-gon rendering.*/
 .ngon-canvas
 {
-    width: 99vw;
-    height: 99vh;
+    width: 100vw;
+    height: 100vh;
     background-color: transparent;
     padding: 0;
     margin: 0;
