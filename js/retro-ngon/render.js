@@ -15,30 +15,22 @@ Rngon.render = function(canvasElementId,
                         scaleFactor = 1,
                         userOptions = {})
 {
+    // Used for performance timing.
+    const perfTime = {initTime:performance.now(), transformTime:0, rasterTime:0, totalTime:performance.now()};
+
     // Combine default options with user-supplied ones.
     const options =
     {
         ...{
             depthSort:"painter",
-            hibernateWhenNotOnScreen:true // If true, rendering is skipped when no part of the render surface's bounding rect is in view.
+            hibernateWhenNotOnScreen:true, // If true, rendering is skipped when no part of the render surface's bounding rect is in view.
         },
         ...userOptions
     };
 
     const renderSurface = Rngon.canvas(canvasElementId, Rngon.ngon_filler, Rngon.ngon_transformer, scaleFactor);
 
-    // Returns true if any horizontal part of the render surface DOM container is within the page's
-    // visible region (accounting for the user having possibly scrolled the page up/down to cause
-    // the container to have moved out of view).
-    function is_surface_in_view()
-    {
-        const viewHeight = window.innerHeight;
-        const containerRect = document.getElementById(canvasElementId).getBoundingClientRect();
-        Rngon.assert((containerRect != null), "Couldn't find the canvas container element.");
-
-        return Boolean((containerRect.top > -containerRect.height) &&
-                       (containerRect.top < viewHeight));
-    }
+    perfTime.initTime = (performance.now() - perfTime.initTime);
 
     // Render a single frame onto the render surface.
     if ((!options.hibernateWhenNotOnScreen || is_surface_in_view()))
@@ -46,6 +38,7 @@ Rngon.render = function(canvasElementId,
         renderSurface.wipe_clean();
 
         // Transform.
+        perfTime.transformTime = performance.now();
         const transformedNgons = [];
         {
             const cameraMatrix = Rngon.matrix44.matrices_multiplied(Rngon.matrix44.rotate(cameraDir.x, cameraDir.y, cameraDir.z),
@@ -85,8 +78,27 @@ Rngon.render = function(canvasElementId,
                 default: Rngon.assert(0, "Unknown depth sort option."); break;
             }
         }
+        perfTime.transformTime = (performance.now() - perfTime.transformTime)
 
         // Rasterize.
+        perfTime.rasterTime = performance.now();
         renderSurface.draw_ngons(transformedNgons);
+        perfTime.rasterTime = (performance.now() - perfTime.rasterTime);
+
+        perfTime.totalTime = (performance.now() - perfTime.totalTime);
+        return perfTime;
+    }
+
+    // Returns true if any horizontal part of the render surface DOM container is within the page's
+    // visible region (accounting for the user having possibly scrolled the page up/down to cause
+    // the container to have moved out of view).
+    function is_surface_in_view()
+    {
+        const viewHeight = window.innerHeight;
+        const containerRect = document.getElementById(canvasElementId).getBoundingClientRect();
+        Rngon.assert((containerRect != null), "Couldn't find the canvas container element.");
+
+        return Boolean((containerRect.top > -containerRect.height) &&
+                       (containerRect.top < viewHeight));
     }
 };
