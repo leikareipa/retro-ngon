@@ -14,6 +14,7 @@ The retro n-gon renderer is not intended as a general-purpose software 3d render
 - [Wray](https://github.com/leikareipa/wray/) for path-tracing in JavaScript
 - [RallySportED](https://github.com/leikareipa/rallysported-diverse/)'s renderer in C++ using Qt and the Win32 API (also w/ support for OpenGL and Glide)
 - [Vond](https://github.com/leikareipa/vond/) for a hybrid voxel/polygon software renderer in C++
+- [dccb](https://github.com/leikareipa/dccb/) for a simple software renderer in C for 16-bit DOS
 
 The retro n-gon renderer encourages very low resolutions, very low polycounts, and designing your way around considerable visual limitations &ndash; like in the old days of software rendering. You might use the renderer for some of the following purposes:
 - Engagement in feature minimalism
