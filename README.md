@@ -190,7 +190,7 @@ Below are test results from [perf-tests/perftest1.html](perf-tests/perftest1.htm
     </tr>
 </table>
 
-Below are results from [perf-tests/perftest1.html](perf-tests/perftest1.html) as of [5bb8960](https://github.com/leikareipa/retro-ngon/tree/5bb8960f433e99d615253ad56014abf3f19f6b4c) running on a G4560 desktop PC in Chrome. The notes from the tests above apply.
+Below are results from [perf-tests/perftest1.html](perf-tests/perftest1.html) as of [5bb8960](https://github.com/leikareipa/retro-ngon/tree/5bb8960f433e99d615253ad56014abf3f19f6b4c) running on a Pentium G4560 desktop PC in Chrome. The notes from the tests above apply.
 
 <table>
     <tr>

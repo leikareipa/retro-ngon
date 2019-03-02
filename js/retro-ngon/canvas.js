@@ -10,7 +10,8 @@
 Rngon.canvas = function(canvasElementId = "",              // The DOM id of the canvas element.
                         ngon_fill_f = function(){},        // A function that rasterizes the given ngons onto the canvas.
                         ngon_transform_f = function(){},   // A function that transforms the given ngons into screen-space for the canvas.
-                        scaleFactor = 1)
+                        scaleFactor = 1,
+                        fov = 43)
 {
     Rngon.assert((typeof scaleFactor === "number"), "Expected the scale factor to be a numeric value.");
     Rngon.assert((typeof ngon_fill_f === "function" &&
@@ -26,7 +27,7 @@ Rngon.canvas = function(canvasElementId = "",              // The DOM id of the 
     canvasElement.setAttribute("width", surfaceWidth);
     canvasElement.setAttribute("height", surfaceHeight);
 
-    const perspectiveMatrix = Rngon.matrix44.perspective(0.75, (surfaceWidth / surfaceHeight), 1, 1000);
+    const perspectiveMatrix = Rngon.matrix44.perspective((fov * Math.PI/180), (surfaceWidth / surfaceHeight), 1, 1000);
     const canvasSpaceMatrix = Rngon.matrix44.screen_space(surfaceWidth, surfaceHeight);
 
     function exposed_render_context()

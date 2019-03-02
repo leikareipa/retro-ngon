@@ -23,12 +23,13 @@ Rngon.render = function(canvasElementId,
     {
         ...{
             depthSort:"painter",
+            fov:43,
             hibernateWhenNotOnScreen:true, // If true, rendering is skipped when no part of the render surface's bounding rect is in view.
         },
         ...userOptions
     };
 
-    const renderSurface = Rngon.canvas(canvasElementId, Rngon.ngon_filler, Rngon.ngon_transformer, scaleFactor);
+    const renderSurface = Rngon.canvas(canvasElementId, Rngon.ngon_filler, Rngon.ngon_transformer, scaleFactor, options.fov);
 
     perfTime.initTime = (performance.now() - perfTime.initTime);
 
