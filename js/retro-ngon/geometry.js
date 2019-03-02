@@ -8,100 +8,6 @@
 
 "use strict";
 
-// A collection of ngons, with shared translation and rotation.
-// NOTE: Expects to remain immutable.
-Rngon.mesh = function(ngons = [Rngon.ngon()], transform = {})
-{
-    Rngon.assert((ngons instanceof Array), "Expected a list of ngons for creating an ngon mesh.");
-    Rngon.assert((transform instanceof Object), "Expected an object with transformation properties.");
-
-    // Combine default transformations with the user-supplied ones.
-    transform = Object.freeze(
-    {
-        ...
-        {
-            translation: Rngon.translation_vector(0, 0, 0),
-            rotation: Rngon.rotation_vector(0, 0, 0),
-            scaling: Rngon.scaling_vector(1, 1, 1)
-        },
-        ...transform
-    });
-
-    // A matrix by which the ngons of this mesh should be transformed to get the ngongs into
-    // the mesh's object space.
-    const objectSpaceMatrix = (()=>
-    {
-        const translationMatrix = Rngon.matrix44.translate(transform.translation.x,
-                                                           transform.translation.y,
-                                                           transform.translation.z);
-        const rotationMatrix = Rngon.matrix44.rotate(transform.rotation.x,
-                                                     transform.rotation.y,
-                                                     transform.rotation.z);
-        const scalingMatrix = Rngon.matrix44.scale(transform.scaling.x,
-                                                   transform.scaling.y,
-                                                   transform.scaling.z);
-
-        return Rngon.matrix44.matrices_multiplied(Rngon.matrix44.matrices_multiplied(translationMatrix, rotationMatrix), scalingMatrix);
-    })();
-
-    ngons = Object.freeze(ngons);
-    
-    const publicInterface = Object.freeze(
-    {
-        ngons,
-        rotation: transform.rotation,
-        translation: transform.translation,
-        scale: transform.scaling,
-        objectSpaceMatrix,
-    });
-    return publicInterface;
-}
-
-// A single n-sided ngon.
-// NOTE: Expects to remain immutable.
-Rngon.ngon = function(vertices = [Rngon.vertex4()], material = {})
-{
-    Rngon.assert((vertices instanceof Array), "Expected an array of vertices to make an ngon.");
-    Rngon.assert((material instanceof Object), "Expected an object containing user-supplied options.");
-
-    // Combine default material options with the user-supplied ones.
-    material = Object.freeze(
-    {
-        ...{
-            color: Rngon.color_rgba(127, 127, 127, 255),
-            texture: null,
-            hasSolidFill: true,
-            hasWireframe: false,
-            wireframeColor: Rngon.color_rgba(0, 0, 0),
-        },
-        ...material
-    });
-
-    vertices = Object.freeze(vertices);
-
-    const publicInterface = Object.freeze(
-    {
-        vertices,
-
-        color: material.color,
-        texture: material.texture,
-        hasSolidFill: material.hasSolidFill,
-        hasWireframe: material.hasWireframe,
-        wireframeColor: material.wireframeColor,
-
-        perspective_divided: function()
-        {
-            return Rngon.ngon(vertices.map(v=>v.perspective_divided()), material);
-        },
-
-        transformed: function(matrix44)
-        {
-            return Rngon.ngon(vertices.map(vertex=>vertex.transformed(matrix44)), material);
-        },
-    });
-    return publicInterface;
-}
-
 // NOTE: Expects to remain immutable.
 Rngon.vector3 = function(x = 0, y = 0, z = 0)
 {
@@ -180,3 +86,103 @@ Rngon.vertex4 = function(x = 0, y = 0, z = 0, w = 1, u = 0, v = 0)
 
     return publicInterface;
 }
+
+// A single n-sided ngon.
+// NOTE: Expects to remain immutable.
+Rngon.ngon = function(vertices = [Rngon.vertex4()], material = {})
+{
+    Rngon.assert((vertices instanceof Array), "Expected an array of vertices to make an ngon.");
+    Rngon.assert((material instanceof Object), "Expected an object containing user-supplied options.");
+
+    // Combine default material options with the user-supplied ones.
+    material = Object.freeze(
+    {
+        ...{
+            color: Rngon.color_rgba(127, 127, 127, 255),
+            texture: null,
+            hasSolidFill: true,
+            hasWireframe: false,
+            wireframeColor: Rngon.color_rgba(0, 0, 0),
+        },
+        ...material
+    });
+
+    vertices = Object.freeze(vertices);
+
+    const publicInterface = Object.freeze(
+    {
+        vertices,
+
+        color: material.color,
+        texture: material.texture,
+        hasSolidFill: material.hasSolidFill,
+        hasWireframe: material.hasWireframe,
+        wireframeColor: material.wireframeColor,
+
+        perspective_divided: function()
+        {
+            return Rngon.ngon(vertices.map(v=>v.perspective_divided()), material);
+        },
+
+        transformed: function(matrix44)
+        {
+            return Rngon.ngon(vertices.map(vertex=>vertex.transformed(matrix44)), material);
+        },
+    });
+    return publicInterface;
+}
+
+// A collection of ngons, with shared translation and rotation.
+// NOTE: Expects to remain immutable.
+Rngon.mesh = function(ngons = [Rngon.ngon()], transform = {})
+{
+    Rngon.assert((ngons instanceof Array), "Expected a list of ngons for creating an ngon mesh.");
+    Rngon.assert((transform instanceof Object), "Expected an object with transformation properties.");
+
+    Rngon.assert((typeof Rngon.mesh.defaultTransform.rotation !== "undefined" &&
+                  typeof Rngon.mesh.defaultTransform.translation !== "undefined" &&
+                  typeof Rngon.mesh.defaultTransform.scaling !== "undefined"),
+                  "The default transforms object for mesh() is missing required properties.");
+
+    // Combine default transformations with the user-supplied ones.
+    transform = Object.freeze(
+    {
+        ...Rngon.mesh.defaultTransform,
+        ...transform
+    });
+
+    // A matrix by which the ngons of this mesh should be transformed to get the ngongs into
+    // the mesh's object space.
+    const objectSpaceMatrix = (()=>
+    {
+        const translationMatrix = Rngon.matrix44.translate(transform.translation.x,
+                                                           transform.translation.y,
+                                                           transform.translation.z);
+        const rotationMatrix = Rngon.matrix44.rotate(transform.rotation.x,
+                                                     transform.rotation.y,
+                                                     transform.rotation.z);
+        const scalingMatrix = Rngon.matrix44.scale(transform.scaling.x,
+                                                   transform.scaling.y,
+                                                   transform.scaling.z);
+
+        return Rngon.matrix44.matrices_multiplied(Rngon.matrix44.matrices_multiplied(translationMatrix, rotationMatrix), scalingMatrix);
+    })();
+
+    ngons = Object.freeze(ngons);
+    
+    const publicInterface = Object.freeze(
+    {
+        ngons,
+        rotation: transform.rotation,
+        translation: transform.translation,
+        scale: transform.scaling,
+        objectSpaceMatrix,
+    });
+    return publicInterface;
+}
+Rngon.mesh.defaultTransform = 
+{
+    translation: Rngon.translation_vector(0, 0, 0),
+    rotation: Rngon.rotation_vector(0, 0, 0),
+    scaling: Rngon.scaling_vector(1, 1, 1)
+};
