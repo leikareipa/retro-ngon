@@ -94,16 +94,17 @@ Rngon.ngon = function(vertices = [Rngon.vertex4()], material = {})
     Rngon.assert((vertices instanceof Array), "Expected an array of vertices to make an ngon.");
     Rngon.assert((material instanceof Object), "Expected an object containing user-supplied options.");
 
+    Rngon.assert((typeof Rngon.ngon.defaultMaterial.color !== "undefined" &&
+                  typeof Rngon.ngon.defaultMaterial.texture !== "undefined" &&
+                  typeof Rngon.ngon.defaultMaterial.hasSolidFill !== "undefined" &&
+                  typeof Rngon.ngon.defaultMaterial.hasWireframe !== "undefined" &&
+                  typeof Rngon.ngon.defaultMaterial.wireframeColor !== "undefined"),
+                 "The default material object for ngon() is missing required properties.");
+
     // Combine default material options with the user-supplied ones.
     material = Object.freeze(
     {
-        ...{
-            color: Rngon.color_rgba(127, 127, 127, 255),
-            texture: null,
-            hasSolidFill: true,
-            hasWireframe: false,
-            wireframeColor: Rngon.color_rgba(0, 0, 0),
-        },
+        ...Rngon.ngon.defaultMaterial,
         ...material
     });
 
@@ -131,6 +132,15 @@ Rngon.ngon = function(vertices = [Rngon.vertex4()], material = {})
     });
     return publicInterface;
 }
+Rngon.ngon.defaultMaterial = 
+{
+    color: Rngon.color_rgba(127, 127, 127, 255),
+    texture: null,
+    hasSolidFill: true,
+    hasWireframe: false,
+    wireframeColor: Rngon.color_rgba(0, 0, 0),
+};
+
 
 // A collection of ngons, with shared translation and rotation.
 // NOTE: Expects to remain immutable.
@@ -142,7 +152,7 @@ Rngon.mesh = function(ngons = [Rngon.ngon()], transform = {})
     Rngon.assert((typeof Rngon.mesh.defaultTransform.rotation !== "undefined" &&
                   typeof Rngon.mesh.defaultTransform.translation !== "undefined" &&
                   typeof Rngon.mesh.defaultTransform.scaling !== "undefined"),
-                  "The default transforms object for mesh() is missing required properties.");
+                 "The default transforms object for mesh() is missing required properties.");
 
     // Combine default transformations with the user-supplied ones.
     transform = Object.freeze(
