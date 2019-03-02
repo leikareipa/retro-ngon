@@ -207,7 +207,7 @@ const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
         {
             expect_true([()=>(document.getElementById(testCanvasId) !== null)]);
 
-            const renderSurface = Rngon.canvas(testCanvasId, Rngon.ngon_filler, Rngon.ngon_transformer, 1);
+            const renderSurface = Rngon.screen(testCanvasId, Rngon.ngon_filler, Rngon.ngon_transformer, 1);
 
             expect_true([()=>(renderSurface.width === testCanvasWidth),
                          ()=>(renderSurface.height === testCanvasHeight)]);

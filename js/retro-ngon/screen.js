@@ -1,13 +1,14 @@
 /*
  * Tarpeeksi Hyvae Soft 2019 /
  * Retro n-gon renderer
+ * 
+ * A surface for rendering onto. Maps onto a HTML5 canvas.
  *
  */
 
 "use strict";
 
-// Provides an interface for interacting with a HTML5 canvas element for 3d rendering.
-Rngon.canvas = function(canvasElementId = "",              // The DOM id of the canvas element.
+Rngon.screen = function(canvasElementId = "",              // The DOM id of the canvas element.
                         ngon_fill_f = function(){},        // A function that rasterizes the given ngons onto the canvas.
                         ngon_transform_f = function(){},   // A function that transforms the given ngons into screen-space for the canvas.
                         scaleFactor = 1,
@@ -21,14 +22,14 @@ Rngon.canvas = function(canvasElementId = "",              // The DOM id of the 
     Rngon.assert((canvasElement !== null), "Can't find the given canvas element.");
 
     // The pixel dimensions of the render surface.
-    const surfaceWidth = Math.floor(parseInt(window.getComputedStyle(canvasElement).getPropertyValue("width")) * scaleFactor);
-    const surfaceHeight = Math.floor(parseInt(window.getComputedStyle(canvasElement).getPropertyValue("height")) * scaleFactor);
-    Rngon.assert(!isNaN(surfaceWidth) && !isNaN(surfaceHeight), "Failed to extract the canvas size.");
-    canvasElement.setAttribute("width", surfaceWidth);
-    canvasElement.setAttribute("height", surfaceHeight);
+    const screenWidth = Math.floor(parseInt(window.getComputedStyle(canvasElement).getPropertyValue("width")) * scaleFactor);
+    const screenHeight = Math.floor(parseInt(window.getComputedStyle(canvasElement).getPropertyValue("height")) * scaleFactor);
+    Rngon.assert(!isNaN(screenWidth) && !isNaN(screenHeight), "Failed to extract the canvas size.");
+    canvasElement.setAttribute("width", screenWidth);
+    canvasElement.setAttribute("height", screenHeight);
 
-    const perspectiveMatrix = Rngon.matrix44.perspective((fov * Math.PI/180), (surfaceWidth / surfaceHeight), 1, 1000);
-    const canvasSpaceMatrix = Rngon.matrix44.screen_space(surfaceWidth, surfaceHeight);
+    const perspectiveMatrix = Rngon.matrix44.perspective((fov * Math.PI/180), (screenWidth / screenHeight), 1, 1000);
+    const screenMatrix = Rngon.matrix44.screen_space(screenWidth, screenHeight);
 
     function exposed_render_context()
     {
@@ -37,14 +38,14 @@ Rngon.canvas = function(canvasElementId = "",              // The DOM id of the 
 
     const publicInterface = Object.freeze(
     {
-        width: surfaceWidth,
-        height: surfaceHeight,
+        width: screenWidth,
+        height: screenHeight,
 
         wipe_clean: function()
         {
             const renderContext = exposed_render_context();
             renderContext.fillStyle = "transparent";
-            renderContext.fillRect(0, 0, surfaceWidth, surfaceHeight);
+            renderContext.fillRect(0, 0, screenWidth, screenHeight);
         },
 
         // Returns a copy of the ngons transformed into screen-space for this render surface.
@@ -54,7 +55,7 @@ Rngon.canvas = function(canvasElementId = "",              // The DOM id of the 
         {
             const objectSpaceMatrix = Rngon.matrix44.matrices_multiplied(cameraMatrix, objectMatrix);
             const clipSpaceMatrix = Rngon.matrix44.matrices_multiplied(perspectiveMatrix, objectSpaceMatrix);
-            const screenSpaceMatrix = Rngon.matrix44.matrices_multiplied(canvasSpaceMatrix, clipSpaceMatrix);
+            const screenSpaceMatrix = Rngon.matrix44.matrices_multiplied(screenMatrix, clipSpaceMatrix);
 
             return ngon_transform_f(ngons, screenSpaceMatrix);
         },
@@ -63,9 +64,9 @@ Rngon.canvas = function(canvasElementId = "",              // The DOM id of the 
         draw_ngons: function(ngons = [])
         {
             const renderContext = exposed_render_context();
-            const pixelBuffer = renderContext.getImageData(0, 0, surfaceWidth, surfaceHeight);
+            const pixelBuffer = renderContext.getImageData(0, 0, screenWidth, screenHeight);
 
-            ngon_fill_f(ngons, pixelBuffer.data, surfaceWidth, surfaceHeight);
+            ngon_fill_f(ngons, pixelBuffer.data, screenWidth, screenHeight);
 
             renderContext.putImageData(pixelBuffer, 0, 0);
         },

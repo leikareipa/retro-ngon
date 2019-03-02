@@ -29,7 +29,7 @@ Rngon.render = function(canvasElementId,
         ...extraOptions
     };
 
-    const renderSurface = Rngon.canvas(canvasElementId, Rngon.ngon_filler, Rngon.ngon_transformer, scaleFactor, options.fov);
+    const renderSurface = Rngon.screen(canvasElementId, Rngon.ngon_filler, Rngon.ngon_transformer, scaleFactor, options.fov);
 
     perfTime.initTime = (performance.now() - perfTime.initTime);
 
