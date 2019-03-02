@@ -29,7 +29,7 @@ Rngon.screen = function(canvasElementId = "",              // The DOM id of the 
     canvasElement.setAttribute("height", screenHeight);
 
     const perspectiveMatrix = Rngon.matrix44.perspective((fov * Math.PI/180), (screenWidth / screenHeight), 1, 1000);
-    const screenMatrix = Rngon.matrix44.screen_space(screenWidth, screenHeight);
+    const screenMatrix = Rngon.matrix44.ortho(screenWidth, screenHeight);
 
     function exposed_render_context()
     {

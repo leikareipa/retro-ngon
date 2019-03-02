@@ -39,7 +39,7 @@ const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
         }
 
         {
-            const m = Rngon.matrix44.screen_space(4567.2434, 3.1284);
+            const m = Rngon.matrix44.ortho(4567.2434, 3.1284);
             expect_true([()=>(m.length === 16 && (trunc4(m[0])===2283.6217 && trunc4(m[4])===0.0000  && trunc4(m[ 8])===0.0000 && trunc4(m[12])===2283.1217 && 
                                                   trunc4(m[1])===0.0000    && trunc4(m[5])===-1.5642 && trunc4(m[ 9])===0.0000 && trunc4(m[13])===1.0642    && 
                                                   trunc4(m[2])===0.0000    && trunc4(m[6])===0.0000  && trunc4(m[10])===1.0000 && trunc4(m[14])===0.0000    && 

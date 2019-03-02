@@ -94,7 +94,7 @@ Rngon.matrix44 = (()=>
                                    0,                            0,             (2 * zFar * (zNear / zRange)), 0]);
         },
 
-        screen_space: function(width = 0, height = 0)
+        ortho: function(width = 0, height = 0)
         {
             return Object.freeze([(width/2),     0,              0, 0,
                                   0,             -(height/2),    0, 0,
