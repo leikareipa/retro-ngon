@@ -10,8 +10,8 @@ You can view a live sample of the renderer's output at [http://tarpeeksihyvaesof
 - Simple to use
 
 ### Suggested use cases
-The retro n-gon renderer is not intended as a general-purpose software 3d renderer. It omits several modern features &ndash; more of which elsewhere in this document &ndash; in favor of a legit retro look, feel, and experience. I've made a number of other open-source software renderers, some of which might fit your needs better:
-- [Wray](https://github.com/leikareipa/wray/) for path-tracing in JavaScript
+The retro n-gon renderer is not intended as a general-purpose software 3d renderer. It omits several modern features &ndash; more of which elsewhere in this document &ndash; in favor of a legit retro look and feel. I've made a number of other open-source software renderers, some of which might fit your needs or interests better:
+- [Wray](https://github.com/leikareipa/wray/) for path tracing in JavaScript
 - [RallySportED](https://github.com/leikareipa/rallysported-diverse/)'s renderer in C++ using Qt and the Win32 API (also w/ support for OpenGL and Glide)
 - [Vond](https://github.com/leikareipa/vond/) for a hybrid voxel/polygon software renderer in C++
 - [dccb](https://github.com/leikareipa/dccb/) for a simple software renderer in C for 16-bit DOS
@@ -57,9 +57,11 @@ const ngon = Rngon.ngon([Rngon.vertex4(1, 0, 0)],
 **Meshes** are one step up from n-gons, being collections of n-gons that share a purpose (e.g. the n-gons that make up a model of a spoon). A mesh thus consists of the n-gons belonging to it, and a set of 3d transformations, like rotation and translation, that can be used to transform the n-gons in unison. A mesh object containing one n-gon could be created like so:
 ```
 const mesh = Rngon.mesh([ngon],
-                        Rngon.translation_vector(0, 0, 0),
-                        Rngon.rotation_vector(0, 0, 0),
-                        Rngon.scaling_vector(0, 0, 0));
+                        {
+                            translation: Rngon.translation_vector(0, 0, 0),
+                            rotation: Rngon.rotation_vector(0, 0, 0),
+                            scaling: Rngon.scaling_vector(1, 1, 1)
+                        });
 ```
 
 To render n-gons, you first wrap them up in one or more `mesh` objects, then feed those meshes into the `render()` function.

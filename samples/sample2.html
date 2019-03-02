@@ -38,9 +38,10 @@
             {
                 const rotationSpeed = 0.3;
                 return Rngon.mesh(texturedCubeModel.ngons,
-                                  Rngon.translation_vector(0, 0, 0),
-                                  Rngon.rotation_vector(20, (-50 + rotationSpeed * frameCount), 0),
-                                  Rngon.scaling_vector(20, 20, 20));
+                                  {
+                                      rotation: Rngon.rotation_vector(20, (-50 + rotationSpeed * frameCount), 0),
+                                      scaling: Rngon.scaling_vector(20, 20, 20)
+                                  });
             };
 
             // Runs the renderer continuously, in sync with the device's refresh rate.

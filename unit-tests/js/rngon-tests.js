@@ -117,7 +117,12 @@ const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
             const vertex = Rngon.vertex4(1.1, 2.2, 3.3);
             const ngon = Rngon.ngon([vertex],
                                     {color: Rngon.color_rgba(0, 111, 222), texture: null, hasSolidFill: true, hasWireframe: false});
-            const mesh = Rngon.mesh([ngon], Rngon.translation_vector(1, 2, 3), Rngon.rotation_vector(4, 5, 6), Rngon.scaling_vector(7, 8, 9));
+            const mesh = Rngon.mesh([ngon],
+                                    {
+                                        translation: Rngon.translation_vector(1, 2, 3),
+                                        rotation: Rngon.rotation_vector(4, 5, 6),
+                                        scaling: Rngon.scaling_vector(7, 8, 9)
+                                    });
 
             expect_true([()=>(mesh.ngons.length === 1),
                          ()=>((mesh.translation.x === 1 && mesh.translation.y === 2 && mesh.translation.z === 3)),
@@ -234,9 +239,11 @@ const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
                                         hasWireframe: false
                                     });
             const mesh = Rngon.mesh([ngon],
-                                    Rngon.translation_vector(0, 0, 0),
-                                    Rngon.rotation_vector(0, 0, 0),
-                                    Rngon.scaling_vector(1, 1, 1));
+                                    {
+                                        translation: Rngon.translation_vector(0, 0, 0),
+                                        rotation: Rngon.rotation_vector(0, 0, 0),
+                                        scaling: Rngon.scaling_vector(1, 1, 1)
+                                    });
  
             // Render the rectangle into the canvas, and check that the canvas came to have correctly-colored pixels.
             {

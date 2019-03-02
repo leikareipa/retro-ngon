@@ -10,27 +10,48 @@
 
 // A collection of ngons, with shared translation and rotation.
 // NOTE: Expects to remain immutable.
-Rngon.mesh = function(ngons = [Rngon.ngon()],
-                      translation = Rngon.vector3(0, 0, 0),
-                      rotation = Rngon.vector3(0, 0, 0),
-                      scale = Rngon.vector3(1, 1, 1))
+Rngon.mesh = function(ngons = [Rngon.ngon()], transform = {})
 {
     Rngon.assert((ngons instanceof Array), "Expected a list of ngons for creating an ngon mesh.");
+    Rngon.assert((transform instanceof Object), "Expected an object with transformation properties.");
+
+    // Combine default transformations with the user-supplied ones.
+    transform = Object.freeze(
+    {
+        ...
+        {
+            translation: Rngon.translation_vector(0, 0, 0),
+            rotation: Rngon.rotation_vector(0, 0, 0),
+            scaling: Rngon.scaling_vector(1, 1, 1)
+        },
+        ...transform
+    });
 
     // A matrix by which the ngons of this mesh should be transformed to get the ngongs into
     // the mesh's object space.
-    const objectSpaceMatrix = Rngon.matrix44.matrices_multiplied(Rngon.matrix44.matrices_multiplied(Rngon.matrix44.translate(translation.x, translation.y, translation.z),
-                                                                                                    Rngon.matrix44.rotate(rotation.x, rotation.y,  rotation.z)),
-                                                                 Rngon.matrix44.scale(scale.x, scale.y, scale.z));
+    const objectSpaceMatrix = (()=>
+    {
+        const translationMatrix = Rngon.matrix44.translate(transform.translation.x,
+                                                           transform.translation.y,
+                                                           transform.translation.z);
+        const rotationMatrix = Rngon.matrix44.rotate(transform.rotation.x,
+                                                     transform.rotation.y,
+                                                     transform.rotation.z);
+        const scalingMatrix = Rngon.matrix44.scale(transform.scaling.x,
+                                                   transform.scaling.y,
+                                                   transform.scaling.z);
+
+        return Rngon.matrix44.matrices_multiplied(Rngon.matrix44.matrices_multiplied(translationMatrix, rotationMatrix), scalingMatrix);
+    })();
 
     ngons = Object.freeze(ngons);
     
     const publicInterface = Object.freeze(
     {
         ngons,
-        rotation,
-        translation,
-        scale,
+        rotation: transform.rotation,
+        translation: transform.translation,
+        scale: transform.scaling,
         objectSpaceMatrix,
     });
     return publicInterface;

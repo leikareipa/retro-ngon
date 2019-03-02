@@ -89,9 +89,9 @@
                 {
                     const rotationSpeed = 1;
                     return Rngon.mesh([triangle],
-                                      Rngon.translation_vector(0, 0, 0),
-                                      Rngon.rotation_vector(0, (frameCount * rotationSpeed), 0),
-                                      Rngon.scaling_vector(1, 1, 1));
+                                      {
+                                          rotation: Rngon.rotation_vector(0, (frameCount * rotationSpeed), 0)
+                                      });
                 };
 
                 // A function that executes repeatedly, at the device's refresh rate. On each execution,

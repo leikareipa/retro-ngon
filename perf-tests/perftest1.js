@@ -35,9 +35,7 @@ const rngon_perftest1 = function(title = "", polygon, numClones, maxNumClones, c
         }
 
         const meshes = Array(numClones).fill(0)
-                       .map((e, i)=>Rngon.mesh([polygon],
-                                                Rngon.translation_vector(0, 0, 0),
-                                                Rngon.rotation_vector(0, 0, 0)));
+                       .map((e, i)=>Rngon.mesh([polygon]));
 
         for (let warmup = 0; warmup < 10; warmup++)
         {
