@@ -13,7 +13,7 @@ Rngon.render = function(canvasElementId,
                         cameraPos = Rngon.vector3(0, 0, 0),
                         cameraDir = Rngon.vector3(0, 0, 0),
                         scaleFactor = 1,
-                        userOptions = {})
+                        extraOptions = {})
 {
     // Used for performance timing.
     const perfTime = {initTime:performance.now(), transformTime:0, rasterTime:0, totalTime:performance.now()};
@@ -26,7 +26,7 @@ Rngon.render = function(canvasElementId,
             fov:43,
             hibernateWhenNotOnScreen:true, // If true, rendering is skipped when no part of the render surface's bounding rect is in view.
         },
-        ...userOptions
+        ...extraOptions
     };
 
     const renderSurface = Rngon.canvas(canvasElementId, Rngon.ngon_filler, Rngon.ngon_transformer, scaleFactor, options.fov);
