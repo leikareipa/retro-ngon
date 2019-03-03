@@ -33,7 +33,7 @@ Rngon.line_draw = (()=>
             const y1 = Math.floor(vert2.y);
 
             Rngon.assert((!isNaN(x0) && !isNaN(x1) && !isNaN(y0) && !isNaN(y1)),
-                        "Invalid vertex coordinates for line-drawing.")
+                         "Invalid vertex coordinates for line-drawing.")
 
             // Bresenham line algo. Adapted from https://stackoverflow.com/a/4672319.
             {
@@ -65,9 +65,10 @@ Rngon.line_draw = (()=>
         },
         
         // 'Draws' a line between the two given vertices into the given array, such that
-        // e.g. the coordinates 5,8 would be represented as array[8] === 5. The yOffset
+        // e.g. the coordinates 5,8 would be represented as array[8].x === 5. The yOffset
         // parameter lets you specify a value that'll be subtracted from all y coordinates
-        // (i.e. from indices when writing into the array).
+        // (i.e. from indices when writing into the array). Will interpolate the vertices'
+        // u,v coordinates, as well, and place them into array[].u and array[].v.
         into_array: function(vert1 = Rngon.vertex(),
                              vert2 = Rngon.vertex(),
                              array = [],
@@ -81,7 +82,9 @@ Rngon.line_draw = (()=>
             const y1 = Math.floor(vert2.y);
 
             Rngon.assert((!isNaN(x0) && !isNaN(x1) && !isNaN(y0) && !isNaN(y1)),
-                     "Invalid vertex coordinates for line-drawing.")
+                         "Invalid vertex coordinates for line-drawing.")
+
+            const lineLength = distanceBetween(x0, y0, x1, y1);
 
             // If true, we won't touch non-null elements in the array. Useful in preventing certain
             // edge rendering errors.
@@ -98,11 +101,20 @@ Rngon.line_draw = (()=>
                 while (1)
                 {
                     // Mark the pixel into the array.
-                    if (noOverwrite)
                     {
-                        if (array[y0 - yOffset] == null) array[y0 - yOffset] = x0;
+                        // Interpolate the u,v coordinates.
+                        const l = (distanceBetween(x1, y1, x0, y0) / lineLength);
+                        const u = Rngon.lerp(vert2.u, vert1.u, l);
+                        const v = Rngon.lerp(vert2.v, vert1.v, l);
+
+                        const pixel = {x:x0, u, v:(1-v)};
+
+                        if (noOverwrite)
+                        {
+                            if (array[y0 - yOffset] == null) array[y0 - yOffset] = pixel;
+                        }
+                        else array[y0 - yOffset] = pixel;
                     }
-                    else array[y0 - yOffset] = x0;
                     
                     if ((x0 === x1) && (y0 === y1)) break;
 
@@ -118,6 +130,11 @@ Rngon.line_draw = (()=>
                         y0 += sy;
                     }
                 }
+            }
+
+            function distanceBetween(x1, y1, x2, y2)
+            {
+                return Math.sqrt(Math.pow(x2-x1, 2) + Math.pow(y2-y1, 2));
             }
         },
     });

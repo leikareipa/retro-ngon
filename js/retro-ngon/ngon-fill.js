@@ -119,22 +119,16 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, renderWidth, renderHeight)
                 const polyYOffset = Math.floor(verts[0].y);
                 const polyHeight = leftEdge.length;
 
-                let v = 0;
-                const vDelta = ((ngon.texture == null)? 0 : ((ngon.texture.height - 0.001) / (polyHeight - 1)));
-
                 for (let y = 0; y < polyHeight; y++)
                 {
-                    const rowWidth = (rightEdge[y] - leftEdge[y]);
+                    const rowWidth = (rightEdge[y].x - leftEdge[y].x);
                     if (rowWidth <= 0) continue;
 
-                    let u = 0;
-                    const uDelta = ((ngon.texture == null)? 0 : ((ngon.texture.width - 0.001) / rowWidth));
-
-                    while (leftEdge[y] <= rightEdge[y])
+                    for (let x = 0; x <= rowWidth; (x++, leftEdge[y].x++))
                     {
-                        if (leftEdge[y] >= 0 && leftEdge[y] < renderWidth)
+                        if (leftEdge[y].x >= 0 && leftEdge[y].x < renderWidth)
                         {
-                            const px = leftEdge[y];
+                            const px = leftEdge[y].x;
                             const py = (y + polyYOffset);
 
                             if (py >= 0 && py < renderHeight)
@@ -152,6 +146,24 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, renderWidth, renderHeight)
                                 // Textured fill.
                                 else
                                 {
+                                    let u = 0, v = 0;
+                                    switch (ngon.textureMapping)
+                                    {
+                                        case "affine":
+                                        {
+                                            u = (Rngon.lerp(leftEdge[y].u, rightEdge[y].u, x/rowWidth) * (ngon.texture.width - 0.001));
+                                            v = (Rngon.lerp(leftEdge[y].v, rightEdge[y].v, x/rowWidth) * (ngon.texture.height - 0.001));
+                                            break;
+                                        }
+                                        case "ortho":
+                                        {
+                                            u = x * ((ngon.texture.width - 0.001) / rowWidth);
+                                            v = y * ((ngon.texture.height - 0.001) / (polyHeight - 1));
+                                            break;
+                                        }
+                                        default: Rngon.assert(0, "Unknown texture-mapping mode."); break;
+                                    }
+
                                     const texelColorChannels = ngon.texture.rgba_channels_at(u, v);
 
                                     if (texelColorChannels[3] === 255)
@@ -164,12 +176,7 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, renderWidth, renderHeight)
                                 }
                             }
                         }
-
-                        leftEdge[y]++;
-                        u += uDelta;
                     }
-
-                    v += vDelta;
                 }
             }
 

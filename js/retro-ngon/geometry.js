@@ -119,6 +119,7 @@ Rngon.ngon = function(vertices = [Rngon.vertex()], material = {})
         hasSolidFill: material.hasSolidFill,
         hasWireframe: material.hasWireframe,
         wireframeColor: material.wireframeColor,
+        textureMapping: material.textureMapping,
 
         perspective_divided: function()
         {
@@ -136,11 +137,11 @@ Rngon.ngon.defaultMaterial =
 {
     color: Rngon.color_rgba(127, 127, 127, 255),
     texture: null,
+    textureMapping: "ortho",
     hasSolidFill: true,
     hasWireframe: false,
     wireframeColor: Rngon.color_rgba(0, 0, 0),
 };
-
 
 // A collection of ngons, with shared translation and rotation.
 // NOTE: Expects to remain immutable.
