@@ -252,7 +252,12 @@ const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
                     expect_true([()=>(pixelMap.every((p)=>(p !== colorShade)))]);
                 }
 
-                Rngon.render(testCanvasId, [mesh], Rngon.vector3(0, 0, 0), Rngon.vector3(0, 0, 0), 1);
+                Rngon.render(testCanvasId, [mesh],
+                             {
+                                 cameraDirection: Rngon.translation_vector(0, 0, 0),
+                                 cameraPosition: Rngon.rotation_vector(0, 0, 0),
+                                 scale: 1,
+                             });
 
                 {
                     const pixelMap = canvas.getContext("2d").getImageData(0, 0, testCanvasWidth, testCanvasHeight).data;

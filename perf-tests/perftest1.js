@@ -40,9 +40,12 @@ const rngon_perftest1 = function(title = "", polygon, numClones, maxNumClones, c
         for (let warmup = 0; warmup < 10; warmup++)
         {
             Rngon.render(html.canvasElement.getAttribute("id"), meshes,
-                         Rngon.translation_vector(0, 0, 7),
-                         Rngon.rotation_vector(0, 0, 0), 1,
-                         {hibernateWhenNotOnScreen:false});
+                         {
+                             cameraPosition: Rngon.translation_vector(0, 0, 7),
+                             cameraDirection: Rngon.rotation_vector(0, 0, 0),
+                             scale: 1,
+                             hibernateWhenNotOnScreen:false
+                         });
         }
 
         // Print out the time it took to render the polygons, then run the test again
@@ -69,10 +72,12 @@ const rngon_perftest1 = function(title = "", polygon, numClones, maxNumClones, c
         (function render_loop(frameCount = 1)
         {
             Rngon.render(html.canvasElement.getAttribute("id"), meshes,
-                         Rngon.translation_vector(0, 0, 9),
-                         Rngon.rotation_vector(0, 0, frameCount),
-                         1,
-                         {hibernateWhenNotOnScreen:false});
+                         {
+                            cameraPosition: Rngon.translation_vector(0, 0, 9),
+                            cameraDirection: Rngon.rotation_vector(0, 0, frameCount),
+                            scale: 1,
+                            hibernateWhenNotOnScreen:false
+                        });
 
             if (frameCount >= numFrames) done();
             else window.requestAnimationFrame(()=>render_loop(frameCount + 1));

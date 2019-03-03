@@ -40,9 +40,11 @@
                 const cameraPosition = Rngon.vector3(0, 0, 170);
 
                 Rngon.render("rngon-canvas", [cubeRotated(frameCount)],
-                             cameraPosition,
-                             cameraDirection,
-                             rendererScale);
+                             {
+                                 cameraDirection,
+                                 cameraPosition,
+                                 scale: rendererScale,
+                             });
 
                 window.requestAnimationFrame(()=>render_loop(frameCount + 1));
             })();

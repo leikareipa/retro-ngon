@@ -60,11 +60,12 @@
             slightly better performance.-->
 
             <script>
-                Rngon.render("render-canvas",
-                             [Rngon.mesh([triangle])],
-                             Rngon.translation_vector(0, 0, 3) /*camera position*/,
-                             Rngon.rotation_vector(0, 0, 0)    /*camera direction; values in degrees 0-359*/,
-                             1 /*scale of the rendered image, relative to the size of the canvas*/);
+                Rngon.render("render-canvas", [Rngon.mesh([triangle])],
+                             {
+                                 cameraPosition: Rngon.translation_vector(0, 0, 3), /*camera position*/
+                                 cameraDirection: Rngon.rotation_vector(0, 0, 0), /*camera direction; values in degrees 0-359*/
+                                 scale: 1, /*scale of the rendered image, relative to the size of the canvas*/
+                             });
             </script>
 
         <!--Step 6. That's it. When you load the page, you should see a 300 x 300 light gray box
@@ -89,9 +90,10 @@
                 // frame count.
                 (function render_loop(frameCount = 0)
                 {
-                    Rngon.render("render-canvas",
-                                 [rotatingTriangle(frameCount)],
-                                 Rngon.translation_vector(0, 0, 3));
+                    Rngon.render("render-canvas", [rotatingTriangle(frameCount)],
+                                 {
+                                     cameraPosition: Rngon.translation_vector(0, 0, 3),
+                                 });
 
                     window.requestAnimationFrame(()=>render_loop(frameCount + 1));
                 })();

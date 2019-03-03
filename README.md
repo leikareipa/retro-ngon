@@ -34,8 +34,8 @@ The following JavaScript pseudocode renders a triangle onto a canvas:
 triangle = Rngon.ngon(...)
 mesh = Rngon.mesh([triangle]);
 
-camera = Rngon.camera(...)
-Rngon.render("render-target", [mesh], camera)
+options = {camera: ..., ...}
+Rngon.render("render-target", [mesh], options)
 ```
 This produces a static image of the triangle. If you wanted to animate it, you'd simply call `render()` repeatedly (e.g. with `window.requestAnimationFrame()`), each time altering the triangle mesh's orientation, etc.
 
@@ -332,7 +332,7 @@ Below are rough estimates of the required browser versions for a given version o
 
 <table>
     <tr>
-        <th align="center"></th>
+        <th align="left"></th>
         <th align="center">Chrome</th>
         <th align="center">Firefox</th>
         <th align="center">Opera</th>

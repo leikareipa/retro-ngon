@@ -42,13 +42,12 @@
 
             (function render_loop(frameCount = 1, frameLimit = 200, startTime = performance.now())
             {
-                Rngon.render("render-canvas",
-                             bunnyMesh(frameCount),
-                             Rngon.translation_vector(0, 0, 0),
-                             Rngon.rotation_vector(0, 0, 0),
-                             0.25,
+                Rngon.render("render-canvas", bunnyMesh(frameCount),
                              {
-                                 hibernateWhenNotOnScreen: false
+                                 cameraPosition: Rngon.translation_vector(0, 0, 0),
+                                 cameraDirection: Rngon.rotation_vector(0, 0, 0),
+                                 scale: 0.25,
+                                 hibernateWhenNotOnScreen:false
                              });
 
                 if (frameCount >= frameLimit) done(startTime, frameCount);

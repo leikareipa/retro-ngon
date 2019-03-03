@@ -10,26 +10,27 @@
 // the given ngon meshes.
 Rngon.render = function(canvasElementId,
                         meshes = [Rngon.mesh()],
-                        cameraPos = Rngon.vector3(0, 0, 0),
-                        cameraDir = Rngon.vector3(0, 0, 0),
-                        scaleFactor = 1,
-                        extraOptions = {})
+                        options = {})
 {
     // Used for performance timing.
     const perfTime = {initTime:performance.now(), transformTime:0, rasterTime:0, totalTime:performance.now()};
 
-    // Combine default options with user-supplied ones.
-    const options =
-    {
-        ...{
-            depthSort:"painter",
-            fov:43,
-            hibernateWhenNotOnScreen:true, // If true, rendering is skipped when no part of the render surface's bounding rect is in view.
-        },
-        ...extraOptions
-    };
+    Rngon.assert((typeof Rngon.render.defaultOptions.cameraPosition !== "undefined" &&
+                  typeof Rngon.render.defaultOptions.cameraDirection !== "undefined" &&
+                  typeof Rngon.render.defaultOptions.scale !== "undefined" &&
+                  typeof Rngon.render.defaultOptions.depthSort !== "undefined" &&
+                  typeof Rngon.render.defaultOptions.hibernateWhenNotOnScren !== "undefined" &&
+                  typeof Rngon.render.defaultOptions.fov !== "undefined"),
+                 "The default options object for render() is missing required properties.");
 
-    const renderSurface = Rngon.screen(canvasElementId, Rngon.ngon_filler, Rngon.ngon_transformer, scaleFactor, options.fov);
+    // Combine default render options with the user-supplied ones.
+    options = Object.freeze(
+    {
+        ...Rngon.render.defaultOptions,
+        ...options
+    });
+
+    const renderSurface = Rngon.screen(canvasElementId, Rngon.ngon_filler, Rngon.ngon_transformer, options.scale, options.fov);
 
     perfTime.initTime = (performance.now() - perfTime.initTime);
 
@@ -42,8 +43,12 @@ Rngon.render = function(canvasElementId,
         perfTime.transformTime = performance.now();
         const transformedNgons = [];
         {
-            const cameraMatrix = Rngon.matrix44.matrices_multiplied(Rngon.matrix44.rotate(cameraDir.x, cameraDir.y, cameraDir.z),
-                                                                    Rngon.matrix44.translate(cameraPos.x, cameraPos.y, cameraPos.z));
+            const cameraMatrix = Rngon.matrix44.matrices_multiplied(Rngon.matrix44.rotate(options.cameraDirection.x,
+                                                                                          options.cameraDirection.y,
+                                                                                          options.cameraDirection.z),
+                                                                    Rngon.matrix44.translate(options.cameraPosition.x,
+                                                                                             options.cameraPosition.y,
+                                                                                             options.cameraPosition.z));
 
             meshes.forEach((mesh)=>
             {
@@ -102,4 +107,13 @@ Rngon.render = function(canvasElementId,
         return Boolean((containerRect.top > -containerRect.height) &&
                        (containerRect.top < viewHeight));
     }
+};
+Rngon.render.defaultOptions = 
+{
+    cameraPosition: Rngon.vector3(0, 0, 0),
+    cameraDirection: Rngon.vector3(0, 0, 0),
+    scale: 1,
+    depthSort: "painter",
+    fov: 43,
+    hibernateWhenNotOnScren: true,
 };
