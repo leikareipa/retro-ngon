@@ -44,7 +44,7 @@ with open(outFilename, 'w') as f:
 
     f.write("\t\t// Shorthands, for a smaller file size.\n")
     f.write("\t\tconst n = Rngon.ngon;\n")
-    f.write("\t\tconst v = Rngon.vertex4;\n")
+    f.write("\t\tconst v = Rngon.vertex;\n")
     f.write("\t\tconst c = Rngon.color_rgba;\n")
     f.write("\t\tconst ct = Rngon.texture_rgba.create_with_data_from_file;\n\n");
 

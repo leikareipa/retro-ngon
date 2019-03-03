@@ -49,11 +49,11 @@ Rngon.rotation_vector = (x, y, z)=>Rngon.vector3(Rngon.trig.deg(x), Rngon.trig.d
 Rngon.scaling_vector = Rngon.vector3;
 
 // NOTE: Expects to remain immutable.
-Rngon.vertex4 = function(x = 0, y = 0, z = 0, u = 0, v = 0, w = 1)
+Rngon.vertex = function(x = 0, y = 0, z = 0, u = 0, v = 0, w = 1)
 {
     Rngon.assert((typeof x === "number" && typeof y === "number" && typeof z === "number" &&
                   typeof w === "number" && typeof u === "number" && typeof v === "number"),
-                 "Expected numbers as parameters to the vertex4 factory.");
+                 "Expected numbers as parameters to the vertex factory.");
 
     const publicInterface = Object.freeze(
     {
@@ -74,13 +74,13 @@ Rngon.vertex4 = function(x = 0, y = 0, z = 0, u = 0, v = 0, w = 1)
             const z_ = ((m[2] * x) + (m[6] * y) + (m[10] * z) + (m[14] * w));
             const w_ = ((m[3] * x) + (m[7] * y) + (m[11] * z) + (m[15] * w));
 
-            return Rngon.vertex4(x_, y_, z_, u, v, w_);
+            return Rngon.vertex(x_, y_, z_, u, v, w_);
         },
 
         // Returns a copy of the vertex with perspective division applied.
         perspective_divided: function()
         {
-            return Rngon.vertex4((x/w), (y/w), (z/w), u, v, w);
+            return Rngon.vertex((x/w), (y/w), (z/w), u, v, w);
         }
     });
 
@@ -89,7 +89,7 @@ Rngon.vertex4 = function(x = 0, y = 0, z = 0, u = 0, v = 0, w = 1)
 
 // A single n-sided ngon.
 // NOTE: Expects to remain immutable.
-Rngon.ngon = function(vertices = [Rngon.vertex4()], material = {})
+Rngon.ngon = function(vertices = [Rngon.vertex()], material = {})
 {
     Rngon.assert((vertices instanceof Array), "Expected an array of vertices to make an ngon.");
     Rngon.assert((material instanceof Object), "Expected an object containing user-supplied options.");

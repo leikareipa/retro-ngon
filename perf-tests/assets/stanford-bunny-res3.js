@@ -6,7 +6,7 @@
 const stanford_bunny_res3 = function(texture = null, hasSolidFill = true, hasWireframe = false)
 {
 	const n = Rngon.ngon;
-	const v = Rngon.vertex4;
+	const v = Rngon.vertex;
 	const c = Rngon.color_rgba
 	const o = {texture, hasSolidFill, hasWireframe}
 

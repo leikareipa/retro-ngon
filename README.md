@@ -47,7 +47,7 @@ A slightly more involved example is provided in [samples/sample2.html](samples/s
 ### A how-to of 3d modeling
 **N-gons** (polygons of _n_ sides, but also points and lines) are the building-blocks of 3d models in the retro n-gon renderer. Each n-gon includes one or more vertices, and a material that describes how the n-gon should look when rendered (its color, texture, and so on). A red 1-gon object could be created like so:
 ```
-const ngon = Rngon.ngon([Rngon.vertex4(1, 0, 0)],
+const ngon = Rngon.ngon([Rngon.vertex(1, 0, 0)],
                         {
                             color: Rngon.color_rgba(255, 0, 0),
                             hasSolidFill: true

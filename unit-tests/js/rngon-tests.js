@@ -62,7 +62,7 @@ const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
     {
         // Vertices.
         {
-            const vertex = Rngon.vertex4(1.1, 2.2, 3.3);
+            const vertex = Rngon.vertex(1.1, 2.2, 3.3);
 
             expect_true([()=>(vertex.x === 1.1),
                          ()=>(vertex.y === 2.2),
@@ -90,7 +90,7 @@ const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
 
         // N-gons.
         {
-            const vertex = Rngon.vertex4(1.1, 2.2, 3.3);
+            const vertex = Rngon.vertex(1.1, 2.2, 3.3);
             const ngon = Rngon.ngon([vertex],
                                     {color: Rngon.color_rgba(0, 111, 222), texture: null, hasSolidFill: true, hasWireframe: false});
 
@@ -114,7 +114,7 @@ const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
 
         // Meshes.
         {
-            const vertex = Rngon.vertex4(1.1, 2.2, 3.3);
+            const vertex = Rngon.vertex(1.1, 2.2, 3.3);
             const ngon = Rngon.ngon([vertex],
                                     {color: Rngon.color_rgba(0, 111, 222), texture: null, hasSolidFill: true, hasWireframe: false});
             const mesh = Rngon.mesh([ngon],
@@ -228,10 +228,10 @@ const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
 
             // Create a colored rectangle that fills the entire canvas when rendered.
             const colorShade = 222;
-            const ngon = Rngon.ngon([Rngon.vertex4(-1, -1, 1),
-                                     Rngon.vertex4(1, -1, 1),
-                                     Rngon.vertex4(1, 1, 1),
-                                     Rngon.vertex4(-1, 1, 1)],
+            const ngon = Rngon.ngon([Rngon.vertex(-1, -1, 1),
+                                     Rngon.vertex(1, -1, 1),
+                                     Rngon.vertex(1, 1, 1),
+                                     Rngon.vertex(-1, 1, 1)],
                                     {
                                         color: Rngon.color_rgba(colorShade, colorShade, colorShade, colorShade),
                                         texture: null,
