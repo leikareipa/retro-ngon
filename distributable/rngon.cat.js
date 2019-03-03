@@ -35,14 +35,14 @@ const Rngon = {};
     {
         if (!condition)
         {
-            alert("Rngon assertion: " + explanation);
-            throw Error("Rngon assertion: " + explanation);
+            alert("Retro n-gon: Assertion failure: " + explanation);
+            throw Error("Retro n-gon: Assertion failure: " + explanation);
         }
     }
 
     Rngon.log = (string = "Hello there.")=>
     {
-        console.log("Rngon: " + string);
+        console.log("Retro n-gon: " + string);
     }
 }
 /*
