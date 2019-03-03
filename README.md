@@ -112,11 +112,11 @@ As suggested in the sections, above, the retro n-gon renderer is not intended fo
 With that in mind, here's some performance figures on various platforms.
 
 ### Performance on the desktop
-Below are test results from [perf-tests/perftest1.html](perf-tests/perftest1.html) as of [5bb8960](https://github.com/leikareipa/retro-ngon/tree/5bb8960f433e99d615253ad56014abf3f19f6b4c) running on a Xeon E3-1230 v3 desktop PC in Chrome and Firefox. The values given in the matrices are frames per second (FPS) for polycounts 30, 60, ..., 960. An empty cell indicates that no test was run for that polycount; a bullet notes that the FPS was at least 60, the screen's refresh rate during the tests.
+Below are test results from [perf-tests/perftest1.html](perf-tests/perftest1.html) as of [5bb8960](https://github.com/leikareipa/retro-ngon/tree/5bb8960f433e99d615253ad56014abf3f19f6b4c) running on a Xeon E3-1230 v3 desktop PC in Chrome 72 (left) and Firefox 65 (right). The values given in the matrices are frames per second (FPS) for polycounts 30, 60, ..., 960. An empty cell indicates that no test was run for that polycount; a bullet notes that the FPS was at least 60, the screen's refresh rate during the tests.
 
 <table>
     <tr>
-        <td align="left">Chrome 72</td>
+        <td align="left">Xeon E3-1230 v3</td>
         <th align="center">30</th>
         <th align="center">60</th>
         <th align="center">120</th>
@@ -131,7 +131,7 @@ Below are test results from [perf-tests/perftest1.html](perf-tests/perftest1.htm
         <td align="center">&bull;</td>
         <td align="center">&bull;</td>
         <td align="center">&bull;</td>
-        <td align="center">58</td>
+        <td align="center">58 | 44</td>
     </tr>
     <tr>
         <th align="left">Solid fill</th>
@@ -139,64 +139,25 @@ Below are test results from [perf-tests/perftest1.html](perf-tests/perftest1.htm
         <td align="center">&bull;</td>
         <td align="center">&bull;</td>
         <td align="center">&bull;</td>
-        <td align="center">59</td>
-        <td align="center">44</td>
+        <td align="center">59 | 56</td>
+        <td align="center">44 | 34</td>
     </tr>
     <tr>
         <th align="left">Textured</th>
         <td align="center">&bull;</td>
-        <td align="center">&bull;</td>
-        <td align="center">&bull;</td>
-        <td align="center">&bull;</td>
-        <td align="center">57</td>
-        <td align="center">36</td>
-    </tr>
-</table>
-<br>
-<table>
-    <tr>
-        <td align="left">Firefox 65</td>
-        <th align="center">30</th>
-        <th align="center">60</th>
-        <th align="center">120</th>
-        <th align="center">240</th>
-        <th align="center">480</th>
-        <th align="center">960</th>
-    </tr>
-    <tr>
-        <th align="left">Wireframe</th>
-        <td align="center">&bull;</td>
-        <td align="center">&bull;</td>
-        <td align="center">&bull;</td>
-        <td align="center">&bull;</td>
-        <td align="center">&bull;</td>
-        <td align="center">44</td>
-    </tr>
-    <tr>
-        <th align="left">Solid fill</th>
-        <td align="center">&bull;</td>
-        <td align="center">&bull;</td>
-        <td align="center">&bull;</td>
-        <td align="center">&bull;</td>
-        <td align="center">56</td>
-        <td align="center">34</td>
-    </tr>
-    <tr>
-        <th align="left">Textured</th>
-        <td align="center">&bull;</td>
-        <td align="center">59</td>
-        <td align="center">59</td>
-        <td align="center">46</td>
-        <td align="center">26</td>
-        <td align="center">14</td>
+        <td align="center">&bull; | 59</td>
+        <td align="center">&bull; | 59</td>
+        <td align="center">&bull; | 46</td>
+        <td align="center">57 | 26</td>
+        <td align="center">36 | 14</td>
     </tr>
 </table>
 
-Below are results from [perf-tests/perftest1.html](perf-tests/perftest1.html) as of [5bb8960](https://github.com/leikareipa/retro-ngon/tree/5bb8960f433e99d615253ad56014abf3f19f6b4c) running on a Pentium G4560 desktop PC in Chrome. The notes from the tests above apply.
+Below are results from [perf-tests/perftest1.html](perf-tests/perftest1.html) as of [5bb8960](https://github.com/leikareipa/retro-ngon/tree/5bb8960f433e99d615253ad56014abf3f19f6b4c) running on a Pentium G4560 desktop PC in Chrome 72. The notes from the tests above apply.
 
 <table>
     <tr>
-        <td align="left">Chrome 72</td>
+        <td align="left">G4560</td>
         <th align="center">30</th>
         <th align="center">60</th>
         <th align="center">120</th>
