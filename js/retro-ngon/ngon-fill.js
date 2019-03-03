@@ -23,10 +23,10 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, renderWidth, renderHeight)
             case 1:
             {
                 const idx = ((Math.floor(ngon.vertices[0].x) + Math.floor(ngon.vertices[0].y) * renderWidth) * 4);
-                pixelBuffer[idx + 0] = ngon.color.red;
-                pixelBuffer[idx + 1] = ngon.color.green;
-                pixelBuffer[idx + 2] = ngon.color.blue;
-                pixelBuffer[idx + 3] = ngon.color.alpha;
+                pixelBuffer[idx + 0] = ngon.material.color.red;
+                pixelBuffer[idx + 1] = ngon.material.color.green;
+                pixelBuffer[idx + 2] = ngon.material.color.blue;
+                pixelBuffer[idx + 3] = ngon.material.color.alpha;
 
                 // Move on to the next iteration in the forEach() chain.
                 return;
@@ -35,7 +35,9 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, renderWidth, renderHeight)
             // A line segment.
             case 2:
             {
-                Rngon.line_draw.into_pixel_buffer(ngon.vertices[0], ngon.vertices[1], pixelBuffer, renderWidth, renderHeight, ngon.color)
+                Rngon.line_draw.into_pixel_buffer(ngon.vertices[0], ngon.vertices[1],
+                                                  pixelBuffer, renderWidth, renderHeight,
+                                                  ngon.material.color)
                 return;
             }
 
@@ -114,7 +116,7 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, renderWidth, renderHeight)
         // Draw the ngon.
         {
             // Solid/textured fill.
-            if (ngon.hasSolidFill)
+            if (ngon.material.hasSolidFill)
             {
                 const polyYOffset = Math.floor(verts[0].y);
                 const polyHeight = leftEdge.length;
@@ -136,42 +138,42 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, renderWidth, renderHeight)
                                 const idx = ((px + py * renderWidth) * 4);
                                 
                                 // Solid fill.
-                                if (ngon.texture == null)
+                                if (ngon.material.texture == null)
                                 {
-                                    pixelBuffer[idx + 0] = ngon.color.red;
-                                    pixelBuffer[idx + 1] = ngon.color.green;
-                                    pixelBuffer[idx + 2] = ngon.color.blue;
-                                    pixelBuffer[idx + 3] = ngon.color.alpha;
+                                    pixelBuffer[idx + 0] = ngon.material.color.red;
+                                    pixelBuffer[idx + 1] = ngon.material.color.green;
+                                    pixelBuffer[idx + 2] = ngon.material.color.blue;
+                                    pixelBuffer[idx + 3] = ngon.material.color.alpha;
                                 }
                                 // Textured fill.
                                 else
                                 {
                                     let u = 0, v = 0;
-                                    switch (ngon.textureMapping)
+                                    switch (ngon.material.textureMapping)
                                     {
                                         case "affine":
                                         {
-                                            u = (Rngon.lerp(leftEdge[y].u, rightEdge[y].u, x/rowWidth) * (ngon.texture.width - 0.001));
-                                            v = (Rngon.lerp(leftEdge[y].v, rightEdge[y].v, x/rowWidth) * (ngon.texture.height - 0.001));
+                                            u = (Rngon.lerp(leftEdge[y].u, rightEdge[y].u, x/rowWidth) * (ngon.material.texture.width - 0.001));
+                                            v = (Rngon.lerp(leftEdge[y].v, rightEdge[y].v, x/rowWidth) * (ngon.material.texture.height - 0.001));
                                             break;
                                         }
                                         case "ortho":
                                         {
-                                            u = x * ((ngon.texture.width - 0.001) / rowWidth);
-                                            v = y * ((ngon.texture.height - 0.001) / ((polyHeight-1)||1));
+                                            u = x * ((ngon.material.texture.width - 0.001) / rowWidth);
+                                            v = y * ((ngon.material.texture.height - 0.001) / ((polyHeight-1)||1));
                                             break;
                                         }
                                         default: Rngon.assert(0, "Unknown texture-mapping mode."); break;
                                     }
 
-                                    const texelColorChannels = ngon.texture.rgba_channels_at(u, v);
+                                    const texelColorChannels = ngon.material.texture.rgba_channels_at(u, v);
 
                                     if (texelColorChannels[3] === 255)
                                     {
-                                        pixelBuffer[idx + 0] = (texelColorChannels[0] * ngon.color.unitRange.red);
-                                        pixelBuffer[idx + 1] = (texelColorChannels[1] * ngon.color.unitRange.green);
-                                        pixelBuffer[idx + 2] = (texelColorChannels[2] * ngon.color.unitRange.blue);
-                                        pixelBuffer[idx + 3] = (texelColorChannels[3] * ngon.color.unitRange.alpha);
+                                        pixelBuffer[idx + 0] = (texelColorChannels[0] * ngon.material.color.unitRange.red);
+                                        pixelBuffer[idx + 1] = (texelColorChannels[1] * ngon.material.color.unitRange.green);
+                                        pixelBuffer[idx + 2] = (texelColorChannels[2] * ngon.material.color.unitRange.blue);
+                                        pixelBuffer[idx + 3] = (texelColorChannels[3] * ngon.material.color.unitRange.alpha);
                                     }
                                 }
                             }
@@ -181,14 +183,14 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, renderWidth, renderHeight)
             }
 
             // Draw a wireframe around any ngons that wish for one.
-            if (ngon.hasWireframe)
+            if (ngon.material.hasWireframe)
             {
                 const wireColor = Rngon.color_rgba(0, 0, 0, 255);
                 const putline = (vert1, vert2)=>
                 {
                     Rngon.line_draw.into_pixel_buffer(vert1, vert2,
                                                       pixelBuffer, renderWidth, renderHeight,
-                                                      ngon.wireframeColor)
+                                                      ngon.material.wireframeColor)
                 };
 
                 // Left edge.

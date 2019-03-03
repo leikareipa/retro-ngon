@@ -113,13 +113,7 @@ Rngon.ngon = function(vertices = [Rngon.vertex()], material = {})
     const publicInterface = Object.freeze(
     {
         vertices,
-
-        color: material.color,
-        texture: material.texture,
-        hasSolidFill: material.hasSolidFill,
-        hasWireframe: material.hasWireframe,
-        wireframeColor: material.wireframeColor,
-        textureMapping: material.textureMapping,
+        material,
 
         perspective_divided: function()
         {

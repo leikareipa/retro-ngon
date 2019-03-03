@@ -96,20 +96,20 @@ const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
 
             expect_true([()=>(ngon.vertices.length === 1),
                          ()=>(ngon.vertices[0] === vertex),
-                         ()=>(ngon.color.red === 0),
-                         ()=>(ngon.color.green === 111),
-                         ()=>(ngon.color.blue === 222),
-                         ()=>(ngon.texture === null),
-                         ()=>(ngon.hasSolidFill === true),
-                         ()=>(ngon.hasWireframe === false)]);
+                         ()=>(ngon.material.color.red === 0),
+                         ()=>(ngon.material.color.green === 111),
+                         ()=>(ngon.material.color.blue === 222),
+                         ()=>(ngon.material.texture === null),
+                         ()=>(ngon.material.hasSolidFill === true),
+                         ()=>(ngon.material.hasWireframe === false)]);
 
             // Immutability.
             expect_fail([()=>{ngon.vertices = 0},
                          ()=>{ngon.vertices[0] = 0},
-                         ()=>{ngon.texture = 0},
-                         ()=>{ngon.color = 0},
-                         ()=>{ngon.hasSolidFill = 0},
-                         ()=>{ngon.hasWireframe = 0}]);
+                         ()=>{ngon.material.texture = 0},
+                         ()=>{ngon.material.color = 0},
+                         ()=>{ngon.material.hasSolidFill = 0},
+                         ()=>{ngon.material.hasWireframe = 0}]);
         }
 
         // Meshes.
