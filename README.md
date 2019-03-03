@@ -328,6 +328,25 @@ Below are results from [perf-tests/perftest1.html](perf-tests/perftest1.html) as
 Note also that concave n-gons are not supported.
 
 # Browser compatibility
-At the moment, versions of Chrome and Firefox released in the last year or so are supported; although, as per the performance tests above, Chrome is preferred.
+Below are rough estimates of the required browser versions for a given version of the retro n-gon renderer. Browsers marked with "No" are not compatible at all.
 
-Safari is untested for, but newer versions of it should work.
+<table>
+    <tr>
+        <th align="center"></th>
+        <th align="center">Chrome</th>
+        <th align="center">Firefox</th>
+        <th align="center">Opera</th>
+        <th align="center">Safari</th>
+        <th align="center">Edge</th>
+        <th align="center">IE</th>
+    </tr>
+    <tr>
+        <td align="left">alpha.3</td>
+        <td align="center">60</td>
+        <td align="center">55</td>
+        <td align="center">50</td>
+        <td align="center">11?</td>
+        <td align="center">No</td>
+        <td align="center">No</td>
+    </tr>
+</table>
