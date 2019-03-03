@@ -6,6 +6,7 @@ You can view a live sample of the renderer's output at [http://tarpeeksihyvaesof
 ### Features
 - Genuine retro aesthetics
 - Natively renders convex n-sided polygons
+- Vanilla JavaScript, no dependencies
 - Immutable data structures
 - Simple to use
 
@@ -13,8 +14,8 @@ You can view a live sample of the renderer's output at [http://tarpeeksihyvaesof
 The retro n-gon renderer is not intended as a general-purpose software 3d renderer. It omits several modern features &ndash; more of which elsewhere in this document &ndash; in favor of a legit retro look and feel. I've made a number of other open-source software renderers, some of which might fit your needs or interests better:
 - [Wray](https://github.com/leikareipa/wray/) for path tracing in JavaScript
 - [RallySportED](https://github.com/leikareipa/rallysported-diverse/)'s renderer in C++ using Qt and the Win32 API (also w/ support for OpenGL and Glide)
-- [Vond](https://github.com/leikareipa/vond/) for a hybrid voxel/polygon software renderer in C++
-- [dccb](https://github.com/leikareipa/dccb/) for a simple software renderer in C for 16-bit DOS
+- [Vond](https://github.com/leikareipa/vond/), a hybrid voxel/polygon software renderer in C++
+- [dccb](https://github.com/leikareipa/dccb/) is a simple software renderer in C for 16-bit DOS
 
 The retro n-gon renderer encourages very low resolutions, very low polycounts, and designing your way around considerable visual limitations &ndash; like in the old days of software rendering. You might use the renderer for some of the following purposes:
 - Engagement in feature minimalism
@@ -24,27 +25,143 @@ The retro n-gon renderer encourages very low resolutions, very low polycounts, a
 # How to use the renderer
 In this section, you'll find both practical and theoretical examples of how to use the retro n-gon renderer. You don't need to read all of it, though &ndash; you can dig directly into the practical examples under [samples/](samples/), if you want to figure it out as you go; then return here for the details.
 
-### The gist of it
-At the heart of the renderer is the `render()` function, which transforms and rasterizes a set of n-gons onto a HTML5 canvas. You call it with the HTML id of the canvas you want the image rendered into, an array of the n-gon meshes you want rendered, and additional, optional parameters to define the position and orientation of the camera, etc.
+### Introduction and intro tutorial
 
-The following JavaScript pseudocode renders a triangle onto a canvas:
+**The gist of it in theory.** At the heart of the renderer is the `render()` function, which transforms and rasterizes a set of n-gons onto a HTML5 canvas. You call it with the HTML id of the canvas you want the image rendered into, an array of the n-gon meshes you want rendered, and additional, optional parameters to define the position and orientation of the camera, etc.
+
+The following pseudocode outlines the basic program flow for rendering an n-gon onto a canvas element.
 ```
 <canvas id="render-target"></canvas>
-
-triangle = Rngon.ngon(...)
-mesh = Rngon.mesh([triangle]);
-
-options = {camera: ..., ...}
-Rngon.render("render-target", [mesh], options)
+ngon = Rngon.ngon(...)
+mesh = Rngon.mesh([ngon])
+Rngon.render("render-target", [mesh], {options})
 ```
-This produces a static image of the triangle. If you wanted to animate it, you'd simply call `render()` repeatedly (e.g. with `window.requestAnimationFrame()`), each time altering the triangle mesh's orientation, etc.
 
-### Practical examples
-An introductory example of the renderer's usage is given in [samples/sample1.html](samples/sample1.html). Its source code walks you through a basic setup for rendering a spinning triangle on screen.
+**Rendering a blue quad.** The following code first constructs a HTML5 canvas element to render into, using CSS to set the size of the rendering to 300 x 300 pixels. It then creates an n-gon quad (i.e. a 4-gon), wraps it up in a mesh, and asks the renderer to draw the quad mesh onto the canvas. Note that it gives the mesh a 45-degree rotation, and moves the renderer's camera back by 5 units.
+```
+<canvas id="render-target" style="width: 300px; height: 300px; background-color: rgba(0, 0, 0, .05);"></canvas>
+<script src="./distributable/rngon.cat.js"></script>
+<script>
+    const quad = Rngon.ngon([Rngon.vertex(-1, -1, 0),
+                             Rngon.vertex( 1, -1, 0),
+                             Rngon.vertex( 1,  1, 0),
+                             Rngon.vertex(-1,  1, 0)],
+                            {
+                                color: Rngon.color_rgba(0, 150, 255)
+                            })
 
-A slightly more involved example is provided in [samples/sample2.html](samples/sample2.html). It loads a simple, Blender-exported, textured model from disk and renders it. Note that, on Chrome, and possibly some other browsers, the HTML file needs to be accessed via a server rather than opened directly from disk. If you want to access the file locally, you can set up a simple test server, e.g. via `php -S localhost:8000`.
+    const quadMesh = Rngon.mesh([quad],
+                                {
+                                    rotation: Rngon.rotation_vector(0, 0, 45)
+                                })
 
-### A how-to of 3d modeling
+    Rngon.render("render-target", [quadMesh],
+                 {
+                     cameraPosition: Rngon.translation_vector(0, 0, 5),
+                     scale: 1
+                 })
+</script>
+```
+![A blue quad](images/tutorials/blue-quad.png)
+
+**Rendering a textured quad.** Textures are a staple of 3d rendering, so let's add one. The code below is otherwise the same as above, but additionally creates a `texture` object and appends it to the quad's material property. You'll learn more about textures later in this document, but for right now, the details don't need to be worried about. Just know that this is roughly how textures are added to n-gons. Since the base color of an n-gon also modifies the color of its texture, we set the color to white instead of blue, as we don't want the texture to be tinted blue, here.
+```
+<canvas id="render-target" style="width: 300px; height: 300px; background-color: rgba(0, 0, 0, .05);"></canvas>
+<script src="./distributable/rngon.cat.js"></script>
+<script>
+    const texture = Rngon.texture_rgba({width: 2, height: 2, pixels: [255, 200, 0, 255,
+                                                                      200, 255, 0, 255,
+                                                                      255, 0, 200, 255,
+                                                                      0, 255, 200, 255]})
+
+    const quad = Rngon.ngon([Rngon.vertex(-1, -1, 0),
+                             Rngon.vertex( 1, -1, 0),
+                             Rngon.vertex( 1,  1, 0),
+                             Rngon.vertex(-1,  1, 0)],
+                            {
+                                color: Rngon.color_rgba(255, 255, 255),
+                                texture: texture
+                            })
+
+    const quadMesh = Rngon.mesh([quad],
+                                {
+                                    rotation: Rngon.rotation_vector(0, 0, 45)
+                                })
+
+    Rngon.render("render-target", [quadMesh],
+                 {
+                     cameraPosition: Rngon.translation_vector(0, 0, 5),
+                     scale: 1
+                 })
+</script>
+```
+![A textured quad](images/tutorials/textured-quad.png)
+
+You may notice that the texture hasn't rotated with the quad: its lines are perpendicular to the horizon, while the quad's run diagonally, having been rotated by 45 degrees. This is an artefact of the renderer's default texture-mapping mode. You can learn more about the modes further down, but for now, we can fix this by choosing a more suitable texturing mode.
+
+The code below modifies the `quad` object from above to add UV texture coordinates to the quad's vertices, and the `affine` texture-mapping mode to the quad's material property. With these changes, the renderer will rotate the texture in sync with the quad.
+```
+    const quad = Rngon.ngon([Rngon.vertex(-1, -1, 0, 0, 0),
+                             Rngon.vertex( 1, -1, 0, 1, 0),
+                             Rngon.vertex( 1,  1, 0, 1, 1),
+                             Rngon.vertex(-1,  1, 0, 0, 1)],
+                            {
+                                color: Rngon.color_rgba(255, 255, 255),
+                                texture: texture,
+                                textureMapping: "affine"
+                            })
+```
+![A textured quad with affine mapping](images/tutorials/textured-quad-affine.png)
+
+**Giving the quad a spin.** With a few simple additions, we can modify the code so far to add a spinning animation to the quad. We'll do this by repeatedly calling `render()` in sync with the device's refresh rate via `window.requestAnimationFrame()`, and for each frame wrapping the quad in a new mesh with a slightly increased rotation value. (The retro n-gon renderer favors immutable data, which is why we're creating the mesh object from scratch each frame, rather than modifying the rotation of an existing mesh.)
+```
+<canvas id="render-target" style="width: 300px; height: 300px; background-color: rgba(0, 0, 0, .05);"></canvas>
+<script src="./distributable/rngon.cat.js"></script>
+<script>
+    const texture = Rngon.texture_rgba({width: 2, height: 2, pixels: [255, 200, 0, 255,
+                                                                      200, 255, 0, 255,
+                                                                      255, 0, 200, 255,
+                                                                      0, 255, 200, 255]})
+
+    const quad = Rngon.ngon([Rngon.vertex(-1, -1, 0, 0, 0),
+                             Rngon.vertex( 1, -1, 0, 1, 0),
+                             Rngon.vertex( 1,  1, 0, 1, 1),
+                             Rngon.vertex(-1,  1, 0, 0, 1)],
+                            {
+                                color: Rngon.color_rgba(255, 255, 255),
+                                texture: texture,
+                                textureMapping: "affine"
+                            })
+
+    const rotatingQuad = (frameCount)=>
+    {
+        const rotationSpeed = 0.6;
+        return Rngon.mesh([quad],
+                          {
+                              rotation: Rngon.rotation_vector(0, 0, 45 + (frameCount * rotationSpeed))
+                          });
+    };
+
+    (function render_loop(frameCount = 0)
+    {
+        Rngon.render("render-target", [rotatingQuad(frameCount)],
+        {
+            cameraPosition: Rngon.translation_vector(0, 0, 5),
+            scale: 1
+        })
+
+        window.requestAnimationFrame(()=>render_loop(frameCount + 1));
+    })();
+</script>
+```
+
+**More examples.** The [samples/](samples/) directory collects together various examples of the renderer's usage.
+
+An introductory example is given in [samples/sample1.html](samples/sample1.html). Its source code walks you through a basic setup for rendering a spinning triangle on screen.
+
+A slightly &ndash; but only slightly &ndash; more involved example is provided in [samples/sample2.html](samples/sample2.html). It loads a simple, Blender-exported, textured model from disk, and renders it on screen. Note that, on Chrome and possibly some other browsers, the HTML file needs to be accessed via a server rather than opened directly from disk. If you want to access the file locally, you can set up a simple test server, e.g. with `$ php -S localhost:8000`.
+
+### Dealing with 3d models
 **N-gons** (polygons of _n_ sides, but also points and lines) are the building-blocks of 3d models in the retro n-gon renderer. Each n-gon includes one or more vertices, and a material that describes how the n-gon should look when rendered (its color, texture, and so on). A red 1-gon object could be created like so:
 ```
 const ngon = Rngon.ngon([Rngon.vertex(1, 0, 0)],
@@ -70,8 +187,7 @@ To render n-gons, you first wrap them up in one or more `mesh` objects, then fee
 
 You can think of models as functions that translate external 3d assets into the renderer's native n-gon format.
 
-#### Exporting models from Blender
-You can use the popular and free 3d modeling program, Blender, to create 3d assets directly for the retro n-gon renderer.
+**Exporting models from Blender.** You can use the free 3d modeling program, Blender, to create 3d assets directly for the retro n-gon renderer.
 
 A script for exporting scenes from Blender into the renderer's model format is provided under [tools/conversion/](tools/conversion/). To use it, first create the scene in Blender (or import it into Blender from some other format), then load up and run the script. Note that, at the moment, the script isn't integrated into Blender's UI, and is overall a very early version, so you'll have to manually edit it to provide a custom filename and path for the exported data. Otherwise, just look at the script's contents to see where it exports to, by default.
 
@@ -83,10 +199,9 @@ Since the retro n-gon renderer deals with n-gons natively, you don't need to pre
 
 As the renderer uses per-face depth-sorting, it's a good idea to subdivide large polygons before exporting them. For instance, if you have a statue consisting of several small polygons stood on a floor made up of a single large polygon, the floor will likely obscure the statue during rendering, even when viewed from angles where it shouldn't. This is because depth information is averaged across the entire polygon, causing large polygons to have poor depth resolution. On the other hand, it's good to keep in mind that subdivision can cause issues with texturing (see below for more info on this) and negatively impact rendering speed. It's a bit of a balancing act.
 
-#### Texturing
-Each n-gon can have one texture applied to it.
+**Texturing.** Each n-gon can have one texture applied to it.
 
-In `ortho` mode &ndash; the default texture-mapping mode as defined via the n-gon's `textureMapping` material property &ndash; you don't need to provide UV coordinates for the n-gon's vertices. The downside is that the texture may warp in undesired ways depending on the n-gon's orientation and the viewing angle. This mode works best when the n-gon's lines are perpendicular to the horizon (e.g. UI elements), or when the rendering resolution is low and the texture represents organic detail, like grass (in which case, the warping will provide additional visual variance to tiled textures). The other texture-mapping mode, `affine`, requires UV coordinates to be assigned to the n-gon's vertices, but will make use of them to prevent texture-warping. The difference in performance between `ortho` and `affine` should be negligible (you can test it on you target platforms with [perf-tests/perftest1.html](perf-tests/perftest1.html)).
+In `ortho` mode &ndash; the default texture-mapping mode as defined via the n-gon's `textureMapping` material property &ndash; you don't need to provide UV coordinates for the n-gon's vertices. The downside is that the texture may warp in undesired ways depending on the n-gon's orientation and the viewing angle. This mode works best when the n-gon's lines are perpendicular to the horizon (e.g. UI elements), or when the rendering resolution is low and the texture represents organic detail, like grass (in which case, the warping will provide additional visual variance to tiled textures). The other texture-mapping mode, `affine`, requires UV coordinates to be assigned to the n-gon's vertices, but will make use of them to prevent texture-warping. The difference in performance between `ortho` and `affine` should be negligible, but you can test it on you target platforms with [perf-tests/perftest1.html](perf-tests/perftest1.html).
 
 Texture data is provided to the retro n-gon renderer in JSON format, which for a red 1 x 1 RGBA texture might look something like this:
 ```
@@ -118,7 +233,7 @@ The table below lists test results from [perf-tests/perftest1.html](perf-tests/p
 
 <table>
     <tr>
-        <td align="left" width="85">E3-1230 v3</td>
+        <td align="left" width="100">E3-1230 v3</td>
         <th align="center">30</th>
         <th align="center">60</th>
         <th align="center">120</th>
@@ -159,7 +274,7 @@ Below are results from [perf-tests/perftest1.html](perf-tests/perftest1.html) as
 
 <table>
     <tr>
-        <td align="left" width="85">G4560</td>
+        <td align="left" width="100">G4560</td>
         <th align="center">30</th>
         <th align="center">60</th>
         <th align="center">120</th>
@@ -203,7 +318,7 @@ Below are results from [perf-tests/perftest1.html](perf-tests/perftest1.html) as
 
 <table>
     <tr>
-        <td align="left" width="85">View20</td>
+        <td align="left" width="100">View20</td>
         <th align="center">30</th>
         <th align="center">60</th>
         <th align="center">120</th>
@@ -244,7 +359,7 @@ Below are results from [perf-tests/perftest1.html](perf-tests/perftest1.html) as
 
 <table>
     <tr>
-        <td align="left" width="85">T1-A21L</td>
+        <td align="left" width="100">T1-A21L</td>
         <th align="center">30</th>
         <th align="center">60</th>
         <th align="center">120</th>
@@ -317,12 +432,12 @@ Below are rough estimates of the required browser versions for a given version o
             <br>Edge
         </th>
         <th align="center" width="90">
-            <img alt="Internet Explorer" src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/archive/internet-explorer_6/internet-explorer_6_24x24.png">
+            <img title="Internet Explorer" alt="Internet Explorer" src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/archive/internet-explorer_6/internet-explorer_6_24x24.png">
             <br>IE
         </th>
     </tr>
     <tr>
-        <td align="left">alpha.3</td>
+        <td align="left">alpha.3+</td>
         <td align="center">60</td>
         <td align="center">55</td>
         <td align="center">50</td>
