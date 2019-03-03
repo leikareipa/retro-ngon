@@ -158,7 +158,7 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, renderWidth, renderHeight)
                                         case "ortho":
                                         {
                                             u = x * ((ngon.texture.width - 0.001) / rowWidth);
-                                            v = y * ((ngon.texture.height - 0.001) / (polyHeight - 1));
+                                            v = y * ((ngon.texture.height - 0.001) / ((polyHeight-1)||1));
                                             break;
                                         }
                                         default: Rngon.assert(0, "Unknown texture-mapping mode."); break;
