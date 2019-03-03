@@ -84,9 +84,11 @@ Since the retro n-gon renderer deals with n-gons natively, you don't need to pre
 As the renderer uses per-face depth-sorting, it's a good idea to subdivide large polygons before exporting them. For instance, if you have a statue consisting of several small polygons stood on a floor made up of a single large polygon, the floor will likely obscure the statue during rendering, even when viewed from angles where it shouldn't. This is because depth information is averaged across the entire polygon, causing large polygons to have poor depth resolution. On the other hand, it's good to keep in mind that subdivision can cause issues with texturing (see below for more info on this) and negatively impact rendering speed. It's a bit of a balancing act.
 
 #### Texturing
-Each n-gon can have one texture applied to it. The texture will apply to the n-gon's entire face. A single texture can't stretch over multiple n-gons; i.e. there are no UV coordinates. The renderer does not correct the textures for perspective; meaning they will warp in a particular way depending on the n-gon's orientation and the camera angle. (The warping can look ugly at high resolutions and/or with textures of rigid geometric detail, but is less of a problem at low resolutions with images of organic subjects, like grass and the like).
+Each n-gon can have one texture applied to it.
 
-Texture data is provided to the retro n-gon renderer in JSON format, which for a red 1 x 1 RGBA texture might look like this:
+In `ortho` mode &ndash; the default texture-mapping mode as defined via the n-gon's `textureMapping` material property &ndash; you don't need to provide UV coordinates for the n-gon's vertices. The downside is that the texture may warp in undesired ways depending on the n-gon's orientation and the viewing angle. This mode works best when the n-gon's lines are perpendicular to the horizon (e.g. UI elements), or when the rendering resolution is low and the texture represents organic detail, like grass (in which case, the warping will provide additional visual variance to tiled textures). The other texture-mapping mode, `affine`, requires UV coordinates to be assigned to the n-gon's vertices, but will make use of them to prevent texture-warping. The difference in performance between `ortho` and `affine` should be negligible (you can test it on you target platforms with [perf-tests/perftest1.html](perf-tests/perftest1.html)).
+
+Texture data is provided to the retro n-gon renderer in JSON format, which for a red 1 x 1 RGBA texture might look something like this:
 ```
 {
     "width":1,
@@ -116,7 +118,7 @@ The table below lists test results from [perf-tests/perftest1.html](perf-tests/p
 
 <table>
     <tr>
-        <td align="left">E3-1230 v3</td>
+        <td align="left" width="85">E3-1230 v3</td>
         <th align="center">30</th>
         <th align="center">60</th>
         <th align="center">120</th>
@@ -157,7 +159,7 @@ Below are results from [perf-tests/perftest1.html](perf-tests/perftest1.html) as
 
 <table>
     <tr>
-        <td align="left">G4560</td>
+        <td align="left" width="85">G4560</td>
         <th align="center">30</th>
         <th align="center">60</th>
         <th align="center">120</th>
@@ -201,7 +203,7 @@ Below are results from [perf-tests/perftest1.html](perf-tests/perftest1.html) as
 
 <table>
     <tr>
-        <td align="left">View20</td>
+        <td align="left" width="85">View20</td>
         <th align="center">30</th>
         <th align="center">60</th>
         <th align="center">120</th>
@@ -242,7 +244,7 @@ Below are results from [perf-tests/perftest1.html](perf-tests/perftest1.html) as
 
 <table>
     <tr>
-        <td align="left">T1-A21L</td>
+        <td align="left" width="85">T1-A21L</td>
         <th align="center">30</th>
         <th align="center">60</th>
         <th align="center">120</th>
