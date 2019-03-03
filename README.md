@@ -112,11 +112,11 @@ As suggested in the sections, above, the retro n-gon renderer is not intended fo
 With that in mind, here's some performance figures on various platforms.
 
 ### Performance on the desktop
-Below are test results from [perf-tests/perftest1.html](perf-tests/perftest1.html) as of [5bb8960](https://github.com/leikareipa/retro-ngon/tree/5bb8960f433e99d615253ad56014abf3f19f6b4c) running on a Xeon E3-1230 v3 desktop PC in Chrome 72 (left) and Firefox 65 (right). The values given in the matrices are frames per second (FPS) for polycounts 30, 60, ..., 960. An empty cell indicates that no test was run for that polycount; a bullet notes that the FPS was at least 60, the screen's refresh rate during the tests.
+The table below lists test results from [perf-tests/perftest1.html](perf-tests/perftest1.html) as of [5bb8960](https://github.com/leikareipa/retro-ngon/tree/5bb8960f433e99d615253ad56014abf3f19f6b4c) running on a Xeon E3-1230 v3 desktop PC in Chrome 72 (top) and Firefox 65 (bottom). The values given are frames per second (FPS) for polycounts 30, 60, ..., 960. A bullet indicates that the FPS was at least 60, the screen's refresh rate during the tests.
 
 <table>
     <tr>
-        <td align="left">Xeon E3-1230 v3</td>
+        <td align="left">E3-1230 v3</td>
         <th align="center">30</th>
         <th align="center">60</th>
         <th align="center">120</th>
@@ -131,7 +131,7 @@ Below are test results from [perf-tests/perftest1.html](perf-tests/perftest1.htm
         <td align="center">&bull;</td>
         <td align="center">&bull;</td>
         <td align="center">&bull;</td>
-        <td align="center">58 | 44</td>
+        <td align="center">58<br>44</td>
     </tr>
     <tr>
         <th align="left">Solid fill</th>
@@ -139,17 +139,17 @@ Below are test results from [perf-tests/perftest1.html](perf-tests/perftest1.htm
         <td align="center">&bull;</td>
         <td align="center">&bull;</td>
         <td align="center">&bull;</td>
-        <td align="center">59 | 56</td>
-        <td align="center">44 | 34</td>
+        <td align="center">59<br>56</td>
+        <td align="center">44<br>34</td>
     </tr>
     <tr>
         <th align="left">Textured</th>
         <td align="center">&bull;</td>
-        <td align="center">&bull; | 59</td>
-        <td align="center">&bull; | 59</td>
-        <td align="center">&bull; | 46</td>
-        <td align="center">57 | 26</td>
-        <td align="center">36 | 14</td>
+        <td align="center">&bull;<br>59</td>
+        <td align="center">&bull;<br>59</td>
+        <td align="center">&bull;<br>46</td>
+        <td align="center">57<br>26</td>
+        <td align="center">36<br>14</td>
     </tr>
 </table>
 
@@ -238,7 +238,7 @@ Below are results from [perf-tests/perftest1.html](perf-tests/perftest1.html) as
     </tr>
 </table>
 
-Below are results from [perf-tests/perftest1.html](perf-tests/perftest1.html) as of [5bb8960](https://github.com/leikareipa/retro-ngon/tree/5bb8960f433e99d615253ad56014abf3f19f6b4c) running on a Huawei MediaPad T1-A21L (2014? 2015?) tablet in Chrome. The notes from the tests above apply.
+Below are results from [perf-tests/perftest1.html](perf-tests/perftest1.html) as of [5bb8960](https://github.com/leikareipa/retro-ngon/tree/5bb8960f433e99d615253ad56014abf3f19f6b4c) running on a Huawei MediaPad T1-A21L (2014? 2015?) tablet in Chrome. The notes from the tests above apply. An empty cell indicates that no test was run for that polycount.
 
 <table>
     <tr>
@@ -293,13 +293,31 @@ Below are rough estimates of the required browser versions for a given version o
 
 <table>
     <tr>
-        <th align="left"></th>
-        <th align="center">Chrome</th>
-        <th align="center">Firefox</th>
-        <th align="center">Opera</th>
-        <th align="center">Safari</th>
-        <th align="center">Edge</th>
-        <th align="center">IE</th>
+        <th align="left" width="110"></th>
+        <th align="center" width="90">
+            <img alt="Chrome" src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/chrome/chrome_24x24.png">
+            <br>Chrome
+        </th>
+        <th align="center" width="90">
+            <img alt="Firefox" src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/firefox/firefox_24x24.png">
+            <br>Firefox
+        </th>
+        <th align="center" width="90">
+            <img alt="Opera" src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/opera/opera_24x24.png">
+            <br>Opera
+        </th>
+        <th align="center" width="90">
+            <img alt="Safari" src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/safari/safari_24x24.png">
+            <br>Safari
+        </th>
+        <th align="center" width="90">
+            <img alt="Edge" src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/edge/edge_24x24.png">
+            <br>Edge
+        </th>
+        <th align="center" width="90">
+            <img alt="Internet Explorer" src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/archive/internet-explorer_6/internet-explorer_6_24x24.png">
+            <br>IE
+        </th>
     </tr>
     <tr>
         <td align="left">alpha.3</td>
