@@ -23,21 +23,26 @@ The retro n-gon renderer encourages very low resolutions, very low polycounts, a
 - Visualizing 3d models in a wobbly, old-fashioned manner
 
 # How to use the renderer
-In this section, you'll find both practical and theoretical examples of how to use the retro n-gon renderer. You don't need to read all of it, though &ndash; you can dig directly into the practical examples under [samples/](samples/), if you want to figure it out as you go; then return here for the details.
+In this section, you'll find both practical and theoretical examples on how to use the retro n-gon renderer.
 
 ### Introduction and intro tutorial
 
-**The gist of it in theory.** At the heart of the renderer is the `render()` function, which transforms and rasterizes a set of n-gons onto a HTML5 canvas. You call it with the HTML id of the canvas you want the image rendered into, an array of the n-gon meshes you want rendered, and additional, optional parameters to define the position and orientation of the camera, etc.
+**The gist of it in theory.** At the heart of the renderer is the `render()` function, which transforms and rasterizes a set of n-gons onto a HTML5 canvas. You call it with the HTML id of the canvas you want the image rendered into, an array of the n-gon meshes you want rendered, and additional, optional parameters to define the position of the camera, etc.
 
-The following pseudocode outlines the basic program flow for rendering an n-gon onto a canvas element.
+The following pseudocode outlines the basic program flow for rendering an n-gon onto a canvas element. (In practice, you'll render n-gons in batches rather than one by one, but let's just do one, here, for the sake of the example.)
 ```
-<canvas id="render-target"></canvas>
+// Create the canvas element to render into.
+<canvas id="render-target" style="width: 100px; height: 100px;"></canvas>
+
+// Create the n-gon, and wrap it in a mesh for rendering.
 ngon = Rngon.ngon(...)
 mesh = Rngon.mesh([ngon])
+
+// Render the n-gon mesh onto the canvas.
 Rngon.render("render-target", [mesh], {options})
 ```
 
-**Rendering a blue quad.** The following code first constructs a HTML5 canvas element to render into, using CSS to set the size of the rendering to 300 x 300 pixels. It then creates an n-gon quad (i.e. a 4-gon), wraps it up in a mesh, and asks the renderer to draw the quad mesh onto the canvas. Note that it gives the mesh a 45-degree rotation, and moves the renderer's camera back by 5 units.
+**Actually rendering a blue quad.** The following code first constructs a HTML5 canvas element to render into, using CSS to set the size of the rendering to 300 x 300 pixels. It then creates an n-gon quad (i.e. a 4-gon), wraps it up in a mesh, and asks the renderer to draw the mesh onto the canvas. Note also that the mesh is given a 45-degree rotation, and the renderer's camera is moved back by 5 units.
 ```
 <canvas id="render-target" style="width: 300px; height: 300px; background-color: rgba(0, 0, 0, .05);"></canvas>
 <script src="./distributable/rngon.cat.js"></script>
