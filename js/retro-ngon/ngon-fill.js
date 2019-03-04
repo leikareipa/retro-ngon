@@ -153,14 +153,20 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, renderWidth, renderHeight)
                                     {
                                         case "affine":
                                         {
-                                            u = (Rngon.lerp(leftEdge[y].u, rightEdge[y].u, x/rowWidth) * (ngon.material.texture.width - 0.001));
-                                            v = (Rngon.lerp(leftEdge[y].v, rightEdge[y].v, x/rowWidth) * (ngon.material.texture.height - 0.001));
+                                            u = (Rngon.lerp(leftEdge[y].u, rightEdge[y].u, x/rowWidth) * ngon.material.texture.width);
+                                            v = (Rngon.lerp(leftEdge[y].v, rightEdge[y].v, x/rowWidth) * ngon.material.texture.height);
+
+                                            // Wrap with repetition.
+                                            u %= ngon.material.texture.width;
+                                            v %= ngon.material.texture.height;
+
                                             break;
                                         }
                                         case "ortho":
                                         {
                                             u = x * ((ngon.material.texture.width - 0.001) / rowWidth);
                                             v = y * ((ngon.material.texture.height - 0.001) / ((polyHeight-1)||1));
+
                                             break;
                                         }
                                         default: Rngon.assert(0, "Unknown texture-mapping mode."); break;
