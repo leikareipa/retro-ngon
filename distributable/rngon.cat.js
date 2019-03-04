@@ -898,10 +898,11 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, renderWidth, renderHeight)
                                     {
                                         case "affine":
                                         {
-                                            u = (Rngon.lerp(leftEdge[y].u, rightEdge[y].u, x/rowWidth) * ngon.material.texture.width);
-                                            v = (Rngon.lerp(leftEdge[y].v, rightEdge[y].v, x/rowWidth) * ngon.material.texture.height);
+                                            u = (Rngon.lerp(leftEdge[y].u, rightEdge[y].u, x/rowWidth) * (ngon.material.texture.width-0.001));
+                                            v = (Rngon.lerp(leftEdge[y].v, rightEdge[y].v, x/rowWidth) * (ngon.material.texture.height-0.001));
 
                                             // Wrap with repetition.
+                                            /// FIXME: Doesn't wrap correctly.
                                             u %= ngon.material.texture.width;
                                             v %= ngon.material.texture.height;
 
