@@ -208,7 +208,7 @@ As the renderer uses per-face depth-sorting, it's a good idea to subdivide large
 
 **Texturing.** Each n-gon can have one texture applied to it.
 
-In `ortho` mode &ndash; the default texture-mapping mode as defined via the n-gon's `textureMapping` material property &ndash; you don't need to provide UV coordinates for the n-gon's vertices. The downside is that the texture may warp in undesired ways depending on the n-gon's orientation and the viewing angle. This mode works best when the n-gon's lines are perpendicular to the horizon (e.g. UI elements), or when the rendering resolution is low and the texture represents organic detail, like grass (in which case, the warping will provide additional visual variance to tiled textures). The other texture-mapping mode, `affine`, requires UV coordinates to be assigned to the n-gon's vertices, but will make use of them to prevent texture-warping. The difference in performance between `ortho` and `affine` should be negligible, but you can test it on you target platforms with [perf-tests/perftest1.html](perf-tests/perftest1.html).
+In `ortho` mode &ndash; the default texture-mapping mode as defined via the n-gon's `textureMapping` material property &ndash; you don't need to provide UV coordinates for the n-gon's vertices. The downside is that the texture may warp in undesired ways depending on the n-gon's orientation and the viewing angle. This mode works best when the n-gon's lines are perpendicular to the horizon (e.g. UI elements), or when the rendering resolution is low and the texture represents organic detail, like grass (in which case, the warping will provide additional visual variance to tiled textures). The other texture-mapping mode, `affine`, requires UV coordinates to be assigned to the n-gon's vertices, but will make use of them to prevent texture-warping. The difference in performance between `ortho` and `affine` should be negligible, but you can test it on you target platforms with [tests/performance/perftest1.html](tests/performance/perftest1.html).
 
 Texture data is provided to the retro n-gon renderer in JSON format, which for a red 1 x 1 RGBA texture might look something like this:
 ```
@@ -236,7 +236,7 @@ As suggested in the sections, above, the retro n-gon renderer is not intended fo
 With that in mind, here's some performance figures on various platforms.
 
 ### Performance on the desktop
-The table below lists test results from [perf-tests/perftest1.html](perf-tests/perftest1.html) as of [5bb8960](https://github.com/leikareipa/retro-ngon/tree/5bb8960f433e99d615253ad56014abf3f19f6b4c) running on a Xeon E3-1230 v3 desktop PC in Chrome 72 (top) and Firefox 65 (bottom). The values given are frames per second (FPS) for polycounts 30, 60, ..., 960. A bullet indicates that the FPS was at least 60, the screen's refresh rate during the tests.
+The table below lists test results from [tests/performance/perftest1.html](tests/performance/perftest1.html) as of [5bb8960](https://github.com/leikareipa/retro-ngon/tree/5bb8960f433e99d615253ad56014abf3f19f6b4c) running on a Xeon E3-1230 v3 desktop PC in Chrome 72 (top) and Firefox 65 (bottom). The values given are frames per second (FPS) for polycounts 30, 60, ..., 960. A bullet indicates that the FPS was at least 60, the screen's refresh rate during the tests.
 
 <table>
     <tr>
@@ -277,7 +277,7 @@ The table below lists test results from [perf-tests/perftest1.html](perf-tests/p
     </tr>
 </table>
 
-Below are results from [perf-tests/perftest1.html](perf-tests/perftest1.html) as of [5bb8960](https://github.com/leikareipa/retro-ngon/tree/5bb8960f433e99d615253ad56014abf3f19f6b4c) running on a Pentium G4560 desktop PC in Chrome 72. The notes from the tests above apply.
+Below are results from [tests/performance/perftest1.html](tests/performance/perftest1.html) as of [5bb8960](https://github.com/leikareipa/retro-ngon/tree/5bb8960f433e99d615253ad56014abf3f19f6b4c) running on a Pentium G4560 desktop PC in Chrome 72. The notes from the tests above apply.
 
 <table>
     <tr>
@@ -321,7 +321,7 @@ Below are results from [perf-tests/perftest1.html](perf-tests/perftest1.html) as
 The gist of these data is that the renderer performs better on Chrome than it does on Firefox, most notably so when texturing is enabled. On Chrome, polycounts of roughly 100 to 300 could be maintained at 60 FPS; or about 1000 at 30 FPS.
 
 ### Performance on mobile
-Below are results from [perf-tests/perftest1.html](perf-tests/perftest1.html) as of [f340393](https://github.com/leikareipa/retro-ngon/tree/f340393162243b4a6808f31a2db2843bac29833a) running on an Honor View20 (2019) phone in Chrome. The notes from the tests above apply.
+Below are results from [tests/performance/perftest1.html](tests/performance/perftest1.html) as of [f340393](https://github.com/leikareipa/retro-ngon/tree/f340393162243b4a6808f31a2db2843bac29833a) running on an Honor View20 (2019) phone in Chrome. The notes from the tests above apply.
 
 <table>
     <tr>
@@ -362,7 +362,7 @@ Below are results from [perf-tests/perftest1.html](perf-tests/perftest1.html) as
     </tr>
 </table>
 
-Below are results from [perf-tests/perftest1.html](perf-tests/perftest1.html) as of [5bb8960](https://github.com/leikareipa/retro-ngon/tree/5bb8960f433e99d615253ad56014abf3f19f6b4c) running on a Huawei MediaPad T1-A21L (2014? 2015?) tablet in Chrome. The notes from the tests above apply. An empty cell indicates that no test was run for that polycount.
+Below are results from [tests/performance/perftest1.html](tests/performance/perftest1.html) as of [5bb8960](https://github.com/leikareipa/retro-ngon/tree/5bb8960f433e99d615253ad56014abf3f19f6b4c) running on a Huawei MediaPad T1-A21L (2014? 2015?) tablet in Chrome. The notes from the tests above apply. An empty cell indicates that no test was run for that polycount.
 
 <table>
     <tr>

@@ -4,7 +4,7 @@
 
 Open the corresponding HTML file (see below) in a browser.
 
-Note that the tests assume to be located one directory above the renderer's root; e.g. in `/ngon/perf-tests/`, where `/ngon/js/` contains the renderer's JavaScript code, etc.
+Note that the tests assume to be located two directories above the renderer's root; e.g. in `rngon/tests/performance/*`, where `rngon/js/*` contains the renderer's JavaScript code.
 
 ### The tests
 
