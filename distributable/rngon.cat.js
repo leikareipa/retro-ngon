@@ -1,7 +1,7 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
 // VERSION: live
-// AUTHOR: Tarpeeksi Hyvae Soft
+// AUTHOR: Tarpeeksi Hyvae Soft and others
 // FILES:
 //	../js/retro-ngon/retro-ngon.js
 //	../js/retro-ngon/trig.js

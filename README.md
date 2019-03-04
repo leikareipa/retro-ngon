@@ -1,22 +1,23 @@
 # The retro n-gon renderer
-A minimalist 3d renderer that draws n-sided polygons (as well as lines and points) onto a user-supplied HTML5 canvas. Its intended use cases are mainly those where a minimalist retro aesthetic is preferred.
+A minimalist 3d software renderer that draws n-sided polygons (as well as lines and points) onto a user-supplied HTML5 canvas. Its intended use cases are chiefly those where a minimalist retro aesthetic is preferred.
 
 You can view a live sample of the renderer's output at [http://tarpeeksihyvaesoft.com/s/retro-ngon/samples/sample2.html](http://tarpeeksihyvaesoft.com/s/retro-ngon/samples/sample2.html).
 
 ### Features
-![A textured cube](/images/painting-cube.png)
+- Simple to use
 - Genuine retro aesthetics
 - Natively renders convex n-sided polygons
 - Vanilla JavaScript, no dependencies
-- Immutable data structures
-- Simple to use
+- Data immutability
+
+![A textured cube](/images/painting-cube.png)
 
 ### Suggested use cases
 The retro n-gon renderer is not intended as a general-purpose software 3d renderer. It omits several modern features &ndash; more of which elsewhere in this document &ndash; in favor of a legit retro look and feel. I've made a number of other open-source software renderers, some of which might fit your needs or interests better:
 - [Wray](https://github.com/leikareipa/wray/) for path tracing in JavaScript
-- [RallySportED](https://github.com/leikareipa/rallysported-diverse/)'s renderer in C++ using Qt and the Win32 API (also w/ support for OpenGL and Glide)
-- [Vond](https://github.com/leikareipa/vond/), a hybrid voxel/polygon software renderer in C++
-- [dccb](https://github.com/leikareipa/dccb/) is a simple software renderer in C for 16-bit DOS
+- [RallySportED](https://github.com/leikareipa/rallysported-diverse/)'s renderer in C++ with Qt and Win32 API as frontends (also w/ support for OpenGL and Glide)
+- [Vond](https://github.com/leikareipa/vond/), a low-res hybrid voxel/polygon software renderer in C++
+- [dccb](https://github.com/leikareipa/dccb/)'s is a simple software renderer in C for 16-bit DOS
 
 The retro n-gon renderer encourages very low resolutions, very low polycounts, and designing your way around considerable visual limitations &ndash; like in the old days of software rendering. You might use the renderer for some of the following purposes:
 - Engagement in feature minimalism
