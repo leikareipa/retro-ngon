@@ -42,9 +42,9 @@ mesh = Rngon.mesh([ngon])
 Rngon.render("render-target", [mesh], {options})
 ```
 
-**Actually rendering a blue quad.** The following code first constructs a HTML5 canvas element to render into, using CSS to set the size of the rendering to 300 x 300 pixels. It then creates an n-gon quad (i.e. a 4-gon), wraps it up in a mesh, and asks the renderer to draw the mesh onto the canvas. Note also that the mesh is given a 45-degree rotation, and the renderer's camera is moved back by 5 units.
+**Actually rendering a quad.** The following code first constructs a HTML5 canvas element to render into, using CSS to set the size of the rendering to 300 x 300 pixels. It then creates an n-gon quad (i.e. a 4-gon), wraps it up in a mesh, and asks the renderer to draw the mesh onto the canvas. Note also that the mesh is given a 45-degree rotation, the renderer's camera is moved back by 5 units, and the quad is colored blue.
 ```
-<canvas id="render-target" style="width: 300px; height: 300px; background-color: rgba(0, 0, 0, .05);"></canvas>
+<canvas id="canvas" style="width: 300px; height: 300px; background-color: rgba(0, 0, 0, .05);"></canvas>
 <script src="./distributable/rngon.cat.js"></script>
 <script>
     const quad = Rngon.ngon([Rngon.vertex(-1, -1, 0),
@@ -60,7 +60,7 @@ Rngon.render("render-target", [mesh], {options})
                                     rotation: Rngon.rotation_vector(0, 0, 45)
                                 })
 
-    Rngon.render("render-target", [quadMesh],
+    Rngon.render("canvas", [quadMesh],
                  {
                      cameraPosition: Rngon.translation_vector(0, 0, 5),
                      scale: 1
@@ -69,9 +69,9 @@ Rngon.render("render-target", [mesh], {options})
 ```
 ![A blue quad](images/tutorials/blue-quad.png)
 
-**Rendering a textured quad.** Textures are a staple of 3d rendering, so let's add one. The code below is otherwise the same as above, but additionally creates a `texture` object and appends it to the quad's material property. You'll learn more about textures later in this document, but for right now, the details don't need to be worried about. Just know that this is roughly how textures are added to n-gons. Since the base color of an n-gon also modifies the color of its texture, we set the color to white instead of blue, as we don't want the texture to be tinted blue, here.
+**Rendering a textured quad.** Textures are a staple of 3d rendering, so let's add one. The code below is otherwise the same as above, but additionally creates a `texture` object and appends it to the quad's material property. You'll learn more about textures later in this document, but for right now, the details don't need worrying about. Just know that this is roughly how textures are added to n-gons. Since the base color of an n-gon also modifies the color of its texture, we set the color to white instead of blue, as we don't want the texture to be tinted blue, here.
 ```
-<canvas id="render-target" style="width: 300px; height: 300px; background-color: rgba(0, 0, 0, .05);"></canvas>
+<canvas id="canvas" style="width: 300px; height: 300px; background-color: rgba(0, 0, 0, .05);"></canvas>
 <script src="./distributable/rngon.cat.js"></script>
 <script>
     const texture = Rngon.texture_rgba({width: 2, height: 2, pixels: [255, 200, 0, 255,
@@ -93,7 +93,7 @@ Rngon.render("render-target", [mesh], {options})
                                     rotation: Rngon.rotation_vector(0, 0, 45)
                                 })
 
-    Rngon.render("render-target", [quadMesh],
+    Rngon.render("canvas", [quadMesh],
                  {
                      cameraPosition: Rngon.translation_vector(0, 0, 5),
                      scale: 1
@@ -120,7 +120,7 @@ The code below modifies the `quad` object from above to add UV texture coordinat
 
 **Giving the quad a spin.** With a few simple additions, we can modify the code so far to add a spinning animation to the quad. We'll do this by repeatedly calling `render()` in sync with the device's refresh rate via `window.requestAnimationFrame()`, and for each frame wrapping the quad in a new mesh with a slightly increased rotation value. (The retro n-gon renderer favors immutable data, which is why we're creating the mesh object from scratch each frame, rather than modifying the rotation of an existing mesh.)
 ```
-<canvas id="render-target" style="width: 300px; height: 300px; background-color: rgba(0, 0, 0, .05);"></canvas>
+<canvas id="canvas" style="width: 300px; height: 300px; background-color: rgba(0, 0, 0, .05);"></canvas>
 <script src="./distributable/rngon.cat.js"></script>
 <script>
     const texture = Rngon.texture_rgba({width: 2, height: 2, pixels: [255, 200, 0, 255,
@@ -149,7 +149,7 @@ The code below modifies the `quad` object from above to add UV texture coordinat
 
     (function render_loop(frameCount = 0)
     {
-        Rngon.render("render-target", [rotatingQuad(frameCount)],
+        Rngon.render("canvas", [rotatingQuad(frameCount)],
         {
             cameraPosition: Rngon.translation_vector(0, 0, 5),
             scale: 1
@@ -164,9 +164,9 @@ The code below modifies the `quad` object from above to add UV texture coordinat
 
 An introductory example is given in [samples/sample1.html](samples/sample1.html). Its source code walks you through a basic setup for rendering a spinning triangle on screen.
 
-A slightly &ndash; but only slightly &ndash; more involved example is provided in [samples/sample2.html](samples/sample2.html). It loads a simple, Blender-exported, textured model from disk, and renders it on screen. Note that, on Chrome and possibly some other browsers, the HTML file needs to be accessed via a server rather than opened directly from disk. If you want to access the file locally, you can set up a simple test server, e.g. with `$ php -S localhost:8000`.
+A slightly more complex example is provided in [samples/sample2.html](samples/sample2.html). It loads a simple, Blender-exported, textured model from disk, and renders it on screen. Also shows you how to get pixelated (rather than blurry) upscaling. Note that, on Chrome and possibly some other browsers, the HTML file needs to be accessed via a server rather than opened directly from disk. If you want to access the file locally, you can set up a simple test server, e.g. with `$ php -S localhost:8000`.
 
-### Dealing with 3d models
+### Dealing with and creating 3d models
 **N-gons** (polygons of _n_ sides, but also points and lines) are the building-blocks of 3d models in the retro n-gon renderer. Each n-gon includes one or more vertices, and a material that describes how the n-gon should look when rendered (its color, texture, and so on). A red 1-gon object could be created like so:
 ```
 const ngon = Rngon.ngon([Rngon.vertex(1, 0, 0)],
@@ -238,7 +238,7 @@ The table below lists test results from [perf-tests/perftest1.html](perf-tests/p
 
 <table>
     <tr>
-        <td align="left" width="100">E3-1230 v3</td>
+        <td align="left" width="110">E3-1230 v3</td>
         <th align="center">30</th>
         <th align="center">60</th>
         <th align="center">120</th>
@@ -279,7 +279,7 @@ Below are results from [perf-tests/perftest1.html](perf-tests/perftest1.html) as
 
 <table>
     <tr>
-        <td align="left" width="100">G4560</td>
+        <td align="left" width="110">G4560</td>
         <th align="center">30</th>
         <th align="center">60</th>
         <th align="center">120</th>
@@ -323,7 +323,7 @@ Below are results from [perf-tests/perftest1.html](perf-tests/perftest1.html) as
 
 <table>
     <tr>
-        <td align="left" width="100">View20</td>
+        <td align="left" width="110">View20</td>
         <th align="center">30</th>
         <th align="center">60</th>
         <th align="center">120</th>
@@ -364,7 +364,7 @@ Below are results from [perf-tests/perftest1.html](perf-tests/perftest1.html) as
 
 <table>
     <tr>
-        <td align="left" width="100">T1-A21L</td>
+        <td align="left" width="110">T1-A21L</td>
         <th align="center">30</th>
         <th align="center">60</th>
         <th align="center">120</th>
@@ -403,9 +403,8 @@ Below are results from [perf-tests/perftest1.html](perf-tests/perftest1.html) as
 
 # Which features typical of 3d engines are missing?
 - Lighting
-- Per-vertex attributes
-- Perspective-correct texture-mapping
-- Frustum clipping (n-gons behind the camera will result in odd behavior)
+- Fully perspective-correct texture-mapping
+- Frustum clipping (n-gons behind the camera may result in visual glitches and other undesired effects)
 - Depth testing (painter's sorting is used)
 
 Note also that concave n-gons are not supported.

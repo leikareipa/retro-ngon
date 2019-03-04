@@ -77,9 +77,14 @@ with open(outFilename, 'w') as f:
         f.write("\t\t\t// Parent mesh: %s.\n" % mesh.name)
         for poly in mesh.data.polygons:
             f.write("\t\t\tn([")
-            for v in poly.vertices:
+            for v, l in zip(poly.vertices, poly.loop_indices):
+                # Vertices.
                 vd = mesh.data.vertices[v].co * mesh.matrix_world
-                f.write("v(%.4f,%.4f,%.4f)," % vd[:])
+                f.write("v(%.4f,%.4f,%.4f" % vd[:])
+                # UV coordinates.
+                if mesh.data.uv_layers.active != None:
+                    f.write(",%.4f,%.4f" % mesh.data.uv_layers.active.data[l].uv[:])
+                f.write("),")
             f.write("]")
             material = mesh.material_slots[poly.material_index].material
             if material != None:
