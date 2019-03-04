@@ -4,6 +4,7 @@ A minimalist 3d renderer that draws n-sided polygons (as well as lines and point
 You can view a live sample of the renderer's output at [http://tarpeeksihyvaesoft.com/s/retro-ngon/samples/sample2.html](http://tarpeeksihyvaesoft.com/s/retro-ngon/samples/sample2.html).
 
 ### Features
+![A textured cube](/images/painting-cube.png)
 - Genuine retro aesthetics
 - Natively renders convex n-sided polygons
 - Vanilla JavaScript, no dependencies
