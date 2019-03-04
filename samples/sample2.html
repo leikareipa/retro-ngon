@@ -3,11 +3,40 @@
     <head>
         <meta name="viewport" content="width=device-width">
         <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-        <link rel="stylesheet" type="text/css" href="sample2.css">
         <title>Sample #2: a textured 3d model - Retro n-gon renderer</title>
+        <style>
+            body
+            {
+                background-color: rgb(143, 143, 143);
+                margin: 0px;
+                text-align: center;
+                overflow: hidden;
+            }
+
+            /* Upscale the n-gon renderer's output with nearest-neighbor interpolation.*/
+            .rngon-pixelated-upscale
+            {
+                image-rendering: pixelated;
+                image-rendering: -moz-crisp-edges;
+                image-rendering: -o-crisp-edges;
+                image-rendering: -webkit-crisp-edges;
+            }
+
+            /* Styling for the canvas element that holds the n-gon rendering.*/
+            .rngon-canvas
+            {
+                width: 100vw;
+                height: 100vh;
+                background-color: transparent;
+                padding: 0;
+                margin: 0;
+                border: none;
+                border-radius: 0px;
+            }
+        </style>
     </head>
     <body>
-        <canvas id="rngon-canvas" class="ngon-canvas ngon-pixelated-upscale"></canvas>
+        <canvas id="canvas" class="rngon-canvas rngon-pixelated-upscale"></canvas>
         
         <script src="../distributable/rngon.cat.js"></script>
         <script src="./assets/sample2/textured-cube.rngon-model.js"></script>
@@ -39,7 +68,7 @@
                 const cameraDirection = Rngon.vector3(0, 0, 0);
                 const cameraPosition = Rngon.vector3(0, 0, 170);
 
-                Rngon.render("rngon-canvas", [cubeRotated(frameCount)],
+                Rngon.render("canvas", [cubeRotated(frameCount)],
                              {
                                  cameraDirection,
                                  cameraPosition,
