@@ -162,11 +162,39 @@ The code below modifies the `quad` object given above to add UV texture coordina
 </script>
 ```
 
+**Adding pixelation.** In the examples above, the renderer's pixel size is 1:1 with the output resolution, so there is no visible pixelation that one might expect from a retro style. Not to worry, though, as the degree of pixelation can be controlled via the `scale` property provided to `render()`. What happens if we set it to, say, 0.14?
+```
+Rngon.render("canvas", [rotatingQuad(frameCount)],
+             {
+                 cameraPosition: Rngon.translation_vector(0, 0, 5),
+                 scale: 0.14
+             })
+```
+![A textured quad with blurry upscaling](images/tutorials/textured-quad-upscaled-blurry.png)
+![A textured quad with pixelated upscaling](images/tutorials/textured-quad-upscaled-pixelated.png)
+
+Setting the `scale` property to a value less than 1 causes the pixel size to be upscaled by the inverse of the property's value &ndash; in this case, by 1 / 0.14 &asymp; 7. In other words, you get chunky pixels, while the display size remains the same.
+
+One thing to be aware of is that, under the hood, the upscaling is done by the browser and not by the retro n-gon renderer. This will typically result in a blurry image, as you see on the left. To have the browser upscale without blur, add `image-rendering: pixelated` to the canvas's CSS:
+```
+<canvas id="canvas" style="width: 300px;
+                           height: 300px;
+                           background-color: rgba(0, 0, 0, .05);
+                           image-rendering: pixelated;"></canvas>
+```
+
+This will result &ndash; with certain browsers, like Chrome &ndash; in the clean upscaling you see in the second image, above. Not all browsers, especially older versions of them, support this syntax, however, and may require one of the following variations:
+```
+image-rendering: -moz-crisp-edges;    /* For Firefox*/
+image-rendering: -o-crisp-edges;      /* For Opera*/
+image-rendering: -webkit-crisp-edges; /* For Safari*/
+```
+
 **More examples.** The [samples/](samples/) directory collects together various examples of the renderer's usage.
 
 An introductory example is given in [samples/sample1.html](samples/sample1.html). Its source code walks you through a basic setup for rendering a spinning triangle on screen.
 
-A slightly more complex example is provided in [samples/sample2.html](samples/sample2.html). It loads a simple, Blender-exported, textured model from disk, and renders it on screen. Also shows you how to get pixelated (rather than blurry) upscaling. Note that, on Chrome and possibly some other browsers, the HTML file needs to be accessed via a server rather than opened directly from disk. If you want to access the file locally, you can set up a simple test server, e.g. with `$ php -S localhost:8000`.
+A slightly more complex example is provided in [samples/sample2.html](samples/sample2.html). It loads a simple, Blender-exported, textured cube model from file, and renders it on screen. Note that, on Chrome and possibly some other browsers, the HTML file needs to be accessed via a server rather than opened directly from disk, due to its usage of the Fetch API to load the file. To get around this, you can, for instance, set up a local dev server with `$ php -S localhost:8000`, and access the file via localhost.
 
 ### Dealing with and creating 3d models
 **N-gons** (polygons of _n_ sides, but also points and lines) are the building-blocks of 3d models in the retro n-gon renderer. Each n-gon includes one or more vertices, and a material that describes how the n-gon should look when rendered (its color, texture, and so on). A red 1-gon object could be created like so:
