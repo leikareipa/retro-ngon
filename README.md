@@ -194,35 +194,84 @@ image-rendering: -webkit-crisp-edges; /* For Safari*/
 
 An introductory example is given in [samples/sample1.html](samples/sample1.html). Its source code walks you through a basic setup for rendering a spinning triangle on screen.
 
-A slightly more complex example is provided in [samples/sample2.html](samples/sample2.html). It loads a simple, Blender-exported, textured cube model from file, and renders it on screen. Note that, on Chrome and possibly some other browsers, the HTML file needs to be accessed via a server rather than opened directly from disk, due to its usage of the Fetch API to load the file. To get around this, you can, for instance, set up a local dev server with `$ php -S localhost:8000`, and access the file via localhost.
+A slightly more complex example is provided in [samples/sample2.html](samples/sample2.html). It loads a simple, Blender-exported, textured cube model from file, and renders it on screen. Note that, on Chrome and possibly some other browsers, the HTML file needs to be accessed via a server rather than opened directly from disk, due to its usage of the Fetch API. To get around this, you can, for instance, set up a local dev server with `$ php -S localhost:8000`, and load up the HTML file via localhost.
 
-### Dealing with and creating 3d models
-**N-gons** (polygons of _n_ sides, but also points and lines) are the building-blocks of 3d models in the retro n-gon renderer. Each n-gon includes one or more vertices, and a material that describes how the n-gon should look when rendered (its color, texture, and so on). A red 1-gon object could be created like so:
+### Creating and rendering 3d models
+**N-gons.** The building-block of 3d models in the retro n-gon renderer is the n-gon. It's a polygon of _n_ sides (_n_-gon), or a line (2-gon), or a single point (1-gon). An n-gon is made up of one or more vertices, and a material that describes how the n-gon should look when rendered (its color, texture, and so on).
+
+A red triangle, for instance, could be created like so:
 ```
-const ngon = Rngon.ngon([Rngon.vertex(1, 0, 0)],
+const ngon = Rngon.ngon([Rngon.vertex(0, 0, 0),
+                         Rngon.vertex(1, 0, 0),
+                         Rngon.vertex(1, 1, 0)],
                         {
                             color: Rngon.color_rgba(255, 0, 0),
-                            hasSolidFill: true
-                        });
+                        })
+```
+Here, we define the three vertices of the triangle, and specify the `color` property of its material. Note that the vertices are passed as an array that can include an arbitrary number of them &ndash; three to make a triangle, four to make a quad, and so on.
+
+The following are valid properties of an n-gon's material, and the valid values of each property, separated by the | symbol:
+```
+{
+    color: Rngon.color_rgba(...)
+    texture: Rngon.texture_rgba(...)
+    textureMapping: "ortho" | "affine"
+    hasSolidFill: true | false
+    hasWireframe: true | false
+    wireframeColor: Rngon.color_rgba(...)
+}
 ```
 
-**Meshes** are one step up from n-gons, being collections of n-gons that share a purpose (e.g. the n-gons that make up a model of a spoon). A mesh thus consists of the n-gons belonging to it, and a set of 3d transformations, like rotation and translation, that can be used to transform the n-gons in unison. A mesh object containing one n-gon could be created like so:
+The `color` property sets the n-gon's base color. If the n-gon has no texture, its entire face will be rendered with the base color. If it has a texture, the colors of the texture will be modulated by the base color.
+
+The `texture` property sets the n-gon's texture. You can read more about texturing further down this document.
+
+The `textureMapping` property defines how textures should be mapped onto the n-gon's face. You can read more about texturing further down this document.
+
+The `hasSolidFill` property determines whether the face of the n-gon will be rendered. If this is set to false, and the n-gon has no wireframe, it will be invisible.
+
+The `hasWireframe` property determines whether a line should be drawn around the n-gon's face.
+
+The `wireframeColor` property sets the color of the n-gon's wireframe. Note that if `hasWireframe` is false, no wireframe will be drawn, regardless of its color.
+
+**Meshes.** To render n-gons, you first wrap them in a mesh. Meshes are collections of n-gons that share a purpose; for instance, the n-gons that make up a model of a spoon. A mesh thus consists of an array one or more n-gons, and a particular set of 3d transformations that affect the mesh's n-gons in unison.
+
+A mesh containing one triangle rotated by 45 degrees and moved by 11 units along an axis could be created like so:
 ```
-const mesh = Rngon.mesh([ngon],
+const triangle = Rngon.ngon([Rngon.vertex(0, 0, 0),
+                             Rngon.vertex(1, 0, 0),
+                             Rngon.vertex(1, 1, 0)])
+
+const mesh = Rngon.mesh([triangle],
                         {
-                            translation: Rngon.translation_vector(0, 0, 0),
-                            rotation: Rngon.rotation_vector(0, 0, 0),
-                            scaling: Rngon.scaling_vector(1, 1, 1)
-                        });
+                            rotation: Rngon.rotation_vector(45, 0, 0),
+                            translation: Rngon.translation_vector(11, 0, 0),
+                        })
 ```
 
-To render n-gons, you first wrap them up in one or more `mesh` objects, then feed those meshes into the `render()` function.
+The following are valid properties of a mesh's set of transformations, and the valid values of each property:
+```
+{
+    rotation: Rngon.rotation_vector(...)
+    translation: Rngon.translation_vector(...)
+    scaling: Rngon.scaling_vector(...)
+}
+```
+The `rotation` property sets the amount, in degrees between 0 and 359, of rotation of the mesh's n-gons along each of the three axes.
 
-**Models** describe a list of related n-gons and of any materials, texture resources, etc. that go along with those n-gons. For instance, if you create a 3d scene in Blender and export it using the retro n-gon renderer's Blender export script, you get a model file, which provides a JavaScript factory function that ultimately returns an array of n-gons corresponding to the 3d scene. You can then wrap those n-gons in a `mesh` object and render it with `render()`.
+The `translation` property moves the mesh's n-gons to the given location. This is in addition to the n-gons' local coordinates; such that if an n-gon's vertex is located at x = 10, and you translate the n-gon's mesh by 10 on x, that vertex's new location will be x = 20.
 
-You can think of models as functions that translate external 3d assets into the renderer's native n-gon format.
+The `scaling` property scales each of the mesh's n-gons by the given amount along each of the three axes.
 
-**Exporting models from Blender.** You can use the free 3d modeling program, Blender, to create 3d assets directly for the retro n-gon renderer.
+If both translation and rotation are defined, the rotation will be applied first.
+
+**Models.** Meshes and n-gons are the retro n-gon renderer's native objects. Models, on the other hand, are an interface between these native objects and external 3d assets that are in a format that the renderer can't directly interact with.
+
+For instance, if you create a 3d scene in Blender and save it into a file in Blender's format, the retro n-gon renderer can do nothing with that file, because it doesn't understand the format that the contents are in. But if you export the scene from Blender using the retro n-gon renderer's own Blender export script (more of which below), you get a model: a JavaScript file whose code, after some processing (loading textures from disk, etc.), returns an array of n-gons corresponding to the original scene's polygons. The retro n-gon renderer can then render those n-gons as usual.
+
+If that seems vague, don't dwell on it, because you don't really need a theoretical conceptualization of it. What's important to know is that when you export a Blender scene using the retro n-gon renderer's exporter, you end up with a file that defines a JavaScript object. That object might be called `scene`, for instance. It provides a function, `ngons()`. When you call `scene.ngons()`, you get an array of n-gons, which you can wrap in a mesh and render as you would any other n-gons.
+
+**Exporting 3d scenes from Blender.** You can use the free 3d modeling program, Blender, to create 3d assets directly for the retro n-gon renderer.
 
 A script for exporting scenes from Blender into the renderer's model format is provided under [tools/conversion/](tools/conversion/). To use it, first create the scene in Blender (or import it into Blender from some other format), then load up and run the script. Note that, at the moment, the script isn't integrated into Blender's UI, and is overall a very early version, so you'll have to manually edit it to provide a custom filename and path for the exported data. Otherwise, just look at the script's contents to see where it exports to, by default.
 
