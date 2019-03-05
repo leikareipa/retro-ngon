@@ -269,7 +269,7 @@ If both translation and rotation are defined, the rotation will be applied first
 
 For instance, if you create a 3d scene in Blender and save it into a file in Blender's format, the retro n-gon renderer can do nothing with that file, because it doesn't understand the format that the contents are in. But if you export the scene from Blender using the retro n-gon renderer's own Blender export script (more of which below), you get a model: a JavaScript file whose code, after some processing (loading textures from disk, etc.), returns an array of n-gons corresponding to the original scene's polygons. The retro n-gon renderer can then render those n-gons as usual.
 
-If that seems vague, don't dwell on it, because you don't really need a theoretical conceptualization of it. What's important to know is that when you export a Blender scene using the retro n-gon renderer's exporter, you end up with a file that defines a JavaScript object. That object might be called `scene`, for instance. It provides a function, `ngons()`. When you call `scene.ngons()`, you get an array of n-gons, which you can wrap in a mesh and render as you would any other n-gons.
+If that seems vague, don't dwell on it too much, because you don't really need a theoretical conceptualization of it to make use of it. What's important to know is that when you export a Blender scene using the retro n-gon renderer's exporter, you end up with a file that defines a JavaScript object. That object might be called `scene`, for instance; and it provides a function, `ngons()`. When you call `scene.ngons()`, you get an array of n-gons, which you can wrap in a mesh and render as you would any other n-gon mesh.
 
 **Exporting 3d scenes from Blender.** You can use the free 3d modeling program, Blender, to create 3d assets directly for the retro n-gon renderer.
 
@@ -572,3 +572,12 @@ Below are rough estimates of the required browser versions for a given version o
         <td align="center">No</td>
     </tr>
 </table>
+
+# Authors and credits
+The main author of the retro n-gon renderer is the one-man Tarpeeksi Hyvae Soft (see on [GitHub](https://github.com/leikareipa) and the [Web](http://www.tarpeeksihyvaesoft.com)).
+
+On 3d software rendering in general, the aforementioned main author has benefited a good bit from tutorials by Benny Bobaganoosh. You can check out his [YouTube](https://www.youtube.com/playlist?list=PLEETnX-uPtBUbVOok816vTl1K9vV1GgH5) and [GitHub](https://github.com/BennyQBD/3DSoftwareRenderer). The retro n-gon renderer's matrix code ([js/retro-ngon/matrix44.js](js/retro-ngon/matrix44.js)) is adapted, with superficial changes, from Benny's code.
+
+The implementation of the Bresenham line algo in [js/retro-ngon/line-draw.js](js/retro-ngon/line-draw.js) has been adapted, with changes, from the one given by [Phrogz](https://stackoverflow.com/users/405017/phrogz) on [Stack Overflow](https://stackoverflow.com/a/4672319).
+
+The retro n-gon renderer originates as a fork of the renderer used in the JavaScript version of Tarpeeksi Hyvae Soft's [RallySportED](https://github.com/leikareipa/rallysported).
