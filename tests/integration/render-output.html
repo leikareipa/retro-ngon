@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width">
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <title>Visual inspection of the renderer's output - Integration testing - Retro n-gon renderer</title>
+        <style>
+            body
+            {
+                color: lightgray;
+                background-color: rgb(80, 80, 80);
+                margin: 0;
+                text-align: center;
+            }
+            /* Upscale the n-gon renderer's output with nearest-neighbor interpolation.*/
+            .rngon-pixelated-upscale
+            {
+                image-rendering: pixelated;
+                image-rendering: -moz-crisp-edges;
+                image-rendering: -o-crisp-edges;
+                image-rendering: -webkit-crisp-edges;
+            }
+            /* Styling for the canvas element that holds the n-gon rendering.*/
+            .rngon-canvas
+            {
+                width: 300px;
+                height: 300px;
+                background-color: transparent;
+                padding: 0;
+                margin: 0;
+                border: none;
+                border-radius: 0px;
+            }
+        </style>
+    </head>
+    <body>
+        <div style="color: #aaaaaa">Left: image rendered on page load. Right: reference image.</div>
+
+        <script src="../../distributable/rngon.cat.js"></script>
+        <script>
+            const texture = Rngon.texture_rgba({width: 2, height: 2,
+                                                pixels: [255, 200, 0, 255,
+                                                         200, 255, 0, 255,
+                                                         255, 0, 200, 255,
+                                                         0, 255, 200, 255]});
+            const alphaTexture = Rngon.texture_rgba({width: 2, height: 2,
+                                                     pixels: [255, 200, 0, 255,
+                                                              200, 255, 0, 255,
+                                                              255, 0, 200, 255,
+                                                              0, 255, 200, 0]})
+            const quadVerts = [Rngon.vertex(-1, -1, 0, 0, 0),
+                               Rngon.vertex( 1, -1, 0, 1, 0),
+                               Rngon.vertex( 1,  1, 0, 1, 1),
+                               Rngon.vertex(-1,  1, 0, 0, 1)];
+            const meshSettings = {rotation: Rngon.rotation_vector(0, 0, 45)};
+            const renderSettings = {scale:1, cameraPosition:Rngon.translation_vector(0, 0, 5)};
+            
+            // Run the comparisons.
+            (async ()=>
+            {
+                const results = [
+                    await compare("Plain solid-filled quad",
+                                  "./render-output/reference-7bd323cj63bc.png",
+                                  (canvasId)=>
+                                  {
+                                      const quad = Rngon.ngon(quadVerts,
+                                                              {
+                                                                  color: Rngon.color_rgba(200, 180, 100)
+                                                              });
+                                      const quadMesh = Rngon.mesh([quad], meshSettings);
+                                      Rngon.render(canvasId, [quadMesh], renderSettings);
+                                  }),
+                    await compare("Plain solid-filled quad upscaled",
+                                  "./render-output/reference-88aggjdc4g96.png",
+                                  (canvasId)=>
+                                  {
+                                      const quad = Rngon.ngon(quadVerts,
+                                                              {
+                                                                  color: Rngon.color_rgba(200, 180, 100)
+                                                              });
+                                      const quadMesh = Rngon.mesh([quad], meshSettings);
+                                      Rngon.render(canvasId, [quadMesh], {...renderSettings, scale:0.1});
+                                  }),
+                    await compare("Quad textured with ortho mapping",
+                                  "./render-output/reference-2ikgd535e376.png",
+                                  (canvasId)=>
+                                  {
+                                      const quad = Rngon.ngon(quadVerts,
+                                                              {
+                                                                  color: Rngon.color_rgba(255, 255, 255),
+                                                                  textureMapping: "ortho",
+                                                                  texture
+                                                              });
+                                      const quadMesh = Rngon.mesh([quad], meshSettings);
+                                      Rngon.render(canvasId, [quadMesh], renderSettings);
+                                  }),
+                    await compare("Quad textured with affine mapping",
+                                  "./render-output/reference-e23k64bd7ehf.png",
+                                  (canvasId)=>
+                                  {
+                                      const quad = Rngon.ngon(quadVerts,
+                                                              {
+                                                                  color: Rngon.color_rgba(255, 255, 255),
+                                                                  textureMapping: "affine",
+                                                                  texture
+                                                              });
+                                      const quadMesh = Rngon.mesh([quad], meshSettings);
+                                      Rngon.render(canvasId, [quadMesh], renderSettings);
+                                  }),
+                    await compare("Quad textured with affine mapping and alpha",
+                                  "./render-output/reference-jg2dja4hei9a.png",
+                                  (canvasId)=>
+                                  {
+                                      const quad = Rngon.ngon(quadVerts,
+                                                              {
+                                                                  color: Rngon.color_rgba(255, 255, 255),
+                                                                  textureMapping: "affine",
+                                                                  texture: alphaTexture
+                                                              });
+                                      const quadMesh = Rngon.mesh([quad], meshSettings);
+                                      Rngon.render(canvasId, [quadMesh], renderSettings);
+                                  }),
+                ];
+
+                // Print out the tests' results.
+                {
+                    const resultsElement = document.createElement("p");
+                    resultsElement.style.padding = "20px";
+                    resultsElement.appendChild(document.createTextNode("Image pairs matching: " +
+                                                                       results.filter(r=>r.pairMatch).length +
+                                                                       "/" + results.length));
+
+                    // The names of failing tests.
+                    results.filter(r=>!r.pairMatch).forEach(r=>
+                    {
+                        const failElement = document.createElement("div");
+                        failElement.appendChild(document.createTextNode("Fails: " + r.comparisonTitle));
+                        document.body.insertBefore(failElement, document.body.firstChild);
+                    })
+
+                    document.body.insertBefore(resultsElement, document.body.firstChild);
+                }
+            })();
+
+            // Compare two canvases: one containing a reference image, and another where we render
+            // an image that's supposed to look exactly like the image.
+            function compare(comparisonTitle = "",
+                             referenceImageFilename = "",
+                             render_f = (canvasId = "")=>{/*Render the image here.*/})
+            {
+                return new Promise((resolve)=>
+                {
+                    const cssClasses = ["rngon-canvas", "rngon-pixelated-upscale"];
+
+                    const container = document.createElement("p");
+                    container.style.padding = "30px";
+                    document.body.appendChild(container);
+
+                    // Create the rendering.
+                    const renderCanvasElement = document.createElement("canvas");
+                    renderCanvasElement.setAttribute("id", referenceImageFilename+"-rendering");
+                    renderCanvasElement.classList.add(...cssClasses);
+                    container.appendChild(renderCanvasElement);
+                    render_f(renderCanvasElement.getAttribute("id"));
+
+                    // Load the reference image, and draw it into its own canvas element.
+                    const referenceCanvasElement = document.createElement("canvas");
+                    referenceCanvasElement.setAttribute("id", referenceImageFilename+"-reference");
+                    referenceCanvasElement.setAttribute("width", renderCanvasElement.getAttribute("width"));
+                    referenceCanvasElement.setAttribute("height", renderCanvasElement.getAttribute("height"));
+                    referenceCanvasElement.classList.add(...cssClasses);
+                    container.appendChild(referenceCanvasElement);
+                    const context = referenceCanvasElement.getContext('2d');
+                    Rngon.assert((context !== null), "Failed to establish a canvas context.");
+                    context.imageSmoothingEnabled = false;
+                    const refImage = new Image();
+                    refImage.addEventListener("load", ()=>
+                    {
+                        context.drawImage(refImage, 0, 0, refImage.width, refImage.height);
+                        compare_images();
+                    });
+                    refImage.addEventListener("error", ()=>
+                    {
+                        Rngon.assert(0, "Failed to load one or more of the reference images.");
+                        resolve({comparisonTitle, pairMatch:false});
+                    });
+                    refImage.src = referenceImageFilename;
+
+                    // Extracts the pixel data from the two canvases, and compares those data.
+                    // Note that calling this function will resolve the Promise regardless
+                    // of whether the canvases' data match.
+                    function compare_images()
+                    {
+                        const renderedImage = renderCanvasElement.toDataURL("image/png");
+                        const referenceImage = referenceCanvasElement.toDataURL("image/png");
+
+                        const pairMatch = Boolean(renderedImage === referenceImage);
+                        if (!pairMatch) renderCanvasElement.style.border = "4px dashed rgba(0, 0, 0, 1)";
+
+                        resolve({comparisonTitle, pairMatch});
+                    }
+                });
+            }
+        </script>
+    </body>
+</html>
