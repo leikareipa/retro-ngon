@@ -283,29 +283,72 @@ Since the retro n-gon renderer deals with n-gons natively, you don't need to pre
 
 As the renderer uses per-face depth-sorting, it's a good idea to subdivide large polygons before exporting them. For instance, if you have a statue consisting of several small polygons stood on a floor made up of a single large polygon, the floor will likely obscure the statue during rendering, even when viewed from angles where it shouldn't. This is because depth information is averaged across the entire polygon, causing large polygons to have poor depth resolution. On the other hand, it's good to keep in mind that subdivision can cause issues with texturing (see below for more info on this) and negatively impact rendering speed. It's a bit of a balancing act.
 
-**Texturing.** Each n-gon can have one texture applied to it.
+**Texturing.** Each n-gon can have one texture applied to it. Practical examples of basic texturing were given earlier in this document, but further details are provided in this section.
 
-In `ortho` mode &ndash; the default texture-mapping mode as defined via the n-gon's `textureMapping` material property &ndash; you don't need to provide UV coordinates for the n-gon's vertices. The downside is that the texture may warp in undesired ways depending on the n-gon's orientation and the viewing angle. This mode works best when the n-gon's lines are perpendicular to the horizon (e.g. UI elements), or when the rendering resolution is low and the texture represents organic detail, like grass (in which case, the warping will provide additional visual variance to tiled textures). The other texture-mapping mode, `affine`, requires UV coordinates to be assigned to the n-gon's vertices, but will make use of them to prevent texture-warping. The difference in performance between `ortho` and `affine` should be negligible, but you can test it on you target platforms with [tests/performance/perftest1.html](tests/performance/perftest1.html).
+To apply a texture to an n-gon, assign it as the n-gon's `texture` material property:
+```
+const someTexture = Rngon.texture_rgba(...)
 
-Texture data is provided to the retro n-gon renderer in JSON format, which for a red 1 x 1 RGBA texture might look something like this:
+const ngon = Rngon.ngon([...],
+                        {
+                            texture: someTexture
+                        })
+```
+
+By default, you don't need to provide UV coordinates for the n-gon's vertices for texturing to work. The texture will be mapped onto the n-gon's face disregarding its orientation, so no UV are needed. Depending on the n-gon's orientation, this mapping can result in texture-warping, however, as shown below.
+
+![A textured quad with ortho mapping](images/tutorials/ortho-mapping-straight.png) ![A textured quad with ortho mapping, rotated](images/tutorials/ortho-mapping.png)
+
+The texture-mapping mode can be changed via the n-gon's `textureMapping` material property, which by default is `ortho` and behaves as described above. The second mode is `affine` &ndash; it requires UV coordinates, but will eliminate texture warp in many cases. In the two images, below, `ortho` mapping is shown on the left, and `affine` mapping on the right.
+
+![A textured quad with ortho mapping](images/tutorials/ortho-mapping.png) ![A textured quad with affine mapping](images/tutorials/affine-mapping.png)
+
+The difference in performance between `ortho` and `affine` mapping should be negligible, but you can test for your target platforms using [tests/performance/perftest1.html](tests/performance/perftest1.html).
+
+The texture for an n-gon's material is created using the `texture_rgba()` function. It takes as input an object specifying the texture's width, height, pixel data, and certain optional properties. The following code creates a red 1 x 1 texture:
+```
+const texture = Rngon.texture_rgba({width:1,
+                                    height:1,
+                                    pixels:[255, 0, 0, 0]})
+```
+
+In this example, the `pixels` property is an array of raw 8-bit color values, four per pixel for RGBA. Note that the retro n-gon renderer's alpha is either fully opaque (255) or fully transparent (any value but 255); there is no intermediate blending.
+
+The texture's pixel data can also be provided as a Base64-encoded string, with 16 bits per pixel (5 bits for RGB each and 1 bit for alpha). The same example as above but with Base64-encoded pixel data would be like so:
+```
+const texture = Rngon.texture_rgba({width:1,
+                                    height:1,
+                                    channels:"rgba:5+5+5+1",
+                                    encoding:"base64",
+                                    pixels:"H4A="})
+```
+
+When using Base64-encoded pixel data, the `encoding` property must be set to "base64". The `channels` property must be "rgba:5+5+5+1".
+
+The benefit of using Base64 encoding &ndash; in tandem with 16-bit color &ndash; is a notable reduction in file size. The reduced color depth causes some degradation in color fidelity, true, but given the renderer's low fidelity overall (low resolutions and polycounts), it's likely not going be visually disruptive in many cases.
+
+A simple-to-use PHP script for converting PNG images into a compatible Base64-encoded JSON format is provided under [tools/conversion/](tools/conversion/).
+
+A texture can also be created directly from a JSON file, by using the `texture_rgba.create_with_data_from_file()` function. It returns a Promise of a `texture_rgba` object, resolved once the file has been loaded and the object created. The following code creates a texture from a JSON file:
+```
+(async ()=>
+{
+    const texture = await Rngon.texture_rgba.create_with_data_from_file("file.json");
+
+    // Safe to use the texture here, it's finished loading.
+})()
+```
+
+Where the JSON file's contents might be like so:
 ```
 {
     "width":1,
     "height":1,
-    "channels":"rgba:8+8+8+8",
-    "encoding":"none",
-    "pixels":[255, 0, 0, 0]
+    "channels":"rgba:5+5+5+1",
+    "encoding":"base64",
+    "pixels":"H4A="
 }
 ```
-Calling `texture_rgba()` with this JSON object returns a texture object that can be assigned as the `texture` property of an n-gon's material.
-
-You can pass the JSON object either directly into `texture_rgba()` as a parameter; or indirectly as a file, by calling `texture_rgba.create_with_data_from_file()` and passing to it as a parameter the JSON file's name and path. The latter will return a Promise for a `texture_rgba` object, resolved once the data has been loaded from the file and the object created from it.
-
-There are two options for encoding the texture's pixel data in the `pixels` property: `none` and `base64`. With `none`, you provide the texture's RGBA values as a flat array of consecutive 8-bit RGBA values, each in the range 0 to 255. With `base64`, you provide a Base64-encoded string representing consecutive 16-bit values into which the RGB components have been packed as 5 bits each and 1 bit for the alpha. The benefit of `base64` encoding is a smaller file size; although with some degradation in color fidelity due to the reduction in color depth. Given the renderer's low fidelity overall (low resolutions and polycounts), this reduction in textures' color depth will likely not be visually disruptive in many cases.
-
-A simple-to-use PHP script for converting PNG images into a compatible Base64-encoded JSON format is provided under [tools/conversion/](tools/conversion/).
-
-Only RGBA textures are supported, at this time; the alpha channel being either fully opaque (255) or fully transparent (any value but 255).
 
 # Performance
 As suggested in the sections, above, the retro n-gon renderer is not intended for real-time display of high-polycount scenes, nor for real-time high-resolution rendering. Its principal target resolution is along the lines of 320 x 200 &ndash; upscaled by whichever amount &ndash; with spartan 3d scenes.
