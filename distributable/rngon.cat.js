@@ -415,7 +415,7 @@ Rngon.ngon = function(vertices = [Rngon.vertex()], material = {})
 }
 Rngon.ngon.defaultMaterial = 
 {
-    color: Rngon.color_rgba(127, 127, 127, 255),
+    color: Rngon.color_rgba(255, 255, 255, 255),
     texture: null,
     textureMapping: "ortho",
     hasSolidFill: true,
