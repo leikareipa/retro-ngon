@@ -120,6 +120,14 @@
                                       const quadMesh = Rngon.mesh([quad], meshSettings);
                                       Rngon.render(canvasId, [quadMesh], renderSettings);
                                   }),
+                    await compare("Quad with default material",
+                                  "./render-output/reference-6e88gkgb8c6c.png",
+                                  (canvasId)=>
+                                  {
+                                      const quad = Rngon.ngon(quadVerts);
+                                      const quadMesh = Rngon.mesh([quad], meshSettings);
+                                      Rngon.render(canvasId, [quadMesh], renderSettings);
+                                  }),
                 ];
 
                 // Print out the tests' results.
