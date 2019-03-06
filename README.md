@@ -265,11 +265,39 @@ The `scaling` property scales each of the mesh's n-gons by the given amount alon
 
 If both translation and rotation are defined, the rotation will be applied first.
 
-**Models.** Meshes and n-gons are the retro n-gon renderer's native objects. Models, on the other hand, are an interface between these native objects and external 3d assets that are in a format that the renderer can't directly interact with.
+**Models.** Meshes and n-gons are the retro n-gon renderer's native objects. Models, on the other hand, are an interface between these native objects and external 3d assets.
 
-For instance, if you create a 3d scene in Blender and save it into a file in Blender's format, the retro n-gon renderer can do nothing with that file, because it doesn't understand the format that the contents are in. But if you export the scene from Blender using the retro n-gon renderer's own Blender export script (more of which below), you get a model: a JavaScript file whose code, after some processing (loading textures from disk, etc.), returns an array of n-gons corresponding to the original scene's polygons. The retro n-gon renderer can then render those n-gons as usual.
+For instance, when you create a 3d scene in Blender and export it using the retro n-gon renderer's Blender export script (more of which in the sections, below), you get a model: a JavaScript file whose code, after some processing to load any assets from disk etc., returns an array of n-gons corresponding to the original scene's polygons. Something like the following:
+```
+const scene =
+{
+    ngons:[],
+    initialize: async function()
+    {
+        // ...Load textures, set up materials, etc.
 
-If that seems vague, don't dwell on it too much, because you don't really need a theoretical conceptualization of it to make use of it. What's important to know is that when you export a Blender scene using the retro n-gon renderer's exporter, you end up with a file that defines a JavaScript object. That object might be called `scene`, for instance; and it provides a function, `ngons()`. When you call `scene.ngons()`, you get an array of n-gons, which you can wrap in a mesh and render as you would any other n-gon mesh.
+        this.ngons = Object.freeze(
+        [
+            // ...Create the model's n-gons.
+        ]);
+    }
+}
+```
+
+The `scene` object (though it could be called anything) contains the `ngons` array of n-gons, and the `initialize()` function, which populates the `ngons` array. Assuming the object is contained in a file called `scene.js`, we could render it like so:
+```
+<script src="./distributable/rngon.cat.js"></script>
+<script src="./scene.js"></script>
+<canvas id="canvas" style="width: 300px; height: 300px;"></canvas>
+<script>
+    (async ()=>
+    {
+        await scene.initialize()
+        const sceneMesh = Rngon.mesh(scene.ngons)
+        Rngon.render("canvas", [sceneMesh])
+    })()
+</script>
+```
 
 **Exporting 3d scenes from Blender.** You can use the free 3d modeling program, Blender, to create 3d assets directly for the retro n-gon renderer.
 

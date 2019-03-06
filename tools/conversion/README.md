@@ -55,7 +55,7 @@ Assuming you've exported a model from Blender into a file called `scene.js`, and
 ```
 <script src="./distributable/rngon.cat.js"></script>
 <script src="./scene.js"></script>
-<canvas id="canvas" class="rngon-canvas rngon-pixelated-upscale"></canvas>
+<canvas id="canvas" style="width: 300px; height: 300px;"></canvas>
 <script>
     (async ()=>
     {
