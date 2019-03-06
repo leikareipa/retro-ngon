@@ -53,8 +53,8 @@ const model =
 
 Assuming you've exported a model from Blender into a file called `scene.js`, and the object in it is called `model`, the following code could be used to render it:
 ```
-<script src="./distributable/rngon.cat.js"></script>
-<script src="./scene.js"></script>
+<script src="distributable/rngon.cat.js"></script>
+<script src="scene.js"></script>
 <canvas id="canvas" style="width: 300px; height: 300px;"></canvas>
 <script>
     (async ()=>

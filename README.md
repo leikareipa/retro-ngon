@@ -4,7 +4,7 @@ A minimalist 3d software renderer that draws n-sided polygons (as well as lines 
 You can view a live sample of the renderer's output at [http://tarpeeksihyvaesoft.com/s/retro-ngon/samples/sample2.html](http://tarpeeksihyvaesoft.com/s/retro-ngon/samples/sample2.html).
 
 ### Features
-- Simple to use
+- Easy to use
 - Genuine retro aesthetics
 - Natively renders convex n-sided polygons
 - Vanilla JavaScript, no dependencies
@@ -31,23 +31,36 @@ In this section, you'll find both practical and theoretical examples on how to u
 
 **The gist of it in theory.** At the heart of the renderer is the `render()` function, which transforms and rasterizes a set of n-gons onto a HTML5 canvas. You call it with the HTML id of the canvas you want the image rendered into, an array of the n-gon meshes you want rendered, and additional, optional parameters to define the position of the camera, etc.
 
-The following pseudocode outlines the basic program flow for rendering an n-gon onto a canvas element. (In practice, you'll render n-gons in batches rather than one by one, but let's just do one, here, for the sake of the example.)
+The following pseudocode outlines the basic program flow for rendering an n-gon onto a canvas element:
 ```
 // Create the canvas element to render into.
-<canvas id="render-target" style="width: 100px; height: 100px;"></canvas>
+<canvas id="the-canvas" style="width: 100px; height: 100px;"></canvas>
 
 // Create the n-gon, and wrap it in a mesh for rendering.
 ngon = Rngon.ngon(...)
 mesh = Rngon.mesh([ngon])
 
 // Render the n-gon mesh onto the canvas.
-Rngon.render("render-target", [mesh], {options})
+Rngon.render("the-canvas", [mesh], {options})
 ```
 
-**Actually rendering a quad.** The following code first constructs a HTML5 canvas element to render into, using CSS to set the size of the rendering to 300 x 300 pixels. It then creates an n-gon quad (i.e. a 4-gon), wraps it up in a mesh, and asks the renderer to draw the mesh onto the canvas. Note also that the mesh is given a 45-degree rotation, the renderer's camera is moved back by 5 units, and the quad is colored blue.
+Getting a bit ahead of ourselves, it's worth noting that you don't need to hand-code 3d models out of individual n-gons, either: you can also export models directly from Blender. You'll learn more about it in later sections of this document; but for now, the following pseudocode gives you a feel for how you would render a Blender-exported model called `scene`:
+```
+// Load the exported model file.
+<script src="scene.js"></script>
+
+// Initialize the model for rendering. This will load in any textures, as well.
+await scene.initialize()
+
+// Create a mesh of the model. We can then render it with render(), as we did above.
+const mesh = Rngon.mesh(scene.ngons)
+```
+
+
+**Rendering a quad, in practice.** The following code first constructs a HTML5 canvas element to render into, using CSS to set the size of the rendering to 300 x 300 pixels. It then creates an n-gon quad (i.e. a 4-gon), wraps it up in a mesh, and asks the renderer to draw the mesh onto the canvas. Note also that the mesh is given a 45-degree rotation, the renderer's camera is moved back by 5 units, and the quad is colored blue.
 ```
 <canvas id="canvas" style="width: 300px; height: 300px; background-color: rgba(0, 0, 0, .05);"></canvas>
-<script src="./distributable/rngon.cat.js"></script>
+<script src="distributable/rngon.cat.js"></script>
 <script>
     const quad = Rngon.ngon([Rngon.vertex(-1, -1, 0),
                              Rngon.vertex( 1, -1, 0),
@@ -74,7 +87,7 @@ Rngon.render("render-target", [mesh], {options})
 **Rendering a textured quad.** Textures are a staple of 3d rendering, so let's add one. The code below is otherwise the same as above, but additionally creates a `texture` object and appends it to the quad's material property. You'll learn more about textures later in this document, but for right now, the details don't need worrying about. Just know that this is roughly how textures are added to n-gons. Since the base color of an n-gon also modifies the color of its texture, we set the color to white instead of blue, as we don't want the texture to be tinted blue, here.
 ```
 <canvas id="canvas" style="width: 300px; height: 300px; background-color: rgba(0, 0, 0, .05);"></canvas>
-<script src="./distributable/rngon.cat.js"></script>
+<script src="distributable/rngon.cat.js"></script>
 <script>
     const texture = Rngon.texture_rgba({width: 2, height: 2, pixels: [255, 200, 0, 255,
                                                                       200, 255, 0, 255,
@@ -123,7 +136,7 @@ The code below modifies the `quad` object given above to add UV texture coordina
 **Giving the quad a spin.** With a few simple additions, we can modify the code so far to add a spinning animation to the quad. We'll do this by repeatedly calling `render()` in sync with the device's refresh rate via `window.requestAnimationFrame()`, and for each frame wrapping the quad in a new mesh with a slightly increased rotation value. (The retro n-gon renderer favors immutable data, which is why we're creating the mesh object from scratch each frame, rather than modifying the rotation of an existing mesh.)
 ```
 <canvas id="canvas" style="width: 300px; height: 300px; background-color: rgba(0, 0, 0, .05);"></canvas>
-<script src="./distributable/rngon.cat.js"></script>
+<script src="distributable/rngon.cat.js"></script>
 <script>
     const texture = Rngon.texture_rgba({width: 2, height: 2, pixels: [255, 200, 0, 255,
                                                                       200, 255, 0, 255,
@@ -286,8 +299,8 @@ const scene =
 
 The `scene` object (though it could be called anything) contains the `ngons` array of n-gons, and the `initialize()` function, which populates the `ngons` array. Assuming the object is contained in a file called `scene.js`, we could render it like so:
 ```
-<script src="./distributable/rngon.cat.js"></script>
-<script src="./scene.js"></script>
+<script src="distributable/rngon.cat.js"></script>
+<script src="scene.js"></script>
 <canvas id="canvas" style="width: 300px; height: 300px;"></canvas>
 <script>
     (async ()=>
