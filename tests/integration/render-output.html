@@ -31,10 +31,14 @@
                 border: none;
                 border-radius: 0px;
             }
+            .image-pair-container
+            {
+                padding: 30px;
+            }
         </style>
     </head>
     <body>
-        <div style="color: #aaaaaa">Left: image rendered on page load. Right: reference image.</div>
+        <div style="color: #aaaaaa; padding: 0px; padding-top: 50px;">Left: image rendered on page load. Right: reference image.</div>
 
         <script src="../../distributable/rngon.cat.js"></script>
         <script>
@@ -134,6 +138,7 @@
                 {
                     const resultsElement = document.createElement("p");
                     resultsElement.style.padding = "20px";
+                    resultsElement.style.paddingBottom = "0";
                     resultsElement.appendChild(document.createTextNode("Image pairs matching: " +
                                                                        results.filter(r=>r.pairMatch).length +
                                                                        "/" + results.length));
@@ -142,7 +147,8 @@
                     results.filter(r=>!r.pairMatch).forEach(r=>
                     {
                         const failElement = document.createElement("div");
-                        failElement.appendChild(document.createTextNode("Fails: " + r.comparisonTitle));
+                        failElement.style.color = "red";
+                        failElement.appendChild(document.createTextNode("Mismatch: " + r.comparisonTitle));
                         document.body.insertBefore(failElement, document.body.firstChild);
                     })
 
@@ -161,7 +167,8 @@
                     const cssClasses = ["rngon-canvas", "rngon-pixelated-upscale"];
 
                     const container = document.createElement("p");
-                    container.style.padding = "30px";
+                    container.classList.add("image-pair-container");
+                    container.setAttribute("title", comparisonTitle);
                     document.body.appendChild(container);
 
                     // Create the rendering.
@@ -171,13 +178,15 @@
                     container.appendChild(renderCanvasElement);
                     render_f(renderCanvasElement.getAttribute("id"));
 
-                    // Load the reference image, and draw it into its own canvas element.
+                    // Create a canvas to hold the reference image.
                     const referenceCanvasElement = document.createElement("canvas");
                     referenceCanvasElement.setAttribute("id", referenceImageFilename+"-reference");
                     referenceCanvasElement.setAttribute("width", renderCanvasElement.getAttribute("width"));
                     referenceCanvasElement.setAttribute("height", renderCanvasElement.getAttribute("height"));
                     referenceCanvasElement.classList.add(...cssClasses);
                     container.appendChild(referenceCanvasElement);
+
+                    // Load the reference image into its canvas.
                     const context = referenceCanvasElement.getContext('2d');
                     Rngon.assert((context !== null), "Failed to establish a canvas context.");
                     context.imageSmoothingEnabled = false;
@@ -190,7 +199,8 @@
                     refImage.addEventListener("error", ()=>
                     {
                         Rngon.assert(0, "Failed to load one or more of the reference images.");
-                        resolve({comparisonTitle, pairMatch:false});
+                        mark_canvas_as_mismatched(referenceCanvasElement);
+                        compare_images();
                     });
                     refImage.src = referenceImageFilename;
 
@@ -203,9 +213,14 @@
                         const referenceImage = referenceCanvasElement.toDataURL("image/png");
 
                         const pairMatch = Boolean(renderedImage === referenceImage);
-                        if (!pairMatch) renderCanvasElement.style.border = "4px dashed rgba(0, 0, 0, 1)";
+                        if (!pairMatch) mark_canvas_as_mismatched(renderCanvasElement);
 
                         resolve({comparisonTitle, pairMatch});
+                    }
+
+                    function mark_canvas_as_mismatched(canvasElement = Element)
+                    {
+                        canvasElement.style.border = "1px dashed red";
                     }
                 });
             }
