@@ -361,7 +361,7 @@ A texture can also be created directly from a JSON file, by using the `texture_r
 ```
 (async ()=>
 {
-    const texture = await Rngon.texture_rgba.create_with_data_from_file("file.json");
+    const texture = await Rngon.texture_rgba.create_with_data_from_file("file.json")
 
     // Safe to use the texture here, it's finished loading.
 })()
@@ -377,6 +377,8 @@ Where the JSON file's contents might be like so:
     "pixels":"H4A="
 }
 ```
+
+Be aware, however, that the `texture_rgba.create_with_data_from_file()` function uses the Fetch API to load the data, so any code calling it will likely need to be run via a server. This is simple to do, though: you can e.g. `$ php -S localhost:8000` in the retro n-gon renderer's root to set up a web server on localhost, then access the code's HTML via `localhost:8000/*`.
 
 # Performance
 As suggested in the sections, above, the retro n-gon renderer is not intended for real-time display of high-polycount scenes, nor for real-time high-resolution rendering. Its principal target resolution is along the lines of 320 x 200 &ndash; upscaled by whichever amount &ndash; with spartan 3d scenes.
