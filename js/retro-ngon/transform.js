@@ -10,7 +10,5 @@
 // has been transformed into screen-space.
 Rngon.ngon_transformer = function(ngons = [], screenSpaceMatrix = [])
 {
-    return ngons.map(ngon=>ngon.transformed(screenSpaceMatrix))
-                .filter(ngon=>ngon.vertices.every(v=>(v.w >= 1))) // Crude near-plane clipping.
-                .map(ngon=>ngon.perspective_divided());
+    return ngons.map(ngon=>ngon.transformed(screenSpaceMatrix).perspective_divided());
 }

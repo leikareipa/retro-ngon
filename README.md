@@ -569,7 +569,7 @@ Below are results from [tests/performance/perftest1.html](tests/performance/perf
 # Which features typical of 3d engines are missing?
 - Lighting
 - Fully perspective-correct texture-mapping
-- Frustum clipping (n-gons behind the camera may result in visual glitches and other undesired effects)
+- Frustum clipping (vertices located behind the camera may result in visual glitches and other undesired effects)
 - Depth testing (painter's sorting is used)
 
 Note also that concave n-gons are not supported.

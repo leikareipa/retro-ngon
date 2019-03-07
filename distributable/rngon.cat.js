@@ -403,7 +403,9 @@ Rngon.ngon = function(vertices = [Rngon.vertex()], material = {})
 
         perspective_divided: function()
         {
-            return Rngon.ngon(vertices.map(v=>v.perspective_divided()), material);
+            // First clip the n-gon's vertices against the near plane, then apply perspective
+            // division to them.
+            return Rngon.ngon(vertices.filter(v=>(v.w >= 1)).map(v=>v.perspective_divided()), material);
         },
 
         transformed: function(matrix44)
@@ -759,10 +761,10 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, renderWidth, renderHeight)
 
     ngons.forEach((ngon)=>
     {
-        // Deal with ngons that have fewer than 3 vertices.
+        // Deal with n-gons that have fewer than 3 vertices.
         switch (ngon.vertices.length)
         {
-            case 0: Rngon.assert(0, "Received an n-gon with no vertices. Can't deal with it."); return;
+            case 0: return;
 
             // A single point.
             case 1:
@@ -1097,9 +1099,7 @@ Rngon.render.defaultOptions =
 // has been transformed into screen-space.
 Rngon.ngon_transformer = function(ngons = [], screenSpaceMatrix = [])
 {
-    return ngons.map(ngon=>ngon.transformed(screenSpaceMatrix))
-                .filter(ngon=>ngon.vertices.every(v=>(v.w >= 1))) // Crude near-plane clipping.
-                .map(ngon=>ngon.perspective_divided());
+    return ngons.map(ngon=>ngon.transformed(screenSpaceMatrix).perspective_divided());
 }
 /*
  * Tarpeeksi Hyvae Soft 2019 /

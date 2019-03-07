@@ -14,10 +14,10 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, renderWidth, renderHeight)
 
     ngons.forEach((ngon)=>
     {
-        // Deal with ngons that have fewer than 3 vertices.
+        // Deal with n-gons that have fewer than 3 vertices.
         switch (ngon.vertices.length)
         {
-            case 0: Rngon.assert(0, "Received an n-gon with no vertices. Can't deal with it."); return;
+            case 0: return;
 
             // A single point.
             case 1:

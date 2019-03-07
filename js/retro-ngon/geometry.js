@@ -117,7 +117,9 @@ Rngon.ngon = function(vertices = [Rngon.vertex()], material = {})
 
         perspective_divided: function()
         {
-            return Rngon.ngon(vertices.map(v=>v.perspective_divided()), material);
+            // First clip the n-gon's vertices against the near plane, then apply perspective
+            // division to them.
+            return Rngon.ngon(vertices.filter(v=>(v.w >= 1)).map(v=>v.perspective_divided()), material);
         },
 
         transformed: function(matrix44)
