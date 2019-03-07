@@ -84,8 +84,8 @@ with open(outFilename, 'w') as f:
             f.write("\t\t\tn([")
             for v, l in zip(poly.vertices, poly.loop_indices):
                 # Vertices.
-                vd = mesh.data.vertices[v].co * mesh.matrix_world
-                f.write("v(%.4f,%.4f,%.4f" % vd[:])
+                vd = mesh.data.vertices[v].co
+                f.write("v(%.4f,%.4f,%.4f" % (vd[0], vd[2], vd[1]))
                 # UV coordinates.
                 if mesh.data.uv_layers.active != None:
                     f.write(",%.4f,%.4f" % mesh.data.uv_layers.active.data[l].uv[:])
