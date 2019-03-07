@@ -582,7 +582,7 @@ Rngon.line_draw = (()=>
                     // Mark the pixel into the array.
                     {
                         // Interpolate the u,v coordinates.
-                        const l = (distanceBetween(x1, y1, x0, y0) / lineLength);
+                        const l = (distanceBetween(x1, y1, x0, y0) / (lineLength||1));
                         const u = Rngon.lerp(vert2.u, vert1.u, l);
                         const v = Rngon.lerp(vert2.v, vert1.v, l);
 
@@ -1175,7 +1175,8 @@ Rngon.texture_rgba = function(data = {width: 0, height: 0, pixels: []})
         rgba_channels_at: function(x, y)
         {
             const idx = ((Math.floor(x) + Math.floor(y) * data.width) * numColorChannels);
-            Rngon.assert(((idx + numColorChannels) <= data.pixels.length), "Attempting to access a texture pixel out of bounds.");
+            Rngon.assert(((idx + numColorChannels) <= data.pixels.length),
+                         "Attempting to access a texture pixel out of bounds (at "+x+","+y+").");
 
             // Note: For performance reasons, the array isn't returned frozen. You can try freezing it
             // and running a perf test with textured rendering to see the effect.

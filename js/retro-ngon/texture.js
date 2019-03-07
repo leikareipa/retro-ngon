@@ -72,7 +72,8 @@ Rngon.texture_rgba = function(data = {width: 0, height: 0, pixels: []})
         rgba_channels_at: function(x, y)
         {
             const idx = ((Math.floor(x) + Math.floor(y) * data.width) * numColorChannels);
-            Rngon.assert(((idx + numColorChannels) <= data.pixels.length), "Attempting to access a texture pixel out of bounds.");
+            Rngon.assert(((idx + numColorChannels) <= data.pixels.length),
+                         "Attempting to access a texture pixel out of bounds (at "+x+","+y+").");
 
             // Note: For performance reasons, the array isn't returned frozen. You can try freezing it
             // and running a perf test with textured rendering to see the effect.
