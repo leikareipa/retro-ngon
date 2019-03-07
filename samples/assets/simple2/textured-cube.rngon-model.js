@@ -19,8 +19,8 @@ const texturedCubeModel =
 
 		// Load the textures.
 		const t = {
-			"wood.png":await ct("./assets/sample2/wood.png.rngon-texture.json"),
-			"painting.png":await ct("./assets/sample2/painting.png.rngon-texture.json"),
+			"wood.png":await ct("./assets/simple2/wood.png.rngon-texture.json"),
+			"painting.png":await ct("./assets/simple2/painting.png.rngon-texture.json"),
 		};
 
 		// Set up the materials.

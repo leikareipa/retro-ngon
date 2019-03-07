@@ -1,7 +1,7 @@
 # The retro n-gon renderer
 A minimalist 3d software renderer that draws n-sided polygons (as well as lines and points) onto a user-supplied HTML5 canvas. Its intended use cases are chiefly those where a minimalist retro aesthetic is preferred.
 
-You can view a live sample of the renderer's output at [http://tarpeeksihyvaesoft.com/s/retro-ngon/samples/sample2.html](http://tarpeeksihyvaesoft.com/s/retro-ngon/samples/sample2.html).
+You can view a live sample of the renderer's output at [http://tarpeeksihyvaesoft.com/s/retro-ngon/samples/simple2.html](http://tarpeeksihyvaesoft.com/s/retro-ngon/samples/simple2.html).
 
 ### Features
 - Easy to use
@@ -204,10 +204,6 @@ image-rendering: -webkit-crisp-edges; /* For Safari*/
 ```
 
 **More examples.** The [samples/](samples/) directory collects together various examples of the renderer's usage.
-
-An introductory example is given in [samples/sample1.html](samples/sample1.html). Its source code walks you through a basic setup for rendering a spinning triangle on screen.
-
-A slightly more complex example is provided in [samples/sample2.html](samples/sample2.html). It loads a simple, Blender-exported, textured cube model from file, and renders it on screen. Note that, on Chrome and possibly some other browsers, the HTML file needs to be accessed via a server rather than opened directly from disk, due to its usage of the Fetch API. To get around this, you can, for instance, set up a local dev server with `$ php -S localhost:8000`, and load up the HTML file via localhost.
 
 ### Creating and rendering 3d models
 **N-gons.** The building-block of 3d models in the retro n-gon renderer is the n-gon. It's a polygon of _n_ sides (_n_-gon), or a line (2-gon), or a single point (1-gon). An n-gon is made up of one or more vertices, and a material that describes how the n-gon should look when rendered (its color, texture, and so on).
