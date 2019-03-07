@@ -312,7 +312,7 @@ The `scene` object (though it could be called anything) contains the `ngons` arr
 </script>
 ```
 
-**Exporting 3d scenes from Blender.** You can use the free 3d modeling program, Blender, to create 3d assets directly for the retro n-gon renderer.
+**Exporting models from Blender.** You can use the free 3d modeling program, Blender, to create 3d assets directly for the retro n-gon renderer.
 
 A script for exporting scenes from Blender into the renderer's model format is provided under [tools/conversion/](tools/conversion/). To use it, first create the scene in Blender (or import it into Blender from some other format), then load up and run the script. Note that, at the moment, the script isn't integrated into Blender's UI, and is overall a very early version, so you'll have to manually edit it to provide a custom filename and path for the exported data. Otherwise, just look at the script's contents to see where it exports to, by default.
 

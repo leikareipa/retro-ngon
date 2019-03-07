@@ -6,8 +6,8 @@
 # as of now, so is likely to contain bugs and pitfalls. Made for Blender 2.76, but may
 # also work with other versions.
 # 
-# Future versions of the script will integrate it into Blender's export menu, for more
-# convenient usage.
+# Future, more usable versions of the script will integrate it into Blender's export
+# menu, among other improvements.
 #
 # Notes:
 #   - in Blender, apply all transformations before exporting, or they may be ignored
@@ -59,13 +59,18 @@ with open(outFilename, 'w') as f:
     # Write the materials.
     f.write("\t\t// Set up the materials.\n")
     f.write("\t\tconst m = {\n");
-    for mat in materials:
-        color = list(map(lambda x: x*255*mat.diffuse_intensity, mat.diffuse_color))
-        texture = mat.texture_slots[0] # The exporter ignores all but the first texture slot.
-        f.write("\t\t\t\"%s\":{" % mat.name)
+    for material in materials:
+        color = list(map(lambda x: x*255*material.diffuse_intensity, material.diffuse_color))
+        texture = material.texture_slots[0] # The exporter ignores all but the first texture slot.
+        f.write("\t\t\t\"%s\":{" % material.name)
         f.write("color:c(%d,%d,%d)," % (color[0], color[1], color[2]))
         if texture and hasattr(texture.texture, "image"):
             f.write("texture:t[\"%s\"]," % texture.texture.image.name)
+        # Custom material properties. These match the properties available in Rngon.ngon()'s material.
+        if "hasWireframe" in material: f.write("hasWireframe:%s," % material["hasWireframe"])
+        if "hasSolidFill" in material: f.write("hasSolidFill:%s," % material["hasSolidFill"])
+        if "textureMapping" in material: f.write("textureMapping:\"%s\"," % material["textureMapping"])
+        if "wireframeColor" in material: f.write("wireframeColor:c(%d,%d,%d)," % material["wireframeColor"][:])
         f.write("},\n")
     f.write("\t\t};\n\n")
     
@@ -86,6 +91,7 @@ with open(outFilename, 'w') as f:
                     f.write(",%.4f,%.4f" % mesh.data.uv_layers.active.data[l].uv[:])
                 f.write("),")
             f.write("]")
+            # Material.
             material = mesh.material_slots[poly.material_index].material
             if material != None:
                 f.write(",m[\"%s\"]" % material.name)
