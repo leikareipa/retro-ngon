@@ -566,7 +566,14 @@ Below are results from [tests/performance/perftest1.html](tests/performance/perf
     </tr>
 </table>
 
-# Which features typical of 3d engines are missing?
+# Project status
+The retro n-gon renderer is currently in alpha. During this phase, you can expect frequent changes to the API, feature-set, performance, and so on.
+
+The project is expected to enter beta in the near future, once crucial features like n-gon clipping are implemented and/or more stable.
+
+If you're in dire need of more render performance _now_, you can comment out some of the debug-helping `Rngon.assert()` assertions in hotspots like the `rgba_channels_at()` function ([js/retro-ngon/texture.js](js/retro-ngon/texture.js)). This can result in up to 30% higher FPS.
+
+### Which features typical of 3d engines are missing?
 - Lighting
 - Fully perspective-correct texture-mapping
 - Frustum clipping (vertices located behind the camera may result in visual glitches and other undesired effects)
@@ -574,7 +581,9 @@ Below are results from [tests/performance/perftest1.html](tests/performance/perf
 
 Note also that concave n-gons are not supported.
 
-# Browser compatibility
+Some of these features are intentionally lacking, and others may appear in future versions of the renderer, depending on whether they complement the renderer's retro style.
+
+### Browser compatibility
 Below are rough estimates of the required browser versions for a given version of the retro n-gon renderer. Browsers marked with "No" are not compatible at all.
 
 <table>
