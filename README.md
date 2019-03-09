@@ -308,17 +308,19 @@ The `scene` object (though it could be called anything) contains the `ngons` arr
 </script>
 ```
 
-**Exporting models from Blender.** You can use the free 3d modeling program, Blender, to create 3d assets directly for the retro n-gon renderer.
+**Exporting models from Blender.** You can use the free 3d modeling program, [Blender](https://www.blender.org/), to create 3d assets for use with the retro n-gon renderer. A script to export scenes from Blender into the retro n-gon renderer's format is provided under [tools/conversion/](tools/conversion/).
 
-A script for exporting scenes from Blender into the renderer's model format is provided under [tools/conversion/](tools/conversion/). To use it, first create the scene in Blender (or import it into Blender from some other format), then load up and run the script. Note that, at the moment, the script isn't integrated into Blender's UI, and is overall a very early version, so you'll have to manually edit it to provide a custom filename and path for the exported data. Otherwise, just look at the script's contents to see where it exports to, by default.
+At the moment, the Blender export script is quite rudimentary, and doesn't necessarily allow for a convenient asset workflow. Nonetheless, with certain precautions as discussed below, it allows you to create 3d scenes in Blender using native n-gons, and to import the results directly for use with the retro n-gon renderer.
 
-Only a subset of Blender's operations are supported, at this time. The export script will export for each n-gon in Blender its vertices, diffuse color (modulated by its diffuse intensity), and, if any, the filename of the texture image in the polygon's first material slot (the image must be in PNG format). Note that you should apply any of Blender's transformations, like translation and rotation, before running the script. Otherwise, those operations may be ignored in the exported data.
+To export a scene from Blender, simply load up the export script file in Blender, and run it. The exact way to load Python scripts into Blender will depend on your version of Blender &ndash; if you're uncertain, just have a look on Google for the specifics, but know that it's not a complicated process.
 
-The exporter ignores UV coordinates and normals. (For more info on texturing, see the sections, below.)
+At the moment, the script exports vertex coordinates, vertex UV coordinates, each material's diffuse color and its intensity, and, if any, the filename of the texture image in each material's first texture slot. Objects that are hidden will not be exported. Normals are ignored. You should first apply any pending transformations on each object (Object > Apply in Blender's menu) before you run the export script, as these will otherwise be ignored. The same goes for any modifiers that have not yet been applied.
 
-Since the retro n-gon renderer deals with n-gons natively, you don't need to pre-triangulate the meshes in Blender. It's in fact better if you don't, since triangulation will increase the number of polygons, and thus slow down the rendering. An exception is if you have concave polygons, as these aren't supported by the renderer, and will need to be triangulated before exporting.
+Since the retro n-gon renderer uses per-face depth-sorting when rendering, it's a good idea to subdivide large polygons in Blender before exporting them. For instance, if you have a mesh of a statue consisting of several small polygons stood on a floor made up of a single large polygon, the floor is likely to obscure the statue during rendering, even when viewed from angles where it shouldn't. This is because the renderer averages a polygon's depth information across its entire face, causing large polygons to have poor depth resolution, which leads to an inability to correctly separate it by depth from other polygons.
 
-As the renderer uses per-face depth-sorting, it's a good idea to subdivide large polygons before exporting them. For instance, if you have a statue consisting of several small polygons stood on a floor made up of a single large polygon, the floor will likely obscure the statue during rendering, even when viewed from angles where it shouldn't. This is because depth information is averaged across the entire polygon, causing large polygons to have poor depth resolution. On the other hand, it's good to keep in mind that subdivision can cause issues with texturing (see below for more info on this) and negatively impact rendering speed. It's a bit of a balancing act.
+Once the file has been exported, it's likely that you'll have to make a few edits to it by hand. Texture filenames, for instance, will probably need to be given correct paths. If you have unused textures or materials in Blender, they will nonetheless also be exported, and may require manual deletion from the file (or, perhaps ideally, from Blender, so that they don't get exported in the first place).
+
+As the retro n-gon renderer expects textures to be in its custom JSON format, you'll want to convert any textures to that format, first, and also adjust their filenames accordingly in the exported file. You'll find more information about converting textures, below.
 
 **Texturing.** Each n-gon can have one texture applied to it. Practical examples of basic texturing were given earlier in this document, but further details are provided in this section.
 
@@ -565,7 +567,7 @@ Below are results from [tests/performance/perftest1.html](tests/performance/perf
 # Project status
 The retro n-gon renderer is currently in alpha. During this phase, you can expect frequent changes to the API, feature-set, performance, and so on.
 
-The project is expected to enter beta in the near future, once crucial features like n-gon clipping are implemented and/or more stable.
+The project is expected to enter beta in the near future, once crucial features like n-gon clipping, asset workflow, etc. are implemented and/or more refined.
 
 If you're in dire need of more render performance _now_, you can comment out some of the debug-helping `Rngon.assert()` assertions in hotspots like the `rgba_channels_at()` function ([js/retro-ngon/texture.js](js/retro-ngon/texture.js)). This can result in up to 30% higher FPS.
 
