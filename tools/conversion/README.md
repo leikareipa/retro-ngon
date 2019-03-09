@@ -1,7 +1,7 @@
 ## Data converters for the retro n-gon renderer
 
 #### PNG to JSON converter &mdash; [png2json.php](png2json.php)
-Usage: `$ php png2json.php -i <INPUT_PNG_FILENAME> [-o <OUTPUT_JSON_FILENAME>]`
+Usage: `$ php png2json.php -i <INPUT_PNG_FILENAME> [-r -o <OUTPUT_JSON_FILENAME>]`
 
 Converts PNG images into a JSON format compatible with the retro n-gon renderer. The output JSON will be of the following form:
 ```
@@ -10,12 +10,14 @@ Converts PNG images into a JSON format compatible with the retro n-gon renderer.
     "source": "<input_png_filename>",
     "width": <input_png_width>,
     "height": <input_png_height>,
-    "channels": "rgba:5+5+5+1",
-    "encoding": "base64",
+    "channels": "rgba:5+5+5+1" | "rgba:8+8+8+8",
+    "encoding": "base64" | "none",
     "pixels":" <input_png_pixels_in_base64>"
 }
 ```
-The converter packs the input PNG's pixel data into 16 bits per pixel, where 5 bits are reserved for each of the RGB channels and 1 bit for alpha (fully opaque or fully transparent), storing the data as a Base64-encoded string in the `pixels` property.
+By default, the converter packs the input PNG's pixel data into 16 bits per pixel, where 5 bits are reserved for each of the RGB channels and 1 bit for alpha (fully opaque or fully transparent), storing the data as a Base64-encoded string in the `pixels` property. **Note:** Packing the pixel data into 16 bits results in some loss of color fidelity.
+
+If you don't want the converted data to be packed into 16 bits, and instead be output with the full 32 bits of RGBA, you can add the `-r` (_raw_) command-line option. This will result in the JSON's `pixels` property being assigned an array of raw 8-bit pixel values, instead of a packed Base64-encoded string. **Note:** Raw pixel data in JSON format takes up a considerable amount of disk space relative to the image's original size. **Note:** Alpha will be stored with 8 bits, but its value can only be one of 0 or 255, where any value of alpha other than 255 in the input PNG will result in a converted alpha value of 0 (fully transparent).
 
 JSON files created with this converter can be loaded into the retro n-gon renderer like so:
 ```

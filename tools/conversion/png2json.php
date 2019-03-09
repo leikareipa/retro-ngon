@@ -9,10 +9,13 @@
  * Command-line options:
  *  -i <string> = name and path of the input PNG file.
  *  -o <string> = name and path of the output JSON file.
+ *  -r = save pixel data in raw RGBA-8888 format, rather than in 16-bit packed RGBA-5551.
  */
 
-$commandLine = getopt("i:o:");
+$commandLine = getopt("i:o:r");
 {
+    $save_raw_pixel_data = isset($commandLine["r"]);
+
     if (!isset($commandLine["i"]))
     {
         printf("ERROR: No input file specified.\n");
@@ -47,7 +50,7 @@ if (!$width || !$height)
     die;
 }
 
-// Convert the image's RGBA pixel data into a 16 bits-per-pixel little-endian binary string.
+// Convert the image's RGBA pixel data into a string.
 $data = "";
 for ($y = 0; $y < $height; $y++)
 {
@@ -58,13 +61,24 @@ for ($y = 0; $y < $height; $y++)
         // Either fully opaque (1) or fully transparent (0). (Note that in PHP GD, fully opaque is 0 and fully transparent is 127.)
         $alpha = !$color["alpha"];
 
-        // Pack the pixel's RGBA into a 16-bit value of the format 5551.
-        $packed =  (int)($color["red"]   / 8)        |
-                  ((int)($color["green"] / 8) << 5)  |
-                  ((int)($color["blue"]  / 8) << 10) |
-                 ((bool)($alpha          & 1) << 15);
+        if ($save_raw_pixel_data)
+        {
+            $data .= ($color["red"] . "," . $color["green"] . "," . $color["blue"] . "," . ($alpha*255));
 
-        $data .= pack("v", $packed);
+            // Break the line every couple of pixels.
+            if (($y*$width+$x+1)%5==0) $data .= ",\n\t";
+            else $data .= ", ";
+        }
+        else
+        {
+            // Pack the pixel's RGBA into a 16-bit value of the format 5551.
+            $packed =  (int)($color["red"]   / 8)        |
+                      ((int)($color["green"] / 8) << 5)  |
+                      ((int)($color["blue"]  / 8) << 10) |
+                     ((bool)($alpha          & 1) << 15);
+
+            $data .= pack("v", $packed);
+        }
     }
 }
 
@@ -73,9 +87,17 @@ fprintf($outfile, "\t\"what\":\"A texture for the retro n-gon renderer\",\n");
 fprintf($outfile, "\t\"source\":\"%s\",\n", pathinfo($commandLine["i"], PATHINFO_BASENAME));
 fprintf($outfile, "\t\"width\":%d,\n", $width);
 fprintf($outfile, "\t\"height\":%d,\n", $height);
-fprintf($outfile, "\t\"channels\":\"rgba:5+5+5+1\",\n");
-fprintf($outfile, "\t\"encoding\":\"base64\",\n");
-fprintf($outfile, "\t\"pixels\":\"");
-fprintf($outfile, "%s", base64_encode($data));
-fprintf($outfile, "\"\n}");
+if ($save_raw_pixel_data)
+{
+    fprintf($outfile, "\t\"channels\":\"rgba:8+8+8+8\",\n");
+    fprintf($outfile, "\t\"encoding\":\"none\",\n");
+    fprintf($outfile, "\t\"pixels\":[\n\t%s\n\t]", rtrim(rtrim($data, ", "), ", \n\t"));
+}
+else
+{
+    fprintf($outfile, "\t\"channels\":\"rgba:5+5+5+1\",\n");
+    fprintf($outfile, "\t\"encoding\":\"base64\",\n");
+    fprintf($outfile, "\t\"pixels\":\"%s\"", base64_encode($data));
+}
+fprintf($outfile, "\n}");
 ?>
