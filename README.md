@@ -322,9 +322,9 @@ Once the file has been exported, it's likely that you'll have to make a few edit
 
 As the retro n-gon renderer expects textures to be in its custom JSON format, you'll want to convert any textures to that format, first, and also adjust their filenames accordingly in the exported file. You'll find more information about converting textures, below.
 
-**Texturing.** Each n-gon can have one texture applied to it. Practical examples of basic texturing were given earlier in this document, but further details are provided in this section.
+**Texturing.** Examples of the basics of texturing were given earlier in the documentation. Now, you'll find out about all the details.
 
-To apply a texture to an n-gon, assign it as the n-gon's `texture` material property:
+Each n-gon can have one texture applied to it. To apply a texture to an n-gon, assign it as the n-gon's `texture` material property:
 ```
 const someTexture = Rngon.texture_rgba(...)
 
@@ -366,9 +366,9 @@ When using Base64-encoded pixel data, the `encoding` property must be set to "ba
 
 The benefit of using Base64 encoding &ndash; in tandem with 16-bit color &ndash; is a notable reduction in file size. The reduced color depth causes some degradation in color fidelity, true, but given the renderer's low fidelity overall (low resolutions and polycounts), it's likely not going be visually disruptive in many cases.
 
-A simple-to-use PHP script for converting PNG images into a compatible Base64-encoded JSON format is provided under [tools/conversion/](tools/conversion/).
+A simple PHP script for converting PNG images into the retro n-gon renderer's JSON format is provided under [tools/conversion/](tools/conversion/).
 
-A texture can also be created directly from a JSON file, by using the `texture_rgba.create_with_data_from_file()` function. It returns a Promise of a `texture_rgba` object, resolved once the file has been loaded and the object created. The following code creates a texture from a JSON file:
+If your JSON texture data is stored in a JSON file rather than as a JavaScript object, you can create a texture from it by calling  the `texture_rgba.create_with_data_from_file()` function. It returns a Promise of a texture, resolved once the file has been loaded and a texture created from its data. The following code creates a texture from a JSON file:
 ```
 (async ()=>
 {
@@ -378,18 +378,7 @@ A texture can also be created directly from a JSON file, by using the `texture_r
 })()
 ```
 
-Where the JSON file's contents might be like so:
-```
-{
-    "width":1,
-    "height":1,
-    "channels":"rgba:5+5+5+1",
-    "encoding":"base64",
-    "pixels":"H4A="
-}
-```
-
-Be aware, however, that the `texture_rgba.create_with_data_from_file()` function uses the Fetch API to load the data, so any code calling it will likely need to be run via a server. This is simple to do, though: you can e.g. `$ php -S localhost:8000` in the retro n-gon renderer's root to set up a web server on localhost, then access the code's HTML via `localhost:8000/*`.
+Be aware, however, that `texture_rgba.create_with_data_from_file()` uses the Fetch API, which typically requires the content to be served via a server rather than from a local file directly. If you want to use this functionality locally, you can set up a server on localhost &ndash; e.g. by executing `$ php -S localhost:8000` in the retro n-gon renderer's root &ndash; and then accessing the code's HTML via `localhost:8000/*`.
 
 # Performance
 As suggested in the sections, above, the retro n-gon renderer is not intended for real-time display of high-polycount scenes, nor for real-time high-resolution rendering. Its principal target resolution is along the lines of 320 x 200 &ndash; upscaled by whichever amount &ndash; with spartan 3d scenes.
