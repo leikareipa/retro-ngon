@@ -65,8 +65,8 @@
             (function render_loop(frameCount = 0)
             {
                 const rendererScale = 0.2;
-                const cameraDirection = Rngon.vector3(0, 0, 0);
-                const cameraPosition = Rngon.vector3(0, 0, 170);
+                const cameraDirection = Rngon.rotation_vector(0, 0, 0);
+                const cameraPosition = Rngon.translation_vector(0, 0, 170);
 
                 Rngon.render("canvas", [cubeRotated(frameCount)],
                              {
