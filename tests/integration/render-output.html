@@ -11,6 +11,7 @@
                 background-color: rgb(80, 80, 80);
                 margin: 0;
                 text-align: center;
+                overflow-y: scroll;
             }
             /* Upscale the n-gon renderer's output with nearest-neighbor interpolation.*/
             .rngon-pixelated-upscale
@@ -31,6 +32,16 @@
                 border: none;
                 border-radius: 0px;
             }
+            #pairs-container
+            {
+                opacity: 0;
+                transition: opacity .1s ease-in;
+            }
+            #results-container
+            {
+                padding: 20px;
+                padding-bottom: 0;
+            }
             .image-pair-container
             {
                 padding: 30px;
@@ -38,7 +49,9 @@
         </style>
     </head>
     <body>
-        <div style="color: #aaaaaa; padding: 0px; padding-top: 50px;">Left: image rendered on page load. Right: reference image.</div>
+        <div id="pairs-container">
+            <div style="color: #aaaaaa; padding: 0px; padding-top: 50px;">Left: image rendered on page load. Right: reference image.</div>
+        </div>
 
         <script src="../../distributable/rngon.cat.js"></script>
         <script>
@@ -58,6 +71,12 @@
                                Rngon.vertex(-1,  1, 0, 0, 1)];
             const meshSettings = {rotation: Rngon.rotation_vector(0, 0, 45)};
             const renderSettings = {scale:1, cameraPosition:Rngon.translation_vector(0, 0, 5)};
+
+            // Where we'll print out the test results, i.e. how many image pairs matched.
+            const resultsElement = document.createElement("p");
+            resultsElement.setAttribute("id", "results-container");
+            resultsElement.appendChild(document.createTextNode("Running the test..."));
+            document.body.insertBefore(resultsElement, document.body.firstChild);
             
             // Run the comparisons.
             (async ()=>
@@ -136,10 +155,10 @@
 
                 // Print out the tests' results.
                 {
-                    const resultsElement = document.createElement("p");
-                    resultsElement.style.padding = "20px";
-                    resultsElement.style.paddingBottom = "0";
-                    resultsElement.appendChild(document.createTextNode("Image pairs matching: " +
+                    document.getElementById("pairs-container").style.opacity = 1;
+
+                    resultsElement.innerHTML = "";
+                    resultsElement.appendChild(document.createTextNode("Test completed. Image pairs matching: " +
                                                                        results.filter(r=>r.pairMatch).length +
                                                                        "/" + results.length));
 
@@ -169,7 +188,7 @@
                     const container = document.createElement("p");
                     container.classList.add("image-pair-container");
                     container.setAttribute("title", comparisonTitle);
-                    document.body.appendChild(container);
+                    document.getElementById("pairs-container").appendChild(container);
 
                     // Create the rendering.
                     const renderCanvasElement = document.createElement("canvas");
