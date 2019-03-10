@@ -1,8 +1,8 @@
 "use strict";
 
-// The unit tester expects errors to throw, so make sure the renderer's assert handler
-// throws on failure.
-Rngon.assert = function(condition = false, explanation = "(no reason given)")
+// The unit tester expects assertion failures to throw and only throw
+// (not also pop up window.alert()s or the like).
+Rngon.throw = function(explanation = "(no reason given)")
 {
     if (!condition) throw Error(explanation);
 }

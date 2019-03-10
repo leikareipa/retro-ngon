@@ -15,12 +15,12 @@ Rngon.texture_rgba = function(data = {width: 0, height: 0, pixels: []})
 
     const numColorChannels = 4;
 
-    Rngon.assert((Number.isInteger(data.width) && Number.isInteger(data.height)),
-                 "Expected texture width and height to be integer values.");
-    Rngon.assert((data.width > 0 && data.height > 0),
-                 "Expected texture width and height to be greater than zero.")
-    Rngon.assert((data.width <= maxWidth && data.height <= maxHeight),
-                 "Expected texture width/height to be no more than " + maxWidth + "/" + maxHeight + ".");
+    Rngon.assert && (Number.isInteger(data.width) && Number.isInteger(data.height))
+                 || Rngon.throw("Expected texture width and height to be integer values.");
+    Rngon.assert && (data.width > 0 && data.height > 0)
+                 || Rngon.throw("Expected texture width and height to be greater than zero.");
+    Rngon.assert && (data.width <= maxWidth && data.height <= maxHeight)
+                 || Rngon.throw("Expected texture width/height to be no more than " + maxWidth + "/" + maxHeight + ".");
 
     // If necessary, decode the pixel data into raw RGBA/8888.
     if (typeof data.encoding !== "undefined" && data.encoding !== "none")
@@ -30,7 +30,8 @@ Rngon.texture_rgba = function(data = {width: 0, height: 0, pixels: []})
         // 1 bit.
         if (data.encoding === "base64")
         {
-            Rngon.assert((data.channels === "rgba:5+5+5+1"), "Expected Base64-encoded data to be in RGBA 5551 format.");
+            Rngon.assert && (data.channels === "rgba:5+5+5+1")
+                         || Rngon.throw("Expected Base64-encoded data to be in RGBA 5551 format.");
 
             data.pixels = (()=>
             {
@@ -38,7 +39,8 @@ Rngon.texture_rgba = function(data = {width: 0, height: 0, pixels: []})
                 const decoded = atob(data.pixels);
 
                 // We should have an array where each pixel is a 2-byte value.
-                Rngon.assert(decoded.length === (data.width * data.height * 2), "Unexpected data length for a Base64-encoded texture.");
+                Rngon.assert && (decoded.length === (data.width * data.height * 2))
+                             || Rngon.throw("Unexpected data length for a Base64-encoded texture.");
 
                 for (let i = 0; i < (data.width * data.height * 2); i += 2)
                 {
@@ -55,12 +57,12 @@ Rngon.texture_rgba = function(data = {width: 0, height: 0, pixels: []})
         }
         else if (data.encoding !== "none")
         {
-            Rngon.assert(0, "Unknown texture data encoding '" + data.encoding + "'.");
+            Rngon.throw("Unknown texture data encoding '" + data.encoding + "'.");
         }
     }
 
-    Rngon.assert((data.pixels.length === (data.width * data.height * numColorChannels)),
-                 "The texture's pixel array size doesn't match its width and height.");
+    Rngon.assert && (data.pixels.length === (data.width * data.height * numColorChannels))
+                 || Rngon.throw("The texture's pixel array size doesn't match its width and height.");
         
     const publicInterface = Object.freeze(
     {
@@ -72,8 +74,8 @@ Rngon.texture_rgba = function(data = {width: 0, height: 0, pixels: []})
         rgba_channels_at: function(x, y)
         {
             const idx = ((Math.floor(x) + Math.floor(y) * data.width) * numColorChannels);
-            Rngon.assert(((idx + numColorChannels) <= data.pixels.length),
-                         "Attempting to access a texture pixel out of bounds (at "+x+","+y+").");
+            Rngon.assert && ((idx + numColorChannels) <= data.pixels.length)
+                         || Rngon.throw("Attempting to access a texture pixel out of bounds (at "+x+","+y+").");
 
             // Note: For performance reasons, the array isn't returned frozen. You can try freezing it
             // and running a perf test with textured rendering to see the effect.
@@ -100,6 +102,6 @@ Rngon.texture_rgba.create_with_data_from_file = function(filename)
         {
             resolve(Rngon.texture_rgba(data));
         })
-        .catch((error)=>{Rngon.assert(0, "Failed to create a texture with data from file '" + filename + "'. Error: '" + error + "'.")});
+        .catch((error)=>{Rngon.throw("Failed to create a texture with data from file '" + filename + "'. Error: '" + error + "'.")});
     });
 }

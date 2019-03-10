@@ -32,8 +32,8 @@ Rngon.line_draw = (()=>
             const x1 = Math.floor(vert2.x);
             const y1 = Math.floor(vert2.y);
 
-            Rngon.assert((!isNaN(x0) && !isNaN(x1) && !isNaN(y0) && !isNaN(y1)),
-                         "Invalid vertex coordinates for line-drawing.")
+            Rngon.assert && (!isNaN(x0) && !isNaN(x1) && !isNaN(y0) && !isNaN(y1))
+                         || Rngon.throw("Invalid vertex coordinates for line-drawing.");
 
             // Bresenham line algo. Adapted from https://stackoverflow.com/a/4672319.
             {
@@ -81,8 +81,8 @@ Rngon.line_draw = (()=>
             const x1 = Math.floor(vert2.x);
             const y1 = Math.floor(vert2.y);
 
-            Rngon.assert((!isNaN(x0) && !isNaN(x1) && !isNaN(y0) && !isNaN(y1)),
-                         "Invalid vertex coordinates for line-drawing.")
+            Rngon.assert && (!isNaN(x0) && !isNaN(x1) && !isNaN(y0) && !isNaN(y1))
+                         || Rngon.throw("Invalid vertex coordinates for line-drawing.");
 
             const lineLength = distanceBetween(x0, y0, x1, y1);
 

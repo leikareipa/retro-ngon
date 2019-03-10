@@ -188,7 +188,7 @@
 
                     // Load the reference image into its canvas.
                     const context = referenceCanvasElement.getContext('2d');
-                    Rngon.assert((context !== null), "Failed to establish a canvas context.");
+                    Rngon.assert && (context !== null) || Rngon.throw("Failed to establish a canvas context.");
                     context.imageSmoothingEnabled = false;
                     const refImage = new Image();
                     refImage.addEventListener("load", ()=>
@@ -198,7 +198,7 @@
                     });
                     refImage.addEventListener("error", ()=>
                     {
-                        Rngon.assert(0, "Failed to load one or more of the reference images.");
+                        Rngon.throw("Failed to load one or more of the reference images.");
                         mark_canvas_as_mismatched(referenceCanvasElement);
                         compare_images();
                     });

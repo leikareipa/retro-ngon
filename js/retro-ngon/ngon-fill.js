@@ -9,8 +9,9 @@
 // Rasterizes the given ngons into the given RGBA pixel buffer of the given width and height.
 Rngon.ngon_filler = function(ngons = [], pixelBuffer, renderWidth, renderHeight)
 {
-    Rngon.assert((ngons instanceof Array), "Expected an array of ngons to be rasterized.");
-    Rngon.assert(((renderWidth > 0) && (renderHeight > 0)), "The transform surface can't have zero width or height.");
+    Rngon.assert && (ngons instanceof Array) || Rngon.throw("Expected an array of ngons to be rasterized.");
+    Rngon.assert && ((renderWidth > 0) && (renderHeight > 0))
+                 || Rngon.throw("The transform surface can't have zero width or height.");
 
     ngons.forEach((ngon)=>
     {
@@ -83,8 +84,12 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, renderWidth, renderHeight)
             leftVerts.sort((a, b)=>((a.y === b.y)? 0 : ((a.y < b.y)? -1 : 1)));
             rightVerts.sort((a, b)=>((a.y === b.y)? 0 : ((a.y > b.y)? -1 : 1)));
 
-            Rngon.assert(((leftVerts.length !== 0) && (rightVerts.length !== 0)), "Expected each side list to have at least one vertex.");
-            Rngon.assert(((leftVerts.length + rightVerts.length) === verts.length), "Vertices appear to have gone missing.");
+            Rngon.assert && ((leftVerts.length !== 0) && (rightVerts.length !== 0))
+                         || Rngon.throw("Expected each side list to have at least one vertex.");
+            Rngon.assert && ((leftVerts.length + rightVerts.length) === verts.length)
+                         || Rngon.throw("Vertices appear to have gone missing.");
+
+            Rngon.if && ((leftVerts.length === 0) || (rightVerts.length === 0)) && Rngon.bail("Expected each side list to have at least one vertex.")
         }
 
         // Create an array for each edge, where the index represents the y coordinate and the
@@ -170,7 +175,7 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, renderWidth, renderHeight)
 
                                             break;
                                         }
-                                        default: Rngon.assert(0, "Unknown texture-mapping mode."); break;
+                                        default: Rngon.throw("Unknown texture-mapping mode."); break;
                                     }
 
                                     const texelColorChannels = ngon.material.texture.rgba_channels_at(u, v);

@@ -11,8 +11,8 @@
 // NOTE: Expects to remain immutable.
 Rngon.vector3 = function(x = 0, y = 0, z = 0)
 {
-    Rngon.assert((typeof x === "number" && typeof y === "number" && typeof z === "number"),
-                 "Expected numbers as parameters to the vector3 factory.");
+    Rngon.assert && (typeof x === "number" && typeof y === "number" && typeof z === "number")
+                 || Rngon.throw("Expected numbers as parameters to the vector3 factory.");
 
     const publicInterface = Object.freeze(
     {
@@ -51,9 +51,9 @@ Rngon.scaling_vector = Rngon.vector3;
 // NOTE: Expects to remain immutable.
 Rngon.vertex = function(x = 0, y = 0, z = 0, u = 0, v = 0, w = 1)
 {
-    Rngon.assert((typeof x === "number" && typeof y === "number" && typeof z === "number" &&
-                  typeof w === "number" && typeof u === "number" && typeof v === "number"),
-                 "Expected numbers as parameters to the vertex factory.");
+    Rngon.assert && (typeof x === "number" && typeof y === "number" && typeof z === "number" &&
+                     typeof w === "number" && typeof u === "number" && typeof v === "number")
+                 || Rngon.throw("Expected numbers as parameters to the vertex factory.");
 
     const publicInterface = Object.freeze(
     {
@@ -67,7 +67,8 @@ Rngon.vertex = function(x = 0, y = 0, z = 0, u = 0, v = 0, w = 1)
         // Returns a copy of the vertex transformed by the given matrix.
         transformed: function(m = [])
         {
-            Rngon.assert((m.length === 16), "Expected a 4 x 4 matrix to transform the vertex by.");
+            Rngon.assert && (m.length === 16)
+                         || Rngon.throw("Expected a 4 x 4 matrix to transform the vertex by.");
             
             const x_ = ((m[0] * x) + (m[4] * y) + (m[ 8] * z) + (m[12] * w));
             const y_ = ((m[1] * x) + (m[5] * y) + (m[ 9] * z) + (m[13] * w));
@@ -91,15 +92,15 @@ Rngon.vertex = function(x = 0, y = 0, z = 0, u = 0, v = 0, w = 1)
 // NOTE: Expects to remain immutable.
 Rngon.ngon = function(vertices = [Rngon.vertex()], material = {})
 {
-    Rngon.assert((vertices instanceof Array), "Expected an array of vertices to make an ngon.");
-    Rngon.assert((material instanceof Object), "Expected an object containing user-supplied options.");
+    Rngon.assert && (vertices instanceof Array) || Rngon.throw("Expected an array of vertices to make an ngon.");
+    Rngon.assert && (material instanceof Object) || Rngon.throw("Expected an object containing user-supplied options.");
 
-    Rngon.assert((typeof Rngon.ngon.defaultMaterial.color !== "undefined" &&
-                  typeof Rngon.ngon.defaultMaterial.texture !== "undefined" &&
-                  typeof Rngon.ngon.defaultMaterial.hasSolidFill !== "undefined" &&
-                  typeof Rngon.ngon.defaultMaterial.hasWireframe !== "undefined" &&
-                  typeof Rngon.ngon.defaultMaterial.wireframeColor !== "undefined"),
-                 "The default material object for ngon() is missing required properties.");
+    Rngon.assert && (typeof Rngon.ngon.defaultMaterial.color !== "undefined" &&
+                     typeof Rngon.ngon.defaultMaterial.texture !== "undefined" &&
+                     typeof Rngon.ngon.defaultMaterial.hasSolidFill !== "undefined" &&
+                     typeof Rngon.ngon.defaultMaterial.hasWireframe !== "undefined" &&
+                     typeof Rngon.ngon.defaultMaterial.wireframeColor !== "undefined")
+                 || Rngon.throw("The default material object for ngon() is missing required properties.");
 
     // Combine default material options with the user-supplied ones.
     material = Object.freeze(
@@ -143,13 +144,13 @@ Rngon.ngon.defaultMaterial =
 // NOTE: Expects to remain immutable.
 Rngon.mesh = function(ngons = [Rngon.ngon()], transform = {})
 {
-    Rngon.assert((ngons instanceof Array), "Expected a list of ngons for creating an ngon mesh.");
-    Rngon.assert((transform instanceof Object), "Expected an object with transformation properties.");
+    Rngon.assert && (ngons instanceof Array) || Rngon.throw("Expected a list of ngons for creating an ngon mesh.");
+    Rngon.assert && (transform instanceof Object) || Rngon.throw("Expected an object with transformation properties.");
 
-    Rngon.assert((typeof Rngon.mesh.defaultTransform.rotation !== "undefined" &&
-                  typeof Rngon.mesh.defaultTransform.translation !== "undefined" &&
-                  typeof Rngon.mesh.defaultTransform.scaling !== "undefined"),
-                 "The default transforms object for mesh() is missing required properties.");
+    Rngon.assert && (typeof Rngon.mesh.defaultTransform.rotation !== "undefined" &&
+                     typeof Rngon.mesh.defaultTransform.translation !== "undefined" &&
+                     typeof Rngon.mesh.defaultTransform.scaling !== "undefined")
+                 || Rngon.throw("The default transforms object for mesh() is missing required properties.");
 
     // Combine default transformations with the user-supplied ones.
     transform = Object.freeze(

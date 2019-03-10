@@ -14,17 +14,17 @@ Rngon.screen = function(canvasElementId = "",              // The DOM id of the 
                         scaleFactor = 1,
                         fov = 43)
 {
-    Rngon.assert((typeof scaleFactor === "number"), "Expected the scale factor to be a numeric value.");
-    Rngon.assert((typeof ngon_fill_f === "function" &&
-                  typeof ngon_transform_f === "function"), "Expected ngon-manipulation functions to be provided.");
+    Rngon.assert && (typeof scaleFactor === "number") || Rngon.throw("Expected the scale factor to be a numeric value.");
+    Rngon.assert && (typeof ngon_fill_f === "function" && typeof ngon_transform_f === "function")
+                 || Rngon.throw("Expected ngon-manipulation functions to be provided.");
 
     const canvasElement = document.getElementById(canvasElementId);
-    Rngon.assert((canvasElement !== null), "Can't find the given canvas element.");
+    Rngon.assert && (canvasElement !== null) || Rngon.throw("Can't find the given canvas element.");
 
     // The pixel dimensions of the render surface.
     const screenWidth = Math.floor(parseInt(window.getComputedStyle(canvasElement).getPropertyValue("width")) * scaleFactor);
     const screenHeight = Math.floor(parseInt(window.getComputedStyle(canvasElement).getPropertyValue("height")) * scaleFactor);
-    Rngon.assert(!isNaN(screenWidth) && !isNaN(screenHeight), "Failed to extract the canvas size.");
+    Rngon.assert && (!isNaN(screenWidth) && !isNaN(screenHeight)) || Rngon.throw("Failed to extract the canvas size.");
     canvasElement.setAttribute("width", screenWidth);
     canvasElement.setAttribute("height", screenHeight);
 

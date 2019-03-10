@@ -15,13 +15,13 @@ Rngon.render = function(canvasElementId,
     // Used for performance timing.
     const perfTime = {initTime:performance.now(), transformTime:0, rasterTime:0, totalTime:performance.now()};
 
-    Rngon.assert((typeof Rngon.render.defaultOptions.cameraPosition !== "undefined" &&
-                  typeof Rngon.render.defaultOptions.cameraDirection !== "undefined" &&
-                  typeof Rngon.render.defaultOptions.scale !== "undefined" &&
-                  typeof Rngon.render.defaultOptions.depthSort !== "undefined" &&
-                  typeof Rngon.render.defaultOptions.hibernateWhenNotOnScren !== "undefined" &&
-                  typeof Rngon.render.defaultOptions.fov !== "undefined"),
-                 "The default options object for render() is missing required properties.");
+    Rngon.assert && (typeof Rngon.render.defaultOptions.cameraPosition !== "undefined" &&
+                     typeof Rngon.render.defaultOptions.cameraDirection !== "undefined" &&
+                     typeof Rngon.render.defaultOptions.scale !== "undefined" &&
+                     typeof Rngon.render.defaultOptions.depthSort !== "undefined" &&
+                     typeof Rngon.render.defaultOptions.hibernateWhenNotOnScren !== "undefined" &&
+                     typeof Rngon.render.defaultOptions.fov !== "undefined")
+                 || Rngon.throw("The default options object for render() is missing required properties.");
 
     // Combine default render options with the user-supplied ones.
     options = Object.freeze(
@@ -81,7 +81,7 @@ Rngon.render = function(canvasElementId,
                     break;
                 }
                 
-                default: Rngon.assert(0, "Unknown depth sort option."); break;
+                default: Rngon.throw("Unknown depth sort option."); break;
             }
         }
         perfTime.transformTime = (performance.now() - perfTime.transformTime)
@@ -102,7 +102,7 @@ Rngon.render = function(canvasElementId,
     {
         const viewHeight = window.innerHeight;
         const containerRect = document.getElementById(canvasElementId).getBoundingClientRect();
-        Rngon.assert((containerRect != null), "Couldn't find the canvas container element.");
+        Rngon.assert && (containerRect != null) || Rngon.throw("Couldn't find the canvas container element.");
 
         return Boolean((containerRect.top > -containerRect.height) &&
                        (containerRect.top < viewHeight));

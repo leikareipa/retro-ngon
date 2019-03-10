@@ -27,17 +27,22 @@
 // Top-level namespace for the retro n-gon renderer.
 const Rngon = {};
 
-// Various small utility functions.
+// Various small utility functions and the like.
 {
+    // Defined 'true' to allow for the conveniency of named in-place assertions,
+    // e.g. Rngon.assert && (x === 1) || Rngon.throw("X wasn't 1.").
+    // Note that setting this to 'false' won't disable assertions - for that,
+    // you'll want to search/replace "Rngon.assert &&" with "Rngon.assert ||"
+    // and keep this set to 'true'. The comparison against Rngon.assert may still
+    // be done, though (I guess depending on the JS engine's ability to optimize).
+    Object.defineProperty(Rngon, "assert", {value:true, writable:false});
+
     Rngon.lerp = (x, y, interval)=>(x + (interval * (y - x)));
 
-    Rngon.assert = (condition = false, explanation = "(no reason given)")=>
+    Rngon.throw = (errMessage = "")=>
     {
-        if (!condition)
-        {
-            alert("Retro n-gon: Assertion failure: " + explanation);
-            throw Error("Retro n-gon: Assertion failure: " + explanation);
-        }
+        alert("Retro n-gon error: " + errMessage);
+        throw Error("Retro n-gon error: " + errMessage);
     }
 
     Rngon.log = (string = "Hello there.")=>
@@ -251,10 +256,11 @@ Rngon.trig = (function()
 // NOTE: Expects to remain immutable.
 Rngon.color_rgba = function(red = 55, green = 55, blue = 55, alpha = 255)
 {
-    Rngon.assert((((red   >= 0) && (red   <= 255)) &&
-                  ((green >= 0) && (green <= 255)) &&
-                  ((blue  >= 0) && (blue  <= 255)) &&
-                  ((alpha >= 0) && (alpha <= 255))), "The given color values are out of range.");
+    Rngon.assert && (((red   >= 0) && (red   <= 255)) &&
+                     ((green >= 0) && (green <= 255)) &&
+                     ((blue  >= 0) && (blue  <= 255)) &&
+                     ((alpha >= 0) && (alpha <= 255)))
+                 || Rngon.throw("The given color values are out of range.");
 
     const unitRange = Object.freeze({red:red/255, green:green/255, blue:blue/255, alpha:alpha/255});
 
@@ -297,8 +303,8 @@ Rngon.color_rgba = function(red = 55, green = 55, blue = 55, alpha = 255)
 // NOTE: Expects to remain immutable.
 Rngon.vector3 = function(x = 0, y = 0, z = 0)
 {
-    Rngon.assert((typeof x === "number" && typeof y === "number" && typeof z === "number"),
-                 "Expected numbers as parameters to the vector3 factory.");
+    Rngon.assert && (typeof x === "number" && typeof y === "number" && typeof z === "number")
+                 || Rngon.throw("Expected numbers as parameters to the vector3 factory.");
 
     const publicInterface = Object.freeze(
     {
@@ -337,9 +343,9 @@ Rngon.scaling_vector = Rngon.vector3;
 // NOTE: Expects to remain immutable.
 Rngon.vertex = function(x = 0, y = 0, z = 0, u = 0, v = 0, w = 1)
 {
-    Rngon.assert((typeof x === "number" && typeof y === "number" && typeof z === "number" &&
-                  typeof w === "number" && typeof u === "number" && typeof v === "number"),
-                 "Expected numbers as parameters to the vertex factory.");
+    Rngon.assert && (typeof x === "number" && typeof y === "number" && typeof z === "number" &&
+                     typeof w === "number" && typeof u === "number" && typeof v === "number")
+                 || Rngon.throw("Expected numbers as parameters to the vertex factory.");
 
     const publicInterface = Object.freeze(
     {
@@ -353,7 +359,8 @@ Rngon.vertex = function(x = 0, y = 0, z = 0, u = 0, v = 0, w = 1)
         // Returns a copy of the vertex transformed by the given matrix.
         transformed: function(m = [])
         {
-            Rngon.assert((m.length === 16), "Expected a 4 x 4 matrix to transform the vertex by.");
+            Rngon.assert && (m.length === 16)
+                         || Rngon.throw("Expected a 4 x 4 matrix to transform the vertex by.");
             
             const x_ = ((m[0] * x) + (m[4] * y) + (m[ 8] * z) + (m[12] * w));
             const y_ = ((m[1] * x) + (m[5] * y) + (m[ 9] * z) + (m[13] * w));
@@ -377,15 +384,15 @@ Rngon.vertex = function(x = 0, y = 0, z = 0, u = 0, v = 0, w = 1)
 // NOTE: Expects to remain immutable.
 Rngon.ngon = function(vertices = [Rngon.vertex()], material = {})
 {
-    Rngon.assert((vertices instanceof Array), "Expected an array of vertices to make an ngon.");
-    Rngon.assert((material instanceof Object), "Expected an object containing user-supplied options.");
+    Rngon.assert && (vertices instanceof Array) || Rngon.throw("Expected an array of vertices to make an ngon.");
+    Rngon.assert && (material instanceof Object) || Rngon.throw("Expected an object containing user-supplied options.");
 
-    Rngon.assert((typeof Rngon.ngon.defaultMaterial.color !== "undefined" &&
-                  typeof Rngon.ngon.defaultMaterial.texture !== "undefined" &&
-                  typeof Rngon.ngon.defaultMaterial.hasSolidFill !== "undefined" &&
-                  typeof Rngon.ngon.defaultMaterial.hasWireframe !== "undefined" &&
-                  typeof Rngon.ngon.defaultMaterial.wireframeColor !== "undefined"),
-                 "The default material object for ngon() is missing required properties.");
+    Rngon.assert && (typeof Rngon.ngon.defaultMaterial.color !== "undefined" &&
+                     typeof Rngon.ngon.defaultMaterial.texture !== "undefined" &&
+                     typeof Rngon.ngon.defaultMaterial.hasSolidFill !== "undefined" &&
+                     typeof Rngon.ngon.defaultMaterial.hasWireframe !== "undefined" &&
+                     typeof Rngon.ngon.defaultMaterial.wireframeColor !== "undefined")
+                 || Rngon.throw("The default material object for ngon() is missing required properties.");
 
     // Combine default material options with the user-supplied ones.
     material = Object.freeze(
@@ -429,13 +436,13 @@ Rngon.ngon.defaultMaterial =
 // NOTE: Expects to remain immutable.
 Rngon.mesh = function(ngons = [Rngon.ngon()], transform = {})
 {
-    Rngon.assert((ngons instanceof Array), "Expected a list of ngons for creating an ngon mesh.");
-    Rngon.assert((transform instanceof Object), "Expected an object with transformation properties.");
+    Rngon.assert && (ngons instanceof Array) || Rngon.throw("Expected a list of ngons for creating an ngon mesh.");
+    Rngon.assert && (transform instanceof Object) || Rngon.throw("Expected an object with transformation properties.");
 
-    Rngon.assert((typeof Rngon.mesh.defaultTransform.rotation !== "undefined" &&
-                  typeof Rngon.mesh.defaultTransform.translation !== "undefined" &&
-                  typeof Rngon.mesh.defaultTransform.scaling !== "undefined"),
-                 "The default transforms object for mesh() is missing required properties.");
+    Rngon.assert && (typeof Rngon.mesh.defaultTransform.rotation !== "undefined" &&
+                     typeof Rngon.mesh.defaultTransform.translation !== "undefined" &&
+                     typeof Rngon.mesh.defaultTransform.scaling !== "undefined")
+                 || Rngon.throw("The default transforms object for mesh() is missing required properties.");
 
     // Combine default transformations with the user-supplied ones.
     transform = Object.freeze(
@@ -513,8 +520,8 @@ Rngon.line_draw = (()=>
             const x1 = Math.floor(vert2.x);
             const y1 = Math.floor(vert2.y);
 
-            Rngon.assert((!isNaN(x0) && !isNaN(x1) && !isNaN(y0) && !isNaN(y1)),
-                         "Invalid vertex coordinates for line-drawing.")
+            Rngon.assert && (!isNaN(x0) && !isNaN(x1) && !isNaN(y0) && !isNaN(y1))
+                         || Rngon.throw("Invalid vertex coordinates for line-drawing.");
 
             // Bresenham line algo. Adapted from https://stackoverflow.com/a/4672319.
             {
@@ -562,8 +569,8 @@ Rngon.line_draw = (()=>
             const x1 = Math.floor(vert2.x);
             const y1 = Math.floor(vert2.y);
 
-            Rngon.assert((!isNaN(x0) && !isNaN(x1) && !isNaN(y0) && !isNaN(y1)),
-                         "Invalid vertex coordinates for line-drawing.")
+            Rngon.assert && (!isNaN(x0) && !isNaN(x1) && !isNaN(y0) && !isNaN(y1))
+                         || Rngon.throw("Invalid vertex coordinates for line-drawing.");
 
             const lineLength = distanceBetween(x0, y0, x1, y1);
 
@@ -701,7 +708,7 @@ Rngon.matrix44 = (()=>
             const temp = Rngon.matrix44.matrices_multiplied(my, mz);
             const mResult = Rngon.matrix44.matrices_multiplied(mx, temp);
 
-            Rngon.assert((mResult.length === 16), "Expected a 4 x 4 matrix.");
+            Rngon.assert && (mResult.length === 16) || Rngon.throw("Expected a 4 x 4 matrix.");
             return Object.freeze(mResult);
         },
 
@@ -726,7 +733,8 @@ Rngon.matrix44 = (()=>
         
         matrices_multiplied: function(m1 = [], m2 = [])
         {
-            Rngon.assert(((m1.length === 16) && (m2.length === 16)), "Expected 4 x 4 matrices.");
+            Rngon.assert && ((m1.length === 16) && (m2.length === 16))
+                         || Rngon.throw("Expected 4 x 4 matrices.");
 
             let mResult = [];
             for (let i = 0; i < 4; i++)
@@ -740,7 +748,7 @@ Rngon.matrix44 = (()=>
                 }
             }
 
-            Rngon.assert((mResult.length === 16), "Expected a 4 x 4 matrix.");
+            Rngon.assert && (mResult.length === 16) || Rngon.throw("Expected a 4 x 4 matrix.");
             return Object.freeze(mResult);
         },
     });
@@ -756,8 +764,9 @@ Rngon.matrix44 = (()=>
 // Rasterizes the given ngons into the given RGBA pixel buffer of the given width and height.
 Rngon.ngon_filler = function(ngons = [], pixelBuffer, renderWidth, renderHeight)
 {
-    Rngon.assert((ngons instanceof Array), "Expected an array of ngons to be rasterized.");
-    Rngon.assert(((renderWidth > 0) && (renderHeight > 0)), "The transform surface can't have zero width or height.");
+    Rngon.assert && (ngons instanceof Array) || Rngon.throw("Expected an array of ngons to be rasterized.");
+    Rngon.assert && ((renderWidth > 0) && (renderHeight > 0))
+                 || Rngon.throw("The transform surface can't have zero width or height.");
 
     ngons.forEach((ngon)=>
     {
@@ -830,8 +839,12 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, renderWidth, renderHeight)
             leftVerts.sort((a, b)=>((a.y === b.y)? 0 : ((a.y < b.y)? -1 : 1)));
             rightVerts.sort((a, b)=>((a.y === b.y)? 0 : ((a.y > b.y)? -1 : 1)));
 
-            Rngon.assert(((leftVerts.length !== 0) && (rightVerts.length !== 0)), "Expected each side list to have at least one vertex.");
-            Rngon.assert(((leftVerts.length + rightVerts.length) === verts.length), "Vertices appear to have gone missing.");
+            Rngon.assert && ((leftVerts.length !== 0) && (rightVerts.length !== 0))
+                         || Rngon.throw("Expected each side list to have at least one vertex.");
+            Rngon.assert && ((leftVerts.length + rightVerts.length) === verts.length)
+                         || Rngon.throw("Vertices appear to have gone missing.");
+
+            Rngon.if && ((leftVerts.length === 0) || (rightVerts.length === 0)) && Rngon.bail("Expected each side list to have at least one vertex.")
         }
 
         // Create an array for each edge, where the index represents the y coordinate and the
@@ -917,7 +930,7 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, renderWidth, renderHeight)
 
                                             break;
                                         }
-                                        default: Rngon.assert(0, "Unknown texture-mapping mode."); break;
+                                        default: Rngon.throw("Unknown texture-mapping mode."); break;
                                     }
 
                                     const texelColorChannels = ngon.material.texture.rgba_channels_at(u, v);
@@ -985,13 +998,13 @@ Rngon.render = function(canvasElementId,
     // Used for performance timing.
     const perfTime = {initTime:performance.now(), transformTime:0, rasterTime:0, totalTime:performance.now()};
 
-    Rngon.assert((typeof Rngon.render.defaultOptions.cameraPosition !== "undefined" &&
-                  typeof Rngon.render.defaultOptions.cameraDirection !== "undefined" &&
-                  typeof Rngon.render.defaultOptions.scale !== "undefined" &&
-                  typeof Rngon.render.defaultOptions.depthSort !== "undefined" &&
-                  typeof Rngon.render.defaultOptions.hibernateWhenNotOnScren !== "undefined" &&
-                  typeof Rngon.render.defaultOptions.fov !== "undefined"),
-                 "The default options object for render() is missing required properties.");
+    Rngon.assert && (typeof Rngon.render.defaultOptions.cameraPosition !== "undefined" &&
+                     typeof Rngon.render.defaultOptions.cameraDirection !== "undefined" &&
+                     typeof Rngon.render.defaultOptions.scale !== "undefined" &&
+                     typeof Rngon.render.defaultOptions.depthSort !== "undefined" &&
+                     typeof Rngon.render.defaultOptions.hibernateWhenNotOnScren !== "undefined" &&
+                     typeof Rngon.render.defaultOptions.fov !== "undefined")
+                 || Rngon.throw("The default options object for render() is missing required properties.");
 
     // Combine default render options with the user-supplied ones.
     options = Object.freeze(
@@ -1051,7 +1064,7 @@ Rngon.render = function(canvasElementId,
                     break;
                 }
                 
-                default: Rngon.assert(0, "Unknown depth sort option."); break;
+                default: Rngon.throw("Unknown depth sort option."); break;
             }
         }
         perfTime.transformTime = (performance.now() - perfTime.transformTime)
@@ -1072,7 +1085,7 @@ Rngon.render = function(canvasElementId,
     {
         const viewHeight = window.innerHeight;
         const containerRect = document.getElementById(canvasElementId).getBoundingClientRect();
-        Rngon.assert((containerRect != null), "Couldn't find the canvas container element.");
+        Rngon.assert && (containerRect != null) || Rngon.throw("Couldn't find the canvas container element.");
 
         return Boolean((containerRect.top > -containerRect.height) &&
                        (containerRect.top < viewHeight));
@@ -1118,12 +1131,12 @@ Rngon.texture_rgba = function(data = {width: 0, height: 0, pixels: []})
 
     const numColorChannels = 4;
 
-    Rngon.assert((Number.isInteger(data.width) && Number.isInteger(data.height)),
-                 "Expected texture width and height to be integer values.");
-    Rngon.assert((data.width > 0 && data.height > 0),
-                 "Expected texture width and height to be greater than zero.")
-    Rngon.assert((data.width <= maxWidth && data.height <= maxHeight),
-                 "Expected texture width/height to be no more than " + maxWidth + "/" + maxHeight + ".");
+    Rngon.assert && (Number.isInteger(data.width) && Number.isInteger(data.height))
+                 || Rngon.throw("Expected texture width and height to be integer values.");
+    Rngon.assert && (data.width > 0 && data.height > 0)
+                 || Rngon.throw("Expected texture width and height to be greater than zero.");
+    Rngon.assert && (data.width <= maxWidth && data.height <= maxHeight)
+                 || Rngon.throw("Expected texture width/height to be no more than " + maxWidth + "/" + maxHeight + ".");
 
     // If necessary, decode the pixel data into raw RGBA/8888.
     if (typeof data.encoding !== "undefined" && data.encoding !== "none")
@@ -1133,7 +1146,8 @@ Rngon.texture_rgba = function(data = {width: 0, height: 0, pixels: []})
         // 1 bit.
         if (data.encoding === "base64")
         {
-            Rngon.assert((data.channels === "rgba:5+5+5+1"), "Expected Base64-encoded data to be in RGBA 5551 format.");
+            Rngon.assert && (data.channels === "rgba:5+5+5+1")
+                         || Rngon.throw("Expected Base64-encoded data to be in RGBA 5551 format.");
 
             data.pixels = (()=>
             {
@@ -1141,7 +1155,8 @@ Rngon.texture_rgba = function(data = {width: 0, height: 0, pixels: []})
                 const decoded = atob(data.pixels);
 
                 // We should have an array where each pixel is a 2-byte value.
-                Rngon.assert(decoded.length === (data.width * data.height * 2), "Unexpected data length for a Base64-encoded texture.");
+                Rngon.assert && (decoded.length === (data.width * data.height * 2))
+                             || Rngon.throw("Unexpected data length for a Base64-encoded texture.");
 
                 for (let i = 0; i < (data.width * data.height * 2); i += 2)
                 {
@@ -1158,12 +1173,12 @@ Rngon.texture_rgba = function(data = {width: 0, height: 0, pixels: []})
         }
         else if (data.encoding !== "none")
         {
-            Rngon.assert(0, "Unknown texture data encoding '" + data.encoding + "'.");
+            Rngon.throw("Unknown texture data encoding '" + data.encoding + "'.");
         }
     }
 
-    Rngon.assert((data.pixels.length === (data.width * data.height * numColorChannels)),
-                 "The texture's pixel array size doesn't match its width and height.");
+    Rngon.assert && (data.pixels.length === (data.width * data.height * numColorChannels))
+                 || Rngon.throw("The texture's pixel array size doesn't match its width and height.");
         
     const publicInterface = Object.freeze(
     {
@@ -1175,8 +1190,8 @@ Rngon.texture_rgba = function(data = {width: 0, height: 0, pixels: []})
         rgba_channels_at: function(x, y)
         {
             const idx = ((Math.floor(x) + Math.floor(y) * data.width) * numColorChannels);
-            Rngon.assert(((idx + numColorChannels) <= data.pixels.length),
-                         "Attempting to access a texture pixel out of bounds (at "+x+","+y+").");
+            Rngon.assert && ((idx + numColorChannels) <= data.pixels.length)
+                         || Rngon.throw("Attempting to access a texture pixel out of bounds (at "+x+","+y+").");
 
             // Note: For performance reasons, the array isn't returned frozen. You can try freezing it
             // and running a perf test with textured rendering to see the effect.
@@ -1203,7 +1218,7 @@ Rngon.texture_rgba.create_with_data_from_file = function(filename)
         {
             resolve(Rngon.texture_rgba(data));
         })
-        .catch((error)=>{Rngon.assert(0, "Failed to create a texture with data from file '" + filename + "'. Error: '" + error + "'.")});
+        .catch((error)=>{Rngon.throw("Failed to create a texture with data from file '" + filename + "'. Error: '" + error + "'.")});
     });
 }
 /*
@@ -1222,17 +1237,17 @@ Rngon.screen = function(canvasElementId = "",              // The DOM id of the 
                         scaleFactor = 1,
                         fov = 43)
 {
-    Rngon.assert((typeof scaleFactor === "number"), "Expected the scale factor to be a numeric value.");
-    Rngon.assert((typeof ngon_fill_f === "function" &&
-                  typeof ngon_transform_f === "function"), "Expected ngon-manipulation functions to be provided.");
+    Rngon.assert && (typeof scaleFactor === "number") || Rngon.throw("Expected the scale factor to be a numeric value.");
+    Rngon.assert && (typeof ngon_fill_f === "function" && typeof ngon_transform_f === "function")
+                 || Rngon.throw("Expected ngon-manipulation functions to be provided.");
 
     const canvasElement = document.getElementById(canvasElementId);
-    Rngon.assert((canvasElement !== null), "Can't find the given canvas element.");
+    Rngon.assert && (canvasElement !== null) || Rngon.throw("Can't find the given canvas element.");
 
     // The pixel dimensions of the render surface.
     const screenWidth = Math.floor(parseInt(window.getComputedStyle(canvasElement).getPropertyValue("width")) * scaleFactor);
     const screenHeight = Math.floor(parseInt(window.getComputedStyle(canvasElement).getPropertyValue("height")) * scaleFactor);
-    Rngon.assert(!isNaN(screenWidth) && !isNaN(screenHeight), "Failed to extract the canvas size.");
+    Rngon.assert && (!isNaN(screenWidth) && !isNaN(screenHeight)) || Rngon.throw("Failed to extract the canvas size.");
     canvasElement.setAttribute("width", screenWidth);
     canvasElement.setAttribute("height", screenHeight);
 
