@@ -92,9 +92,10 @@ with open(outFilename, 'w') as f:
                 f.write("),")
             f.write("]")
             # Material.
-            material = mesh.material_slots[poly.material_index].material
-            if material != None:
-                f.write(",m[\"%s\"]" % material.name)
+            if len(mesh.material_slots):
+                material = mesh.material_slots[poly.material_index].material
+                if material != None:
+                    f.write(",m[\"%s\"]" % material.name)
             f.write("),\n")
             
     # Finalize the file.
