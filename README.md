@@ -28,7 +28,6 @@ The retro n-gon renderer encourages very low resolutions, very low polycounts, a
 In this section, you'll find both practical and theoretical examples on how to use the retro n-gon renderer.
 
 ### Introduction and intro tutorial
-
 **The gist of it in theory.** At the heart of the renderer is the `render()` function, which transforms and rasterizes a set of n-gons onto a HTML5 canvas. You call it with the HTML id of the canvas you want the image rendered into, an array of the n-gon meshes you want rendered, and additional, optional parameters to define the position of the camera, etc.
 
 The following pseudocode outlines the basic program flow for rendering an n-gon onto a canvas element:
@@ -557,8 +556,6 @@ Below are results from [tests/performance/perftest1.html](tests/performance/perf
 The retro n-gon renderer is currently in alpha. During this phase, you can expect frequent changes to the API, feature-set, performance, and so on.
 
 The project is expected to enter beta in the near future, once crucial features like n-gon clipping, asset workflow, etc. are implemented and/or more refined.
-
-If you're in dire need of more render performance _now_, you can comment out some of the debug-helping `Rngon.assert()` assertions in hotspots like the `rgba_channels_at()` function ([js/retro-ngon/texture.js](js/retro-ngon/texture.js)). This can result in up to 30% higher FPS.
 
 ### Which features typical of 3d engines are missing?
 - Lighting
