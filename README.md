@@ -555,7 +555,7 @@ Below are results from [tests/performance/perftest1.html](tests/performance/perf
 # Project status
 The retro n-gon renderer is currently in alpha. During this phase, you can expect frequent changes to the API, feature-set, performance, and so on.
 
-The project is expected to enter beta in the near future, once crucial features like n-gon clipping, asset workflow, etc. are implemented and/or more refined.
+Development is currently sporadic or on hold; however the project is not abandoned. It is expected to enter beta at some point in the future, once core features, like n-gon clipping, asset workflow, etc., have been implemented and/or refined.
 
 ### Which features typical of 3d engines are missing?
 - Lighting
