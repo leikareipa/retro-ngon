@@ -4,8 +4,8 @@
 // (not also pop up window.alert()s or the like).
 Rngon.throw = function(explanation = "(no reason given)")
 {
-    if (!condition) throw Error(explanation);
-}
+    throw new Error(explanation);
+} 
 
 const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
 {
