@@ -13,7 +13,7 @@ Rngon.render = function(canvasElementId,
                         options = {})
 {
     // Used for performance timing.
-    const perfTime = {initTime:performance.now(), transformTime:0, rasterTime:0, totalTime:performance.now()};
+    const perfTime = {initTimeMs:performance.now(), transformTimeMs:0, rasterTimeMs:0, totalTimeMs:performance.now()};
 
     Rngon.assert && (typeof Rngon.render.defaultOptions.cameraPosition !== "undefined" &&
                      typeof Rngon.render.defaultOptions.cameraDirection !== "undefined" &&
@@ -32,7 +32,7 @@ Rngon.render = function(canvasElementId,
 
     const renderSurface = Rngon.screen(canvasElementId, Rngon.ngon_filler, Rngon.ngon_transformer, options.scale, options.fov);
 
-    perfTime.initTime = (performance.now() - perfTime.initTime);
+    perfTime.initTimeMs = (performance.now() - perfTime.initTimeMs);
 
     // Render a single frame onto the render surface.
     if ((!options.hibernateWhenNotOnScreen || is_surface_in_view()))
@@ -40,7 +40,7 @@ Rngon.render = function(canvasElementId,
         renderSurface.wipe_clean();
 
         // Transform.
-        perfTime.transformTime = performance.now();
+        perfTime.transformTimeMs = performance.now();
         const transformedNgons = [];
         {
             const cameraMatrix = Rngon.matrix44.matrices_multiplied(Rngon.matrix44.rotate(options.cameraDirection.x,
@@ -84,14 +84,14 @@ Rngon.render = function(canvasElementId,
                 default: Rngon.throw("Unknown depth sort option."); break;
             }
         }
-        perfTime.transformTime = (performance.now() - perfTime.transformTime)
+        perfTime.transformTimeMs = (performance.now() - perfTime.transformTimeMs)
 
         // Rasterize.
-        perfTime.rasterTime = performance.now();
+        perfTime.rasterTimeMs = performance.now();
         renderSurface.draw_ngons(transformedNgons);
-        perfTime.rasterTime = (performance.now() - perfTime.rasterTime);
+        perfTime.rasterTimeMs = (performance.now() - perfTime.rasterTimeMs);
 
-        perfTime.totalTime = (performance.now() - perfTime.totalTime);
+        perfTime.totalTimeMs = (performance.now() - perfTime.totalTimeMs);
         return perfTime;
     }
 
