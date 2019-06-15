@@ -1,7 +1,8 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: live
+// VERSION: live (15 June 2019 13:37:38 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
+// LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
 //	../js/retro-ngon/retro-ngon.js
 //	../js/retro-ngon/trig.js
@@ -262,6 +263,7 @@ Rngon.color_rgba = function(red = 55, green = 55, blue = 55, alpha = 255)
                      ((alpha >= 0) && (alpha <= 255)))
                  || Rngon.throw("The given color values are out of range.");
 
+    // Alternate range, 0..1.
     const unitRange = Object.freeze({red:red/255, green:green/255, blue:blue/255, alpha:alpha/255});
 
     const publicInterface = Object.freeze(

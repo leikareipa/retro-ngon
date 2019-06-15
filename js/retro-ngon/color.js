@@ -16,6 +16,7 @@ Rngon.color_rgba = function(red = 55, green = 55, blue = 55, alpha = 255)
                      ((alpha >= 0) && (alpha <= 255)))
                  || Rngon.throw("The given color values are out of range.");
 
+    // Alternate range, 0..1.
     const unitRange = Object.freeze({red:red/255, green:green/255, blue:blue/255, alpha:alpha/255});
 
     const publicInterface = Object.freeze(
