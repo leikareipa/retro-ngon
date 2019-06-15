@@ -12,9 +12,32 @@ Rngon.render = function(canvasElementId,
                         meshes = [Rngon.mesh()],
                         options = {})
 {
-    // Used for performance timing.
-    const perfTime = {initTimeMs:performance.now(), transformTimeMs:0, rasterTimeMs:0, totalTimeMs:performance.now()};
+    // Initialize the object containing the data we'll return from this function.
+    const callMetadata =
+    {
+        renderWidth: 0,
+        renderHeight: 0,
+        performance:
+        {
+            // How long we took to perform certain actions. All values are in milliseconds.
+            timingMs:
+            {
+                // How long we took to initialize the renderer.
+                initialization: performance.now(),
 
+                // How long we took to transform all the supplied n-gons into screen space.
+                transformation: 0,
+
+                // How long we took to rasterize the supplied n-gons onto the target canvas.
+                rasterization: 0,
+
+                // How much time this function took, in total.
+                total: performance.now(),
+            }
+        }
+    }
+
+    // Confirm that the default render options are valid.
     Rngon.assert && (typeof Rngon.render.defaultOptions.cameraPosition !== "undefined" &&
                      typeof Rngon.render.defaultOptions.cameraDirection !== "undefined" &&
                      typeof Rngon.render.defaultOptions.scale !== "undefined" &&
@@ -23,7 +46,7 @@ Rngon.render = function(canvasElementId,
                      typeof Rngon.render.defaultOptions.fov !== "undefined")
                  || Rngon.throw("The default options object for render() is missing required properties.");
 
-    // Combine default render options with the user-supplied ones.
+    // Combine the default render options with the user-supplied ones.
     options = Object.freeze(
     {
         ...Rngon.render.defaultOptions,
@@ -32,7 +55,10 @@ Rngon.render = function(canvasElementId,
 
     const renderSurface = Rngon.screen(canvasElementId, Rngon.ngon_filler, Rngon.ngon_transformer, options.scale, options.fov);
 
-    perfTime.initTimeMs = (performance.now() - perfTime.initTimeMs);
+    callMetadata.renderWidth = renderSurface.width;
+    callMetadata.renderHeight = renderSurface.height;
+
+    callMetadata.performance.timingMs.initialization = (performance.now() - callMetadata.performance.timingMs.initialization);
 
     // Render a single frame onto the render surface.
     if ((!options.hibernateWhenNotOnScreen || is_surface_in_view()))
@@ -40,7 +66,7 @@ Rngon.render = function(canvasElementId,
         renderSurface.wipe_clean();
 
         // Transform.
-        perfTime.transformTimeMs = performance.now();
+        callMetadata.performance.timingMs.transformation = performance.now();
         const transformedNgons = [];
         {
             const cameraMatrix = Rngon.matrix44.matrices_multiplied(Rngon.matrix44.rotate(options.cameraDirection.x,
@@ -84,15 +110,15 @@ Rngon.render = function(canvasElementId,
                 default: Rngon.throw("Unknown depth sort option."); break;
             }
         }
-        perfTime.transformTimeMs = (performance.now() - perfTime.transformTimeMs)
+        callMetadata.performance.timingMs.transformation = (performance.now() - callMetadata.performance.timingMs.transformation)
 
         // Rasterize.
-        perfTime.rasterTimeMs = performance.now();
+        callMetadata.performance.timingMs.rasterization = performance.now();
         renderSurface.draw_ngons(transformedNgons);
-        perfTime.rasterTimeMs = (performance.now() - perfTime.rasterTimeMs);
+        callMetadata.performance.timingMs.rasterization = (performance.now() - callMetadata.performance.timingMs.rasterization);
 
-        perfTime.totalTimeMs = (performance.now() - perfTime.totalTimeMs);
-        return perfTime;
+        callMetadata.performance.timingMs.total = (performance.now() - callMetadata.performance.timingMs.total);
+        return callMetadata;
     }
 
     // Returns true if any horizontal part of the render surface DOM container is within the page's

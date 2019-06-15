@@ -73,7 +73,10 @@ Rngon.texture_rgba = function(data = {width: 0, height: 0, pixels: []})
         // at the given x,y texel coordinates.
         rgba_channels_at: function(x, y)
         {
-            const idx = ((Math.floor(x) + Math.floor(y) * data.width) * numColorChannels);
+            x = Math.floor(x);
+            y = Math.floor(y);
+
+            const idx = ((x + y * data.width) * numColorChannels);
             Rngon.assert && ((idx + numColorChannels) <= data.pixels.length)
                          || Rngon.throw("Attempting to access a texture pixel out of bounds (at "+x+","+y+").");
 
