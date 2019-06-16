@@ -88,8 +88,6 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
                          || Rngon.throw("Expected each side list to have at least one vertex.");
             Rngon.assert && ((leftVerts.length + rightVerts.length) === verts.length)
                          || Rngon.throw("Vertices appear to have gone missing.");
-
-            Rngon.if && ((leftVerts.length === 0) || (rightVerts.length === 0)) && Rngon.bail("Expected each side list to have at least one vertex.")
         }
 
         // Create an array for each edge, where the index represents the y coordinate and the

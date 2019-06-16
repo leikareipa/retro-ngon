@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: live (16 June 2019 00:38:51 UTC)
+// VERSION: live (16 June 2019 01:41:01 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -845,8 +845,6 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
                          || Rngon.throw("Expected each side list to have at least one vertex.");
             Rngon.assert && ((leftVerts.length + rightVerts.length) === verts.length)
                          || Rngon.throw("Vertices appear to have gone missing.");
-
-            Rngon.if && ((leftVerts.length === 0) || (rightVerts.length === 0)) && Rngon.bail("Expected each side list to have at least one vertex.")
         }
 
         // Create an array for each edge, where the index represents the y coordinate and the
