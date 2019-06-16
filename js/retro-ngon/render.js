@@ -42,7 +42,7 @@ Rngon.render = function(canvasElementId,
                      typeof Rngon.render.defaultOptions.cameraDirection !== "undefined" &&
                      typeof Rngon.render.defaultOptions.scale !== "undefined" &&
                      typeof Rngon.render.defaultOptions.depthSort !== "undefined" &&
-                     typeof Rngon.render.defaultOptions.hibernateWhenNotOnScren !== "undefined" &&
+                     typeof Rngon.render.defaultOptions.hibernateWhenNotOnScreen !== "undefined" &&
                      typeof Rngon.render.defaultOptions.fov !== "undefined")
                  || Rngon.throw("The default options object for render() is missing required properties.");
 
@@ -53,7 +53,7 @@ Rngon.render = function(canvasElementId,
         ...options
     });
 
-    const renderSurface = Rngon.screen(canvasElementId, Rngon.ngon_filler, Rngon.ngon_transformer, options.scale, options.fov);
+    const renderSurface = Rngon.screen(canvasElementId, Rngon.ngon_filler, Rngon.ngon_transformer, options.scale, options.fov, options.auxiliaryBuffers);
 
     callMetadata.renderWidth = renderSurface.width;
     callMetadata.renderHeight = renderSurface.height;
@@ -139,7 +139,8 @@ Rngon.render.defaultOptions =
     cameraPosition: Rngon.vector3(0, 0, 0),
     cameraDirection: Rngon.vector3(0, 0, 0),
     scale: 1,
-    depthSort: "painter",
     fov: 43,
-    hibernateWhenNotOnScren: true,
+    depthSort: "painter",
+    hibernateWhenNotOnScreen: true,
+    auxiliaryBuffers: [],
 };

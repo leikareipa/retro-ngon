@@ -12,7 +12,8 @@ Rngon.screen = function(canvasElementId = "",              // The DOM id of the 
                         ngon_fill_f = function(){},        // A function that rasterizes the given ngons onto the canvas.
                         ngon_transform_f = function(){},   // A function that transforms the given ngons into screen-space for the canvas.
                         scaleFactor = 1,
-                        fov = 43)
+                        fov = 43,
+                        auxiliaryBuffers = [])
 {
     Rngon.assert && (typeof scaleFactor === "number") || Rngon.throw("Expected the scale factor to be a numeric value.");
     Rngon.assert && (typeof ngon_fill_f === "function" && typeof ngon_transform_f === "function")
@@ -66,7 +67,7 @@ Rngon.screen = function(canvasElementId = "",              // The DOM id of the 
             const renderContext = exposed_render_context();
             const pixelBuffer = renderContext.getImageData(0, 0, screenWidth, screenHeight);
 
-            ngon_fill_f(ngons, pixelBuffer.data, screenWidth, screenHeight);
+            ngon_fill_f(ngons, pixelBuffer.data, auxiliaryBuffers, screenWidth, screenHeight);
 
             renderContext.putImageData(pixelBuffer, 0, 0);
         },

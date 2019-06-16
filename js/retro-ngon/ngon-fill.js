@@ -7,7 +7,7 @@
 "use strict";
 
 // Rasterizes the given ngons into the given RGBA pixel buffer of the given width and height.
-Rngon.ngon_filler = function(ngons = [], pixelBuffer, renderWidth, renderHeight)
+Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], renderWidth, renderHeight)
 {
     Rngon.assert && (ngons instanceof Array) || Rngon.throw("Expected an array of ngons to be rasterized.");
     Rngon.assert && ((renderWidth > 0) && (renderHeight > 0))
@@ -180,12 +180,22 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, renderWidth, renderHeight)
 
                                     const texelColorChannels = ngon.material.texture.rgba_channels_at(u, v);
 
+                                    // Alpha-testing. If the pixel is fully opaque, draw it; otherwise, skip it.
                                     if (texelColorChannels[3] === 255)
                                     {
                                         pixelBuffer[idx + 0] = (texelColorChannels[0] * ngon.material.color.unitRange.red);
                                         pixelBuffer[idx + 1] = (texelColorChannels[1] * ngon.material.color.unitRange.green);
                                         pixelBuffer[idx + 2] = (texelColorChannels[2] * ngon.material.color.unitRange.blue);
                                         pixelBuffer[idx + 3] = (texelColorChannels[3] * ngon.material.color.unitRange.alpha);
+                                    }
+                                }
+
+                                for (let b = 0; b < auxiliaryBuffers.length; b++)
+                                {
+                                    if (ngon.material[auxiliaryBuffers[b].property] !== null)
+                                    {
+                                        // Buffers are expected to be one byte per pixel.
+                                        auxiliaryBuffers[b].buffer[idx/4] = ngon.material[auxiliaryBuffers[b].property];
                                     }
                                 }
                             }

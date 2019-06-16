@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: live (15 June 2019 21:25:15 UTC)
+// VERSION: live (16 June 2019 00:25:35 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -764,7 +764,7 @@ Rngon.matrix44 = (()=>
 "use strict";
 
 // Rasterizes the given ngons into the given RGBA pixel buffer of the given width and height.
-Rngon.ngon_filler = function(ngons = [], pixelBuffer, renderWidth, renderHeight)
+Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], renderWidth, renderHeight)
 {
     Rngon.assert && (ngons instanceof Array) || Rngon.throw("Expected an array of ngons to be rasterized.");
     Rngon.assert && ((renderWidth > 0) && (renderHeight > 0))
@@ -937,12 +937,22 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, renderWidth, renderHeight)
 
                                     const texelColorChannels = ngon.material.texture.rgba_channels_at(u, v);
 
+                                    // Alpha-testing. If the pixel is fully opaque, draw it; otherwise, skip it.
                                     if (texelColorChannels[3] === 255)
                                     {
                                         pixelBuffer[idx + 0] = (texelColorChannels[0] * ngon.material.color.unitRange.red);
                                         pixelBuffer[idx + 1] = (texelColorChannels[1] * ngon.material.color.unitRange.green);
                                         pixelBuffer[idx + 2] = (texelColorChannels[2] * ngon.material.color.unitRange.blue);
                                         pixelBuffer[idx + 3] = (texelColorChannels[3] * ngon.material.color.unitRange.alpha);
+                                    }
+                                }
+
+                                for (let b = 0; b < auxiliaryBuffers.length; b++)
+                                {
+                                    if (ngon.material[auxiliaryBuffers[b].property] !== null)
+                                    {
+                                        // Buffers are expected to be one byte per pixel.
+                                        auxiliaryBuffers[b].buffer[idx/4] = ngon.material[auxiliaryBuffers[b].property];
                                     }
                                 }
                             }
@@ -1027,7 +1037,7 @@ Rngon.render = function(canvasElementId,
                      typeof Rngon.render.defaultOptions.cameraDirection !== "undefined" &&
                      typeof Rngon.render.defaultOptions.scale !== "undefined" &&
                      typeof Rngon.render.defaultOptions.depthSort !== "undefined" &&
-                     typeof Rngon.render.defaultOptions.hibernateWhenNotOnScren !== "undefined" &&
+                     typeof Rngon.render.defaultOptions.hibernateWhenNotOnScreen !== "undefined" &&
                      typeof Rngon.render.defaultOptions.fov !== "undefined")
                  || Rngon.throw("The default options object for render() is missing required properties.");
 
@@ -1038,7 +1048,7 @@ Rngon.render = function(canvasElementId,
         ...options
     });
 
-    const renderSurface = Rngon.screen(canvasElementId, Rngon.ngon_filler, Rngon.ngon_transformer, options.scale, options.fov);
+    const renderSurface = Rngon.screen(canvasElementId, Rngon.ngon_filler, Rngon.ngon_transformer, options.scale, options.fov, options.auxiliaryBuffers);
 
     callMetadata.renderWidth = renderSurface.width;
     callMetadata.renderHeight = renderSurface.height;
@@ -1124,9 +1134,10 @@ Rngon.render.defaultOptions =
     cameraPosition: Rngon.vector3(0, 0, 0),
     cameraDirection: Rngon.vector3(0, 0, 0),
     scale: 1,
-    depthSort: "painter",
     fov: 43,
-    hibernateWhenNotOnScren: true,
+    depthSort: "painter",
+    hibernateWhenNotOnScreen: true,
+    auxiliaryBuffers: [],
 };
 /*
  * Tarpeeksi Hyvae Soft 2019 /
@@ -1266,7 +1277,8 @@ Rngon.screen = function(canvasElementId = "",              // The DOM id of the 
                         ngon_fill_f = function(){},        // A function that rasterizes the given ngons onto the canvas.
                         ngon_transform_f = function(){},   // A function that transforms the given ngons into screen-space for the canvas.
                         scaleFactor = 1,
-                        fov = 43)
+                        fov = 43,
+                        auxiliaryBuffers = [])
 {
     Rngon.assert && (typeof scaleFactor === "number") || Rngon.throw("Expected the scale factor to be a numeric value.");
     Rngon.assert && (typeof ngon_fill_f === "function" && typeof ngon_transform_f === "function")
@@ -1320,7 +1332,7 @@ Rngon.screen = function(canvasElementId = "",              // The DOM id of the 
             const renderContext = exposed_render_context();
             const pixelBuffer = renderContext.getImageData(0, 0, screenWidth, screenHeight);
 
-            ngon_fill_f(ngons, pixelBuffer.data, screenWidth, screenHeight);
+            ngon_fill_f(ngons, pixelBuffer.data, auxiliaryBuffers, screenWidth, screenHeight);
 
             renderContext.putImageData(pixelBuffer, 0, 0);
         },
