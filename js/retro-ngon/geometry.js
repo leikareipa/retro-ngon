@@ -138,6 +138,7 @@ Rngon.ngon.defaultMaterial =
     hasSolidFill: true,
     hasWireframe: false,
     wireframeColor: Rngon.color_rgba(0, 0, 0),
+    auxiliary: {},
 };
 
 // A collection of ngons, with shared translation and rotation.

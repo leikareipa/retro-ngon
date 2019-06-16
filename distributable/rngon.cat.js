@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: live (16 June 2019 01:41:01 UTC)
+// VERSION: live (16 June 2019 10:51:42 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -432,6 +432,7 @@ Rngon.ngon.defaultMaterial =
     hasSolidFill: true,
     hasWireframe: false,
     wireframeColor: Rngon.color_rgba(0, 0, 0),
+    auxiliary: {},
 };
 
 // A collection of ngons, with shared translation and rotation.
@@ -947,10 +948,10 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
 
                                 for (let b = 0; b < auxiliaryBuffers.length; b++)
                                 {
-                                    if (ngon.material[auxiliaryBuffers[b].property] !== null)
+                                    if (ngon.material.auxiliary[auxiliaryBuffers[b].property] !== null)
                                     {
-                                        // Buffers are expected to be one byte per pixel.
-                                        auxiliaryBuffers[b].buffer[idx/4] = ngon.material[auxiliaryBuffers[b].property];
+                                        // Buffers are expected to consist of one element per pixel.
+                                        auxiliaryBuffers[b].buffer[idx/4] = ngon.material.auxiliary[auxiliaryBuffers[b].property];
                                     }
                                 }
                             }

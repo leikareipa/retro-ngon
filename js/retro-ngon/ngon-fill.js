@@ -190,10 +190,10 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
 
                                 for (let b = 0; b < auxiliaryBuffers.length; b++)
                                 {
-                                    if (ngon.material[auxiliaryBuffers[b].property] !== null)
+                                    if (ngon.material.auxiliary[auxiliaryBuffers[b].property] !== null)
                                     {
-                                        // Buffers are expected to be one byte per pixel.
-                                        auxiliaryBuffers[b].buffer[idx/4] = ngon.material[auxiliaryBuffers[b].property];
+                                        // Buffers are expected to consist of one element per pixel.
+                                        auxiliaryBuffers[b].buffer[idx/4] = ngon.material.auxiliary[auxiliaryBuffers[b].property];
                                     }
                                 }
                             }
