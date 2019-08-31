@@ -205,7 +205,6 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
             // Draw a wireframe around any ngons that wish for one.
             if (ngon.material.hasWireframe)
             {
-                const wireColor = Rngon.color_rgba(0, 0, 0, 255);
                 const putline = (vert1, vert2)=>
                 {
                     Rngon.line_draw.into_pixel_buffer(vert1, vert2,

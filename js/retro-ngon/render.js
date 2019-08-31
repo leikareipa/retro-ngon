@@ -78,7 +78,7 @@ Rngon.render = function(canvasElementId,
 
             meshes.forEach((mesh)=>
             {
-                transformedNgons.push(...renderSurface.transformed_ngons(mesh.ngons, mesh.objectSpaceMatrix, cameraMatrix));
+                transformedNgons.push(...renderSurface.transformed_ngons(mesh.ngons, mesh.objectSpaceMatrix, cameraMatrix, options.nearPlaneDistance));
             });
 
             // Apply depth sorting to the transformed ngons.
@@ -143,4 +143,5 @@ Rngon.render.defaultOptions =
     depthSort: "painter",
     hibernateWhenNotOnScreen: true,
     auxiliaryBuffers: [],
+    nearPlaneDistance: false,
 };

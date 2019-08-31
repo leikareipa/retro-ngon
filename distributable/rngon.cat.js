@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: live (16 June 2019 10:51:42 UTC)
+// VERSION: live (31 August 2019 05:06:07 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -337,6 +337,7 @@ Rngon.vector3 = function(x = 0, y = 0, z = 0)
 
     return publicInterface;
 }
+
 // Convenience aliases for vector3.
 Rngon.translation_vector = Rngon.vector3;
 Rngon.rotation_vector = (x, y, z)=>Rngon.vector3(Rngon.trig.deg(x), Rngon.trig.deg(y), Rngon.trig.deg(z));
@@ -410,11 +411,70 @@ Rngon.ngon = function(vertices = [Rngon.vertex()], material = {})
         vertices,
         material,
 
+        // Returns a copy of the n-gon such that its vertices have been clipped against the
+        // near plane. Adapted from Benny Bobaganoosh's 3d software renderer, whose source
+        // is available at https://github.com/BennyQBD/3DSoftwareRenderer.
+        clipped_to_near_plane: function(nearPlaneDistance)
+        {
+            if (!nearPlaneDistance)
+            {
+                return this;
+            }
+
+            const clipped = (()=>
+            {
+                if (vertices.length <= 0)
+                {
+                    return {verts:[]};
+                }
+                else if (vertices.length === 1)
+                {
+                    return {verts:(is_vertex_inside(vertices[0])? vertices : [])};
+                }
+                else
+                {
+                    return vertices.reduce((clipped, v)=>
+                    {
+                        const isThisVertexInside = is_vertex_inside(v);
+
+                        // If either the current vertex or the previous vertex is inside but the other isn't,
+                        // and they aren't both inside, interpolate a new vertex between them that lies on
+                        // the clipping plane.
+                        if (isThisVertexInside ^ clipped.isPrevVertexInside)
+                        {
+                            const lerpStep = ((clipped.prevVertex.w - nearPlaneDistance) / ((clipped.prevVertex.w - nearPlaneDistance) - (v.w - nearPlaneDistance)));
+
+                            clipped.verts.push(Rngon.vertex(Rngon.lerp(clipped.prevVertex.x, v.x, lerpStep),
+                                                            Rngon.lerp(clipped.prevVertex.y, v.y, lerpStep),
+                                                            Rngon.lerp(clipped.prevVertex.z, v.z, lerpStep),
+                                                            Rngon.lerp(clipped.prevVertex.u, v.u, lerpStep),
+                                                            Rngon.lerp(clipped.prevVertex.v, v.v, lerpStep),
+                                                            Rngon.lerp(clipped.prevVertex.w, v.w, lerpStep)));
+                        }
+                        
+                        if (isThisVertexInside)
+                        {
+                            clipped.verts.push(v);
+                        }
+
+                        return {verts:clipped.verts, prevVertex:v, isPrevVertexInside:isThisVertexInside};
+                    }, {verts:[], prevVertex:vertices[vertices.length-1], isPrevVertexInside:is_vertex_inside(vertices[vertices.length-1])});
+                }
+
+                function is_vertex_inside(vert)
+                {
+                    return (vert.w >= nearPlaneDistance);
+                }
+            })();
+
+            return Rngon.ngon(clipped.verts, material);
+        },
+
         perspective_divided: function()
         {
             // First clip the n-gon's vertices against the near plane, then apply perspective
             // division to them.
-            return Rngon.ngon(vertices.filter(v=>(v.w >= 1)).map(v=>v.perspective_divided()), material);
+            return Rngon.ngon(vertices.map(v=>v.perspective_divided()), material);
         },
 
         transformed: function(matrix44)
@@ -424,6 +484,7 @@ Rngon.ngon = function(vertices = [Rngon.vertex()], material = {})
     });
     return publicInterface;
 }
+
 Rngon.ngon.defaultMaterial = 
 {
     color: Rngon.color_rgba(255, 255, 255, 255),
@@ -483,6 +544,7 @@ Rngon.mesh = function(ngons = [Rngon.ngon()], transform = {})
     });
     return publicInterface;
 }
+
 Rngon.mesh.defaultTransform = 
 {
     translation: Rngon.translation_vector(0, 0, 0),
@@ -963,7 +1025,6 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
             // Draw a wireframe around any ngons that wish for one.
             if (ngon.material.hasWireframe)
             {
-                const wireColor = Rngon.color_rgba(0, 0, 0, 255);
                 const putline = (vert1, vert2)=>
                 {
                     Rngon.line_draw.into_pixel_buffer(vert1, vert2,
@@ -1072,7 +1133,7 @@ Rngon.render = function(canvasElementId,
 
             meshes.forEach((mesh)=>
             {
-                transformedNgons.push(...renderSurface.transformed_ngons(mesh.ngons, mesh.objectSpaceMatrix, cameraMatrix));
+                transformedNgons.push(...renderSurface.transformed_ngons(mesh.ngons, mesh.objectSpaceMatrix, cameraMatrix, options.nearPlaneDistance));
             });
 
             // Apply depth sorting to the transformed ngons.
@@ -1137,6 +1198,7 @@ Rngon.render.defaultOptions =
     depthSort: "painter",
     hibernateWhenNotOnScreen: true,
     auxiliaryBuffers: [],
+    nearPlaneDistance: false,
 };
 /*
  * Tarpeeksi Hyvae Soft 2019 /
@@ -1146,11 +1208,11 @@ Rngon.render.defaultOptions =
 
 "use strict";
 
-// Returns a copy of the given list of ngons such that each ngon in the copy
-// has been transformed into screen-space.
-Rngon.ngon_transformer = function(ngons = [], screenSpaceMatrix = [])
+// Returns a copy of the given list of ngons such that each ngon in the copy has been
+// transformed into screen-space.
+Rngon.ngon_transformer = function(ngons = [], screenSpaceMatrix = [], nearPlaneDistance)
 {
-    return ngons.map(ngon=>ngon.transformed(screenSpaceMatrix).perspective_divided());
+    return ngons.map(ngon=>ngon.transformed(screenSpaceMatrix).clipped_to_near_plane(nearPlaneDistance).perspective_divided());
 }
 /*
  * Tarpeeksi Hyvae Soft 2019 /
@@ -1316,13 +1378,13 @@ Rngon.screen = function(canvasElementId = "",              // The DOM id of the 
         // Returns a copy of the ngons transformed into screen-space for this render surface.
         // Takes as input the ngons to be transformed, an object matrix which contains the object's
         // transforms, and a camera matrix, which contains the camera's translation and rotation.
-        transformed_ngons: function(ngons = [], objectMatrix = [], cameraMatrix = [])
+        transformed_ngons: function(ngons = [], objectMatrix = [], cameraMatrix = [], nearPlaneDistance)
         {
             const objectSpaceMatrix = Rngon.matrix44.matrices_multiplied(cameraMatrix, objectMatrix);
             const clipSpaceMatrix = Rngon.matrix44.matrices_multiplied(perspectiveMatrix, objectSpaceMatrix);
             const screenSpaceMatrix = Rngon.matrix44.matrices_multiplied(screenMatrix, clipSpaceMatrix);
 
-            return ngon_transform_f(ngons, screenSpaceMatrix);
+            return ngon_transform_f(ngons, screenSpaceMatrix, nearPlaneDistance);
         },
 
         // Draw the given ngons onto this render surface.

@@ -43,6 +43,7 @@ Rngon.vector3 = function(x = 0, y = 0, z = 0)
 
     return publicInterface;
 }
+
 // Convenience aliases for vector3.
 Rngon.translation_vector = Rngon.vector3;
 Rngon.rotation_vector = (x, y, z)=>Rngon.vector3(Rngon.trig.deg(x), Rngon.trig.deg(y), Rngon.trig.deg(z));
@@ -116,11 +117,70 @@ Rngon.ngon = function(vertices = [Rngon.vertex()], material = {})
         vertices,
         material,
 
+        // Returns a copy of the n-gon such that its vertices have been clipped against the
+        // near plane. Adapted from Benny Bobaganoosh's 3d software renderer, whose source
+        // is available at https://github.com/BennyQBD/3DSoftwareRenderer.
+        clipped_to_near_plane: function(nearPlaneDistance)
+        {
+            if (!nearPlaneDistance)
+            {
+                return this;
+            }
+
+            const clipped = (()=>
+            {
+                if (vertices.length <= 0)
+                {
+                    return {verts:[]};
+                }
+                else if (vertices.length === 1)
+                {
+                    return {verts:(is_vertex_inside(vertices[0])? vertices : [])};
+                }
+                else
+                {
+                    return vertices.reduce((clipped, v)=>
+                    {
+                        const isThisVertexInside = is_vertex_inside(v);
+
+                        // If either the current vertex or the previous vertex is inside but the other isn't,
+                        // and they aren't both inside, interpolate a new vertex between them that lies on
+                        // the clipping plane.
+                        if (isThisVertexInside ^ clipped.isPrevVertexInside)
+                        {
+                            const lerpStep = ((clipped.prevVertex.w - nearPlaneDistance) / ((clipped.prevVertex.w - nearPlaneDistance) - (v.w - nearPlaneDistance)));
+
+                            clipped.verts.push(Rngon.vertex(Rngon.lerp(clipped.prevVertex.x, v.x, lerpStep),
+                                                            Rngon.lerp(clipped.prevVertex.y, v.y, lerpStep),
+                                                            Rngon.lerp(clipped.prevVertex.z, v.z, lerpStep),
+                                                            Rngon.lerp(clipped.prevVertex.u, v.u, lerpStep),
+                                                            Rngon.lerp(clipped.prevVertex.v, v.v, lerpStep),
+                                                            Rngon.lerp(clipped.prevVertex.w, v.w, lerpStep)));
+                        }
+                        
+                        if (isThisVertexInside)
+                        {
+                            clipped.verts.push(v);
+                        }
+
+                        return {verts:clipped.verts, prevVertex:v, isPrevVertexInside:isThisVertexInside};
+                    }, {verts:[], prevVertex:vertices[vertices.length-1], isPrevVertexInside:is_vertex_inside(vertices[vertices.length-1])});
+                }
+
+                function is_vertex_inside(vert)
+                {
+                    return (vert.w >= nearPlaneDistance);
+                }
+            })();
+
+            return Rngon.ngon(clipped.verts, material);
+        },
+
         perspective_divided: function()
         {
             // First clip the n-gon's vertices against the near plane, then apply perspective
             // division to them.
-            return Rngon.ngon(vertices.filter(v=>(v.w >= 1)).map(v=>v.perspective_divided()), material);
+            return Rngon.ngon(vertices.map(v=>v.perspective_divided()), material);
         },
 
         transformed: function(matrix44)
@@ -130,6 +190,7 @@ Rngon.ngon = function(vertices = [Rngon.vertex()], material = {})
     });
     return publicInterface;
 }
+
 Rngon.ngon.defaultMaterial = 
 {
     color: Rngon.color_rgba(255, 255, 255, 255),
@@ -189,6 +250,7 @@ Rngon.mesh = function(ngons = [Rngon.ngon()], transform = {})
     });
     return publicInterface;
 }
+
 Rngon.mesh.defaultTransform = 
 {
     translation: Rngon.translation_vector(0, 0, 0),
