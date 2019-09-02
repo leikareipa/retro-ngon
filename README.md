@@ -227,6 +227,7 @@ The following are valid properties of an n-gon's material, and the valid values 
     hasSolidFill: true | false
     hasWireframe: true | false
     wireframeColor: Rngon.color_rgba(...)
+    auxiliary: {}
 }
 ```
 
@@ -241,6 +242,8 @@ The `hasSolidFill` property determines whether the face of the n-gon will be ren
 The `hasWireframe` property determines whether a line should be drawn around the n-gon's face.
 
 The `wireframeColor` property sets the color of the n-gon's wireframe. Note that if `hasWireframe` is false, no wireframe will be drawn, regardless of its color.
+
+The `auxiliary` property defines an object containing properties to which auxiliary render buffers have read access.
 
 **Meshes.** To render n-gons, you first wrap them in a mesh. Meshes are collections of n-gons that share a purpose; for instance, the n-gons that make up a model of a spoon. A mesh thus consists of an array one or more n-gons, and a particular set of 3d transformations that affect the mesh's n-gons in unison.
 
@@ -378,6 +381,310 @@ If your JSON texture data is stored in a JSON file rather than as a JavaScript o
 ```
 
 Be aware, however, that `texture_rgba.create_with_data_from_file()` uses the Fetch API, which typically requires the content to be served via a server rather than from a local file directly. If you want to use this functionality locally, you can set up a server on localhost &ndash; e.g. by executing `$ php -S localhost:8000` in the retro n-gon renderer's root &ndash; and then accessing the code's HTML via `localhost:8000/*`.
+
+### API reference
+The renderer's public API consists of the following objects:
+
+| Object             | Brief description                           |
+| ------------------ | ------------------------------------------- |
+| [render](#render(string[,-array[,-object]]))  | Renders n-gon meshes into a canvas.         |
+| [mesh](#mesh([array[,-object]]))              | Collection of thematically-related n-gons.  |
+| [ngon](#ngon([vertices[,-material]]))         | Polygonal shape defined by *n* vertices.    |
+| [vertex](#vertex([x[,-y[,-z[,-u[,-v[,-w]]]]]])) | Corner of an n-gon.                         |
+| [vector3](#vector3([x[,-y[,-z]]]))            | Three-component vector. Aliases: *translation_vector*, *rotation_vector*, *scaling_vector*. |
+| color_rgba         | RGB color with alpha.                       |
+| texture_rgba       | RGB texture with alpha.                     |
+
+#### render(string[, array[, object]])
+Renders one or more n-gon meshes onto an existing canvas element.
+
+*Parameters:*
+
+| Type      | Name            | Description |
+| --------- | --------------- | ----------- |
+| *string*  | canvasElementId | A string matching the *id* attribute of the DOM canvas element to render into. |
+| *array*   | meshes          | An array of one or more **mesh** objects to be rendered. Defaults to *[Rngon.mesh()]* (an empty mesh). |
+| *object*  | options         | An object providing optional directives. |
+
+*The **options** parameter object recognizes the following properties:*
+
+| Type      | Name            | Description |
+| --------- | --------------- | ----------- |
+| *number*  | scale | The resolution of the rendering relative to the size of the target canvas. For instance, a scale of 0.5 would result in rendering an image half the resolution of the target canvas. Values below 1 will see the rendered image upscaled to fit the canvas, while values above 1 result in downscaling. The CSS property *image-rendering* on the target canvas can be used to set the type of post-render scaling - f.e. *image-rendering: pixelated* will on some browsers result in pixelated rather than blurred scaling. Defaults to *1*. |
+| *number*  | fov | Field of view. Defaults to *43*. |
+| *string*  | depthSort | Type of depth sorting to use when transforming the n-gons for rasterization. Possible values: "none" (no sorting), "painter" (sort by average *z*, i.e. painter's algorithm). Defaults to *"painter"*. |
+| *boolean*  | hibernateWhenNotOnScreen | If true, rendering will be skipped if the target canvas is not at least partially within the current viewport. Defaults to *true*. |
+| *mixed*  | nearPlaneDistance | Distance from the camera to the near plane. Vertices closer to the camera will be clipped. If set to *false*, near plane clipping will be disabled (which can lead to considerable visual and/or performance degradation should vertices ever locate behind the camera). Defaults to *false*.|
+| *translation_vector*  | cameraPosition | The camera's position. Defaults to *vector3(0, 0, 0)*. |
+| *rotation_vector*  | cameraDirection | The camera's direction. Defaults to *vector3(0, 0, 0)*. |
+| *array*  | auxiliaryBuffers | One or more auxiliary render buffers. Each buffer is an object containing the properties *buffer* and *property*; where *buffer* points to an array containing as many elements as there are pixels in the rendering, and *property* names a source property in an n-gon's material. For each pixel rendered, the corresponding element in an auxiliary buffer will be written with the n-gon's material source value. Defaults to *[]*. |
+
+*Returns:*
+
+```
+{
+    renderWidth,
+    renderHeight,
+    performance:
+    {
+        // How long the renderer took to perform certain actions. All values are in milliseconds.
+        timingMs:
+        {
+            // How long it took to initialize the renderer.
+            initialization,
+
+            // How long it took to transform all the supplied n-gons into screen space.
+            transformation,
+
+            // How long it took to rasterize the supplied n-gons onto the target canvas.
+            rasterization,
+
+            // How much time this function call took, in total.
+            total,
+        }
+    }
+}
+```
+
+*Sample usage:*
+
+```
+// Create a mesh out of a single-vertex n-gon, and render it into a canvas.
+
+const ngon = Rngon.ngon([Rngon.vertex(0, 0, 0)]
+                        {
+                            color: Rngon.color_rgba(255, 255, 0),
+                        });
+
+const mesh = Rngon.mesh([ngon],
+                        {
+                            rotation: Rngon.rotation_vector(0, 0, 45)
+                        });
+
+Rngon.render("canvas", [mesh],
+             {
+                 cameraPosition: Rngon.translation_vector(0, 0, 0),
+             });
+```
+
+```
+// Employ an auxiliary render buffer for mouse picking.
+
+const ngon = Rngon.ngon([Rngon.vertex(0, 0, 0)]
+                        {
+                            color: Rngon.color_rgba(255, 255, 0),
+
+                            // The 'auxiliary' property holds sub-properties that are available to auxiliary buffers.
+                            auxiliary:
+                            {
+                                // A value that uniquely identifies this n-gon.
+                                mousePickingId: 5,
+                            }
+                        });
+
+const mousePickingBuffer = [];
+
+Rngon.render("canvas", [Rngon.mesh([ngon])],
+             {
+                 cameraPosition: Rngon.translation_vector(0, 0, 0),
+                 auxiliaryBuffers:
+                 [
+                     {buffer: mousePickingBuffer, property: "mousePickingId"},
+                 ],
+             });
+
+// The 'mousePickingBuffer' array now holds the rendered n-gon's 'mousePickingId' value wherever the n-gon is visibile in the rendered image.
+```
+
+#### mesh([array[, object]])
+A collection of thematically-related n-gons, rendered as a unit with shared transformations.
+
+*Parameters:*
+
+| Type      | Name            | Description |
+| --------- | --------------- | ----------- |
+| *array*   | ngons           | An array of one or more **ngon** objects, which define the mesh's geometry. Defaults to *[Rngon.ngon()]*. |
+| *object*   | transform      | An object whose properties define the transformations to apply on the mesh's n-gons prior to rendering. |
+
+*The **transform** parameter object recognizes the following properties:*
+
+| Type                 | Name            | Description |
+| -------------------- | --------------- | ----------- |
+| *translation_vector* | translation     | The amount by and direction in which to displace the mesh's n-gons. This is in addition to the n-gons' local coordinates; such that if an n-gon's vertex is located at x = 10, and the mesh it belongs to is translated by 10 on x, the vertex's new location will be x = 20. Defaults to *translation_vector(0, 0, 0)*. |
+| *rotation_vector*    | rotation        | The amount of rotation, in degrees 0-359, to apply to each of the mesh's n-gons. Defaults to *rotation_vector(0, 0, 0)*. |
+| *scaling_vector*     | scaling         | The amount by which to scale each of the mesh's n-gons along each of the three axes. Defaults to *scaling_vector(1, 1, 1)*. |
+
+*Note:* If both *translation* and *rotation* are given, the rotation will be applied first.
+
+*Returns:*
+
+```
+{
+    rotation: transform.rotation,
+    translation: transform.translation,
+    scale: transform.scaling,
+
+    // The array of n-gons passed as an argument into the function.
+    ngons,
+
+    // A 4x4 matrix by which the n-gons of this mesh should be transformed to bring the n-gons into the mesh's object space.
+    objectSpaceMatrix,
+})
+```
+
+*Sample usage:*
+
+```
+// Construct a mesh containing one n-gon, and apply rotation and scaling to it.
+
+const ngon = Rngon.ngon([Rngon.vertex(0, 0, 0)]);
+
+const mesh = Rngon.mesh([ngon],
+                        {
+                            rotation: Rngon.rotation_vector(20, 0, 0),
+                            scaling: Rngon.scaling_vector(10, 15, 5),
+                        });
+```
+
+#### ngon([vertices[, material]])
+A polygonal shape defined by *n* vertices.
+
+*Parameters:*
+
+| Type      | Name            | Description |
+| --------- | --------------- | ----------- |
+| *array*   | vertices        | An array of one or more **vertex** objects, which define the corners of the n-gon. Defaults to *[Rngon.vertex()]*. |
+| *object*   | material       | An object whose properties define the n-gon's material. Defaults to *{}*. |
+
+*The **material** parameter object recognizes the following properties:*
+
+| Type                 | Name            | Description |
+| -------------------- | --------------- | ----------- |
+| *color_rgba*         | color           | Defines the n-gon's base color. If the n-gon has no texture, its entire face will be rendered in this color. If the n-gon has a texture, the colors of the texture will be multiplied by (x / 255), where *x* is the corresponding color channel of the base color. Defaults to *color_rgba(255, 255, 255, 255)*. |
+| *mixed*       | texture         | Gives the n-gon's texture as a **texture_rgba** object; or, if null, the n-gon will be rendered without a texture. Defaults to *null*. |
+| *string*             | textureMapping  | Defines how textures (if any) should be mapped onto the n-gon's surface during rendering. Possible values: "ortho" (view-dependent mapping without UV), "affine" (UV mapping). If set to "ortho", vertices do not need UV coordinates, but visual distortions will be introduced in many cases. The "affine" mapping mode requires vertices to have UV coordinates, but results in more visually-accurate mapping. Defaults to *"ortho"*. |
+| *boolean*            | hasSolidFill    | If false, the n-gon's face will not be rendered. If false and the n-gon also has no wireframe, the n-gon will be invisible. Defaults to *true*. |
+| *boolean*            | hasWireframe    | If true, the n-gon will be rendered with a wireframe outline. Is not affected by the *hasSolidFill* property. Defaults to *false*. |
+| *color_rgba*         | wireframeColor  | If the n-gon has a wireframe, this property gives the wireframe's color as a **color_rgba** object. Defaults to *color_rgba(0, 0, 0)*. |
+| *array*              | auxiliary       | Properties accessible to the auxiliary buffers of **render**. Defaults to *{}*. |
+
+*Returns:*
+
+```
+{
+    vertices,
+    material,
+
+    clipped_to_near_plane: function,
+    perspective_divided: function,
+    transformed: function,
+}
+```
+
+*Sample usage:*
+
+```
+// Construct a 4-sided n-gon (quad) with a texture applied to it.
+
+const texture = Rngon.texture_rgba(
+                {
+                    width: 2,
+                    height: 2,
+                    pixels: [255, 200, 0, 255,
+                             200, 255, 0, 255,
+                             255, 0, 200, 255,
+                             0, 255, 200, 255],
+                });
+
+const quad = Rngon.ngon([Rngon.vertex(-1, -1, 0),
+                         Rngon.vertex( 1, -1, 0),
+                         Rngon.vertex( 1,  1, 0),
+                         Rngon.vertex(-1,  1, 0)],
+                        {
+                            color: Rngon.color_rgba(255, 255, 255),
+                            texture: texture
+                        });
+```
+
+#### vertex([x[, y[, z[, u[, v[, w]]]]]])
+One corner of an n-gon.
+
+*Parameters:*
+
+| Type          | Name     | Description |
+| ------------- | -------- | ----------- |
+| *number*      | x        | The vertex's *x* coordinate. Defaults to *0*. |
+| *number*      | y        | The vertex's *y* coordinate. Defaults to *0*. |
+| *number*      | z        | The vertex's *z* coordinate. Defaults to *0*. |
+| *number*      | u        | The vertex's *u* texture coordinate. Defaults to *0*. |
+| *number*      | v        | The vertex's *v* texture coordinate.  Defaults to *0*. |
+| *number*      | w        | The vertex's *w* coordinate, for matrix transformations. Defaults to *1*. |
+
+*Note:* In the coordinate space, *x* is horizontal (positive = right), and *y* is vertical (positive = up); positive *z* is forward. Of the texture coordinates, *u* is horizontal, and *v* is vertical.
+
+*Returns:*
+
+```
+{
+    x, y, z, w, u, v,
+
+    transformed: function,
+    perspective_divided: function,
+}
+```
+
+*Sample usage:*
+
+```
+// Create a vertex at coordinates (1, 1, 0), and give it UV coordinates (1, 0).
+
+const vertex = Rngon.vertex(1, 1, 0, 1, 0);
+```
+
+```
+// Create an n-gon from two vertices.
+
+const vertex1 = Rngon.vertex(1, 1, 0);
+const vertex2 = Rngon.vertex(-1, -1, 0);
+
+const ngon = Rngon.ngon([vertex1, vertex2]);
+```
+
+#### vector3([x[, y[, z]]])
+A three-component vector.
+
+*Aliases:*
+
+**rotation_vector**, **translation_vector**, **scaling_vector**
+
+*Parameters:*
+
+| Type          | Name     | Description |
+| ------------- | -------- | ----------- |
+| *number*      | x        | The vector's *x* coordinate. Defaults to *0*. |
+| *number*      | y        | The vector's *y* coordinate. Defaults to *0*. |
+| *number*      | z        | The vector's *z* coordinate. Defaults to *0*. |
+
+*Note:* In the coordinate space, *x* is horizontal (positive = right), and *y* is vertical (positive = up); positive *z* is forward.
+
+*Returns:*
+
+```
+{
+    x, y, z,
+
+    cross: function,
+    normalized: function,
+}
+```
+
+*Sample usage:*
+
+```
+// Create a vector (1, 2, 3).
+
+const vector = Rngon.vector3(1, 2, 3);
+```
 
 # Performance
 As suggested in the sections, above, the retro n-gon renderer is not intended for real-time display of high-polycount scenes, nor for real-time high-resolution rendering. Its principal target resolution is along the lines of 320 x 200 &ndash; upscaled by whichever amount &ndash; with spartan 3d scenes.
