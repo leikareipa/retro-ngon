@@ -385,17 +385,17 @@ Be aware, however, that `texture_rgba.create_with_data_from_file()` uses the Fet
 ### API reference
 The renderer's public API consists of the following objects:
 
-| Object             | Brief description                           |
-| ------------------ | ------------------------------------------- |
-| [render](#render(string[,-array[,-object]]))  | Renders n-gon meshes into a canvas.         |
-| [mesh](#mesh([array[,-object]]))              | Collection of thematically-related n-gons.  |
-| [ngon](#ngon([vertices[,-material]]))         | Polygonal shape defined by *n* vertices.    |
-| [vertex](#vertex([x[,-y[,-z[,-u[,-v[,-w]]]]]])) | Corner of an n-gon.                         |
-| [vector3](#vector3([x[,-y[,-z]]]))            | Three-component vector. Aliases: *translation_vector*, *rotation_vector*, *scaling_vector*. |
-| color_rgba         | RGB color with alpha.                       |
-| texture_rgba       | RGB texture with alpha.                     |
+| Object                                          | Brief description                           |
+| ----------------------------------------------- | ------------------------------------------- |
+| [render](#rendercanvaselementid-meshes-options) | Renders n-gon meshes into a canvas.         |
+| [mesh](#meshngons-transform)                    | Collection of thematically-related n-gons.  |
+| [ngon](#ngonvertices-material)                  | Polygonal shape defined by *n* vertices.    |
+| [vertex](#vertexx-y-z-u-v-w)                    | Corner of an n-gon.                         |
+| [vector3](#vector3x-y-z)                        | Three-component vector. Aliases: *translation_vector*, *rotation_vector*, *scaling_vector*. |
+| [color_rgba](#color_rgbared-green-blue-alpha)   | RGB color with alpha.                       |
+| [texture_rgba](#texture_rgbadata)               | RGB texture with alpha.                     |
 
-#### render(string[, array[, object]])
+#### render(canvasElementId[, meshes[, options]])
 Renders one or more n-gon meshes onto an existing canvas element.
 
 *Parameters:*
@@ -408,16 +408,16 @@ Renders one or more n-gon meshes onto an existing canvas element.
 
 *The **options** parameter object recognizes the following properties:*
 
-| Type      | Name            | Description |
-| --------- | --------------- | ----------- |
-| *number*  | scale | The resolution of the rendering relative to the size of the target canvas. For instance, a scale of 0.5 would result in rendering an image half the resolution of the target canvas. Values below 1 will see the rendered image upscaled to fit the canvas, while values above 1 result in downscaling. The CSS property *image-rendering* on the target canvas can be used to set the type of post-render scaling - f.e. *image-rendering: pixelated* will on some browsers result in pixelated rather than blurred scaling. Defaults to *1*. |
-| *number*  | fov | Field of view. Defaults to *43*. |
-| *string*  | depthSort | Type of depth sorting to use when transforming the n-gons for rasterization. Possible values: "none" (no sorting), "painter" (sort by average *z*, i.e. painter's algorithm). Defaults to *"painter"*. |
-| *boolean*  | hibernateWhenNotOnScreen | If true, rendering will be skipped if the target canvas is not at least partially within the current viewport. Defaults to *true*. |
-| *mixed*  | nearPlaneDistance | Distance from the camera to the near plane. Vertices closer to the camera will be clipped. If set to *false*, near plane clipping will be disabled (which can lead to considerable visual and/or performance degradation should vertices ever locate behind the camera). Defaults to *false*.|
-| *translation_vector*  | cameraPosition | The camera's position. Defaults to *vector3(0, 0, 0)*. |
-| *rotation_vector*  | cameraDirection | The camera's direction. Defaults to *vector3(0, 0, 0)*. |
-| *array*  | auxiliaryBuffers | One or more auxiliary render buffers. Each buffer is an object containing the properties *buffer* and *property*; where *buffer* points to an array containing as many elements as there are pixels in the rendering, and *property* names a source property in an n-gon's material. For each pixel rendered, the corresponding element in an auxiliary buffer will be written with the n-gon's material source value. Defaults to *[]*. |
+| Type                  | Name                     | Description |
+| --------------------- | ------------------------ | ----------- |
+| *number*              | scale                    | The resolution of the rendering relative to the size of the target canvas. For instance, a scale of 0.5 would result in rendering an image half the resolution of the target canvas. Values below 1 will see the rendered image upscaled to fit the canvas, while values above 1 result in downscaling. The CSS property *image-rendering* on the target canvas can be used to set the type of post-render scaling - f.e. *image-rendering: pixelated* will on some browsers result in pixelated rather than blurred scaling. Defaults to *1*. |
+| *number*              | fov                      | Field of view. Defaults to *43*. |
+| *string*              | depthSort                | Type of depth sorting to use when transforming the n-gons for rasterization. Possible values: "none" (no sorting), "painter" (sort by average *z*, i.e. painter's algorithm). Defaults to *"painter"*. |
+| *boolean*             | hibernateWhenNotOnScreen | If true, rendering will be skipped if the target canvas is not at least partially within the current viewport. Defaults to *true*. |
+| *mixed*               | nearPlaneDistance        | Distance from the camera to the near plane. Vertices closer to the camera will be clipped. If set to *false*, near plane clipping will be disabled (which can lead to considerable visual and/or performance degradation should vertices ever locate behind the camera). Defaults to *false*.|
+| *translation_vector*  | cameraPosition           | The camera's position. Defaults to *vector3(0, 0, 0)*. |
+| *rotation_vector*     | cameraDirection          | The camera's direction. Defaults to *vector3(0, 0, 0)*. |
+| *array*               | auxiliaryBuffers         | One or more auxiliary render buffers. Each buffer is an object containing the properties *buffer* and *property*; where *buffer* points to an array containing as many elements as there are pixels in the rendering, and *property* names a source property in an n-gon's material. For each pixel rendered, the corresponding element in an auxiliary buffer will be written with the n-gon's material source value. Defaults to *[]*. |
 
 *Returns:*
 
@@ -496,7 +496,7 @@ Rngon.render("canvas", [Rngon.mesh([ngon])],
 // The 'mousePickingBuffer' array now holds the rendered n-gon's 'mousePickingId' value wherever the n-gon is visibile in the rendered image.
 ```
 
-#### mesh([array[, object]])
+#### mesh([ngons[, transform]])
 A collection of thematically-related n-gons, rendered as a unit with shared transformations.
 
 *Parameters:*
@@ -504,7 +504,7 @@ A collection of thematically-related n-gons, rendered as a unit with shared tran
 | Type      | Name            | Description |
 | --------- | --------------- | ----------- |
 | *array*   | ngons           | An array of one or more **ngon** objects, which define the mesh's geometry. Defaults to *[Rngon.ngon()]*. |
-| *object*   | transform      | An object whose properties define the transformations to apply on the mesh's n-gons prior to rendering. |
+| *object*  | transform      | An object whose properties define the transformations to apply on the mesh's n-gons prior to rendering. |
 
 *The **transform** parameter object recognizes the following properties:*
 
@@ -554,14 +554,14 @@ A polygonal shape defined by *n* vertices.
 | Type      | Name            | Description |
 | --------- | --------------- | ----------- |
 | *array*   | vertices        | An array of one or more **vertex** objects, which define the corners of the n-gon. Defaults to *[Rngon.vertex()]*. |
-| *object*   | material       | An object whose properties define the n-gon's material. Defaults to *{}*. |
+| *object*  | material       | An object whose properties define the n-gon's material. Defaults to *{}*. |
 
 *The **material** parameter object recognizes the following properties:*
 
 | Type                 | Name            | Description |
 | -------------------- | --------------- | ----------- |
 | *color_rgba*         | color           | Defines the n-gon's base color. If the n-gon has no texture, its entire face will be rendered in this color. If the n-gon has a texture, the colors of the texture will be multiplied by (x / 255), where *x* is the corresponding color channel of the base color. Defaults to *color_rgba(255, 255, 255, 255)*. |
-| *mixed*       | texture         | Gives the n-gon's texture as a **texture_rgba** object; or, if null, the n-gon will be rendered without a texture. Defaults to *null*. |
+| *mixed*              | texture         | Gives the n-gon's texture as a **texture_rgba** object; or, if null, the n-gon will be rendered without a texture. Defaults to *null*. |
 | *string*             | textureMapping  | Defines how textures (if any) should be mapped onto the n-gon's surface during rendering. Possible values: "ortho" (view-dependent mapping without UV), "affine" (UV mapping). If set to "ortho", vertices do not need UV coordinates, but visual distortions will be introduced in many cases. The "affine" mapping mode requires vertices to have UV coordinates, but results in more visually-accurate mapping. Defaults to *"ortho"*. |
 | *boolean*            | hasSolidFill    | If false, the n-gon's face will not be rendered. If false and the n-gon also has no wireframe, the n-gon will be invisible. Defaults to *true*. |
 | *boolean*            | hasWireframe    | If true, the n-gon will be rendered with a wireframe outline. Is not affected by the *hasSolidFill* property. Defaults to *false*. |
@@ -653,9 +653,7 @@ const ngon = Rngon.ngon([vertex1, vertex2]);
 #### vector3([x[, y[, z]]])
 A three-component vector.
 
-*Aliases:*
-
-**rotation_vector**, **translation_vector**, **scaling_vector**
+*Aliases:* **rotation_vector**, **translation_vector**, **scaling_vector**
 
 *Parameters:*
 
@@ -684,6 +682,100 @@ A three-component vector.
 // Create a vector (1, 2, 3).
 
 const vector = Rngon.vector3(1, 2, 3);
+```
+
+#### color_rgba([red[, green[, blue[, alpha]]]])
+RGB color with alpha. The alpha channel is either fully transparent or fully opaque.
+
+*Parameters:*
+
+| Type          | Name  | Description |
+| ------------- | ------| ----------- |
+| *number*      | red   | The color's red channel. Defaults to *55*. |
+| *number*      | green | The color's green channel. Defaults to *55*. |
+| *number*      | blue  | The color's blue channel. Defaults to *55*. |
+| *number*      | alpha | The color's alpha channel. A value of 255 is fully opaque, while a value other than 255 is fully transparent. Defaults to *255*. |
+
+*Note:* All color channel values are to be given in the range [0, 255].
+
+*Returns:*
+
+```
+{
+    red, green, blue, alpha,
+
+    // An object containing as properties the color channel values in the range [0, 1].
+    unitRange,
+
+    as_hex: function
+}
+```
+
+#### texture_rgba([data])
+A texture whose pixel elements are instances of **color_rgba**.
+
+*Parameters:*
+
+| Type          | Name  | Description |
+| ------------- | ------| ----------- |
+| *object*      | data  | An object whose properties provide the texture's data. Defaults to *{width:0, height:0, pixels:[]}* (an empty texture). |
+
+*The **data** parameter object recognizes the following properties:*
+
+| Type      | Name      | Description |
+| --------- | ----------| ----------- |
+| *number*  | width     | The number of pixels in the texture, horizontally. The value must be in the range [0, 32768]. |
+| *number*  | height    | The number of pixels in the texture, vertically. The value must be in the range [0, 32768]. |
+| *array*   | pixels    | An array containing the texture's pixels. The *encoding* property defines the encoding used for the pixel data; by default, each pixel is given as four consecutive 8-bit values (red, green, blue, alpha). |
+| *string*  | encoding  | *Optional parameter.* Specifies the encoding used for data in the *pixels* array. Possible values: "none" (each pixel is given as four discrete 8-bit values), "base64" (pixels are packed integers encoded with Base64). If "base64" is specified, the bit layout of the packed pixel values must be given via the *channels* property.
+| *string*  | channels  | *Optional parameter.* Will be ignored if *encoding* is not "base64". Specifies the bit layout of the data in the *pixels* array. Possible values: "rgba:5+5+5+1" (each pixel element is a 16-bit integer with 5 bits each for red/green/blue, and 1 bit for alpha). |
+
+*Note:* The texture's data can be provided either via the *data* parameter, or through a JSON file using the `texture_rgba.create_with_data_from_file()` helper function.
+
+*Returns:*
+
+```
+{
+    width: data.width,
+    height: data.height,
+    
+    rgba_channels_at: function,
+}
+```
+
+*Sample usage:*
+
+```
+// Create a 2-by-2 texture.
+
+const texture = Rngon.texture_rgba(
+                {
+                    width: 2,
+                    height: 2,
+                    pixels: [255, 200, 0, 255,
+                             200, 255, 0, 255,
+                             255, 0, 200, 255,
+                             0, 255, 200, 255],
+                });
+```
+
+```
+// Create a texture with data from a JSON file.
+
+const texture = await Rngon.texture_rgba.create_with_data_from_file("texture.json");
+```
+
+```
+// Create a texture whose pixels are Base64-encoded packed 16-bit integers.
+
+const texture = Rngon.texture_rgba(
+                {
+                    width: 1,
+                    height: 1,
+                    channels: "rgba:5+5+5+1",
+                    encoding: "base64",
+                    pixels: "H4A=",
+                });
 ```
 
 # Performance
