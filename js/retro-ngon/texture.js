@@ -17,8 +17,8 @@ Rngon.texture_rgba = function(data = {width: 0, height: 0, pixels: []})
 
     Rngon.assert && (Number.isInteger(data.width) && Number.isInteger(data.height))
                  || Rngon.throw("Expected texture width and height to be integer values.");
-    Rngon.assert && (data.width > 0 && data.height > 0)
-                 || Rngon.throw("Expected texture width and height to be greater than zero.");
+    Rngon.assert && (data.width >= 0 && data.height >= 0)
+                 || Rngon.throw("Expected texture width and height to be no less than zero.");
     Rngon.assert && (data.width <= maxWidth && data.height <= maxHeight)
                  || Rngon.throw("Expected texture width/height to be no more than " + maxWidth + "/" + maxHeight + ".");
 

@@ -221,7 +221,7 @@ Rngon.mesh = function(ngons = [Rngon.ngon()], transform = {})
         ...transform
     });
 
-    // A matrix by which the ngons of this mesh should be transformed to get the ngongs into
+    // A matrix by which the ngons of this mesh should be transformed to get the ngons into
     // the mesh's object space.
     const objectSpaceMatrix = (()=>
     {
