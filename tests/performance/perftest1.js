@@ -41,7 +41,7 @@ const rngon_perftest1 = function(title = "", polygon, numClones, maxNumClones, c
         {
             Rngon.render(html.canvasElement.getAttribute("id"), meshes,
                          {
-                             cameraPosition: Rngon.translation_vector(0, 0, 7),
+                             cameraPosition: Rngon.translation_vector(0, 0, -9),
                              cameraDirection: Rngon.rotation_vector(0, 0, 0),
                              scale: 1,
                              hibernateWhenNotOnScreen:false
@@ -73,7 +73,7 @@ const rngon_perftest1 = function(title = "", polygon, numClones, maxNumClones, c
         {
             Rngon.render(html.canvasElement.getAttribute("id"), meshes,
                          {
-                            cameraPosition: Rngon.translation_vector(0, 0, 9),
+                            cameraPosition: Rngon.translation_vector(0, 0, -9),
                             cameraDirection: Rngon.rotation_vector(0, 0, frameCount),
                             scale: 1,
                             hibernateWhenNotOnScreen:false

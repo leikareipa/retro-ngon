@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: live (02 September 2019 02:23:37 UTC)
+// VERSION: live (03 September 2019 04:22:56 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -1127,9 +1127,9 @@ Rngon.render = function(canvasElementId,
             const cameraMatrix = Rngon.matrix44.matrices_multiplied(Rngon.matrix44.rotate(options.cameraDirection.x,
                                                                                           options.cameraDirection.y,
                                                                                           options.cameraDirection.z),
-                                                                    Rngon.matrix44.translate(options.cameraPosition.x,
-                                                                                             options.cameraPosition.y,
-                                                                                             options.cameraPosition.z));
+                                                                    Rngon.matrix44.translate(-options.cameraPosition.x,
+                                                                                             -options.cameraPosition.y,
+                                                                                             -options.cameraPosition.z));
 
             meshes.forEach((mesh)=>
             {

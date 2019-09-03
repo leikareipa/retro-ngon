@@ -92,7 +92,7 @@ const mesh = Rngon.mesh(scene.ngons)
 
     Rngon.render("canvas", [quadMesh],
                  {
-                     cameraPosition: Rngon.translation_vector(0, 0, 5),
+                     cameraPosition: Rngon.translation_vector(0, 0, -5),
                      scale: 1
                  })
 </script>
@@ -125,7 +125,7 @@ const mesh = Rngon.mesh(scene.ngons)
 
     Rngon.render("canvas", [quadMesh],
                  {
-                     cameraPosition: Rngon.translation_vector(0, 0, 5),
+                     cameraPosition: Rngon.translation_vector(0, 0, -5),
                      scale: 1
                  })
 </script>
@@ -181,7 +181,7 @@ The code below modifies the `quad` object given above to add UV texture coordina
     {
         Rngon.render("canvas", [rotatingQuad(frameCount)],
         {
-            cameraPosition: Rngon.translation_vector(0, 0, 5),
+            cameraPosition: Rngon.translation_vector(0, 0, -5),
             scale: 1
         })
 
@@ -194,7 +194,7 @@ The code below modifies the `quad` object given above to add UV texture coordina
 ```
 Rngon.render("canvas", [rotatingQuad(frameCount)],
              {
-                 cameraPosition: Rngon.translation_vector(0, 0, 5),
+                 cameraPosition: Rngon.translation_vector(0, 0, -5),
                  scale: 0.14
              })
 ```
