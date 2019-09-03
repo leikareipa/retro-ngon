@@ -25,7 +25,23 @@ The retro n-gon renderer encourages very low resolutions, very low polycounts, a
 - Visualizing 3d models in a wobbly, old-fashioned manner
 
 # How to use the renderer
-In this section, you'll find both practical and theoretical examples on how to use the retro n-gon renderer.
+In this section, you'll find both theoretical and practical guidance on using the retro n-gon renderer; including a reference manual for the renderer's API.
+
+Contents:
+- [Introduction and intro tutorial](#introduction-and-intro-tutorial)
+    - The gist of it in theory
+    - Rendering a quad, in practice
+    - Rendering a textured quad
+    - Giving the quad a spin
+    - Adding pixelation
+    - More examples
+- [Creating and rendering 3d models](#creating-and-rendering-3d-models)
+    - N-gons
+    - Meshes
+    - Models
+    - Exporting models from Blender
+    - Texturing
+- [API reference](#api-reference)
 
 ### Introduction and intro tutorial
 **The gist of it in theory.** At the heart of the renderer is the `render()` function, which transforms and rasterizes a set of n-gons onto a HTML5 canvas. You call it with the HTML id of the canvas you want the image rendered into, an array of the n-gon meshes you want rendered, and additional, optional parameters to define the position of the camera, etc.
