@@ -131,71 +131,64 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
 
                     for (let x = 0; x <= rowWidth; (x++, leftEdge[y].x++))
                     {
-                        if (leftEdge[y].x >= 0 && leftEdge[y].x < renderWidth)
+                        const px = leftEdge[y].x;
+                        const py = (y + polyYOffset);
+                        const idx = ((px + py * renderWidth) * 4);
+                        
+                        // Solid fill.
+                        if (ngon.material.texture == null)
                         {
-                            const px = leftEdge[y].x;
-                            const py = (y + polyYOffset);
-
-                            if (py >= 0 && py < renderHeight)
+                            pixelBuffer[idx + 0] = ngon.material.color.red;
+                            pixelBuffer[idx + 1] = ngon.material.color.green;
+                            pixelBuffer[idx + 2] = ngon.material.color.blue;
+                            pixelBuffer[idx + 3] = ngon.material.color.alpha;
+                        }
+                        // Textured fill.
+                        else
+                        {
+                            let u = 0, v = 0;
+                            switch (ngon.material.textureMapping)
                             {
-                                const idx = ((px + py * renderWidth) * 4);
-                                
-                                // Solid fill.
-                                if (ngon.material.texture == null)
+                                case "affine":
                                 {
-                                    pixelBuffer[idx + 0] = ngon.material.color.red;
-                                    pixelBuffer[idx + 1] = ngon.material.color.green;
-                                    pixelBuffer[idx + 2] = ngon.material.color.blue;
-                                    pixelBuffer[idx + 3] = ngon.material.color.alpha;
+                                    u = (Rngon.lerp(leftEdge[y].u, rightEdge[y].u, x/rowWidth) * (ngon.material.texture.width-0.001));
+                                    v = (Rngon.lerp(leftEdge[y].v, rightEdge[y].v, x/rowWidth) * (ngon.material.texture.height-0.001));
+
+                                    // Wrap with repetition.
+                                    /// FIXME: Doesn't wrap correctly.
+                                    u %= ngon.material.texture.width;
+                                    v %= ngon.material.texture.height;
+
+                                    break;
                                 }
-                                // Textured fill.
-                                else
+                                case "ortho":
                                 {
-                                    let u = 0, v = 0;
-                                    switch (ngon.material.textureMapping)
-                                    {
-                                        case "affine":
-                                        {
-                                            u = (Rngon.lerp(leftEdge[y].u, rightEdge[y].u, x/rowWidth) * (ngon.material.texture.width-0.001));
-                                            v = (Rngon.lerp(leftEdge[y].v, rightEdge[y].v, x/rowWidth) * (ngon.material.texture.height-0.001));
+                                    u = x * ((ngon.material.texture.width - 0.001) / rowWidth);
+                                    v = y * ((ngon.material.texture.height - 0.001) / ((polyHeight-1)||1));
 
-                                            // Wrap with repetition.
-                                            /// FIXME: Doesn't wrap correctly.
-                                            u %= ngon.material.texture.width;
-                                            v %= ngon.material.texture.height;
-
-                                            break;
-                                        }
-                                        case "ortho":
-                                        {
-                                            u = x * ((ngon.material.texture.width - 0.001) / rowWidth);
-                                            v = y * ((ngon.material.texture.height - 0.001) / ((polyHeight-1)||1));
-
-                                            break;
-                                        }
-                                        default: Rngon.throw("Unknown texture-mapping mode."); break;
-                                    }
-
-                                    const texelColorChannels = ngon.material.texture.rgba_channels_at(u, v);
-
-                                    // Alpha-testing. If the pixel is fully opaque, draw it; otherwise, skip it.
-                                    if (texelColorChannels[3] === 255)
-                                    {
-                                        pixelBuffer[idx + 0] = (texelColorChannels[0] * ngon.material.color.unitRange.red);
-                                        pixelBuffer[idx + 1] = (texelColorChannels[1] * ngon.material.color.unitRange.green);
-                                        pixelBuffer[idx + 2] = (texelColorChannels[2] * ngon.material.color.unitRange.blue);
-                                        pixelBuffer[idx + 3] = (texelColorChannels[3] * ngon.material.color.unitRange.alpha);
-                                    }
+                                    break;
                                 }
+                                default: Rngon.throw("Unknown texture-mapping mode."); break;
+                            }
 
-                                for (let b = 0; b < auxiliaryBuffers.length; b++)
-                                {
-                                    if (ngon.material.auxiliary[auxiliaryBuffers[b].property] !== null)
-                                    {
-                                        // Buffers are expected to consist of one element per pixel.
-                                        auxiliaryBuffers[b].buffer[idx/4] = ngon.material.auxiliary[auxiliaryBuffers[b].property];
-                                    }
-                                }
+                            const texelColorChannels = ngon.material.texture.rgba_channels_at(u, v);
+
+                            // Alpha-testing. If the pixel is fully opaque, draw it; otherwise, skip it.
+                            if (texelColorChannels[3] === 255)
+                            {
+                                pixelBuffer[idx + 0] = (texelColorChannels[0] * ngon.material.color.unitRange.red);
+                                pixelBuffer[idx + 1] = (texelColorChannels[1] * ngon.material.color.unitRange.green);
+                                pixelBuffer[idx + 2] = (texelColorChannels[2] * ngon.material.color.unitRange.blue);
+                                pixelBuffer[idx + 3] = (texelColorChannels[3] * ngon.material.color.unitRange.alpha);
+                            }
+                        }
+
+                        for (let b = 0; b < auxiliaryBuffers.length; b++)
+                        {
+                            if (ngon.material.auxiliary[auxiliaryBuffers[b].property] !== null)
+                            {
+                                // Buffers are expected to consist of one element per pixel.
+                                auxiliaryBuffers[b].buffer[idx/4] = ngon.material.auxiliary[auxiliaryBuffers[b].property];
                             }
                         }
                     }

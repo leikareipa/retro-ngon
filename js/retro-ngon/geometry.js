@@ -117,6 +117,86 @@ Rngon.ngon = function(vertices = [Rngon.vertex()], material = {})
         vertices,
         material,
 
+        // Returns a copy of the n-gon such that its vertices have been clipped against the sides
+        // of the viewport ([0, width) and [0, height)). The clipping algo is adapted from that in
+        // Bobaganoosh's 3d software renderer, available at https://github.com/BennyQBD/3DSoftwareRenderer.
+        //
+        /// TODO: This is a sloppy implementation that gets the job done.
+        clipped_to_viewport: function(width, height)
+        {
+            if (vertices.length <= 0)
+            {
+                return this;
+            }
+
+            let clippedVerts = vertices.slice();
+            clippedVerts = clipped_on_axis(clippedVerts, "x", 0, (width - 1));
+            clippedVerts = clipped_on_axis(clippedVerts, "y", 0, (height - 1));
+
+            return Rngon.ngon(clippedVerts, material);
+
+            function clipped_on_axis(vertices, axis, min, max)
+            {
+                if (!vertices.length)
+                {
+                    return vertices;
+                }
+
+                // Clip min.
+                const low = vertices.reduce((clipped, v)=>
+                {
+                    const isThisVertexInside = (v[axis] >= min);
+
+                    // If either the current vertex or the previous vertex is inside but the other isn't,
+                    // and they aren't both inside, interpolate a new vertex between them that lies on
+                    // the clipping plane.
+                    if (isThisVertexInside ^ clipped.isPrevVertexInside)
+                    {
+                        const lerpStep = ((clipped.prevVertex[axis] - min) / ((clipped.prevVertex[axis] - min) - (v[axis] - min) + 0.5));
+                        clipped.verts.push(interpolated_vertex(clipped.prevVertex, v, lerpStep));
+                    }
+                    
+                    if (isThisVertexInside)
+                    {
+                        clipped.verts.push(v);
+                    }
+
+                    return {verts:clipped.verts, prevVertex:v, isPrevVertexInside:isThisVertexInside};
+                }, {verts:[], prevVertex:vertices[vertices.length-1], isPrevVertexInside:(vertices[vertices.length-1][axis] >= min)});
+
+                // Clip max.
+                const high = low.verts.reduce((clipped, v)=>
+                {
+                    const isThisVertexInside = (v[axis] < max);
+
+                    if (isThisVertexInside ^ clipped.isPrevVertexInside)
+                    {
+                        const lerpStep = ((clipped.prevVertex[axis] - max) / ((clipped.prevVertex[axis] - max) - (v[axis] - max)));
+                        clipped.verts.push(interpolated_vertex(clipped.prevVertex, v, lerpStep));
+                    }
+                    
+                    if (isThisVertexInside)
+                    {
+                        clipped.verts.push(v);
+                    }
+
+                    return {verts:clipped.verts, prevVertex:v, isPrevVertexInside:isThisVertexInside};
+                }, {verts:[], prevVertex:vertices[vertices.length-1], isPrevVertexInside:(vertices[vertices.length-1][axis] < max)});
+
+                return high.verts;
+
+                function interpolated_vertex(vert1, vert2, lerpStep)
+                {
+                    return Rngon.vertex(Rngon.lerp(vert1.x, vert2.x, lerpStep),
+                                        Rngon.lerp(vert1.y, vert2.y, lerpStep),
+                                        Rngon.lerp(vert1.z, vert2.z, lerpStep),
+                                        Rngon.lerp(vert1.u, vert2.u, lerpStep),
+                                        Rngon.lerp(vert1.v, vert2.v, lerpStep),
+                                        Rngon.lerp(vert1.w, vert2.w, lerpStep));
+                }
+            }
+        },
+
         // Returns a copy of the n-gon such that its vertices have been clipped against the
         // near plane. Adapted from Benny Bobaganoosh's 3d software renderer, whose source
         // is available at https://github.com/BennyQBD/3DSoftwareRenderer.

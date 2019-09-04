@@ -591,6 +591,7 @@ A polygonal shape defined by *n* vertices.
     vertices,
     material,
 
+    clipped_to_viewport: function,
     clipped_to_near_plane: function,
     perspective_divided: function,
     transformed: function,

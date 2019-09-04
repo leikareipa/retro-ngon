@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: live (03 September 2019 04:22:56 UTC)
+// VERSION: live (04 September 2019 02:53:16 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -410,6 +410,86 @@ Rngon.ngon = function(vertices = [Rngon.vertex()], material = {})
     {
         vertices,
         material,
+
+        // Returns a copy of the n-gon such that its vertices have been clipped against the sides
+        // of the viewport ([0, width) and [0, height)). The clipping algo is adapted from that in
+        // Bobaganoosh's 3d software renderer, available at https://github.com/BennyQBD/3DSoftwareRenderer.
+        //
+        /// TODO: This is a sloppy implementation that gets the job done.
+        clipped_to_viewport: function(width, height)
+        {
+            if (vertices.length <= 0)
+            {
+                return this;
+            }
+
+            let clippedVerts = vertices.slice();
+            clippedVerts = clipped_on_axis(clippedVerts, "x", 0, (width - 1));
+            clippedVerts = clipped_on_axis(clippedVerts, "y", 0, (height - 1));
+
+            return Rngon.ngon(clippedVerts, material);
+
+            function clipped_on_axis(vertices, axis, min, max)
+            {
+                if (!vertices.length)
+                {
+                    return vertices;
+                }
+
+                // Clip min.
+                const low = vertices.reduce((clipped, v)=>
+                {
+                    const isThisVertexInside = (v[axis] >= min);
+
+                    // If either the current vertex or the previous vertex is inside but the other isn't,
+                    // and they aren't both inside, interpolate a new vertex between them that lies on
+                    // the clipping plane.
+                    if (isThisVertexInside ^ clipped.isPrevVertexInside)
+                    {
+                        const lerpStep = ((clipped.prevVertex[axis] - min) / ((clipped.prevVertex[axis] - min) - (v[axis] - min) + 0.5));
+                        clipped.verts.push(interpolated_vertex(clipped.prevVertex, v, lerpStep));
+                    }
+                    
+                    if (isThisVertexInside)
+                    {
+                        clipped.verts.push(v);
+                    }
+
+                    return {verts:clipped.verts, prevVertex:v, isPrevVertexInside:isThisVertexInside};
+                }, {verts:[], prevVertex:vertices[vertices.length-1], isPrevVertexInside:(vertices[vertices.length-1][axis] >= min)});
+
+                // Clip max.
+                const high = low.verts.reduce((clipped, v)=>
+                {
+                    const isThisVertexInside = (v[axis] < max);
+
+                    if (isThisVertexInside ^ clipped.isPrevVertexInside)
+                    {
+                        const lerpStep = ((clipped.prevVertex[axis] - max) / ((clipped.prevVertex[axis] - max) - (v[axis] - max)));
+                        clipped.verts.push(interpolated_vertex(clipped.prevVertex, v, lerpStep));
+                    }
+                    
+                    if (isThisVertexInside)
+                    {
+                        clipped.verts.push(v);
+                    }
+
+                    return {verts:clipped.verts, prevVertex:v, isPrevVertexInside:isThisVertexInside};
+                }, {verts:[], prevVertex:vertices[vertices.length-1], isPrevVertexInside:(vertices[vertices.length-1][axis] < max)});
+
+                return high.verts;
+
+                function interpolated_vertex(vert1, vert2, lerpStep)
+                {
+                    return Rngon.vertex(Rngon.lerp(vert1.x, vert2.x, lerpStep),
+                                        Rngon.lerp(vert1.y, vert2.y, lerpStep),
+                                        Rngon.lerp(vert1.z, vert2.z, lerpStep),
+                                        Rngon.lerp(vert1.u, vert2.u, lerpStep),
+                                        Rngon.lerp(vert1.v, vert2.v, lerpStep),
+                                        Rngon.lerp(vert1.w, vert2.w, lerpStep));
+                }
+            }
+        },
 
         // Returns a copy of the n-gon such that its vertices have been clipped against the
         // near plane. Adapted from Benny Bobaganoosh's 3d software renderer, whose source
@@ -951,71 +1031,64 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
 
                     for (let x = 0; x <= rowWidth; (x++, leftEdge[y].x++))
                     {
-                        if (leftEdge[y].x >= 0 && leftEdge[y].x < renderWidth)
+                        const px = leftEdge[y].x;
+                        const py = (y + polyYOffset);
+                        const idx = ((px + py * renderWidth) * 4);
+                        
+                        // Solid fill.
+                        if (ngon.material.texture == null)
                         {
-                            const px = leftEdge[y].x;
-                            const py = (y + polyYOffset);
-
-                            if (py >= 0 && py < renderHeight)
+                            pixelBuffer[idx + 0] = ngon.material.color.red;
+                            pixelBuffer[idx + 1] = ngon.material.color.green;
+                            pixelBuffer[idx + 2] = ngon.material.color.blue;
+                            pixelBuffer[idx + 3] = ngon.material.color.alpha;
+                        }
+                        // Textured fill.
+                        else
+                        {
+                            let u = 0, v = 0;
+                            switch (ngon.material.textureMapping)
                             {
-                                const idx = ((px + py * renderWidth) * 4);
-                                
-                                // Solid fill.
-                                if (ngon.material.texture == null)
+                                case "affine":
                                 {
-                                    pixelBuffer[idx + 0] = ngon.material.color.red;
-                                    pixelBuffer[idx + 1] = ngon.material.color.green;
-                                    pixelBuffer[idx + 2] = ngon.material.color.blue;
-                                    pixelBuffer[idx + 3] = ngon.material.color.alpha;
+                                    u = (Rngon.lerp(leftEdge[y].u, rightEdge[y].u, x/rowWidth) * (ngon.material.texture.width-0.001));
+                                    v = (Rngon.lerp(leftEdge[y].v, rightEdge[y].v, x/rowWidth) * (ngon.material.texture.height-0.001));
+
+                                    // Wrap with repetition.
+                                    /// FIXME: Doesn't wrap correctly.
+                                    u %= ngon.material.texture.width;
+                                    v %= ngon.material.texture.height;
+
+                                    break;
                                 }
-                                // Textured fill.
-                                else
+                                case "ortho":
                                 {
-                                    let u = 0, v = 0;
-                                    switch (ngon.material.textureMapping)
-                                    {
-                                        case "affine":
-                                        {
-                                            u = (Rngon.lerp(leftEdge[y].u, rightEdge[y].u, x/rowWidth) * (ngon.material.texture.width-0.001));
-                                            v = (Rngon.lerp(leftEdge[y].v, rightEdge[y].v, x/rowWidth) * (ngon.material.texture.height-0.001));
+                                    u = x * ((ngon.material.texture.width - 0.001) / rowWidth);
+                                    v = y * ((ngon.material.texture.height - 0.001) / ((polyHeight-1)||1));
 
-                                            // Wrap with repetition.
-                                            /// FIXME: Doesn't wrap correctly.
-                                            u %= ngon.material.texture.width;
-                                            v %= ngon.material.texture.height;
-
-                                            break;
-                                        }
-                                        case "ortho":
-                                        {
-                                            u = x * ((ngon.material.texture.width - 0.001) / rowWidth);
-                                            v = y * ((ngon.material.texture.height - 0.001) / ((polyHeight-1)||1));
-
-                                            break;
-                                        }
-                                        default: Rngon.throw("Unknown texture-mapping mode."); break;
-                                    }
-
-                                    const texelColorChannels = ngon.material.texture.rgba_channels_at(u, v);
-
-                                    // Alpha-testing. If the pixel is fully opaque, draw it; otherwise, skip it.
-                                    if (texelColorChannels[3] === 255)
-                                    {
-                                        pixelBuffer[idx + 0] = (texelColorChannels[0] * ngon.material.color.unitRange.red);
-                                        pixelBuffer[idx + 1] = (texelColorChannels[1] * ngon.material.color.unitRange.green);
-                                        pixelBuffer[idx + 2] = (texelColorChannels[2] * ngon.material.color.unitRange.blue);
-                                        pixelBuffer[idx + 3] = (texelColorChannels[3] * ngon.material.color.unitRange.alpha);
-                                    }
+                                    break;
                                 }
+                                default: Rngon.throw("Unknown texture-mapping mode."); break;
+                            }
 
-                                for (let b = 0; b < auxiliaryBuffers.length; b++)
-                                {
-                                    if (ngon.material.auxiliary[auxiliaryBuffers[b].property] !== null)
-                                    {
-                                        // Buffers are expected to consist of one element per pixel.
-                                        auxiliaryBuffers[b].buffer[idx/4] = ngon.material.auxiliary[auxiliaryBuffers[b].property];
-                                    }
-                                }
+                            const texelColorChannels = ngon.material.texture.rgba_channels_at(u, v);
+
+                            // Alpha-testing. If the pixel is fully opaque, draw it; otherwise, skip it.
+                            if (texelColorChannels[3] === 255)
+                            {
+                                pixelBuffer[idx + 0] = (texelColorChannels[0] * ngon.material.color.unitRange.red);
+                                pixelBuffer[idx + 1] = (texelColorChannels[1] * ngon.material.color.unitRange.green);
+                                pixelBuffer[idx + 2] = (texelColorChannels[2] * ngon.material.color.unitRange.blue);
+                                pixelBuffer[idx + 3] = (texelColorChannels[3] * ngon.material.color.unitRange.alpha);
+                            }
+                        }
+
+                        for (let b = 0; b < auxiliaryBuffers.length; b++)
+                        {
+                            if (ngon.material.auxiliary[auxiliaryBuffers[b].property] !== null)
+                            {
+                                // Buffers are expected to consist of one element per pixel.
+                                auxiliaryBuffers[b].buffer[idx/4] = ngon.material.auxiliary[auxiliaryBuffers[b].property];
                             }
                         }
                     }
@@ -1210,9 +1283,12 @@ Rngon.render.defaultOptions =
 
 // Returns a copy of the given list of ngons such that each ngon in the copy has been
 // transformed into screen-space.
-Rngon.ngon_transformer = function(ngons = [], screenSpaceMatrix = [], nearPlaneDistance)
+Rngon.ngon_transformer = function(ngons = [], renderWidth, renderHeight, screenSpaceMatrix = [], nearPlaneDistance)
 {
-    return ngons.map(ngon=>ngon.transformed(screenSpaceMatrix).clipped_to_near_plane(nearPlaneDistance).perspective_divided());
+    return ngons.map(ngon=>ngon.transformed(screenSpaceMatrix)
+                               .clipped_to_near_plane(nearPlaneDistance)
+                               .perspective_divided()
+                               .clipped_to_viewport(renderWidth, renderHeight)).filter(ngon=>ngon.vertices.length);
 }
 /*
  * Tarpeeksi Hyvae Soft 2019 /
@@ -1384,7 +1460,7 @@ Rngon.screen = function(canvasElementId = "",              // The DOM id of the 
             const clipSpaceMatrix = Rngon.matrix44.matrices_multiplied(perspectiveMatrix, objectSpaceMatrix);
             const screenSpaceMatrix = Rngon.matrix44.matrices_multiplied(screenMatrix, clipSpaceMatrix);
 
-            return ngon_transform_f(ngons, screenSpaceMatrix, nearPlaneDistance);
+            return ngon_transform_f(ngons, screenWidth, screenHeight, screenSpaceMatrix, nearPlaneDistance);
         },
 
         // Draw the given ngons onto this render surface.

@@ -8,7 +8,10 @@
 
 // Returns a copy of the given list of ngons such that each ngon in the copy has been
 // transformed into screen-space.
-Rngon.ngon_transformer = function(ngons = [], screenSpaceMatrix = [], nearPlaneDistance)
+Rngon.ngon_transformer = function(ngons = [], renderWidth, renderHeight, screenSpaceMatrix = [], nearPlaneDistance)
 {
-    return ngons.map(ngon=>ngon.transformed(screenSpaceMatrix).clipped_to_near_plane(nearPlaneDistance).perspective_divided());
+    return ngons.map(ngon=>ngon.transformed(screenSpaceMatrix)
+                               .clipped_to_near_plane(nearPlaneDistance)
+                               .perspective_divided()
+                               .clipped_to_viewport(renderWidth, renderHeight)).filter(ngon=>ngon.vertices.length);
 }

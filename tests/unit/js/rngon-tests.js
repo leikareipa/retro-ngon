@@ -200,8 +200,8 @@ const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
     {
         // Create a test canvas we can render into.
         const testCanvasId = "test-canvas";
-        const testCanvasWidth = 10;
-        const testCanvasHeight = 10;
+        const testCanvasWidth = 100;
+        const testCanvasHeight = 100;
         const canvas = document.createElement("canvas");
         canvas.setAttribute("id", testCanvasId);
         canvas.style.width = (testCanvasWidth + "px");
