@@ -34,18 +34,17 @@ const rngon_perftest1 = function(title = "", polygon, numClones, maxNumClones, c
             return resolve_promise();
         }
 
-        const meshes = Array(numClones).fill(0)
-                       .map((e, i)=>Rngon.mesh([polygon]));
+        const mesh = Rngon.mesh(Array(numClones).fill(0).map(elem=>polygon));
 
         for (let warmup = 0; warmup < 10; warmup++)
         {
-            Rngon.render(html.canvasElement.getAttribute("id"), meshes,
-                         {
-                             cameraPosition: Rngon.translation_vector(0, 0, -9),
-                             cameraDirection: Rngon.rotation_vector(0, 0, 0),
-                             scale: 1,
-                             hibernateWhenNotOnScreen:false
-                         });
+            Rngon.render(html.canvasElement.getAttribute("id"), [mesh],
+            {
+                cameraPosition: Rngon.translation_vector(0, 0, -9),
+                cameraDirection: Rngon.rotation_vector(0, 0, 0),
+                scale: 1,
+                hibernateWhenNotOnScreen:false
+            });
         }
 
         // Print out the time it took to render the polygons, then run the test again
@@ -71,13 +70,13 @@ const rngon_perftest1 = function(title = "", polygon, numClones, maxNumClones, c
         const startTime = performance.now();
         (function render_loop(frameCount = 1)
         {
-            Rngon.render(html.canvasElement.getAttribute("id"), meshes,
-                         {
-                            cameraPosition: Rngon.translation_vector(0, 0, -9),
-                            cameraDirection: Rngon.rotation_vector(0, 0, frameCount),
-                            scale: 1,
-                            hibernateWhenNotOnScreen:false
-                        });
+            Rngon.render(html.canvasElement.getAttribute("id"), [mesh],
+            {
+                cameraPosition: Rngon.translation_vector(0, 0, -9),
+                cameraDirection: Rngon.rotation_vector(0, 0, frameCount),
+                scale: 1,
+                hibernateWhenNotOnScreen:false
+            });
 
             if (frameCount >= numFrames) done();
             else window.requestAnimationFrame(()=>render_loop(frameCount + 1));
