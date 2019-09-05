@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: live (05 September 2019 16:52:38 UTC)
+// VERSION: live (05 September 2019 19:14:07 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -302,7 +302,7 @@ Rngon.color_rgba = function(red = 55, green = 55, blue = 55, alpha = 255)
 
 "use strict";
 
-// NOTE: Expects to remain immutable.
+// NOTE: The returned object is not immutable.
 Rngon.vector3 = function(x = 0, y = 0, z = 0)
 {
     Rngon.assert && (typeof x === "number" && typeof y === "number" && typeof z === "number")
@@ -1075,15 +1075,15 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
                                 default: Rngon.throw("Unknown texture-mapping mode."); break;
                             }
 
-                            const texelColorChannels = ngon.material.texture.rgba_channels_at(u, v);
+                            const texelIdx = (((~~u) + (~~v) * ngon.material.texture.width) * 4);
 
                             // Alpha-testing. If the pixel is fully opaque, draw it; otherwise, skip it.
-                            if (texelColorChannels[3] === 255)
+                            if (ngon.material.texture.pixels[texelIdx+3] === 255)
                             {
-                                pixelBuffer[idx + 0] = (texelColorChannels[0] * ngon.material.color.unitRange.red);
-                                pixelBuffer[idx + 1] = (texelColorChannels[1] * ngon.material.color.unitRange.green);
-                                pixelBuffer[idx + 2] = (texelColorChannels[2] * ngon.material.color.unitRange.blue);
-                                pixelBuffer[idx + 3] = (texelColorChannels[3] * ngon.material.color.unitRange.alpha);
+                                pixelBuffer[idx + 0] = (ngon.material.texture.pixels[texelIdx+0] * ngon.material.color.unitRange.red);
+                                pixelBuffer[idx + 1] = (ngon.material.texture.pixels[texelIdx+1] * ngon.material.color.unitRange.green);
+                                pixelBuffer[idx + 2] = (ngon.material.texture.pixels[texelIdx+2] * ngon.material.color.unitRange.blue);
+                                pixelBuffer[idx + 3] = (ngon.material.texture.pixels[texelIdx+3] * ngon.material.color.unitRange.alpha);
                             }
                         }
 
@@ -1379,26 +1379,9 @@ Rngon.texture_rgba = function(data = {width: 0, height: 0, pixels: []})
     {
         width: data.width,
         height: data.height,
-        
-        // Returns an unfrozen 4-element array containing copies of the texture's RGBA values
-        // at the given x,y texel coordinates.
-        rgba_channels_at: function(x, y)
-        {
-            x = Math.floor(x);
-            y = Math.floor(y);
-
-            const idx = ((x + y * data.width) * numColorChannels);
-            Rngon.assert && ((idx + numColorChannels) <= data.pixels.length)
-                         || Rngon.throw("Attempting to access a texture pixel out of bounds (at "+x+","+y+").");
-
-            // Note: For performance reasons, the array isn't returned frozen. You can try freezing it
-            // and running a perf test with textured rendering to see the effect.
-            return [data.pixels[idx + 0],
-                    data.pixels[idx + 1],
-                    data.pixels[idx + 2],
-                    data.pixels[idx + 3]];
-        }
+        pixels: data.pixels,
     });
+    
     return publicInterface;
 }
 

@@ -171,15 +171,15 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
                                 default: Rngon.throw("Unknown texture-mapping mode."); break;
                             }
 
-                            const texelColorChannels = ngon.material.texture.rgba_channels_at(u, v);
+                            const texelIdx = (((~~u) + (~~v) * ngon.material.texture.width) * 4);
 
                             // Alpha-testing. If the pixel is fully opaque, draw it; otherwise, skip it.
-                            if (texelColorChannels[3] === 255)
+                            if (ngon.material.texture.pixels[texelIdx+3] === 255)
                             {
-                                pixelBuffer[idx + 0] = (texelColorChannels[0] * ngon.material.color.unitRange.red);
-                                pixelBuffer[idx + 1] = (texelColorChannels[1] * ngon.material.color.unitRange.green);
-                                pixelBuffer[idx + 2] = (texelColorChannels[2] * ngon.material.color.unitRange.blue);
-                                pixelBuffer[idx + 3] = (texelColorChannels[3] * ngon.material.color.unitRange.alpha);
+                                pixelBuffer[idx + 0] = (ngon.material.texture.pixels[texelIdx+0] * ngon.material.color.unitRange.red);
+                                pixelBuffer[idx + 1] = (ngon.material.texture.pixels[texelIdx+1] * ngon.material.color.unitRange.green);
+                                pixelBuffer[idx + 2] = (ngon.material.texture.pixels[texelIdx+2] * ngon.material.color.unitRange.blue);
+                                pixelBuffer[idx + 3] = (ngon.material.texture.pixels[texelIdx+3] * ngon.material.color.unitRange.alpha);
                             }
                         }
 

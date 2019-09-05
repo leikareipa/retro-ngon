@@ -177,23 +177,21 @@ const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
 
         expect_true([()=>(texture.width === 1),
                      ()=>(texture.height === 1),
-                     ()=>((texture.rgba_channels_at(0, 0) instanceof Array)),
-                     ()=>(texture.rgba_channels_at(0, 0).length === 4),
-                     ()=>(texture.rgba_channels_at(0, 0)[0] === 255),
-                     ()=>(texture.rgba_channels_at(0, 0)[1] === 22),
-                     ()=>(texture.rgba_channels_at(0, 0)[2] === 1),
-                     ()=>(texture.rgba_channels_at(0, 0)[3] === 255),
-                     ()=>(textureSeethrough.rgba_channels_at(0, 0)[3] === 1)]);
+                     ()=>((texture.pixels instanceof Array)),
+                     ()=>(texture.pixels.length === 4),
+                     ()=>(texture.pixels[0] === 255),
+                     ()=>(texture.pixels[1] === 22),
+                     ()=>(texture.pixels[2] === 1),
+                     ()=>(texture.pixels[3] === 255),
+                     ()=>(textureSeethrough.pixels[3] === 1)]);
 
         // Immutability.
         expect_fail([()=>{texture.width = 0},
                      ()=>{texture.height = 0},
-                     ()=>{texture.pixels = 0},
-                     ()=>{texture.pixels[0] = 0}]);
+                     ()=>{texture.pixels = 0}]);
 
         // Invalid values.
-        expect_fail([()=>{Rngon.texture_rgba({width: 1, height: 1, encoding: "none", pixels: [255, 0, 0, 0]}).rgba_channels_at(1, 0)}, // Access out of bounds.
-                     ()=>{Rngon.texture_rgba({width: 1, height: 1, encoding: "none", pixels: [255, 0, 0, 0, 255, 0, 0, 0]})}, // Too many pixels for given resolution.
+        expect_fail([()=>{Rngon.texture_rgba({width: 1, height: 1, encoding: "none", pixels: [255, 0, 0, 0, 255, 0, 0, 0]})}, // Too many pixels for given resolution.
                      ()=>{Rngon.texture_rgba({width: 2, height: 1, encoding: "none", pixels: [255, 0, 0, 0]})}, // Not enough pixels for given resolution.
                      ()=>{Rngon.texture_rgba({width: 1, height: 1, encoding: "none", pixels: [255, 22, 1]})}, // Missing pixel alpha channel.
                      ()=>{Rngon.texture_rgba({width: -1, height: 1, encoding: "none", pixels: [255, 22, 1, 0]})}, // Negative height.

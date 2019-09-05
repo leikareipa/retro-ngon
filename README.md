@@ -755,8 +755,7 @@ A texture whose pixel elements are instances of **color_rgba**.
 {
     width: data.width,
     height: data.height,
-    
-    rgba_channels_at: function,
+    pixels: data.pixels,
 }
 ```
 

@@ -68,26 +68,9 @@ Rngon.texture_rgba = function(data = {width: 0, height: 0, pixels: []})
     {
         width: data.width,
         height: data.height,
-        
-        // Returns an unfrozen 4-element array containing copies of the texture's RGBA values
-        // at the given x,y texel coordinates.
-        rgba_channels_at: function(x, y)
-        {
-            x = Math.floor(x);
-            y = Math.floor(y);
-
-            const idx = ((x + y * data.width) * numColorChannels);
-            Rngon.assert && ((idx + numColorChannels) <= data.pixels.length)
-                         || Rngon.throw("Attempting to access a texture pixel out of bounds (at "+x+","+y+").");
-
-            // Note: For performance reasons, the array isn't returned frozen. You can try freezing it
-            // and running a perf test with textured rendering to see the effect.
-            return [data.pixels[idx + 0],
-                    data.pixels[idx + 1],
-                    data.pixels[idx + 2],
-                    data.pixels[idx + 3]];
-        }
+        pixels: data.pixels,
     });
+    
     return publicInterface;
 }
 
