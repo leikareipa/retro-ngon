@@ -40,15 +40,25 @@
             const texture = Rngon.texture_rgba({width:32, height:32,
                                                 pixels: Array(32*32*4).fill(0).map((pixel, idx)=>((idx+1)%4===0? 255 : idx%64))});
 
+            const bunnyMesh = Rngon.mesh(stanford_bunny_res3(texture, true, false),
+            {
+                translation: Rngon.translation_vector(0, -12, 40),
+                rotation: Rngon.rotation_vector(5, 0, 0),
+                scaling: Rngon.scaling_vector(1, 1, 1)
+            });
+
             (function render_loop(frameCount = 1, frameLimit = 200, startTime = performance.now())
             {
-                Rngon.render("render-canvas", bunnyMesh(frameCount),
-                             {
-                                 cameraPosition: Rngon.translation_vector(0, 0, 0),
-                                 cameraDirection: Rngon.rotation_vector(0, 0, 0),
-                                 scale: 0.25,
-                                 hibernateWhenNotOnScreen:false
-                             });
+                const rotationSpeed = 0.5;
+                bunnyMesh.rotation.y = Rngon.trig.deg(rotationSpeed * frameCount);
+
+                Rngon.render("render-canvas", [bunnyMesh],
+                {
+                    cameraPosition: Rngon.translation_vector(0, 0, 0),
+                    cameraDirection: Rngon.rotation_vector(0, 0, 0),
+                    scale: 0.25,
+                    hibernateWhenNotOnScreen:false
+                });
 
                 if (frameCount >= frameLimit) done(startTime, frameCount);
                 else window.requestAnimationFrame(()=>render_loop(frameCount + 1, frameLimit, startTime));
@@ -58,17 +68,6 @@
             {
                 window.alert("Done! That was about " +
                              Math.floor((1000 / (performance.now() - startTime)) * frameCount) + " FPS.");
-            };
-
-            function bunnyMesh(frameCount)
-            {
-                const rotationSpeed = 0.5;
-                return [Rngon.mesh(stanford_bunny_res3(texture, true, false),
-                                   {
-                                       translation: Rngon.translation_vector(0, -12, 40),
-                                       rotation: Rngon.rotation_vector(5, (rotationSpeed * frameCount), 0),
-                                       scaling: Rngon.scaling_vector(1, 1, 1)
-                                   })];
             };
         </script>
     </body>
