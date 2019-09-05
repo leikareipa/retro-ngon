@@ -6,12 +6,31 @@
 
 "use strict";
 
-// Returns a copy of the given list of ngons such that each ngon in the copy has been
-// transformed into screen-space.
+// Transforms the given n-gons into screen space for rendering.
 Rngon.ngon_transformer = function(ngons = [], renderWidth, renderHeight, screenSpaceMatrix = [], nearPlaneDistance)
 {
-    return ngons.map(ngon=>ngon.transformed(screenSpaceMatrix)
-                               .clipped_to_near_plane(nearPlaneDistance)
-                               .perspective_divided()
-                               .clipped_to_viewport(renderWidth, renderHeight)).filter(ngon=>ngon.vertices.length);
+    ngons.forEach(ngon=>
+    {
+        ngon.transform(screenSpaceMatrix);
+        ngon.clip_to_near_plane(nearPlaneDistance);
+        ngon.perspective_divide();
+        ngon.clip_to_viewport(renderWidth, renderHeight);
+    });
+
+    // Remove n-gons that have no vertices (e.g. due to all of them having been all clipped away).
+    {
+        let cur = 0;
+        
+        for (let i = 0; i < ngons.length; i++)
+        {
+            if (ngons[i].vertices.length)
+            {
+                ngons[cur++] = ngons[i];
+            }
+        }
+
+        ngons.length = cur;
+    }
+
+    return;
 }

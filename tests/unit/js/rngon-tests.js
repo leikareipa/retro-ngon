@@ -68,10 +68,11 @@ const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
                          ()=>(vertex.y === 2.2),
                          ()=>(vertex.z === 3.3)]);
 
-            // Immutability.
-            expect_fail([()=>{vertex.x = 0},
-                         ()=>{vertex.y = 0},
-                         ()=>{vertex.z = 0}]);
+            // Mutability.
+            vertex.x = vertex.y = vertex.z = 4;
+            expect_true([()=>(vertex.x === 4),
+                         ()=>(vertex.y === 4),
+                         ()=>(vertex.z === 4)]);
         }
 
         // Vectors.
@@ -103,13 +104,11 @@ const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
                          ()=>(ngon.material.hasSolidFill === true),
                          ()=>(ngon.material.hasWireframe === false)]);
 
-            // Immutability.
-            expect_fail([()=>{ngon.vertices = 0},
-                         ()=>{ngon.vertices[0] = 0},
-                         ()=>{ngon.material.texture = 0},
-                         ()=>{ngon.material.color = 0},
-                         ()=>{ngon.material.hasSolidFill = 0},
-                         ()=>{ngon.material.hasWireframe = 0}]);
+            // Mutability.
+            ngon.material.texture = 123456;
+            ngon.vertices[0].x = 456789;
+            expect_true([()=>(ngon.vertices[0].x === 456789),
+                         ()=>(ngon.material.texture === 123456)]);
         }
 
         // Meshes.

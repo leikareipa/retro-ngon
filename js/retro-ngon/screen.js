@@ -52,13 +52,13 @@ Rngon.screen = function(canvasElementId = "",              // The DOM id of the 
         // Returns a copy of the ngons transformed into screen-space for this render surface.
         // Takes as input the ngons to be transformed, an object matrix which contains the object's
         // transforms, and a camera matrix, which contains the camera's translation and rotation.
-        transformed_ngons: function(ngons = [], objectMatrix = [], cameraMatrix = [], nearPlaneDistance)
+        transform_ngons: function(ngons = [], objectMatrix = [], cameraMatrix = [], nearPlaneDistance)
         {
             const objectSpaceMatrix = Rngon.matrix44.matrices_multiplied(cameraMatrix, objectMatrix);
             const clipSpaceMatrix = Rngon.matrix44.matrices_multiplied(perspectiveMatrix, objectSpaceMatrix);
             const screenSpaceMatrix = Rngon.matrix44.matrices_multiplied(screenMatrix, clipSpaceMatrix);
 
-            return ngon_transform_f(ngons, screenWidth, screenHeight, screenSpaceMatrix, nearPlaneDistance);
+            ngon_transform_f(ngons, screenWidth, screenHeight, screenSpaceMatrix, nearPlaneDistance);
         },
 
         // Draw the given ngons onto this render surface.

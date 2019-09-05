@@ -76,9 +76,12 @@ Rngon.render = function(canvasElementId,
                                                                                              -options.cameraPosition.y,
                                                                                              -options.cameraPosition.z));
 
-            meshes.forEach((mesh)=>
+            meshes.forEach(mesh=>
             {
-                transformedNgons.push(...renderSurface.transformed_ngons(mesh.ngons, mesh.objectSpaceMatrix, cameraMatrix, options.nearPlaneDistance));
+                const meshVerts = mesh.ngons.reduce((array, ngon)=>{array.push(ngon.clone()); return array;}, []);
+                renderSurface.transform_ngons(meshVerts, mesh.objectSpaceMatrix, cameraMatrix, options.nearPlaneDistance);
+
+                transformedNgons.push(...meshVerts);
             });
 
             // Apply depth sorting to the transformed ngons.
@@ -91,16 +94,9 @@ Rngon.render = function(canvasElementId,
                 {
                     transformedNgons.sort((ngonA, ngonB)=>
                     {
-                        let a = 0;
-                        let b = 0;
-                        ngonA.vertices.forEach(v=>{a += v.z});
-                        ngonB.vertices.forEach(v=>{b += v.z});
-        
-                        // Ngons aren't guaranteed to have the same number of vertices each,
-                        // so factor out the vertex count.
-                        a /= ngonA.vertices.length;
-                        b /= ngonB.vertices.length;
-                        
+                        const a = (ngonA.vertices.reduce((acc, v)=>(acc + v.z), 0) / ngonA.vertices.length);
+                        const b = (ngonB.vertices.reduce((acc, v)=>(acc + v.z), 0) / ngonB.vertices.length);
+
                         return ((a === b)? 0 : ((a < b)? 1 : -1));
                     });
 

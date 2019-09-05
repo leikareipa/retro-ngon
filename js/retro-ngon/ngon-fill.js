@@ -54,7 +54,7 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
         // entries following successively lower in y. In other words, by tracing the vertices
         // first through 'left' and then 'right', you end up with an anti-clockwise loop around
         // the ngon.
-        const verts = ngon.vertices.slice();
+        const verts = ngon.vertices;
         const leftVerts = [];
         const rightVerts = [];
         {
