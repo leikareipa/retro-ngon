@@ -79,7 +79,7 @@ Rngon.render = function(canvasElementId,
             meshes.forEach(mesh=>
             {
                 const meshVerts = mesh.ngons.reduce((array, ngon)=>{array.push(ngon.clone()); return array;}, []);
-                renderSurface.transform_ngons(meshVerts, mesh.objectSpaceMatrix, cameraMatrix, options.nearPlaneDistance);
+                renderSurface.transform_ngons(meshVerts, mesh.objectSpaceMatrix(), cameraMatrix, options.nearPlaneDistance);
 
                 transformedNgons.push(...meshVerts);
             });

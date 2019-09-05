@@ -8,20 +8,20 @@
 
 "use strict";
 
-// NOTE: Expects to remain immutable.
+// NOTE: The returned object is not immutable.
 Rngon.vector3 = function(x = 0, y = 0, z = 0)
 {
     Rngon.assert && (typeof x === "number" && typeof y === "number" && typeof z === "number")
                  || Rngon.throw("Expected numbers as parameters to the vector3 factory.");
 
-    const publicInterface = Object.freeze(
+    const returnObject =
     {
         x,
         y,
         z,
-    });
+    };
 
-    return publicInterface;
+    return returnObject;
 }
 
 // Convenience aliases for vector3.
@@ -308,33 +308,29 @@ Rngon.mesh = function(ngons = [Rngon.ngon()], transform = {})
         ...transform
     };
 
-    // A matrix by which the ngons of this mesh should be transformed to get the ngons into
-    // the mesh's object space.
-    const objectSpaceMatrix = (()=>
-    {
-        const translationMatrix = Rngon.matrix44.translate(transform.translation.x,
-                                                           transform.translation.y,
-                                                           transform.translation.z);
-        const rotationMatrix = Rngon.matrix44.rotate(transform.rotation.x,
-                                                     transform.rotation.y,
-                                                     transform.rotation.z);
-        const scalingMatrix = Rngon.matrix44.scale(transform.scaling.x,
-                                                   transform.scaling.y,
-                                                   transform.scaling.z);
-
-        return Rngon.matrix44.matrices_multiplied(Rngon.matrix44.matrices_multiplied(translationMatrix, rotationMatrix), scalingMatrix);
-    })();
-
-    ngons = Object.freeze(ngons);
-
-    const publicInterface = Object.freeze(
+    const publicInterface =
     {
         ngons,
         rotation: transform.rotation,
         translation: transform.translation,
         scale: transform.scaling,
-        objectSpaceMatrix,
-    });
+        objectSpaceMatrix: function()
+        {
+            const translationMatrix = Rngon.matrix44.translate(this.translation.x,
+                                                               this.translation.y,
+                                                               this.translation.z);
+
+            const rotationMatrix = Rngon.matrix44.rotate(this.rotation.x,
+                                                         this.rotation.y,
+                                                         this.rotation.z);
+
+            const scalingMatrix = Rngon.matrix44.scale(this.scale.x,
+                                                       this.scale.y,
+                                                       this.scale.z);
+
+            return Rngon.matrix44.matrices_multiplied(Rngon.matrix44.matrices_multiplied(translationMatrix, rotationMatrix), scalingMatrix);
+        },
+    };
     
     return publicInterface;
 }

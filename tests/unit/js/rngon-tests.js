@@ -83,10 +83,11 @@ const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
                          ()=>(vector.y === 2.2),
                          ()=>(vector.z === 3.3)]);
 
-            // Immutability.
-            expect_fail([()=>{vector.x = 0},
-                         ()=>{vector.y = 0},
-                         ()=>{vector.z = 0}]);
+            // Mutability.
+            vector.x = vector.y = vector.z = 4;
+            expect_true([()=>(vector.x === 4),
+                         ()=>(vector.y === 4),
+                         ()=>(vector.z === 4)]);
         }
 
         // N-gons.
@@ -115,7 +116,12 @@ const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
         {
             const vertex = Rngon.vertex(1.1, 2.2, 3.3);
             const ngon = Rngon.ngon([vertex],
-                                    {color: Rngon.color_rgba(0, 111, 222), texture: null, hasSolidFill: true, hasWireframe: false});
+                                    {
+                                        color: Rngon.color_rgba(0, 111, 222),
+                                        texture: null,
+                                        hasSolidFill: true,
+                                        hasWireframe: false,
+                                    });
             const mesh = Rngon.mesh([ngon],
                                     {
                                         translation: Rngon.translation_vector(1, 2, 3),
@@ -128,13 +134,13 @@ const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
                          ()=>((mesh.rotation.x === Rngon.trig.deg(4) && mesh.rotation.y === Rngon.trig.deg(5)) && mesh.rotation.z === Rngon.trig.deg(6)),
                          ()=>((mesh.scale.x === 7 && mesh.scale.y === 8 && mesh.scale.z === 9))]);
 
-            // Immutability.
-            expect_fail([()=>{mesh.ngons = 0},
-                         ()=>{mesh.ngons[0] = 0},
-                         ()=>{mesh.rotation = 0},
-                         ()=>{mesh.translation = 0},
-                         ()=>{mesh.objectSpaceMatrix = 0},
-                         ()=>{mesh.objectSpaceMatrix[0] = 0}]);
+            // Mutability.
+            mesh.rotation.x = 789456;
+            mesh.translation.y = 456;
+            mesh.scale.z = 123;
+            expect_true([()=>(mesh.rotation.x === 789456),
+                         ()=>(mesh.translation.y === 456),
+                         ()=>(mesh.scale.z === 123)]);
         }
     });
 
