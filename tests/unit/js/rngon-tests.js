@@ -178,12 +178,12 @@ const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
         expect_true([()=>(texture.width === 1),
                      ()=>(texture.height === 1),
                      ()=>((texture.pixels instanceof Array)),
-                     ()=>(texture.pixels.length === 4),
-                     ()=>(texture.pixels[0] === 255),
-                     ()=>(texture.pixels[1] === 22),
-                     ()=>(texture.pixels[2] === 1),
-                     ()=>(texture.pixels[3] === 255),
-                     ()=>(textureSeethrough.pixels[3] === 1)]);
+                     ()=>(texture.pixels.length === 1),
+                     ()=>(texture.pixels[0].red === 255),
+                     ()=>(texture.pixels[0].green === 22),
+                     ()=>(texture.pixels[0].blue === 1),
+                     ()=>(texture.pixels[0].alpha === 255),
+                     ()=>(textureSeethrough.pixels[0].alpha === 1)]);
 
         // Immutability.
         expect_fail([()=>{texture.width = 0},

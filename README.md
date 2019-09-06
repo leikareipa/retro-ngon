@@ -729,7 +729,7 @@ RGB color with alpha. The alpha channel is either fully transparent or fully opa
 ```
 
 #### texture_rgba([data])
-A texture whose pixel elements are instances of **color_rgba**.
+A texture whose pixels are RGB with alpha.
 
 *Parameters:*
 
@@ -755,7 +755,10 @@ A texture whose pixel elements are instances of **color_rgba**.
 {
     width: data.width,
     height: data.height,
-    pixels: data.pixels,
+
+    // The pixels from data.pixels converted into an array of
+    // elements of the form {red, green, blue, alpha}.
+    pixels: pixelArray,
 }
 ```
 

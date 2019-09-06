@@ -63,12 +63,22 @@ Rngon.texture_rgba = function(data = {width: 0, height: 0, pixels: []})
 
     Rngon.assert && (data.pixels.length === (data.width * data.height * numColorChannels))
                  || Rngon.throw("The texture's pixel array size doesn't match its width and height.");
+
+    // Convert the raw pixel data into objects of the form {red, green, blue, alpha}.
+    const pixelArray = [];
+    for (let i = 0; i < data.pixels.length; i += numColorChannels)
+    {
+        pixelArray.push({red:   data.pixels[i+0],
+                         green: data.pixels[i+1],
+                         blue:  data.pixels[i+2],
+                         alpha: data.pixels[i+3]});
+    }
         
     const publicInterface = Object.freeze(
     {
         width: data.width,
         height: data.height,
-        pixels: data.pixels,
+        pixels: pixelArray,
     });
     
     return publicInterface;

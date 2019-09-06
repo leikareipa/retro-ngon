@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: live (05 September 2019 19:14:07 UTC)
+// VERSION: live (06 September 2019 05:32:54 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -1075,15 +1075,15 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
                                 default: Rngon.throw("Unknown texture-mapping mode."); break;
                             }
 
-                            const texelIdx = (((~~u) + (~~v) * ngon.material.texture.width) * 4);
+                            const texelIdx = ((~~u) + (~~v) * ngon.material.texture.width);
 
-                            // Alpha-testing. If the pixel is fully opaque, draw it; otherwise, skip it.
-                            if (ngon.material.texture.pixels[texelIdx+3] === 255)
+                            // Alpha testing. If the pixel is fully opaque, draw it; otherwise, skip it.
+                            if (ngon.material.texture.pixels[texelIdx].alpha === 255)
                             {
-                                pixelBuffer[idx + 0] = (ngon.material.texture.pixels[texelIdx+0] * ngon.material.color.unitRange.red);
-                                pixelBuffer[idx + 1] = (ngon.material.texture.pixels[texelIdx+1] * ngon.material.color.unitRange.green);
-                                pixelBuffer[idx + 2] = (ngon.material.texture.pixels[texelIdx+2] * ngon.material.color.unitRange.blue);
-                                pixelBuffer[idx + 3] = (ngon.material.texture.pixels[texelIdx+3] * ngon.material.color.unitRange.alpha);
+                                pixelBuffer[idx + 0] = (ngon.material.texture.pixels[texelIdx].red   * ngon.material.color.unitRange.red);
+                                pixelBuffer[idx + 1] = (ngon.material.texture.pixels[texelIdx].green * ngon.material.color.unitRange.green);
+                                pixelBuffer[idx + 2] = (ngon.material.texture.pixels[texelIdx].blue  * ngon.material.color.unitRange.blue);
+                                pixelBuffer[idx + 3] = (ngon.material.texture.pixels[texelIdx].alpha * ngon.material.color.unitRange.alpha);
                             }
                         }
 
@@ -1374,12 +1374,22 @@ Rngon.texture_rgba = function(data = {width: 0, height: 0, pixels: []})
 
     Rngon.assert && (data.pixels.length === (data.width * data.height * numColorChannels))
                  || Rngon.throw("The texture's pixel array size doesn't match its width and height.");
+
+    // Convert the raw pixel data into objects of the form {red, green, blue, alpha}.
+    const pixelArray = [];
+    for (let i = 0; i < data.pixels.length; i += numColorChannels)
+    {
+        pixelArray.push({red:   data.pixels[i+0],
+                         green: data.pixels[i+1],
+                         blue:  data.pixels[i+2],
+                         alpha: data.pixels[i+3]});
+    }
         
     const publicInterface = Object.freeze(
     {
         width: data.width,
         height: data.height,
-        pixels: data.pixels,
+        pixels: pixelArray,
     });
     
     return publicInterface;
