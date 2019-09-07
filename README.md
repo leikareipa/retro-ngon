@@ -3,14 +3,16 @@ A minimalist 3d software renderer that draws n-sided polygons (as well as lines 
 
 You can view a live sample of the renderer's output at [http://tarpeeksihyvaesoft.com/s/retro-ngon/samples/simple2.html](http://tarpeeksihyvaesoft.com/s/retro-ngon/samples/simple2.html).
 
+![A textured cube](/images/painting-cube.png)
+
 ### Features
 - Easy to use
 - Genuine retro aesthetics
 - Natively renders convex n-sided polygons
-- Vanilla JavaScript, no dependencies
-- Data immutability
+- Written in vanilla JavaScript without dependencies
 
-![A textured cube](/images/painting-cube.png)
+### Projects using the retro n-gon renderer
+- [RallySportED-js](https://github.com/leikareipa/rallysported-js/), a contemporary asset editor for the DOS game Rally-Sport
 
 ### Suggested use cases
 The retro n-gon renderer is not intended as a general-purpose software 3d renderer. It omits several modern features &ndash; more of which elsewhere in this document &ndash; in favor of a legit retro look and feel. I've made a number of other open-source software renderers, some of which might fit your needs or interests better:
