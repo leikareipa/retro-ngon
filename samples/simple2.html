@@ -33,10 +33,21 @@
                 border: none;
                 border-radius: 0px;
             }
+
+            #fps-display
+            {
+                position: absolute;
+                top: 0;
+                right: 0;
+                background-color: black;
+                color: white;
+                padding: 5px;
+            }
         </style>
     </head>
     <body>
         <canvas id="canvas" class="rngon-canvas rngon-pixelated-upscale"></canvas>
+        <div id="fps-display"></div>
         
         <script src="../distributable/rngon.cat.js"></script>
         <script src="./assets/simple2/textured-cube.rngon-model.js"></script>
@@ -68,12 +79,17 @@
                 const cameraDirection = Rngon.rotation_vector(0, 0, 0);
                 const cameraPosition = Rngon.translation_vector(0, 0, -170);
 
-                Rngon.render("canvas", [cubeRotated(frameCount)],
+                const renderInfo = Rngon.render("canvas", [cubeRotated(frameCount)],
                 {
                     cameraDirection,
                     cameraPosition,
                     scale: rendererScale,
                 });
+
+                if (frameCount % 60 === 0)
+                {
+                    document.getElementById("fps-display").innerHTML = `FPS: ${Math.floor(1000 / (renderInfo.performance.timingMs.total || 1))}`;
+                }
 
                 window.requestAnimationFrame(()=>render_loop(frameCount + 1));
             })();
