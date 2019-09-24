@@ -173,8 +173,9 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
 
                             const texelIdx = ((~~u) + (~~v) * ngon.material.texture.width);
 
-                            // Alpha testing. If the pixel is fully opaque, draw it; otherwise, skip it.
-                            if (ngon.material.texture.pixels[texelIdx].alpha === 255)
+                            // Alpha-testing. If the pixel is fully opaque, draw it; otherwise, skip it.
+                            if (ngon.material.texture.pixels[texelIdx] &&
+                                (ngon.material.texture.pixels[texelIdx].alpha === 255))
                             {
                                 pixelBuffer[idx + 0] = (ngon.material.texture.pixels[texelIdx].red   * ngon.material.color.unitRange.red);
                                 pixelBuffer[idx + 1] = (ngon.material.texture.pixels[texelIdx].green * ngon.material.color.unitRange.green);
