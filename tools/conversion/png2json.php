@@ -7,24 +7,37 @@
  * Base64-encoded 16-bit (RGBA 5551) values. Is not heavily tested as of yet.
  * 
  * Command-line options:
- *  -i <string> = name and path of the input PNG file.
- *  -o <string> = name and path of the output JSON file.
- *  -r = save pixel data in raw RGBA-8888 format, rather than in 16-bit packed RGBA-5551.
+ *  -i <string>    Name and path of the input PNG file.
+ *  -o <string>    Name and path of the output JSON file.
+ *  -r             Save pixel data in raw RGBA-8888 format, rather than in 16-bit
+ *                 packed RGBA-5551.
+ *  -t <r,g,b>     A color to be output as transparent. For instance, purple pixels
+ *                 in the image can be made transparent with "-t 255,0,255".
+ *                             
  */
 
-$commandLine = getopt("i:o:r");
+$commandLine = getopt("i:o:t:r");
 {
     $save_raw_pixel_data = isset($commandLine["r"]);
 
     if (!isset($commandLine["i"]))
     {
         printf("ERROR: No input file specified.\n");
-        die;
+        exit(1);
     }
 
     if (!isset($commandLine["o"]))
     {
         $commandLine["o"] = (pathinfo($commandLine["i"], PATHINFO_BASENAME) . ".rngon-texture.json");
+    }
+
+    if (isset($commandLine["t"]))
+    {
+        $transparentColor = array_values(explode(",", $commandLine["t"]));
+    }
+    else
+    {
+        $transparentColor = [-1, -1, -1];
     }
 }
 
@@ -32,14 +45,14 @@ $outfile = fopen($commandLine["o"], "w");
 if (!$outfile)
 {
     printf("ERROR: Can't open the output file for writing.\n");
-    die;
+    exit(1);
 }
 
 $img = imagecreatefrompng($commandLine["i"]);
 if (!$img)
 {
     printf("ERROR: Can't create a PHP image object out of the input PNG.\n");
-    die;
+    exit(1);
 }
 
 $width = imagesx($img);
@@ -47,7 +60,7 @@ $height = imagesy($img);
 if (!$width || !$height)
 {
     printf("ERROR: Can't determine the PNG's resolution.\n");
-    die;
+    exit(1);
 }
 
 // Convert the image's RGBA pixel data into a string.
@@ -58,8 +71,18 @@ for ($y = 0; $y < $height; $y++)
     {
         $color = imagecolorsforindex($img, imagecolorat($img, $x, $y));
 
-        // Either fully opaque (1) or fully transparent (0). (Note that in PHP GD, fully opaque is 0 and fully transparent is 127.)
-        $alpha = !$color["alpha"];
+        // Either fully opaque (1) or fully transparent (0).
+        if (($transparentColor[0] == $color["red"]) &&
+            ($transparentColor[1] == $color["green"]) &&
+            ($transparentColor[2] == $color["blue"]))
+        {
+            $alpha = 0;
+        }
+        else
+        {
+            // Note that in PHP GD, fully opaque is 0 and fully transparent is 127.
+            $alpha = !$color["alpha"];
+        }
 
         if ($save_raw_pixel_data)
         {
