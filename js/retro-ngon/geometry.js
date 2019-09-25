@@ -19,6 +19,34 @@ Rngon.vector3 = function(x = 0, y = 0, z = 0)
         x,
         y,
         z,
+
+        // Transforms the vector by the given 4x4 matrix.
+        transform: function(m = [])
+        {
+            Rngon.assert && (m.length === 16)
+                            || Rngon.throw("Expected a 4 x 4 matrix to transform the vector by.");
+            
+            const x_ = ((m[0] * this.x) + (m[4] * this.y) + (m[ 8] * this.z));
+            const y_ = ((m[1] * this.x) + (m[5] * this.y) + (m[ 9] * this.z));
+            const z_ = ((m[2] * this.x) + (m[6] * this.y) + (m[10] * this.z));
+
+            this.x = x_;
+            this.y = y_;
+            this.z = z_;
+        },
+
+        normalize: function()
+        {
+            const sn = ((this.x * this.x) + (this.y * this.y) + (this.z * this.z));
+
+            if (sn != 0 && sn != 1)
+            {
+                const inv = (1.0 / Math.sqrt(sn));
+                this.x *= inv;
+                this.y *= inv;
+                this.z *= inv;
+            }
+        },
     };
 
     return returnObject;
