@@ -102,7 +102,7 @@ Rngon.line_draw = (()=>
                 {
                     // Mark the pixel into the array.
                     {
-                        // Interpolate the u,v coordinates.
+                        // Interpolate select parameters.
                         const l = (distanceBetween(x1, y1, x0, y0) / (lineLength||1));
                         const u = Rngon.lerp(vert2.u, vert1.u, l);
                         const v = Rngon.lerp(vert2.v, vert1.v, l);

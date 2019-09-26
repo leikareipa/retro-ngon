@@ -50,12 +50,12 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
             case 1:
             {
                 const idx = ((Math.floor(ngon.vertices[0].x) + Math.floor(ngon.vertices[0].y) * renderWidth) * 4);
+                
                 pixelBuffer[idx + 0] = ngon.material.color.red;
                 pixelBuffer[idx + 1] = ngon.material.color.green;
                 pixelBuffer[idx + 2] = ngon.material.color.blue;
                 pixelBuffer[idx + 3] = ngon.material.color.alpha;
 
-                // Move on to the next iteration in the forEach() chain.
                 return;
             }
 
@@ -65,6 +65,7 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
                 Rngon.line_draw.into_pixel_buffer(ngon.vertices[0], ngon.vertices[1],
                                                   pixelBuffer, renderWidth, renderHeight,
                                                   ngon.material.color)
+                                                  
                 return;
             }
 
@@ -167,6 +168,16 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
                         // Solid fill.
                         if (ngon.material.texture == null)
                         {
+                            // Depth testing. Only allow the pixel to be drawn if any previous pixels
+                            // at this screen position are further away from the camera.
+                            if (Rngon.internalState.useDepthBuffer)
+                            {
+                                const depth = Rngon.lerp(leftEdge[y].depth, rightEdge[y].depth, lerpStep);
+
+                                if (depthBuffer.buffer[idx/4] <= depth) continue;
+                                else depthBuffer.buffer[idx/4] = depth;
+                            }
+
                             pixelBuffer[idx + 0] = ngon.material.color.red;
                             pixelBuffer[idx + 1] = ngon.material.color.green;
                             pixelBuffer[idx + 2] = ngon.material.color.blue;
@@ -219,11 +230,8 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
                             if (Rngon.internalState.useDepthBuffer)
                             {
                                 const depth = Rngon.lerp(leftEdge[y].depth, rightEdge[y].depth, lerpStep);
-
-                                if (depthBuffer.buffer[idx/4] <= depth)
-                                {
-                                    continue;
-                                }
+                                
+                                if (depthBuffer.buffer[idx/4] <= depth) continue;
                                 else depthBuffer.buffer[idx/4] = depth;
                             }
 
