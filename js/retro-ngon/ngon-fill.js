@@ -158,9 +158,13 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
 
                     for (let x = 0; x <= rowWidth; (x++, leftEdge[y].x++))
                     {
+                        if (leftEdge[y].x < 0 || leftEdge[y].x >= renderWidth) continue;
+
                         const px = leftEdge[y].x;
                         const py = (y + polyYOffset);
                         const idx = ((px + py * renderWidth) * 4);
+
+                        if (py < 0 || py >= renderHeight) continue;
 
                         // For linearly interpolating values across the left and right edge.
                         const lerpStep = (x / rowWidth);
@@ -200,6 +204,16 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
                                 {
                                     u = (Rngon.lerp(leftEdge[y].u, rightEdge[y].u, lerpStep));
                                     v = (Rngon.lerp(leftEdge[y].v, rightEdge[y].v, lerpStep));
+
+                                    if (Rngon.internalState.usePerspectiveCorrectTexturing)
+                                    {
+                                        const uvw = (Rngon.lerp(leftEdge[y].uvw, rightEdge[y].uvw, lerpStep));
+                                        u /= uvw;
+                                        v /= uvw;
+                                    }
+
+                                    /// FIXME: We need to flip v or the textures render upside down. Why?
+                                    v = (1 - v);
 
                                     u *= (ngon.material.texture.width - 0.001);
                                     v *= (ngon.material.texture.height - 0.001);

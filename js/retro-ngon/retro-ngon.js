@@ -40,4 +40,6 @@ const Rngon = {};
 
     // Whether to require pixels to pass a depth test before being allowed on screen.
     Rngon.internalState.useDepthBuffer = false;
+
+    Rngon.internalState.usePerspectiveCorrectTexturing = false;
 }

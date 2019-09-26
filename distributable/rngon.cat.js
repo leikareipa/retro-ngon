@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: live (26 September 2019 14:15:37 UTC)
+// VERSION: live (26 September 2019 14:42:40 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -59,6 +59,8 @@ const Rngon = {};
 
     // Whether to require pixels to pass a depth test before being allowed on screen.
     Rngon.internalState.useDepthBuffer = false;
+
+    Rngon.internalState.usePerspectiveCorrectTexturing = false;
 }
 /*
  * Tarpeeksi Hyvae Soft 2019 /
@@ -464,40 +466,37 @@ Rngon.ngon = function(vertices = [Rngon.vertex()], material = {})
                     return;
                 }
 
-                // Clip min.
+                let prevVertex = this.vertices[this.vertices.length - 1];
+                let prevComponent = prevVertex[axis] * factor;
+                let isPrevVertexInside = (prevComponent <= prevVertex.w);
+
+                this.vertices = this.vertices.reduce((clippedVerts, currentVert)=>
                 {
-                    let prevVertex = this.vertices[this.vertices.length - 1];
-                    let prevComponent = prevVertex[axis] * factor;
-                    let isPrevVertexInside = (prevComponent <= prevVertex.w);
+                    const curComponent = currentVert[axis] * factor;
+                    const isThisVertexInside = (curComponent <= currentVert.w);
 
-                    this.vertices = this.vertices.reduce((clippedVerts, currentVert)=>
+                    // If either the current vertex or the previous vertex is inside but the other isn't,
+                    // and they aren't both inside, interpolate a new vertex between them that lies on
+                    // the clipping plane.
+                    if (isThisVertexInside ^ isPrevVertexInside)
                     {
-                        const curComponent = currentVert[axis] * factor;
-                        const isThisVertexInside = (curComponent <= currentVert.w);
+                        const lerpStep = (prevVertex.w - prevComponent) /
+                                          ((prevVertex.w - prevComponent) - (currentVert.w - curComponent));
+                    
+                        clippedVerts.push(interpolated_vertex(prevVertex, currentVert, lerpStep));
+                    }
+                    
+                    if (isThisVertexInside)
+                    {
+                        clippedVerts.push(currentVert);
+                    }
 
-                        // If either the current vertex or the previous vertex is inside but the other isn't,
-                        // and they aren't both inside, interpolate a new vertex between them that lies on
-                        // the clipping plane.
-                        if (isThisVertexInside ^ isPrevVertexInside)
-                        {
-                            const lerpStep = (prevVertex.w - prevComponent) /
-                                             ((prevVertex.w - prevComponent) - (currentVert.w - curComponent));
-                     
-                            clippedVerts.push(interpolated_vertex(prevVertex, currentVert, lerpStep));
-                        }
-                        
-                        if (isThisVertexInside)
-                        {
-                            clippedVerts.push(currentVert);
-                        }
+                    prevVertex = currentVert;
+                    prevComponent = curComponent;
+                    isPrevVertexInside = isThisVertexInside;
 
-                        prevVertex = currentVert;
-                        prevComponent = curComponent;
-                        isPrevVertexInside = isThisVertexInside;
-
-                        return clippedVerts;
-                    }, []);
-                }
+                    return clippedVerts;
+                }, []);
 
                 return;
 
@@ -702,11 +701,16 @@ Rngon.line_draw = (()=>
                     {
                         // Interpolate select parameters.
                         const l = (distanceBetween(x1, y1, x0, y0) / (lineLength||1));
-                        const u = Rngon.lerp(vert2.u, vert1.u, l);
-                        const v = Rngon.lerp(vert2.v, vert1.v, l);
-                        const depth = (Rngon.internalState.useDepthBuffer? Rngon.lerp(vert2.w, vert1.w, l) : 0);
+                        const u = (Rngon.internalState.usePerspectiveCorrectTexturing? Rngon.lerp((vert2.u / vert2.w), (vert1.u / vert1.w), l)
+                                                                                     : Rngon.lerp(vert2.u, vert1.u, l));
+                        const v = (Rngon.internalState.usePerspectiveCorrectTexturing? Rngon.lerp((vert2.v / vert2.w), (vert1.v / vert1.w), l)
+                                                                                     : Rngon.lerp(vert2.v, vert1.v, l));
+                        const depth = (Rngon.internalState.useDepthBuffer? Rngon.lerp(vert2.w, vert1.w, l)
+                                                                         : 0);
+                        const uvw = (Rngon.internalState.usePerspectiveCorrectTexturing? Rngon.lerp((1 / vert2.w), (1 / vert1.w), l)
+                                                                                       : 0);
 
-                        const pixel = {x:x0, u, v:(1-v), depth};
+                        const pixel = {x:x0, u, v, depth, uvw};
 
                         if (noOverwrite)
                         {
@@ -1024,9 +1028,13 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
 
                     for (let x = 0; x <= rowWidth; (x++, leftEdge[y].x++))
                     {
+                        if (leftEdge[y].x < 0 || leftEdge[y].x >= renderWidth) continue;
+
                         const px = leftEdge[y].x;
                         const py = (y + polyYOffset);
                         const idx = ((px + py * renderWidth) * 4);
+
+                        if (py < 0 || py >= renderHeight) continue;
 
                         // For linearly interpolating values across the left and right edge.
                         const lerpStep = (x / rowWidth);
@@ -1066,6 +1074,16 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
                                 {
                                     u = (Rngon.lerp(leftEdge[y].u, rightEdge[y].u, lerpStep));
                                     v = (Rngon.lerp(leftEdge[y].v, rightEdge[y].v, lerpStep));
+
+                                    if (Rngon.internalState.usePerspectiveCorrectTexturing)
+                                    {
+                                        const uvw = (Rngon.lerp(leftEdge[y].uvw, rightEdge[y].uvw, lerpStep));
+                                        u /= uvw;
+                                        v /= uvw;
+                                    }
+
+                                    /// FIXME: We need to flip v or the textures render upside down. Why?
+                                    v = (1 - v);
 
                                     u *= (ngon.material.texture.width - 0.001);
                                     v *= (ngon.material.texture.height - 0.001);
@@ -1219,6 +1237,7 @@ Rngon.render = function(canvasElementId,
     // Modify any internal render parameters based on the user's options.
     {
         Rngon.internalState.useDepthBuffer = (options.depthSort == "depthbuffer");
+        Rngon.internalState.usePerspectiveCorrectTexturing = (options.perspectiveCorrectTexturing == true);
     }
 
     const renderSurface = Rngon.screen(canvasElementId,
@@ -1316,6 +1335,7 @@ Rngon.render.defaultOptions =
     farPlane: 1000,
     depthSort: "painter",
     hibernateWhenNotOnScreen: true,
+    perspectiveCorrectTexturing: false,
     auxiliaryBuffers: [],
 };
 /*
@@ -1517,7 +1537,6 @@ Rngon.screen = function(canvasElementId = "",              // The DOM id of the 
         {
             const objectSpaceMatrix = Rngon.matrix44.matrices_multiplied(cameraMatrix, objectMatrix);
             const clipSpaceMatrix = Rngon.matrix44.matrices_multiplied(perspectiveMatrix, objectSpaceMatrix);
-            //const screenSpaceMatrix = Rngon.matrix44.matrices_multiplied(screenMatrix, clipSpaceMatrix);
 
             ngon_transform_f(ngons, clipSpaceMatrix, screenMatrix);
         },

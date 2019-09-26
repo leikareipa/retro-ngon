@@ -432,8 +432,9 @@ Renders one or more n-gon meshes onto an existing canvas element.
 | *number*              | fov                      | Field of view. Defaults to *43*. |
 | *string*              | depthSort                | Type of depth sorting to use when transforming the n-gons for rasterization. Possible values: "none" (no sorting), "painter" (sort by average *z*), "depthbuffer" (use a per-pixel depth buffer). Defaults to *"painter"*. |
 | *boolean*             | hibernateWhenNotOnScreen | If true, rendering will be skipped if the target canvas is not at least partially within the current viewport. Defaults to *true*. |
-| *number*               | nearPlane               | Distance from the camera to the near plane. Vertices closer to the camera will be clipped. Defaults to *1*.|
-| *number*               | farPlane                | Distance from the camera to the far plane. Vertices further from the camera will be clipped. Defaults to *1000*.|
+| *number*              | nearPlane                | Distance from the camera to the near plane. Vertices closer to the camera will be clipped. Defaults to *1*.|
+| *number*              | farPlane                 | Distance from the camera to the far plane. Vertices further from the camera will be clipped. Defaults to *1000*.|
+| *number*              | perspectiveCorrectTexturing | When set to true, textures whose texture-mapping mode is "affine" will be rendered with perspective correction. This results in less view-dependent texture distortion but will likely reduce performance. Defaults to *false*.|
 | *translation_vector*  | cameraPosition           | The camera's position. Defaults to *vector3(0, 0, 0)*. |
 | *rotation_vector*     | cameraDirection          | The camera's direction. Defaults to *vector3(0, 0, 0)*. |
 | *array*               | auxiliaryBuffers         | One or more auxiliary render buffers. Each buffer is an object containing the properties *buffer* and *property*; where *buffer* points to an array containing as many elements as there are pixels in the rendering, and *property* names a source property in an n-gon's material. For each pixel rendered, the corresponding element in an auxiliary buffer will be written with the n-gon's material source value. Defaults to *[]*. |

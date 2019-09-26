@@ -56,6 +56,7 @@ Rngon.render = function(canvasElementId,
     // Modify any internal render parameters based on the user's options.
     {
         Rngon.internalState.useDepthBuffer = (options.depthSort == "depthbuffer");
+        Rngon.internalState.usePerspectiveCorrectTexturing = (options.perspectiveCorrectTexturing == true);
     }
 
     const renderSurface = Rngon.screen(canvasElementId,
@@ -153,5 +154,6 @@ Rngon.render.defaultOptions =
     farPlane: 1000,
     depthSort: "painter",
     hibernateWhenNotOnScreen: true,
+    perspectiveCorrectTexturing: false,
     auxiliaryBuffers: [],
 };
