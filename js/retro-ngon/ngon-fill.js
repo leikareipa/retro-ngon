@@ -168,6 +168,12 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
                         // Solid fill.
                         if (ngon.material.texture == null)
                         {
+                            // Alpha testing. If the pixel is fully opaque, draw it; otherwise, skip it.
+                            if (ngon.material.color.alpha !== 255)
+                            {
+                                continue;
+                            }
+
                             // Depth testing. Only allow the pixel to be drawn if any previous pixels
                             // at this screen position are further away from the camera.
                             if (Rngon.internalState.useDepthBuffer)
@@ -178,6 +184,7 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
                                 else depthBuffer.buffer[idx/4] = depth;
                             }
 
+                            // Draw the pixel.
                             pixelBuffer[idx + 0] = ngon.material.color.red;
                             pixelBuffer[idx + 1] = ngon.material.color.green;
                             pixelBuffer[idx + 2] = ngon.material.color.blue;
