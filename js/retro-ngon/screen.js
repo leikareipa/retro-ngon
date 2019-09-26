@@ -13,6 +13,8 @@ Rngon.screen = function(canvasElementId = "",              // The DOM id of the 
                         ngon_transform_f = function(){},   // A function that transforms the given ngons into screen-space for the canvas.
                         scaleFactor = 1,
                         fov = 43,
+                        nearPlane = 1,
+                        farPlane = 1000,
                         auxiliaryBuffers = [])
 {
     Rngon.assert && (typeof scaleFactor === "number") || Rngon.throw("Expected the scale factor to be a numeric value.");
@@ -29,7 +31,7 @@ Rngon.screen = function(canvasElementId = "",              // The DOM id of the 
     canvasElement.setAttribute("width", screenWidth);
     canvasElement.setAttribute("height", screenHeight);
 
-    const perspectiveMatrix = Rngon.matrix44.perspective((fov * Math.PI/180), (screenWidth / screenHeight), 1, 1000);
+    const perspectiveMatrix = Rngon.matrix44.perspective((fov * Math.PI/180), (screenWidth / screenHeight), nearPlane, farPlane);
     const screenMatrix = Rngon.matrix44.ortho(screenWidth, screenHeight);
 
     function exposed_render_context()
@@ -52,13 +54,12 @@ Rngon.screen = function(canvasElementId = "",              // The DOM id of the 
         // Returns a copy of the ngons transformed into screen-space for this render surface.
         // Takes as input the ngons to be transformed, an object matrix which contains the object's
         // transforms, and a camera matrix, which contains the camera's translation and rotation.
-        transform_ngons: function(ngons = [], objectMatrix = [], cameraMatrix = [], nearPlaneDistance)
+        transform_ngons: function(ngons = [], objectMatrix = [], cameraMatrix = [])
         {
             const objectSpaceMatrix = Rngon.matrix44.matrices_multiplied(cameraMatrix, objectMatrix);
             const clipSpaceMatrix = Rngon.matrix44.matrices_multiplied(perspectiveMatrix, objectSpaceMatrix);
-            const screenSpaceMatrix = Rngon.matrix44.matrices_multiplied(screenMatrix, clipSpaceMatrix);
 
-            ngon_transform_f(ngons, screenWidth, screenHeight, screenSpaceMatrix, nearPlaneDistance);
+            ngon_transform_f(ngons, clipSpaceMatrix, screenMatrix);
         },
 
         // Draw the given ngons onto this render surface.

@@ -7,14 +7,14 @@
 "use strict";
 
 // Transforms the given n-gons into screen space for rendering.
-Rngon.ngon_transformer = function(ngons = [], renderWidth, renderHeight, screenSpaceMatrix = [], nearPlaneDistance)
+Rngon.ngon_transformer = function(ngons = [], clipSpaceMatrix = [], screenMatrix = [])
 {
     ngons.forEach(ngon=>
     {
-        ngon.transform(screenSpaceMatrix);
-        ngon.clip_to_near_plane(nearPlaneDistance);
+        ngon.transform(clipSpaceMatrix);
+        ngon.clip_to_viewport();
+        ngon.transform(screenMatrix);
         ngon.perspective_divide();
-        ngon.clip_to_viewport(renderWidth, renderHeight);
     });
 
     // Remove n-gons that have no vertices (e.g. due to all of them having been all clipped away).

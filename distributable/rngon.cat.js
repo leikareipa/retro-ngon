@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: live (26 September 2019 12:35:01 UTC)
+// VERSION: live (26 September 2019 14:15:37 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -376,6 +376,11 @@ Rngon.vertex = function(x = 0, y = 0, z = 0, u = 0, v = 0, w = 1)
         u,
         v,
 
+        // For perspective-correct texturing.
+        uPers: 0,
+        vPers: 0,
+        uvwPers: 0,
+
         // Transforms the vertex by the given 4x4 matrix.
         transform: function(m = [])
         {
@@ -437,23 +442,22 @@ Rngon.ngon = function(vertices = [Rngon.vertex()], material = {})
         {
             return Rngon.ngon(this.vertices.map(v=>Rngon.vertex(v.x, v.y, v.z, v.u, v.v, v.w)), this.material);
         },
-
-        // Clips all vertices against the sides of the viewport ([0, width) and [0, height)).
-        // Adapted from Benny Bobaganoosh's 3d software renderer, whose source is available at
+        
+        // Clips all vertices against the sides of the viewport. Adapted from Benny
+        // Bobaganoosh's 3d software renderer, the source for which is available at
         // https://github.com/BennyQBD/3DSoftwareRenderer.
-        //
-        /// TODO: This is a sloppy implementation that gets the job done but could be improved on.
-        clip_to_viewport: function(width, height)
+        clip_to_viewport: function()
         {
-            if (vertices.length >= 1)
-            {
-                clip_on_axis.call(this, "x", 0, (width - 1));
-                clip_on_axis.call(this, "y", 0, (height - 1));
-            }
+            clip_on_axis.call(this, "x", 1);
+            clip_on_axis.call(this, "x", -1);
+            clip_on_axis.call(this, "y", 1);
+            clip_on_axis.call(this, "y", -1);
+            clip_on_axis.call(this, "z", 1);
+            clip_on_axis.call(this, "z", -1);
 
             return;
 
-            function clip_on_axis(axis, min, max)
+            function clip_on_axis(axis, factor)
             {
                 if (!this.vertices.length)
                 {
@@ -463,18 +467,22 @@ Rngon.ngon = function(vertices = [Rngon.vertex()], material = {})
                 // Clip min.
                 {
                     let prevVertex = this.vertices[this.vertices.length - 1];
-                    let isPrevVertexInside = (prevVertex[axis] >= min);
+                    let prevComponent = prevVertex[axis] * factor;
+                    let isPrevVertexInside = (prevComponent <= prevVertex.w);
 
                     this.vertices = this.vertices.reduce((clippedVerts, currentVert)=>
                     {
-                        const isThisVertexInside = (currentVert[axis] >= min);
+                        const curComponent = currentVert[axis] * factor;
+                        const isThisVertexInside = (curComponent <= currentVert.w);
 
                         // If either the current vertex or the previous vertex is inside but the other isn't,
                         // and they aren't both inside, interpolate a new vertex between them that lies on
                         // the clipping plane.
                         if (isThisVertexInside ^ isPrevVertexInside)
                         {
-                            const lerpStep = ((prevVertex[axis] - min) / ((prevVertex[axis] - min) - (currentVert[axis] - min) + 0.5));
+                            const lerpStep = (prevVertex.w - prevComponent) /
+                                             ((prevVertex.w - prevComponent) - (currentVert.w - curComponent));
+                     
                             clippedVerts.push(interpolated_vertex(prevVertex, currentVert, lerpStep));
                         }
                         
@@ -484,39 +492,8 @@ Rngon.ngon = function(vertices = [Rngon.vertex()], material = {})
                         }
 
                         prevVertex = currentVert;
-                        isPrevVertexInside = (prevVertex[axis] >= min);
-
-                        return clippedVerts;
-                    }, []);
-                }
-
-                if (!this.vertices.length)
-                {
-                    return;
-                }
-
-                // Clip max.
-                {
-                    let prevVertex = this.vertices[this.vertices.length - 1];
-                    let isPrevVertexInside = (prevVertex[axis] < max);
-
-                    this.vertices = this.vertices.reduce((clippedVerts, currentVert)=>
-                    {
-                        const isThisVertexInside = (currentVert[axis] < max);
-
-                        if (isThisVertexInside ^ isPrevVertexInside)
-                        {
-                            const lerpStep = ((prevVertex[axis] - max) / ((prevVertex[axis] - max) - (currentVert[axis] - max)));
-                            clippedVerts.push(interpolated_vertex(prevVertex, currentVert, lerpStep));
-                        }
-                        
-                        if (isThisVertexInside)
-                        {
-                            clippedVerts.push(currentVert);
-                        }
-
-                        prevVertex = currentVert;
-                        isPrevVertexInside = (prevVertex[axis] < max);
+                        prevComponent = curComponent;
+                        isPrevVertexInside = isThisVertexInside;
 
                         return clippedVerts;
                     }, []);
@@ -533,59 +510,6 @@ Rngon.ngon = function(vertices = [Rngon.vertex()], material = {})
                                         Rngon.lerp(vert1.v, vert2.v, lerpStep),
                                         Rngon.lerp(vert1.w, vert2.w, lerpStep));
                 }
-            }
-        },
-
-        // Clips all vertices against the near plane. Adapted from Benny Bobaganoosh's 3d software
-        // renderer, whose source is available at https://github.com/BennyQBD/3DSoftwareRenderer.
-        clip_to_near_plane: function(nearPlaneDistance)
-        {
-            if (!nearPlaneDistance)
-            {
-                return;
-            }
-
-            if (vertices.length <= 0)
-            {
-                return;
-            }
-
-            let prevVertex = this.vertices[this.vertices.length - 1];
-            let isPrevVertexInside = is_vertex_inside(prevVertex);
-
-            this.vertices = this.vertices.reduce((clippedVerts, curVertex)=>
-            {
-                const isThisVertexInside = is_vertex_inside(curVertex);
-
-                // If either the current vertex or the previous vertex is inside but the other isn't,
-                // and they aren't both inside, interpolate a new vertex between them that lies on
-                // the clipping plane.
-                if (isThisVertexInside ^ isPrevVertexInside)
-                {
-                    const lerpStep = ((prevVertex.w - nearPlaneDistance) / ((prevVertex.w - nearPlaneDistance) - (curVertex.w - nearPlaneDistance)));
-
-                    clippedVerts.push(Rngon.vertex(Rngon.lerp(prevVertex.x, curVertex.x, lerpStep),
-                                                    Rngon.lerp(prevVertex.y, curVertex.y, lerpStep),
-                                                    Rngon.lerp(prevVertex.z, curVertex.z, lerpStep),
-                                                    Rngon.lerp(prevVertex.u, curVertex.u, lerpStep),
-                                                    Rngon.lerp(prevVertex.v, curVertex.v, lerpStep),
-                                                    Rngon.lerp(prevVertex.w, curVertex.w, lerpStep)));
-                }
-                
-                if (isThisVertexInside)
-                {
-                    clippedVerts.push(curVertex);
-                }
-
-                prevVertex = curVertex;
-                isPrevVertexInside = is_vertex_inside(prevVertex);
-
-                return clippedVerts;
-            }, []);
-
-            function is_vertex_inside(vert)
-            {
-                return (vert.w >= nearPlaneDistance);
             }
         },
 
@@ -780,7 +704,7 @@ Rngon.line_draw = (()=>
                         const l = (distanceBetween(x1, y1, x0, y0) / (lineLength||1));
                         const u = Rngon.lerp(vert2.u, vert1.u, l);
                         const v = Rngon.lerp(vert2.v, vert1.v, l);
-                        const depth = Rngon.lerp(vert2.w, vert1.w, l);
+                        const depth = (Rngon.internalState.useDepthBuffer? Rngon.lerp(vert2.w, vert1.w, l) : 0);
 
                         const pixel = {x:x0, u, v:(1-v), depth};
 
@@ -1140,8 +1064,11 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
                             {
                                 case "affine":
                                 {
-                                    u = (Rngon.lerp(leftEdge[y].u, rightEdge[y].u, lerpStep) * (ngon.material.texture.width-0.001));
-                                    v = (Rngon.lerp(leftEdge[y].v, rightEdge[y].v, lerpStep) * (ngon.material.texture.height-0.001));
+                                    u = (Rngon.lerp(leftEdge[y].u, rightEdge[y].u, lerpStep));
+                                    v = (Rngon.lerp(leftEdge[y].v, rightEdge[y].v, lerpStep));
+
+                                    u *= (ngon.material.texture.width - 0.001);
+                                    v *= (ngon.material.texture.height - 0.001);
 
                                     // Wrap with repetition.
                                     /// FIXME: Doesn't wrap correctly.
@@ -1294,7 +1221,14 @@ Rngon.render = function(canvasElementId,
         Rngon.internalState.useDepthBuffer = (options.depthSort == "depthbuffer");
     }
 
-    const renderSurface = Rngon.screen(canvasElementId, Rngon.ngon_filler, Rngon.ngon_transformer, options.scale, options.fov, options.auxiliaryBuffers);
+    const renderSurface = Rngon.screen(canvasElementId,
+                                       Rngon.ngon_filler,
+                                       Rngon.ngon_transformer,
+                                       options.scale,
+                                       options.fov,
+                                       options.nearPlane,
+                                       options.farPlane,
+                                       options.auxiliaryBuffers);
 
     callMetadata.renderWidth = renderSurface.width;
     callMetadata.renderHeight = renderSurface.height;
@@ -1320,7 +1254,7 @@ Rngon.render = function(canvasElementId,
             meshes.forEach(mesh=>
             {
                 const meshVerts = mesh.ngons.reduce((array, ngon)=>{array.push(ngon.clone()); return array;}, []);
-                renderSurface.transform_ngons(meshVerts, mesh.objectSpaceMatrix(), cameraMatrix, options.nearPlaneDistance);
+                renderSurface.transform_ngons(meshVerts, mesh.objectSpaceMatrix(), cameraMatrix);
 
                 transformedNgons.push(...meshVerts);
             });
@@ -1378,10 +1312,11 @@ Rngon.render.defaultOptions =
     cameraDirection: Rngon.vector3(0, 0, 0),
     scale: 1,
     fov: 43,
+    nearPlane: 1,
+    farPlane: 1000,
     depthSort: "painter",
     hibernateWhenNotOnScreen: true,
     auxiliaryBuffers: [],
-    nearPlaneDistance: false,
 };
 /*
  * Tarpeeksi Hyvae Soft 2019 /
@@ -1392,14 +1327,14 @@ Rngon.render.defaultOptions =
 "use strict";
 
 // Transforms the given n-gons into screen space for rendering.
-Rngon.ngon_transformer = function(ngons = [], renderWidth, renderHeight, screenSpaceMatrix = [], nearPlaneDistance)
+Rngon.ngon_transformer = function(ngons = [], clipSpaceMatrix = [], screenMatrix = [])
 {
     ngons.forEach(ngon=>
     {
-        ngon.transform(screenSpaceMatrix);
-        ngon.clip_to_near_plane(nearPlaneDistance);
+        ngon.transform(clipSpaceMatrix);
+        ngon.clip_to_viewport();
+        ngon.transform(screenMatrix);
         ngon.perspective_divide();
-        ngon.clip_to_viewport(renderWidth, renderHeight);
     });
 
     // Remove n-gons that have no vertices (e.g. due to all of them having been all clipped away).
@@ -1537,6 +1472,8 @@ Rngon.screen = function(canvasElementId = "",              // The DOM id of the 
                         ngon_transform_f = function(){},   // A function that transforms the given ngons into screen-space for the canvas.
                         scaleFactor = 1,
                         fov = 43,
+                        nearPlane = 1,
+                        farPlane = 1000,
                         auxiliaryBuffers = [])
 {
     Rngon.assert && (typeof scaleFactor === "number") || Rngon.throw("Expected the scale factor to be a numeric value.");
@@ -1553,7 +1490,7 @@ Rngon.screen = function(canvasElementId = "",              // The DOM id of the 
     canvasElement.setAttribute("width", screenWidth);
     canvasElement.setAttribute("height", screenHeight);
 
-    const perspectiveMatrix = Rngon.matrix44.perspective((fov * Math.PI/180), (screenWidth / screenHeight), 1, 1000);
+    const perspectiveMatrix = Rngon.matrix44.perspective((fov * Math.PI/180), (screenWidth / screenHeight), nearPlane, farPlane);
     const screenMatrix = Rngon.matrix44.ortho(screenWidth, screenHeight);
 
     function exposed_render_context()
@@ -1576,13 +1513,13 @@ Rngon.screen = function(canvasElementId = "",              // The DOM id of the 
         // Returns a copy of the ngons transformed into screen-space for this render surface.
         // Takes as input the ngons to be transformed, an object matrix which contains the object's
         // transforms, and a camera matrix, which contains the camera's translation and rotation.
-        transform_ngons: function(ngons = [], objectMatrix = [], cameraMatrix = [], nearPlaneDistance)
+        transform_ngons: function(ngons = [], objectMatrix = [], cameraMatrix = [])
         {
             const objectSpaceMatrix = Rngon.matrix44.matrices_multiplied(cameraMatrix, objectMatrix);
             const clipSpaceMatrix = Rngon.matrix44.matrices_multiplied(perspectiveMatrix, objectSpaceMatrix);
-            const screenSpaceMatrix = Rngon.matrix44.matrices_multiplied(screenMatrix, clipSpaceMatrix);
+            //const screenSpaceMatrix = Rngon.matrix44.matrices_multiplied(screenMatrix, clipSpaceMatrix);
 
-            ngon_transform_f(ngons, screenWidth, screenHeight, screenSpaceMatrix, nearPlaneDistance);
+            ngon_transform_f(ngons, clipSpaceMatrix, screenMatrix);
         },
 
         // Draw the given ngons onto this render surface.

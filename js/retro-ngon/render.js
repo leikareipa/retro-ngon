@@ -58,7 +58,14 @@ Rngon.render = function(canvasElementId,
         Rngon.internalState.useDepthBuffer = (options.depthSort == "depthbuffer");
     }
 
-    const renderSurface = Rngon.screen(canvasElementId, Rngon.ngon_filler, Rngon.ngon_transformer, options.scale, options.fov, options.auxiliaryBuffers);
+    const renderSurface = Rngon.screen(canvasElementId,
+                                       Rngon.ngon_filler,
+                                       Rngon.ngon_transformer,
+                                       options.scale,
+                                       options.fov,
+                                       options.nearPlane,
+                                       options.farPlane,
+                                       options.auxiliaryBuffers);
 
     callMetadata.renderWidth = renderSurface.width;
     callMetadata.renderHeight = renderSurface.height;
@@ -84,7 +91,7 @@ Rngon.render = function(canvasElementId,
             meshes.forEach(mesh=>
             {
                 const meshVerts = mesh.ngons.reduce((array, ngon)=>{array.push(ngon.clone()); return array;}, []);
-                renderSurface.transform_ngons(meshVerts, mesh.objectSpaceMatrix(), cameraMatrix, options.nearPlaneDistance);
+                renderSurface.transform_ngons(meshVerts, mesh.objectSpaceMatrix(), cameraMatrix);
 
                 transformedNgons.push(...meshVerts);
             });
@@ -142,8 +149,9 @@ Rngon.render.defaultOptions =
     cameraDirection: Rngon.vector3(0, 0, 0),
     scale: 1,
     fov: 43,
+    nearPlane: 1,
+    farPlane: 1000,
     depthSort: "painter",
     hibernateWhenNotOnScreen: true,
     auxiliaryBuffers: [],
-    nearPlaneDistance: false,
 };

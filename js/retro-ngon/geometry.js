@@ -73,6 +73,11 @@ Rngon.vertex = function(x = 0, y = 0, z = 0, u = 0, v = 0, w = 1)
         u,
         v,
 
+        // For perspective-correct texturing.
+        uPers: 0,
+        vPers: 0,
+        uvwPers: 0,
+
         // Transforms the vertex by the given 4x4 matrix.
         transform: function(m = [])
         {
@@ -134,90 +139,59 @@ Rngon.ngon = function(vertices = [Rngon.vertex()], material = {})
         {
             return Rngon.ngon(this.vertices.map(v=>Rngon.vertex(v.x, v.y, v.z, v.u, v.v, v.w)), this.material);
         },
-
-        // Clips all vertices against the sides of the viewport ([0, width) and [0, height)).
-        // Adapted from Benny Bobaganoosh's 3d software renderer, whose source is available at
+        
+        // Clips all vertices against the sides of the viewport. Adapted from Benny
+        // Bobaganoosh's 3d software renderer, the source for which is available at
         // https://github.com/BennyQBD/3DSoftwareRenderer.
-        //
-        /// TODO: This is a sloppy implementation that gets the job done but could be improved on.
-        clip_to_viewport: function(width, height)
+        clip_to_viewport: function()
         {
-            if (vertices.length >= 1)
-            {
-                clip_on_axis.call(this, "x", 0, (width - 1));
-                clip_on_axis.call(this, "y", 0, (height - 1));
-            }
+            clip_on_axis.call(this, "x", 1);
+            clip_on_axis.call(this, "x", -1);
+            clip_on_axis.call(this, "y", 1);
+            clip_on_axis.call(this, "y", -1);
+            clip_on_axis.call(this, "z", 1);
+            clip_on_axis.call(this, "z", -1);
 
             return;
 
-            function clip_on_axis(axis, min, max)
+            function clip_on_axis(axis, factor)
             {
                 if (!this.vertices.length)
                 {
                     return;
                 }
 
-                // Clip min.
-                {
-                    let prevVertex = this.vertices[this.vertices.length - 1];
-                    let isPrevVertexInside = (prevVertex[axis] >= min);
+                let prevVertex = this.vertices[this.vertices.length - 1];
+                let prevComponent = prevVertex[axis] * factor;
+                let isPrevVertexInside = (prevComponent <= prevVertex.w);
 
-                    this.vertices = this.vertices.reduce((clippedVerts, currentVert)=>
+                this.vertices = this.vertices.reduce((clippedVerts, currentVert)=>
+                {
+                    const curComponent = currentVert[axis] * factor;
+                    const isThisVertexInside = (curComponent <= currentVert.w);
+
+                    // If either the current vertex or the previous vertex is inside but the other isn't,
+                    // and they aren't both inside, interpolate a new vertex between them that lies on
+                    // the clipping plane.
+                    if (isThisVertexInside ^ isPrevVertexInside)
                     {
-                        const isThisVertexInside = (currentVert[axis] >= min);
-
-                        // If either the current vertex or the previous vertex is inside but the other isn't,
-                        // and they aren't both inside, interpolate a new vertex between them that lies on
-                        // the clipping plane.
-                        if (isThisVertexInside ^ isPrevVertexInside)
-                        {
-                            const lerpStep = ((prevVertex[axis] - min) / ((prevVertex[axis] - min) - (currentVert[axis] - min) + 0.5));
-                            clippedVerts.push(interpolated_vertex(prevVertex, currentVert, lerpStep));
-                        }
-                        
-                        if (isThisVertexInside)
-                        {
-                            clippedVerts.push(currentVert);
-                        }
-
-                        prevVertex = currentVert;
-                        isPrevVertexInside = (prevVertex[axis] >= min);
-
-                        return clippedVerts;
-                    }, []);
-                }
-
-                if (!this.vertices.length)
-                {
-                    return;
-                }
-
-                // Clip max.
-                {
-                    let prevVertex = this.vertices[this.vertices.length - 1];
-                    let isPrevVertexInside = (prevVertex[axis] < max);
-
-                    this.vertices = this.vertices.reduce((clippedVerts, currentVert)=>
+                        const lerpStep = (prevVertex.w - prevComponent) /
+                                          ((prevVertex.w - prevComponent) - (currentVert.w - curComponent));
+                    
+                        clippedVerts.push(interpolated_vertex(prevVertex, currentVert, lerpStep));
+                    }
+                    
+                    if (isThisVertexInside)
                     {
-                        const isThisVertexInside = (currentVert[axis] < max);
+                        clippedVerts.push(currentVert);
+                    }
 
-                        if (isThisVertexInside ^ isPrevVertexInside)
-                        {
-                            const lerpStep = ((prevVertex[axis] - max) / ((prevVertex[axis] - max) - (currentVert[axis] - max)));
-                            clippedVerts.push(interpolated_vertex(prevVertex, currentVert, lerpStep));
-                        }
-                        
-                        if (isThisVertexInside)
-                        {
-                            clippedVerts.push(currentVert);
-                        }
+                    prevVertex = currentVert;
+                    prevComponent = curComponent;
+                    isPrevVertexInside = isThisVertexInside;
 
-                        prevVertex = currentVert;
-                        isPrevVertexInside = (prevVertex[axis] < max);
-
-                        return clippedVerts;
-                    }, []);
-                }
+                    return clippedVerts;
+                }, []);
 
                 return;
 
@@ -230,59 +204,6 @@ Rngon.ngon = function(vertices = [Rngon.vertex()], material = {})
                                         Rngon.lerp(vert1.v, vert2.v, lerpStep),
                                         Rngon.lerp(vert1.w, vert2.w, lerpStep));
                 }
-            }
-        },
-
-        // Clips all vertices against the near plane. Adapted from Benny Bobaganoosh's 3d software
-        // renderer, whose source is available at https://github.com/BennyQBD/3DSoftwareRenderer.
-        clip_to_near_plane: function(nearPlaneDistance)
-        {
-            if (!nearPlaneDistance)
-            {
-                return;
-            }
-
-            if (vertices.length <= 0)
-            {
-                return;
-            }
-
-            let prevVertex = this.vertices[this.vertices.length - 1];
-            let isPrevVertexInside = is_vertex_inside(prevVertex);
-
-            this.vertices = this.vertices.reduce((clippedVerts, curVertex)=>
-            {
-                const isThisVertexInside = is_vertex_inside(curVertex);
-
-                // If either the current vertex or the previous vertex is inside but the other isn't,
-                // and they aren't both inside, interpolate a new vertex between them that lies on
-                // the clipping plane.
-                if (isThisVertexInside ^ isPrevVertexInside)
-                {
-                    const lerpStep = ((prevVertex.w - nearPlaneDistance) / ((prevVertex.w - nearPlaneDistance) - (curVertex.w - nearPlaneDistance)));
-
-                    clippedVerts.push(Rngon.vertex(Rngon.lerp(prevVertex.x, curVertex.x, lerpStep),
-                                                    Rngon.lerp(prevVertex.y, curVertex.y, lerpStep),
-                                                    Rngon.lerp(prevVertex.z, curVertex.z, lerpStep),
-                                                    Rngon.lerp(prevVertex.u, curVertex.u, lerpStep),
-                                                    Rngon.lerp(prevVertex.v, curVertex.v, lerpStep),
-                                                    Rngon.lerp(prevVertex.w, curVertex.w, lerpStep)));
-                }
-                
-                if (isThisVertexInside)
-                {
-                    clippedVerts.push(curVertex);
-                }
-
-                prevVertex = curVertex;
-                isPrevVertexInside = is_vertex_inside(prevVertex);
-
-                return clippedVerts;
-            }, []);
-
-            function is_vertex_inside(vert)
-            {
-                return (vert.w >= nearPlaneDistance);
             }
         },
 
