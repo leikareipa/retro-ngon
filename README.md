@@ -430,7 +430,7 @@ Renders one or more n-gon meshes onto an existing canvas element.
 | --------------------- | ------------------------ | ----------- |
 | *number*              | scale                    | The resolution of the rendering relative to the size of the target canvas. For instance, a scale of 0.5 would result in rendering an image half the resolution of the target canvas. Values below 1 will see the rendered image upscaled to fit the canvas, while values above 1 result in downscaling. The CSS property *image-rendering* on the target canvas can be used to set the type of post-render scaling - f.e. *image-rendering: pixelated* will on some browsers result in pixelated rather than blurred scaling. Defaults to *1*. |
 | *number*              | fov                      | Field of view. Defaults to *43*. |
-| *string*              | depthSort                | Type of depth sorting to use when transforming the n-gons for rasterization. Possible values: "none" (no sorting), "painter" (sort by average *z*, i.e. painter's algorithm). Defaults to *"painter"*. |
+| *string*              | depthSort                | Type of depth sorting to use when transforming the n-gons for rasterization. Possible values: "none" (no sorting), "painter" (sort by average *z*), "depthbuffer" (use a per-pixel depth buffer). Defaults to *"painter"*. |
 | *boolean*             | hibernateWhenNotOnScreen | If true, rendering will be skipped if the target canvas is not at least partially within the current viewport. Defaults to *true*. |
 | *mixed*               | nearPlaneDistance        | Distance from the camera to the near plane. Vertices closer to the camera will be clipped. If set to *false*, near plane clipping will be disabled (which can lead to considerable visual and/or performance degradation should vertices ever locate behind the camera). Defaults to *false*.|
 | *translation_vector*  | cameraPosition           | The camera's position. Defaults to *vector3(0, 0, 0)*. |
@@ -980,12 +980,8 @@ Development is currently sporadic or on hold; however the project is not abandon
 ### Which features typical of 3d engines are missing?
 - Lighting
 - Fully perspective-correct texture-mapping
-- Frustum clipping (vertices located behind the camera may result in visual glitches and other undesired effects)
-- Depth testing (painter's sorting is used)
 
 Note also that concave n-gons are not supported.
-
-Some of these features are intentionally lacking, and others may appear in future versions of the renderer, depending on whether they complement the renderer's retro style.
 
 ### Browser compatibility
 Below are rough estimates of the required browser versions for a given version of the retro n-gon renderer. Browsers marked with "No" are not compatible at all.

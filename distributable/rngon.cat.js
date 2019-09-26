@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: live (25 September 2019 01:22:58 UTC)
+// VERSION: live (26 September 2019 11:38:54 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -50,6 +50,15 @@ const Rngon = {};
     {
         console.log("Retro n-gon: " + string);
     }
+}
+
+// Global render toggles. These should not be modified directly; they're instead
+// set by the renderer based on render parameters requested by the user.
+{
+    Rngon.internalState = {};
+
+    // Whether to require pixels to pass a depth test before being allowed on screen.
+    Rngon.internalState.useDepthBuffer = false;
 }
 /*
  * Tarpeeksi Hyvae Soft 2019 /
@@ -771,8 +780,9 @@ Rngon.line_draw = (()=>
                         const l = (distanceBetween(x1, y1, x0, y0) / (lineLength||1));
                         const u = Rngon.lerp(vert2.u, vert1.u, l);
                         const v = Rngon.lerp(vert2.v, vert1.v, l);
+                        const depth = Rngon.lerp(vert2.w, vert1.w, l);
 
-                        const pixel = {x:x0, u, v:(1-v)};
+                        const pixel = {x:x0, u, v:(1-v), depth};
 
                         if (noOverwrite)
                         {
@@ -938,12 +948,38 @@ Rngon.matrix44 = (()=>
 
 "use strict";
 
+const depthBuffer = {width:0, height:0, buffer:new Array(0)};
+
 // Rasterizes the given ngons into the given RGBA pixel buffer of the given width and height.
+//
+// Note: This function should only be called once per frame - i.e. the 'ngons' array should
+// contain all the n-gons you want rendered to the current frame. The reason for this requirement
+// is that the depth buffer is cleared on entry to this function, so calling it multiple times
+// per frame would mess up depth buffering for that frame.
+//
 Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], renderWidth, renderHeight)
 {
     Rngon.assert && (ngons instanceof Array) || Rngon.throw("Expected an array of ngons to be rasterized.");
     Rngon.assert && ((renderWidth > 0) && (renderHeight > 0))
                  || Rngon.throw("The transform surface can't have zero width or height.");
+
+    // If depth buffering is enabled, clear the buffer in preparation for a new frame's
+    // rendering.
+    if (Rngon.internalState.useDepthBuffer)
+    {
+        if (depthBuffer.width != renderWidth ||
+            depthBuffer.height != renderHeight ||
+            !depthBuffer.buffer.length)
+        {
+            depthBuffer.width = renderWidth;
+            depthBuffer.height = renderHeight;
+            depthBuffer.buffer = new Array(depthBuffer.width * depthBuffer.height).fill(Number.MAX_SAFE_INTEGER); 
+        }
+        else
+        {
+            depthBuffer.buffer.fill(Number.MAX_SAFE_INTEGER);
+        }
+    }
 
     ngons.forEach((ngon)=>
     {
@@ -1050,7 +1086,7 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
 
         // Draw the ngon.
         {
-            // Solid/textured fill.
+            // Solid or textured fill.
             if (ngon.material.hasSolidFill)
             {
                 const polyYOffset = Math.floor(verts[0].y);
@@ -1066,7 +1102,10 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
                         const px = leftEdge[y].x;
                         const py = (y + polyYOffset);
                         const idx = ((px + py * renderWidth) * 4);
-                        
+
+                        // For linearly interpolating values across the left and right edge.
+                        const lerpStep = (x / rowWidth);
+
                         // Solid fill.
                         if (ngon.material.texture == null)
                         {
@@ -1083,13 +1122,13 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
                             {
                                 case "affine":
                                 {
-                                    u = (Rngon.lerp(leftEdge[y].u, rightEdge[y].u, x/rowWidth) * (ngon.material.texture.width-0.001));
-                                    v = (Rngon.lerp(leftEdge[y].v, rightEdge[y].v, x/rowWidth) * (ngon.material.texture.height-0.001));
+                                    u = (Rngon.lerp(leftEdge[y].u, rightEdge[y].u, lerpStep) * (ngon.material.texture.width-0.001));
+                                    v = (Rngon.lerp(leftEdge[y].v, rightEdge[y].v, lerpStep) * (ngon.material.texture.height-0.001));
 
                                     // Wrap with repetition.
                                     /// FIXME: Doesn't wrap correctly.
-                                    u %= ngon.material.texture.width;
-                                    v %= ngon.material.texture.height;
+                                    ///u %= ngon.material.texture.width;
+                                    ///v %= ngon.material.texture.height;
 
                                     break;
                                 }
@@ -1105,15 +1144,36 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
 
                             const texelIdx = ((~~u) + (~~v) * ngon.material.texture.width);
 
-                            // Alpha-testing. If the pixel is fully opaque, draw it; otherwise, skip it.
-                            if (ngon.material.texture.pixels[texelIdx] &&
-                                (ngon.material.texture.pixels[texelIdx].alpha === 255))
+                            // Verify that the texel isn't out of bounds.
+                            if (!ngon.material.texture.pixels[texelIdx])
                             {
-                                pixelBuffer[idx + 0] = (ngon.material.texture.pixels[texelIdx].red   * ngon.material.color.unitRange.red);
-                                pixelBuffer[idx + 1] = (ngon.material.texture.pixels[texelIdx].green * ngon.material.color.unitRange.green);
-                                pixelBuffer[idx + 2] = (ngon.material.texture.pixels[texelIdx].blue  * ngon.material.color.unitRange.blue);
-                                pixelBuffer[idx + 3] = (ngon.material.texture.pixels[texelIdx].alpha * ngon.material.color.unitRange.alpha);
+                                continue;
                             }
+
+                            // Alpha testing. If the pixel is fully opaque, draw it; otherwise, skip it.
+                            if (ngon.material.texture.pixels[texelIdx].alpha !== 255)
+                            {
+                                continue;
+                            }
+
+                            // Depth testing. Only allow the pixel to be drawn if any previous pixels
+                            // at this screen position are further away from the camera.
+                            if (Rngon.internalState.useDepthBuffer)
+                            {
+                                const depth = Rngon.lerp(leftEdge[y].depth, rightEdge[y].depth, lerpStep);
+
+                                if (depthBuffer.buffer[idx/4] <= depth)
+                                {
+                                    continue;
+                                }
+                                else depthBuffer.buffer[idx/4] = depth;
+                            }
+
+                            // Draw the pixel.
+                            pixelBuffer[idx + 0] = (ngon.material.texture.pixels[texelIdx].red   * ngon.material.color.unitRange.red);
+                            pixelBuffer[idx + 1] = (ngon.material.texture.pixels[texelIdx].green * ngon.material.color.unitRange.green);
+                            pixelBuffer[idx + 2] = (ngon.material.texture.pixels[texelIdx].blue  * ngon.material.color.unitRange.blue);
+                            pixelBuffer[idx + 3] = (ngon.material.texture.pixels[texelIdx].alpha * ngon.material.color.unitRange.alpha);
                         }
 
                         for (let b = 0; b < auxiliaryBuffers.length; b++)
@@ -1214,6 +1274,11 @@ Rngon.render = function(canvasElementId,
         ...options
     });
 
+    // Modify any internal render parameters based on the user's options.
+    {
+        Rngon.internalState.useDepthBuffer = (options.depthSort == "depthbuffer");
+    }
+
     const renderSurface = Rngon.screen(canvasElementId, Rngon.ngon_filler, Rngon.ngon_transformer, options.scale, options.fov, options.auxiliaryBuffers);
 
     callMetadata.renderWidth = renderSurface.width;
@@ -1248,7 +1313,8 @@ Rngon.render = function(canvasElementId,
             // Apply depth sorting to the transformed ngons.
             switch (options.depthSort)
             {
-                case "none": break;
+                case "none":
+                case "depthbuffer": break;
 
                 // Painter's algorithm, i.e. sort by depth.
                 case "painter":

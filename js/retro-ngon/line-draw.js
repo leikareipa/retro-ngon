@@ -106,8 +106,9 @@ Rngon.line_draw = (()=>
                         const l = (distanceBetween(x1, y1, x0, y0) / (lineLength||1));
                         const u = Rngon.lerp(vert2.u, vert1.u, l);
                         const v = Rngon.lerp(vert2.v, vert1.v, l);
+                        const depth = Rngon.lerp(vert2.w, vert1.w, l);
 
-                        const pixel = {x:x0, u, v:(1-v)};
+                        const pixel = {x:x0, u, v:(1-v), depth};
 
                         if (noOverwrite)
                         {

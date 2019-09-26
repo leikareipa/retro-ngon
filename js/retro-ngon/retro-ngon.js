@@ -32,3 +32,12 @@ const Rngon = {};
         console.log("Retro n-gon: " + string);
     }
 }
+
+// Global render toggles. These should not be modified directly; they're instead
+// set by the renderer based on render parameters requested by the user.
+{
+    Rngon.internalState = {};
+
+    // Whether to require pixels to pass a depth test before being allowed on screen.
+    Rngon.internalState.useDepthBuffer = false;
+}

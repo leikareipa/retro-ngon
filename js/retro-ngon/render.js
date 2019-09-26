@@ -53,6 +53,11 @@ Rngon.render = function(canvasElementId,
         ...options
     });
 
+    // Modify any internal render parameters based on the user's options.
+    {
+        Rngon.internalState.useDepthBuffer = (options.depthSort == "depthbuffer");
+    }
+
     const renderSurface = Rngon.screen(canvasElementId, Rngon.ngon_filler, Rngon.ngon_transformer, options.scale, options.fov, options.auxiliaryBuffers);
 
     callMetadata.renderWidth = renderSurface.width;
@@ -87,7 +92,8 @@ Rngon.render = function(canvasElementId,
             // Apply depth sorting to the transformed ngons.
             switch (options.depthSort)
             {
-                case "none": break;
+                case "none":
+                case "depthbuffer": break;
 
                 // Painter's algorithm, i.e. sort by depth.
                 case "painter":
