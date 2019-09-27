@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: live (27 September 2019 11:33:59 UTC)
+// VERSION: live (27 September 2019 12:54:51 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -1267,6 +1267,7 @@ Rngon.render = function(canvasElementId,
                                        options.fov,
                                        options.nearPlane,
                                        options.farPlane,
+                                       options.pixelBuffer,
                                        options.auxiliaryBuffers);
 
     callMetadata.renderWidth = renderSurface.width;
@@ -1357,6 +1358,7 @@ Rngon.render.defaultOptions =
     hibernateWhenNotOnScreen: true,
     perspectiveCorrectTexturing: false,
     auxiliaryBuffers: [],
+    pixelBuffer: {imageData: null},
 };
 /*
  * Tarpeeksi Hyvae Soft 2019 /
@@ -1514,6 +1516,7 @@ Rngon.screen = function(canvasElementId = "",              // The DOM id of the 
                         fov = 43,
                         nearPlane = 1,
                         farPlane = 1000,
+                        pixelBuffer = null,
                         auxiliaryBuffers = [])
 {
     Rngon.assert && (typeof scaleFactor === "number") || Rngon.throw("Expected the scale factor to be a numeric value.");
@@ -1533,9 +1536,13 @@ Rngon.screen = function(canvasElementId = "",              // The DOM id of the 
     const perspectiveMatrix = Rngon.matrix44.perspective((fov * Math.PI/180), (screenWidth / screenHeight), nearPlane, farPlane);
     const screenMatrix = Rngon.matrix44.ortho(screenWidth, screenHeight);
 
-    function exposed_render_context()
+    const renderContext = canvasElement.getContext("2d");
+
+    if (!pixelBuffer.imageData ||
+        (pixelBuffer.imageData.width != screenWidth) ||
+        (pixelBuffer.imageData.height != screenHeight))
     {
-        return canvasElement.getContext("2d");
+        pixelBuffer.imageData = new ImageData(screenWidth, screenHeight);
     }
 
     const publicInterface = Object.freeze(
@@ -1545,9 +1552,7 @@ Rngon.screen = function(canvasElementId = "",              // The DOM id of the 
 
         wipe_clean: function()
         {
-            const renderContext = exposed_render_context();
-            renderContext.fillStyle = "transparent";
-            renderContext.fillRect(0, 0, screenWidth, screenHeight);
+            pixelBuffer.imageData.data.fill(0);
         },
 
         // Returns a copy of the ngons transformed into screen-space for this render surface.
@@ -1564,13 +1569,10 @@ Rngon.screen = function(canvasElementId = "",              // The DOM id of the 
         // Draw the given ngons onto this render surface.
         draw_ngons: function(ngons = [])
         {
-            const renderContext = exposed_render_context();
-            const pixelBuffer = renderContext.getImageData(0, 0, screenWidth, screenHeight);
-
-            ngon_fill_f(ngons, pixelBuffer.data, auxiliaryBuffers, screenWidth, screenHeight);
-
-            renderContext.putImageData(pixelBuffer, 0, 0);
+            ngon_fill_f(ngons, pixelBuffer.imageData.data, auxiliaryBuffers, screenWidth, screenHeight);
+            renderContext.putImageData(pixelBuffer.imageData, 0, 0);
         },
     });
+
     return publicInterface;
 }
