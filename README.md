@@ -674,7 +674,9 @@ const ngon = Rngon.ngon([vertex1, vertex2]);
 #### vector3([x[, y[, z]]])
 A three-component vector.
 
-*Aliases:* **rotation_vector**, **translation_vector**, **scaling_vector**
+*Aliases:* **rotation_vector**\*, **translation_vector**, **scaling_vector**
+
+\* Component values passed to **rotation_vector** are expected to be in units of degrees; and are automatically converted by value into the renderer's internal angle units.
 
 *Parameters:*
 
