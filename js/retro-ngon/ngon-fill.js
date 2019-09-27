@@ -221,10 +221,14 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
                         else
                         {
                             let u = 0, v = 0;
+                            
                             switch (ngon.material.textureMapping)
                             {
                                 case "affine":
                                 {
+                                    const textureWidth = (ngon.material.texture.width - 0.001);
+                                    const textureHeight = (ngon.material.texture.height - 0.001);
+
                                     u = interpolatedValue.u;
                                     v = interpolatedValue.v;
 
@@ -233,24 +237,35 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
                                         u /= interpolatedValue.uvw;
                                         v /= interpolatedValue.uvw;
                                     }
-
+                                    
                                     /// FIXME: We need to flip v or the textures render upside down. Why?
                                     v = (1 - v);
 
-                                    u *= (ngon.material.texture.width - 0.001);
-                                    v *= (ngon.material.texture.height - 0.001);
+                                    u *= textureWidth;
+                                    v *= textureHeight;
 
                                     // Wrap with repetition.
-                                    /// FIXME: Doesn't wrap correctly.
-                                    ///u %= ngon.material.texture.width;
-                                    ///v %= ngon.material.texture.height;
+                                    if ((u < 0) ||
+                                        (v < 0) ||
+                                        (u >= textureWidth) ||
+                                        (v >= textureHeight))
+                                    {
+                                        const uWasNeg = (u < 0);
+                                        const vWasNeg = (v < 0);
+
+                                        u = (Math.abs(u) % textureWidth);
+                                        v = (Math.abs(v) % textureHeight);
+
+                                        if (uWasNeg) u = (textureWidth - u);
+                                        if (vWasNeg) v = (textureHeight - v);
+                                    }
 
                                     break;
                                 }
                                 case "ortho":
                                 {
                                     u = x * ((ngon.material.texture.width - 0.001) / rowWidth);
-                                    v = y * ((ngon.material.texture.height - 0.001) / ((polyHeight-1)||1));
+                                    v = y * ((ngon.material.texture.height - 0.001) / ((polyHeight - 1) || 1));
 
                                     break;
                                 }
