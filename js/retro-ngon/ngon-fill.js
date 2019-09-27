@@ -156,8 +156,36 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
                     const rowWidth = (rightEdge[y].x - leftEdge[y].x);
                     if (rowWidth <= 0) continue;
 
+                    // We'll interpolate certain parameters across this pixel row. For that,
+                    // let's pre-compute delta values we can just add onto the parameter's
+                    // base value each step of the loop.
+                    const interpolationStepSize = (1 / rowWidth);
+                    const interpolationDelta = 
+                    {
+                        u:     (Rngon.lerp(leftEdge[y].u, rightEdge[y].u, interpolationStepSize) - leftEdge[y].u),
+                        v:     (Rngon.lerp(leftEdge[y].v, rightEdge[y].v, interpolationStepSize) - leftEdge[y].v),
+                        uvw:   (Rngon.lerp(leftEdge[y].uvw, rightEdge[y].uvw, interpolationStepSize) - leftEdge[y].uvw),
+                        depth: (Rngon.lerp(leftEdge[y].depth, rightEdge[y].depth, interpolationStepSize) - leftEdge[y].depth),
+                    };
+                    const interpolatedValue = 
+                    {
+                        // Decrement the value by the delta so we can increment at the start
+                        // of the loop rather than at the end of it - so we can e.g. bail out
+                        // of the loop where needed without worry of not correctly incrementing
+                        // the interpolated values.
+                        u:     (leftEdge[y].u - interpolationDelta.u),
+                        v:     (leftEdge[y].v - interpolationDelta.v),
+                        uvw:   (leftEdge[y].uvw - interpolationDelta.uvw),
+                        depth: (leftEdge[y].depth - interpolationDelta.depth),
+                    };
+
                     for (let x = 0; x <= rowWidth; (x++, leftEdge[y].x++))
                     {
+                        interpolatedValue.u += interpolationDelta.u;
+                        interpolatedValue.v += interpolationDelta.v;
+                        interpolatedValue.uvw += interpolationDelta.uvw;
+                        interpolatedValue.depth += interpolationDelta.depth;
+
                         if (leftEdge[y].x < 0 || leftEdge[y].x >= renderWidth) continue;
 
                         const px = leftEdge[y].x;
@@ -165,9 +193,6 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
                         const idx = ((px + py * renderWidth) * 4);
 
                         if (py < 0 || py >= renderHeight) continue;
-
-                        // For linearly interpolating values across the left and right edge.
-                        const lerpStep = (x / rowWidth);
 
                         // Solid fill.
                         if (ngon.material.texture == null)
@@ -182,10 +207,8 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
                             // at this screen position are further away from the camera.
                             if (Rngon.internalState.useDepthBuffer)
                             {
-                                const depth = Rngon.lerp(leftEdge[y].depth, rightEdge[y].depth, lerpStep);
-
-                                if (depthBuffer.buffer[idx/4] <= depth) continue;
-                                else depthBuffer.buffer[idx/4] = depth;
+                                if (depthBuffer.buffer[idx/4] <= interpolatedValue.depth) continue;
+                                else depthBuffer.buffer[idx/4] = interpolatedValue.depth;
                             }
 
                             // Draw the pixel.
@@ -202,14 +225,13 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
                             {
                                 case "affine":
                                 {
-                                    u = (Rngon.lerp(leftEdge[y].u, rightEdge[y].u, lerpStep));
-                                    v = (Rngon.lerp(leftEdge[y].v, rightEdge[y].v, lerpStep));
+                                    u = interpolatedValue.u;
+                                    v = interpolatedValue.v;
 
                                     if (Rngon.internalState.usePerspectiveCorrectTexturing)
                                     {
-                                        const uvw = (Rngon.lerp(leftEdge[y].uvw, rightEdge[y].uvw, lerpStep));
-                                        u /= uvw;
-                                        v /= uvw;
+                                        u /= interpolatedValue.uvw;
+                                        v /= interpolatedValue.uvw;
                                     }
 
                                     /// FIXME: We need to flip v or the textures render upside down. Why?
@@ -253,10 +275,8 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
                             // at this screen position are further away from the camera.
                             if (Rngon.internalState.useDepthBuffer)
                             {
-                                const depth = Rngon.lerp(leftEdge[y].depth, rightEdge[y].depth, lerpStep);
-                                
-                                if (depthBuffer.buffer[idx/4] <= depth) continue;
-                                else depthBuffer.buffer[idx/4] = depth;
+                                if (depthBuffer.buffer[idx/4] <= interpolatedValue.depth) continue;
+                                else depthBuffer.buffer[idx/4] = interpolatedValue.depth;
                             }
 
                             // Draw the pixel.
