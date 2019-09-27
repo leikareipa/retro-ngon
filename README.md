@@ -39,10 +39,13 @@ The retro n-gon renderer encourages low resolutions, very low polycounts, and de
 **A scene** from Tomb Raider 1 rendered with solid-filled polygons. (Based on assets produced by Core Design for *Tomb Raider*. Core Design is not associated with the retro n-gon renderer.)
 
 ![A scene from RallySportED-js](/images/screenshots/alpha/rsed-rngon-1.png)
-**A scene** from RallySportED-js with geometry built from texture-mapped, wireframed quads. (Based on textures and 3d models produced by Jukka Jäkälä for *Rally-Sport*. Jukka Jäkälä is not associated with the retro n-gon renderer.)
+**The track** edit view in RallySportED-js with geometry built from texture-mapped, wireframed quads. (Based on textures and 3d models produced by Jukka Jäkälä for *Rally-Sport*. Jukka Jäkälä is not associated with the retro n-gon renderer.)
 
-![A scene from RallySportED-js](/images/screenshots/alpha/q1-rngon-1.png)
-**The first** level from Quake 1 rendered using texture-mapped triangles. Note that lightmaps are not used. (Based on textures and 3d models produced by id Software for *Quake*; id Software is not associated with the retro n-gon renderer.)
+![A scene from Quake, low-res](/images/screenshots/alpha/q1-rngon-2.png)
+**Level E1M1** from Quake 1 rendered using texture-mapped triangles and quads. Note that lightmaps are not used. (Based on textures and 3d models produced by id Software for *Quake*; id Software is not associated with the retro n-gon renderer.)
+
+![A scene from Quake, high-res](/images/screenshots/alpha/q1-rngon-3.png)
+**Level E1M1** from Quake 1 rendered in high resolution. Note that lightmaps are not used. (Based on textures and 3d models produced by id Software for *Quake*; id Software is not associated with the retro n-gon renderer.)
 
 # How to use
 In this section, you'll find both theoretical and practical guidance on using the retro n-gon renderer; including a reference manual for the renderer's API.
