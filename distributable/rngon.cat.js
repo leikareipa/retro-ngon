@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: live (26 September 2019 14:42:40 UTC)
+// VERSION: live (27 September 2019 07:53:36 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -876,7 +876,7 @@ Rngon.matrix44 = (()=>
 
 "use strict";
 
-const depthBuffer = {width:0, height:0, buffer:new Array(0)};
+const depthBuffer = {width:0, height:0, buffer:new Array(0), clearValue:Number.MAX_SAFE_INTEGER};
 
 // Rasterizes the given ngons into the given RGBA pixel buffer of the given width and height.
 //
@@ -901,11 +901,11 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
         {
             depthBuffer.width = renderWidth;
             depthBuffer.height = renderHeight;
-            depthBuffer.buffer = new Array(depthBuffer.width * depthBuffer.height).fill(Number.MAX_SAFE_INTEGER); 
+            depthBuffer.buffer = new Array(depthBuffer.width * depthBuffer.height).fill(depthBuffer.clearValue); 
         }
         else
         {
-            depthBuffer.buffer.fill(Number.MAX_SAFE_INTEGER);
+            depthBuffer.buffer.fill(depthBuffer.clearValue);
         }
     }
 
