@@ -1,7 +1,9 @@
 # The retro n-gon renderer
 A minimalist 3d software renderer that draws n-sided polygons (as well as lines and points) onto a user-supplied HTML5 canvas. Its intended use cases are chiefly those where a minimalist retro aesthetic is preferred.
 
-You can view a live sample of the renderer's output at [http://tarpeeksihyvaesoft.com/s/retro-ngon/samples/simple2.html](http://tarpeeksihyvaesoft.com/s/retro-ngon/samples/simple2.html).
+You can view an interactive sample of the renderer's output [here](http://tarpeeksihyvaesoft.com/s/retro-ngon/samples/tr/home-test.html?fov=55&scale=0.2&depthBuffer=true&perspectiveCorrect=true) (interaction requires a mouse and keyboard; click on the page to engage mouse lock). This renders a scene from the PC game *Tomb Raider* in which you can move around using the mouse and keyboard (the ESDF keys, specifically).
+
+A non-interactive render sample is also available [here](http://tarpeeksihyvaesoft.com/s/retro-ngon/samples/simple2.html). It produces a spinning texture-mapped cube.
 
 ![A textured cube](/images/painting-cube.png)
 
@@ -9,24 +11,37 @@ You can view a live sample of the renderer's output at [http://tarpeeksihyvaesof
 - Easy to use
 - Genuine retro aesthetics
 - Natively renders convex n-sided polygons
-- Written in vanilla JavaScript without dependencies
+- Written in vanilla JavaScript and has no dependencies
 
 ### Projects using the retro n-gon renderer
 - [RallySportED-js](https://github.com/leikareipa/rallysported-js/), a contemporary asset editor for the DOS game Rally-Sport
 
 ### Suggested use cases
-The retro n-gon renderer is not intended as a general-purpose software 3d renderer. It omits several modern features &ndash; more of which elsewhere in this document &ndash; in favor of a legit retro look and feel. I've made a number of other open-source software renderers, some of which might fit your needs or interests better:
+The retro n-gon renderer is not intended as a general-purpose software 3d renderer. It omits many modern features in favor of a legit retro look and feel.
+
+I have a number of other open-source software renderer projects also, some of which might fit your needs or interests better:
 - [Wray](https://github.com/leikareipa/wray/) for path tracing in JavaScript
-- [RallySportED](https://github.com/leikareipa/rallysported-diverse/)'s renderer in C++ with Qt and Win32 API as frontends (also w/ support for OpenGL and Glide)
 - [Vond](https://github.com/leikareipa/vond/), a low-res hybrid voxel/polygon software renderer in C++
+- [Vond Jr.](https://github.com/leikareipa/vond-jr/) is a Java version of Vond
 - [dccb](https://github.com/leikareipa/dccb/)'s is a simple software renderer in C for 16-bit DOS
+- [shiet](https://github.com/leikareipa/shiet/) is an up-coming C-based retro-themed renderer and API wrapper with support for OpenGL, Glide, and software rasterization on the Win32 platform (and possibly others)
 
-The retro n-gon renderer encourages very low resolutions, very low polycounts, and designing your way around considerable visual limitations &ndash; like in the old days of software rendering. You might use the renderer for some of the following purposes:
+The retro n-gon renderer encourages low resolutions, very low polycounts, and designing your way around technical limitations &ndash; like in the old days of software rendering. You might use the renderer for some of the following purposes:
 - Engagement in feature minimalism
-- Retro 3d games with sparse, simple environments (e.g. an Asteroids clone)
-- Visualizing 3d models in a wobbly, old-fashioned manner
+- Retro 3d games with sparse, simple environments
+- Visualizing 3d models in an old-fashioned manner
 
-# How to use the renderer
+# Screenshots
+![A scene from Tomb Raider, textured](/images/screenshots/alpha/tr-rngon-1.png)
+**A scene** from Tomb Raider 1 as rendered by the retro n-gon renderer and consisting of textured quads and triangles. (Based on assets produced by Core Design for *Tomb Raider*. Core Design is not associated with the retro n-gon renderer.)
+
+![A scene from Tomb Raider, solid-filled](/images/screenshots/alpha/tr-rngon-2.png)
+**A scene** from Tomb Raider 1 rendered with solid-filled polygons. (Based on assets produced by Core Design for *Tomb Raider*. Core Design is not associated with the retro n-gon renderer.)
+
+![A scene from RallySportED-js](/images/screenshots/alpha/rsed-rngon-1.png)
+**A scene** from RallySportED-js with geometry built from texture-mapped, wireframed quads. (Based on textures and 3d models produced by Jukka Jäkälä for *Rally-Sport*. Jukka Jäkälä is not associated with the retro n-gon renderer.)
+
+# How to use
 In this section, you'll find both theoretical and practical guidance on using the retro n-gon renderer; including a reference manual for the renderer's API.
 
 Contents:
