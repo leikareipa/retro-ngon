@@ -39,12 +39,12 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
         }
     }
 
-    ngons.forEach((ngon)=>
+    for (const ngon of ngons)
     {
         // Deal with n-gons that have fewer than 3 vertices.
         switch (ngon.vertices.length)
         {
-            case 0: return;
+            case 0: continue;
 
             // A single point.
             case 1:
@@ -56,7 +56,7 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
                 pixelBuffer[idx + 2] = ngon.material.color.blue;
                 pixelBuffer[idx + 3] = ngon.material.color.alpha;
 
-                return;
+                continue;
             }
 
             // A line segment.
@@ -66,7 +66,7 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
                                                   pixelBuffer, renderWidth, renderHeight,
                                                   ngon.material.color)
                                                   
-                return;
+                continue;
             }
 
             // If the ngon has more than 2 vertices, fall through to the code below the switch block.
@@ -327,5 +327,5 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
                 putline(prevVert, leftVerts[0]);
             }
         }
-    });
+    };
 }

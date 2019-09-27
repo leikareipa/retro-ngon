@@ -90,13 +90,13 @@ Rngon.render = function(canvasElementId,
                                                                                              -options.cameraPosition.y,
                                                                                              -options.cameraPosition.z));
 
-            meshes.forEach(mesh=>
+            for (const mesh of meshes)
             {
                 const meshVerts = mesh.ngons.reduce((array, ngon)=>{array.push(ngon.clone()); return array;}, []);
                 renderSurface.transform_ngons(meshVerts, mesh.objectSpaceMatrix(), cameraMatrix);
 
                 transformedNgons.push(...meshVerts);
-            });
+            };
 
             // Apply depth sorting to the transformed ngons.
             switch (options.depthSort)

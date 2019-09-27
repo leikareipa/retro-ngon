@@ -9,13 +9,13 @@
 // Transforms the given n-gons into screen space for rendering.
 Rngon.ngon_transformer = function(ngons = [], clipSpaceMatrix = [], screenMatrix = [])
 {
-    ngons.forEach(ngon=>
+    for (const ngon of ngons)
     {
         ngon.transform(clipSpaceMatrix);
         ngon.clip_to_viewport();
         ngon.transform(screenMatrix);
         ngon.perspective_divide();
-    });
+    };
 
     // Remove n-gons that have no vertices (e.g. due to all of them having been all clipped away).
     {

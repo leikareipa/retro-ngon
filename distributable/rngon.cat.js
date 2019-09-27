@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: live (27 September 2019 12:54:51 UTC)
+// VERSION: live (27 September 2019 13:21:41 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -514,18 +514,18 @@ Rngon.ngon = function(vertices = [Rngon.vertex()], material = {})
 
         perspective_divide: function()
         {
-            this.vertices.forEach(vert=>
+            for (const vert of this.vertices)
             {
                 vert.perspective_divide();
-            });
+            }
         },
 
         transform: function(matrix44)
         {
-            this.vertices.forEach(vert=>
+            for (const vert of this.vertices)
             {
                 vert.transform(matrix44);
-            });
+            }
         },
     };
 
@@ -909,12 +909,12 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
         }
     }
 
-    ngons.forEach((ngon)=>
+    for (const ngon of ngons)
     {
         // Deal with n-gons that have fewer than 3 vertices.
         switch (ngon.vertices.length)
         {
-            case 0: return;
+            case 0: continue;
 
             // A single point.
             case 1:
@@ -926,7 +926,7 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
                 pixelBuffer[idx + 2] = ngon.material.color.blue;
                 pixelBuffer[idx + 3] = ngon.material.color.alpha;
 
-                return;
+                continue;
             }
 
             // A line segment.
@@ -936,7 +936,7 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
                                                   pixelBuffer, renderWidth, renderHeight,
                                                   ngon.material.color)
                                                   
-                return;
+                continue;
             }
 
             // If the ngon has more than 2 vertices, fall through to the code below the switch block.
@@ -1197,7 +1197,7 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
                 putline(prevVert, leftVerts[0]);
             }
         }
-    });
+    };
 }
 /*
  * Tarpeeksi Hyvae Soft 2019 /
@@ -1291,13 +1291,13 @@ Rngon.render = function(canvasElementId,
                                                                                              -options.cameraPosition.y,
                                                                                              -options.cameraPosition.z));
 
-            meshes.forEach(mesh=>
+            for (const mesh of meshes)
             {
                 const meshVerts = mesh.ngons.reduce((array, ngon)=>{array.push(ngon.clone()); return array;}, []);
                 renderSurface.transform_ngons(meshVerts, mesh.objectSpaceMatrix(), cameraMatrix);
 
                 transformedNgons.push(...meshVerts);
-            });
+            };
 
             // Apply depth sorting to the transformed ngons.
             switch (options.depthSort)
@@ -1371,13 +1371,13 @@ Rngon.render.defaultOptions =
 // Transforms the given n-gons into screen space for rendering.
 Rngon.ngon_transformer = function(ngons = [], clipSpaceMatrix = [], screenMatrix = [])
 {
-    ngons.forEach(ngon=>
+    for (const ngon of ngons)
     {
         ngon.transform(clipSpaceMatrix);
         ngon.clip_to_viewport();
         ngon.transform(screenMatrix);
         ngon.perspective_divide();
-    });
+    };
 
     // Remove n-gons that have no vertices (e.g. due to all of them having been all clipped away).
     {

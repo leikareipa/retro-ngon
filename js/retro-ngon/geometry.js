@@ -209,18 +209,18 @@ Rngon.ngon = function(vertices = [Rngon.vertex()], material = {})
 
         perspective_divide: function()
         {
-            this.vertices.forEach(vert=>
+            for (const vert of this.vertices)
             {
                 vert.perspective_divide();
-            });
+            }
         },
 
         transform: function(matrix44)
         {
-            this.vertices.forEach(vert=>
+            for (const vert of this.vertices)
             {
                 vert.transform(matrix44);
-            });
+            }
         },
     };
 
