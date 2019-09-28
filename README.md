@@ -355,9 +355,9 @@ At the moment, the Blender export script is quite rudimentary, and doesn't neces
 
 To export a scene from Blender, simply load up the export script file in Blender, and run it. The exact way to load Python scripts into Blender will depend on your version of Blender &ndash; if you're uncertain, just have a look on Google for the specifics, but know that it's not a complicated process.
 
-At the moment, the script exports vertex coordinates, vertex UV coordinates, each material's diffuse color and its intensity, and, if any, the filename of the texture image in each material's first texture slot. Objects that are hidden will not be exported. Normals are ignored. You should first apply any pending transformations on each object (Object > Apply in Blender's menu) before you run the export script, as these will otherwise be ignored. The same goes for any modifiers that have not yet been applied.
+At the moment, the script exports vertex coordinates, vertex UV coordinates, each material's diffuse color and its intensity, and, if any, the filename of the texture image in each material's first texture slot. Objects that are hidden will not be exported. Normals are ignored. You should first apply any pending transformations to the objects (Object > Apply in Blender's menu) before running export script, as any unapplied transformations will be ignored. The same goes for any other modifiers that have not yet been applied.
 
-Since the retro n-gon renderer uses per-face depth-sorting when rendering, it's a good idea to subdivide large polygons in Blender before exporting them. For instance, if you have a mesh of a statue consisting of several small polygons stood on a floor made up of a single large polygon, the floor is likely to obscure the statue during rendering, even when viewed from angles where it shouldn't. This is because the renderer averages a polygon's depth information across its entire face, causing large polygons to have poor depth resolution, which leads to an inability to correctly separate it by depth from other polygons.
+If you are not planning on using depth buffering in your rendering, you may need to subdivide larger polygons to prevent them from incorrectly occluding other nearby geometry. Without depth buffering, the renderer will average a polygon's depth information across its face into one value &ndash; which will become a less accurate approximation of the polygon's depth as its area grows. On the other hand, when depth buffering is enabled, the renderer will use per-pixel depth interpolation, which will be accurate for larger polygons as well as smaller ones.
 
 Once the file has been exported, it's likely that you'll have to make a few edits to it by hand. Texture filenames, for instance, will probably need to be given correct paths. If you have unused textures or materials in Blender, they will nonetheless also be exported, and may require manual deletion from the file (or, perhaps ideally, from Blender, so that they don't get exported in the first place).
 
@@ -451,7 +451,7 @@ Renders one or more n-gon meshes onto an existing canvas element.
 | --------------------- | ------------------------ | ----------- |
 | *number*              | scale                    | The resolution of the rendering relative to the size of the target canvas. For instance, a scale of 0.5 would result in rendering an image half the resolution of the target canvas. Values below 1 will see the rendered image upscaled to fit the canvas, while values above 1 result in downscaling. The CSS property *image-rendering* on the target canvas can be used to set the type of post-render scaling - f.e. *image-rendering: pixelated* will on some browsers result in pixelated rather than blurred scaling. Defaults to *1*. |
 | *number*              | fov                      | Field of view. Defaults to *43*. |
-| *string*              | depthSort                | Type of depth sorting to use when transforming the n-gons for rasterization. Possible values: "none" (no sorting), "painter" (sort by average *z*), "depthbuffer" (use a per-pixel depth buffer). Defaults to *"painter"*. |
+| *string*              | depthSort                | Type of depth sorting to use when transforming the n-gons for rasterization. Possible values: "none" (no sorting &ndash; it is up to you to ensure proper ordering of the n-gons before submitting them to be rendered), "painter" (sort by average *z* &ndash; computationally cheap but can be inaccurate for large faces), "depthbuffer" (use a per-pixel depth buffer &ndash; accurate but somewhat computational-heavy). Defaults to *"painter"*. |
 | *boolean*             | hibernateWhenNotOnScreen | If true, rendering will be skipped if the target canvas is not at least partially within the current viewport. Defaults to *true*. |
 | *number*              | nearPlane                | Distance from the camera to the near plane. Vertices closer to the camera will be clipped. Defaults to *1*.|
 | *number*              | farPlane                 | Distance from the camera to the far plane. Vertices further from the camera will be clipped. Defaults to *1000*.|
@@ -1004,7 +1004,7 @@ Development is currently sporadic or on hold; however the project is not abandon
 
 ### Which features typical of 3d engines are missing?
 - Lighting
-- Fully perspective-correct texture-mapping
+- Visibility culling
 
 Note also that concave n-gons are not supported.
 
