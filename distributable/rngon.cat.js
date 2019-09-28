@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: live (28 September 2019 04:48:08 UTC)
+// VERSION: live (28 September 2019 05:15:05 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -1120,13 +1120,13 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
                                         v *= textureHeight;
 
                                         // Wrap with repetition.
-                                        if ((u < 0) ||
-                                            (v < 0) ||
-                                            (u >= textureWidth) ||
-                                            (v >= textureHeight))
+                                        if ((u < -0.001) ||
+                                            (v < -0.001) ||
+                                            (u >= ngon.material.texture.width) ||
+                                            (v >= ngon.material.texture.height))
                                         {
-                                            const uWasNeg = (u < 0);
-                                            const vWasNeg = (v < 0);
+                                            const uWasNeg = (u < -0.001);
+                                            const vWasNeg = (v < -0.001);
 
                                             u = (Math.abs(u) % textureWidth);
                                             v = (Math.abs(v) % textureHeight);
