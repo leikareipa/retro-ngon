@@ -15,7 +15,7 @@ Rngon.screen = function(canvasElementId = "",              // The DOM id of the 
                         fov = 43,
                         nearPlane = 1,
                         farPlane = 1000,
-                        pixelBuffer = null,
+                        pixelBuffer = {imageData:null},
                         auxiliaryBuffers = [])
 {
     Rngon.assert && (typeof scaleFactor === "number") || Rngon.throw("Expected the scale factor to be a numeric value.");
