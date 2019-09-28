@@ -25,8 +25,8 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
     // rendering.
     if (Rngon.internalState.useDepthBuffer)
     {
-        if (depthBuffer.width != renderWidth ||
-            depthBuffer.height != renderHeight ||
+        if ((depthBuffer.width != renderWidth) ||
+            (depthBuffer.height != renderHeight) ||
             !depthBuffer.buffer.length)
         {
             depthBuffer.width = renderWidth;
@@ -39,308 +39,314 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
         }
     }
 
+    // Rasterize the n-gons.
     for (const ngon of ngons)
     {
-        // Deal with n-gons that have fewer than 3 vertices.
-        switch (ngon.vertices.length)
+        // In theory, we should never receive n-gons that have no vertices, but let's check
+        // to make sure.
+        if (ngon.vertices.length <= 0)
         {
-            case 0: continue;
+            continue;
+        }
 
-            // A single point.
-            case 1:
-            {
-                const idx = ((Math.floor(ngon.vertices[0].x) + Math.floor(ngon.vertices[0].y) * renderWidth) * 4);
+        // Handle n-gons that constitute points and lines.
+        if (ngon.vertices.length === 1)
+        {
+            const idx = ((Math.floor(ngon.vertices[0].x) + Math.floor(ngon.vertices[0].y) * renderWidth) * 4);
                 
-                pixelBuffer[idx + 0] = ngon.material.color.red;
-                pixelBuffer[idx + 1] = ngon.material.color.green;
-                pixelBuffer[idx + 2] = ngon.material.color.blue;
-                pixelBuffer[idx + 3] = ngon.material.color.alpha;
+            pixelBuffer[idx + 0] = ngon.material.color.red;
+            pixelBuffer[idx + 1] = ngon.material.color.green;
+            pixelBuffer[idx + 2] = ngon.material.color.blue;
+            pixelBuffer[idx + 3] = ngon.material.color.alpha;
 
-                continue;
-            }
+            continue;
+        }
+        else if (ngon.vertices.length === 2)
+        {
+            Rngon.line_draw.into_pixel_buffer(ngon.vertices[0], ngon.vertices[1],
+                                              pixelBuffer, renderWidth, renderHeight,
+                                              ngon.material.color)
 
-            // A line segment.
-            case 2:
-            {
-                Rngon.line_draw.into_pixel_buffer(ngon.vertices[0], ngon.vertices[1],
-                                                  pixelBuffer, renderWidth, renderHeight,
-                                                  ngon.material.color)
-                                                  
-                continue;
-            }
-
-            // If the ngon has more than 2 vertices, fall through to the code below the switch block.
-            default: break;
+            continue;
         }
 
-        // Find which of the ngon's vertices form the ngon's left side and which the right.
-        // With that information, we can then fill in the horizontal pixel spans between them.
-        // The vertices will be arranged such that the first entry in the 'left' list will be the
-        // ngon's top-most (lowest y) vertex, and entries after that successively higher in y.
-        // For the 'right' list, the first entry will be the ngon's bottom-most vertex, and
-        // entries following successively lower in y. In other words, by tracing the vertices
-        // first through 'left' and then 'right', you end up with an anti-clockwise loop around
-        // the ngon.
-        const verts = ngon.vertices;
-        const leftVerts = [];
-        const rightVerts = [];
+        // Handle n-gons with 3 or more vertices.
         {
-            // Sort the vertices by height (i.e. by increasing y).
-            verts.sort((vertA, vertB)=>((vertA.y === vertB.y)? 0 : ((vertA.y < vertB.y)? -1 : 1)));
-            const topVert = verts[0];
-            const bottomVert = verts[verts.length-1];
-
-            // The left side will always start with the top-most vertex, and the right side with
-            // the bottom-most vertex.
-            leftVerts.push(topVert);
-            rightVerts.push(bottomVert);
-
-            // Trace a line along x,y between the top-most vertex and the bottom-most vertex; and for
-            // the two intervening vertices, find whether they're to the left or right of that line on
-            // x. Being on the left side of that line means the vertex is on the ngon's left side,
-            // and same for the right side.
-            for (let i = 1; i < (verts.length - 1); i++)
+            // Draw two virtual lines around the n-gon, one through its left-hand vertices
+            // and the other through the right-hand ones, such that together the lines trace
+            // the n-gon's outline.
+            const leftEdge = [];
+            const rightEdge = [];
             {
-                const lr = Rngon.lerp(topVert.x, bottomVert.x, ((verts[i].y - topVert.y) / (bottomVert.y - topVert.y)));
-                ((verts[i].x >= lr)? rightVerts : leftVerts).push(verts[i]);
-            }
-
-            // Sort the two sides' vertices so that we can trace them anti-clockwise starting from the top,
-            // going down to the bottom vertex on the left side, and then back up to the top vertex along
-            // the right side.
-            leftVerts.sort((a, b)=>((a.y === b.y)? 0 : ((a.y < b.y)? -1 : 1)));
-            rightVerts.sort((a, b)=>((a.y === b.y)? 0 : ((a.y > b.y)? -1 : 1)));
-
-            Rngon.assert && ((leftVerts.length !== 0) && (rightVerts.length !== 0))
-                         || Rngon.throw("Expected each side list to have at least one vertex.");
-            Rngon.assert && ((leftVerts.length + rightVerts.length) === verts.length)
-                         || Rngon.throw("Vertices appear to have gone missing.");
-        }
-
-        // Create an array for each edge, where the index represents the y coordinate and the
-        // value is the x coordinates at that y (e.g. the coordinates 5,8 would be represented
-        // as array[8] === 5).
-        /// CLEANUP: The code for this is a bit unsightly.
-        const leftEdge = [];
-        const rightEdge = [];
-        {
-            // Left edge.
-            let prevVert = leftVerts[0];
-            for (let l = 1; l < leftVerts.length; l++)
-            {
-                Rngon.line_draw.into_array(prevVert, leftVerts[l], leftEdge, verts[0].y);
-                prevVert = leftVerts[l];
-            }
-            Rngon.line_draw.into_array(prevVert, rightVerts[0], leftEdge, verts[0].y);
-            
-            // Right edge.
-            prevVert = rightVerts[0];
-            for (let r = 1; r < rightVerts.length; r++)
-            {
-                Rngon.line_draw.into_array(prevVert, rightVerts[r], rightEdge, verts[0].y);
-                prevVert = rightVerts[r];
-            }
-            Rngon.line_draw.into_array(prevVert, leftVerts[0], rightEdge, verts[0].y);
-        }
-
-        // Draw the ngon.
-        {
-            // Solid or textured fill.
-            if (ngon.material.hasSolidFill)
-            {
-                const polyYOffset = Math.floor(verts[0].y);
-                const polyHeight = leftEdge.length;
-
-                for (let y = 0; y < polyHeight; y++)
+                // Figure out which of the n-gon's vertices are on its left edge and which on
+                // the right one. The vertices will be arranged such that the first entry in
+                // the list of left vertices will be the ngon's top-most (lowest y) vertex, and
+                // the entries after that are successively higher in y. For the list of right
+                // vertices, the first entry will be the ngon's bottom-most vertex, and entries
+                // following are successively lower in y. Thus, by tracing first through the list
+                // of left vertices and then through the list of right ones, you end up with an
+                // anti-clockwise loop around the ngon.
+                const leftVerts = [];
+                const rightVerts = [];
+                
+                // Generic algorithm for n-sided convex polygons.
                 {
-                    const rowWidth = (rightEdge[y].x - leftEdge[y].x);
-                    if (rowWidth <= 0) continue;
+                    // Sort the vertices by height (i.e. by increasing y).
+                    ngon.vertices.sort((vertA, vertB)=>((vertA.y === vertB.y)? 0 : ((vertA.y < vertB.y)? -1 : 1)));
+                    const topVert = ngon.vertices[0];
+                    const bottomVert = ngon.vertices[ngon.vertices.length-1];
 
-                    // We'll interpolate certain parameters across this pixel row. For that,
-                    // let's pre-compute delta values we can just add onto the parameter's
-                    // base value each step of the loop.
-                    const interpolationStepSize = (1 / rowWidth);
-                    const interpolationDelta = 
+                    // The left side will always start with the top-most vertex, and the right side with
+                    // the bottom-most vertex.
+                    leftVerts.push(topVert);
+                    rightVerts.push(bottomVert);
+
+                    // Trace a line along x,y between the top-most vertex and the bottom-most vertex; and for
+                    // the two intervening vertices, find whether they're to the left or right of that line on
+                    // x. Being on the left side of that line means the vertex is on the ngon's left side,
+                    // and same for the right side.
+                    for (let i = 1; i < (ngon.vertices.length - 1); i++)
                     {
-                        u:     (Rngon.lerp(leftEdge[y].u, rightEdge[y].u, interpolationStepSize) - leftEdge[y].u),
-                        v:     (Rngon.lerp(leftEdge[y].v, rightEdge[y].v, interpolationStepSize) - leftEdge[y].v),
-                        uvw:   (Rngon.lerp(leftEdge[y].uvw, rightEdge[y].uvw, interpolationStepSize) - leftEdge[y].uvw),
-                        depth: (Rngon.lerp(leftEdge[y].depth, rightEdge[y].depth, interpolationStepSize) - leftEdge[y].depth),
-                    };
-                    const interpolatedValue = 
+                        const lr = Rngon.lerp(topVert.x, bottomVert.x, ((ngon.vertices[i].y - topVert.y) / (bottomVert.y - topVert.y)));
+                        ((ngon.vertices[i].x >= lr)? rightVerts : leftVerts).push(ngon.vertices[i]);
+                    }
+
+                    // Sort the two sides' vertices so that we can trace them anti-clockwise starting from the top,
+                    // going down to the bottom vertex on the left side, and then back up to the top vertex along
+                    // the right side.
+                    leftVerts.sort((a, b)=>((a.y === b.y)? 0 : ((a.y < b.y)? -1 : 1)));
+                    rightVerts.sort((a, b)=>((a.y === b.y)? 0 : ((a.y > b.y)? -1 : 1)));
+
+                    Rngon.assert && ((leftVerts.length !== 0) &&
+                                     (rightVerts.length !== 0))
+                                 || Rngon.throw("Expected each side list to have at least one vertex.");
+                    Rngon.assert && ((leftVerts.length + rightVerts.length) === ngon.vertices.length)
+                                 || Rngon.throw("Vertices appear to have gone missing.");
+                }
+
+                // Now that we known which vertices are on the right-hand side and which on
+                // the left, we can trace the two virtual lines.
+                /// CLEANUP: The code here is a bit unsightly.
+                {
+                    // Virtual line on the left side.
+                    let prevVert = leftVerts[0];
+                    for (let l = 1; l < leftVerts.length; l++)
                     {
-                        // Decrement the value by the delta so we can increment at the start
-                        // of the loop rather than at the end of it - so we can e.g. bail out
-                        // of the loop where needed without worry of not correctly incrementing
-                        // the interpolated values.
-                        u:     (leftEdge[y].u - interpolationDelta.u),
-                        v:     (leftEdge[y].v - interpolationDelta.v),
-                        uvw:   (leftEdge[y].uvw - interpolationDelta.uvw),
-                        depth: (leftEdge[y].depth - interpolationDelta.depth),
-                    };
-
-                    for (let x = 0; x <= rowWidth; (x++, leftEdge[y].x++))
+                        Rngon.line_draw.into_array(prevVert, leftVerts[l], leftEdge, ngon.vertices[0].y);
+                        prevVert = leftVerts[l];
+                    }
+                    Rngon.line_draw.into_array(prevVert, rightVerts[0], leftEdge, ngon.vertices[0].y);
+                    
+                    // Virtual line on the right side.
+                    prevVert = rightVerts[0];
+                    for (let r = 1; r < rightVerts.length; r++)
                     {
-                        interpolatedValue.u += interpolationDelta.u;
-                        interpolatedValue.v += interpolationDelta.v;
-                        interpolatedValue.uvw += interpolationDelta.uvw;
-                        interpolatedValue.depth += interpolationDelta.depth;
+                        Rngon.line_draw.into_array(prevVert, rightVerts[r], rightEdge, ngon.vertices[0].y);
+                        prevVert = rightVerts[r];
+                    }
+                    Rngon.line_draw.into_array(prevVert, leftVerts[0], rightEdge, ngon.vertices[0].y);
+                }
+            }
 
-                        if (leftEdge[y].x < 0 || leftEdge[y].x >= renderWidth) continue;
+            // Draw the ngon.
+            {
+                // Solid or textured fill.
+                if (ngon.material.hasSolidFill)
+                {
+                    const polyYOffset = Math.floor(ngon.vertices[0].y);
+                    const polyHeight = leftEdge.length;
 
-                        const px = leftEdge[y].x;
-                        const py = (y + polyYOffset);
-                        const idx = ((px + py * renderWidth) * 4);
+                    for (let y = 0; y < polyHeight; y++)
+                    {
+                        const rowWidth = (rightEdge[y].x - leftEdge[y].x);
+                        if (rowWidth <= 0) continue;
 
-                        if (py < 0 || py >= renderHeight) continue;
-
-                        // Solid fill.
-                        if (ngon.material.texture == null)
+                        // We'll interpolate certain parameters across this pixel row. For that,
+                        // let's pre-compute delta values we can just add onto the parameter's
+                        // base value each step of the loop.
+                        const interpolationStepSize = (1 / rowWidth);
+                        const interpolationDelta = 
                         {
-                            // Alpha testing. If the pixel is fully opaque, draw it; otherwise, skip it.
-                            if (ngon.material.color.alpha !== 255)
-                            {
-                                continue;
-                            }
-
-                            // Depth testing. Only allow the pixel to be drawn if any previous pixels
-                            // at this screen position are further away from the camera.
-                            if (Rngon.internalState.useDepthBuffer)
-                            {
-                                if (depthBuffer.buffer[idx/4] <= interpolatedValue.depth) continue;
-                                else depthBuffer.buffer[idx/4] = interpolatedValue.depth;
-                            }
-
-                            // Draw the pixel.
-                            pixelBuffer[idx + 0] = ngon.material.color.red;
-                            pixelBuffer[idx + 1] = ngon.material.color.green;
-                            pixelBuffer[idx + 2] = ngon.material.color.blue;
-                            pixelBuffer[idx + 3] = ngon.material.color.alpha;
-                        }
-                        // Textured fill.
-                        else
+                            u:     (Rngon.lerp(leftEdge[y].u, rightEdge[y].u, interpolationStepSize) - leftEdge[y].u),
+                            v:     (Rngon.lerp(leftEdge[y].v, rightEdge[y].v, interpolationStepSize) - leftEdge[y].v),
+                            uvw:   (Rngon.lerp(leftEdge[y].uvw, rightEdge[y].uvw, interpolationStepSize) - leftEdge[y].uvw),
+                            depth: (Rngon.lerp(leftEdge[y].depth, rightEdge[y].depth, interpolationStepSize) - leftEdge[y].depth),
+                        };
+                        const interpolatedValue = 
                         {
-                            let u = 0, v = 0;
-                            
-                            switch (ngon.material.textureMapping)
+                            // Decrement the value by the delta so we can increment at the start
+                            // of the loop rather than at the end of it - so we can e.g. bail out
+                            // of the loop where needed without worry of not correctly incrementing
+                            // the interpolated values.
+                            u:     (leftEdge[y].u - interpolationDelta.u),
+                            v:     (leftEdge[y].v - interpolationDelta.v),
+                            uvw:   (leftEdge[y].uvw - interpolationDelta.uvw),
+                            depth: (leftEdge[y].depth - interpolationDelta.depth),
+                        };
+
+                        for (let x = 0; x <= rowWidth; (x++, leftEdge[y].x++))
+                        {
+                            interpolatedValue.u += interpolationDelta.u;
+                            interpolatedValue.v += interpolationDelta.v;
+                            interpolatedValue.uvw += interpolationDelta.uvw;
+                            interpolatedValue.depth += interpolationDelta.depth;
+
+                            if (leftEdge[y].x < 0 || leftEdge[y].x >= renderWidth) continue;
+
+                            const px = leftEdge[y].x;
+                            const py = (y + polyYOffset);
+                            const idx = ((px + py * renderWidth) * 4);
+
+                            if (py < 0 || py >= renderHeight) continue;
+
+                            // Solid fill.
+                            if (ngon.material.texture == null)
                             {
-                                case "affine":
+                                // Alpha testing. If the pixel is fully opaque, draw it; otherwise, skip it.
+                                if (ngon.material.color.alpha !== 255)
                                 {
-                                    const textureWidth = (ngon.material.texture.width - 0.001);
-                                    const textureHeight = (ngon.material.texture.height - 0.001);
-
-                                    u = interpolatedValue.u;
-                                    v = interpolatedValue.v;
-
-                                    if (Rngon.internalState.usePerspectiveCorrectTexturing)
-                                    {
-                                        u /= interpolatedValue.uvw;
-                                        v /= interpolatedValue.uvw;
-                                    }
-                                    
-                                    /// FIXME: We need to flip v or the textures render upside down. Why?
-                                    v = (1 - v);
-
-                                    u *= textureWidth;
-                                    v *= textureHeight;
-
-                                    // Wrap with repetition.
-                                    if ((u < 0) ||
-                                        (v < 0) ||
-                                        (u >= textureWidth) ||
-                                        (v >= textureHeight))
-                                    {
-                                        const uWasNeg = (u < 0);
-                                        const vWasNeg = (v < 0);
-
-                                        u = (Math.abs(u) % textureWidth);
-                                        v = (Math.abs(v) % textureHeight);
-
-                                        if (uWasNeg) u = (textureWidth - u);
-                                        if (vWasNeg) v = (textureHeight - v);
-                                    }
-
-                                    break;
+                                    continue;
                                 }
-                                case "ortho":
+
+                                // Depth testing. Only allow the pixel to be drawn if any previous pixels
+                                // at this screen position are further away from the camera.
+                                if (Rngon.internalState.useDepthBuffer)
                                 {
-                                    u = x * ((ngon.material.texture.width - 0.001) / rowWidth);
-                                    v = y * ((ngon.material.texture.height - 0.001) / ((polyHeight - 1) || 1));
-
-                                    break;
+                                    if (depthBuffer.buffer[idx/4] <= interpolatedValue.depth) continue;
+                                    else depthBuffer.buffer[idx/4] = interpolatedValue.depth;
                                 }
-                                default: Rngon.throw("Unknown texture-mapping mode."); break;
+
+                                // Draw the pixel.
+                                pixelBuffer[idx + 0] = ngon.material.color.red;
+                                pixelBuffer[idx + 1] = ngon.material.color.green;
+                                pixelBuffer[idx + 2] = ngon.material.color.blue;
+                                pixelBuffer[idx + 3] = ngon.material.color.alpha;
+                            }
+                            // Textured fill.
+                            else
+                            {
+                                let u = 0, v = 0;
+                                
+                                switch (ngon.material.textureMapping)
+                                {
+                                    case "affine":
+                                    {
+                                        const textureWidth = (ngon.material.texture.width - 0.001);
+                                        const textureHeight = (ngon.material.texture.height - 0.001);
+
+                                        u = interpolatedValue.u;
+                                        v = interpolatedValue.v;
+
+                                        if (Rngon.internalState.usePerspectiveCorrectTexturing)
+                                        {
+                                            u /= interpolatedValue.uvw;
+                                            v /= interpolatedValue.uvw;
+                                        }
+                                        
+                                        /// FIXME: We need to flip v or the textures render upside down. Why?
+                                        v = (1 - v);
+
+                                        u *= textureWidth;
+                                        v *= textureHeight;
+
+                                        // Wrap with repetition.
+                                        if ((u < 0) ||
+                                            (v < 0) ||
+                                            (u >= textureWidth) ||
+                                            (v >= textureHeight))
+                                        {
+                                            const uWasNeg = (u < 0);
+                                            const vWasNeg = (v < 0);
+
+                                            u = (Math.abs(u) % textureWidth);
+                                            v = (Math.abs(v) % textureHeight);
+
+                                            if (uWasNeg) u = (textureWidth - u);
+                                            if (vWasNeg) v = (textureHeight - v);
+                                        }
+    
+                                        break;
+                                    }
+                                    case "ortho":
+                                    {
+                                        u = x * ((ngon.material.texture.width - 0.001) / rowWidth);
+                                        v = y * ((ngon.material.texture.height - 0.001) / ((polyHeight - 1) || 1));
+
+                                        break;
+                                    }
+                                    default: Rngon.throw("Unknown texture-mapping mode."); break;
+                                }
+
+                                const texelIdx = ((~~u) + (~~v) * ngon.material.texture.width);
+
+                                // Verify that the texel isn't out of bounds.
+                                if (!ngon.material.texture.pixels[texelIdx])
+                                {
+                                    continue;
+                                }
+
+                                // Alpha testing. If the pixel is fully opaque, draw it; otherwise, skip it.
+                                if (ngon.material.texture.pixels[texelIdx].alpha !== 255)
+                                {
+                                    continue;
+                                }
+
+                                // Depth testing. Only allow the pixel to be drawn if any previous pixels
+                                // at this screen position are further away from the camera.
+                                if (Rngon.internalState.useDepthBuffer)
+                                {
+                                    if (depthBuffer.buffer[idx/4] <= interpolatedValue.depth) continue;
+                                    else depthBuffer.buffer[idx/4] = interpolatedValue.depth;
+                                }
+
+                                // Draw the pixel.
+                                pixelBuffer[idx + 0] = (ngon.material.texture.pixels[texelIdx].red   * ngon.material.color.unitRange.red);
+                                pixelBuffer[idx + 1] = (ngon.material.texture.pixels[texelIdx].green * ngon.material.color.unitRange.green);
+                                pixelBuffer[idx + 2] = (ngon.material.texture.pixels[texelIdx].blue  * ngon.material.color.unitRange.blue);
+                                pixelBuffer[idx + 3] = (ngon.material.texture.pixels[texelIdx].alpha * ngon.material.color.unitRange.alpha);
                             }
 
-                            const texelIdx = ((~~u) + (~~v) * ngon.material.texture.width);
-
-                            // Verify that the texel isn't out of bounds.
-                            if (!ngon.material.texture.pixels[texelIdx])
+                            for (let b = 0; b < auxiliaryBuffers.length; b++)
                             {
-                                continue;
-                            }
-
-                            // Alpha testing. If the pixel is fully opaque, draw it; otherwise, skip it.
-                            if (ngon.material.texture.pixels[texelIdx].alpha !== 255)
-                            {
-                                continue;
-                            }
-
-                            // Depth testing. Only allow the pixel to be drawn if any previous pixels
-                            // at this screen position are further away from the camera.
-                            if (Rngon.internalState.useDepthBuffer)
-                            {
-                                if (depthBuffer.buffer[idx/4] <= interpolatedValue.depth) continue;
-                                else depthBuffer.buffer[idx/4] = interpolatedValue.depth;
-                            }
-
-                            // Draw the pixel.
-                            pixelBuffer[idx + 0] = (ngon.material.texture.pixels[texelIdx].red   * ngon.material.color.unitRange.red);
-                            pixelBuffer[idx + 1] = (ngon.material.texture.pixels[texelIdx].green * ngon.material.color.unitRange.green);
-                            pixelBuffer[idx + 2] = (ngon.material.texture.pixels[texelIdx].blue  * ngon.material.color.unitRange.blue);
-                            pixelBuffer[idx + 3] = (ngon.material.texture.pixels[texelIdx].alpha * ngon.material.color.unitRange.alpha);
-                        }
-
-                        for (let b = 0; b < auxiliaryBuffers.length; b++)
-                        {
-                            if (ngon.material.auxiliary[auxiliaryBuffers[b].property] !== null)
-                            {
-                                // Buffers are expected to consist of one element per pixel.
-                                auxiliaryBuffers[b].buffer[idx/4] = ngon.material.auxiliary[auxiliaryBuffers[b].property];
+                                if (ngon.material.auxiliary[auxiliaryBuffers[b].property] !== null)
+                                {
+                                    // Buffers are expected to consist of one element per pixel.
+                                    auxiliaryBuffers[b].buffer[idx/4] = ngon.material.auxiliary[auxiliaryBuffers[b].property];
+                                }
                             }
                         }
                     }
                 }
-            }
 
-            // Draw a wireframe around any ngons that wish for one.
-            if (ngon.material.hasWireframe)
-            {
-                const putline = (vert1, vert2)=>
+                // Draw a wireframe around any ngons that wish for one.
+                if (ngon.material.hasWireframe)
                 {
-                    Rngon.line_draw.into_pixel_buffer(vert1, vert2,
-                                                      pixelBuffer, renderWidth, renderHeight,
-                                                      ngon.material.wireframeColor)
-                };
+                    const putline = (vert1, vert2)=>
+                    {
+                        Rngon.line_draw.into_pixel_buffer(vert1, vert2,
+                                                        pixelBuffer, renderWidth, renderHeight,
+                                                        ngon.material.wireframeColor)
+                    };
 
-                // Left edge.
-                let prevVert = leftVerts[0];
-                for (let l = 1; l < leftVerts.length; l++)
-                {
-                    putline(prevVert, leftVerts[l]);
-                    prevVert = leftVerts[l];
+                    // Left edge.
+                    let prevVert = leftVerts[0];
+                    for (let l = 1; l < leftVerts.length; l++)
+                    {
+                        putline(prevVert, leftVerts[l]);
+                        prevVert = leftVerts[l];
+                    }
+                    putline(prevVert, rightVerts[0]);
+
+                    // Right edge.
+                    prevVert = rightVerts[0];
+                    for (let r = 1; r < rightVerts.length; r++)
+                    {
+                        putline(prevVert, rightVerts[r]);
+                        prevVert = rightVerts[r];
+                    }
+                    putline(prevVert, leftVerts[0]);
                 }
-                putline(prevVert, rightVerts[0]);
-
-                // Right edge.
-                prevVert = rightVerts[0];
-                for (let r = 1; r < rightVerts.length; r++)
-                {
-                    putline(prevVert, rightVerts[r]);
-                    prevVert = rightVerts[r];
-                }
-                putline(prevVert, leftVerts[0]);
             }
         }
-    };
+    }
 }
