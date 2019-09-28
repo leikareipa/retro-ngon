@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: live (28 September 2019 05:15:05 UTC)
+// VERSION: live (28 September 2019 08:03:08 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -1034,7 +1034,7 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
                         // We'll interpolate certain parameters across this pixel row. For that,
                         // let's pre-compute delta values we can just add onto the parameter's
                         // base value each step of the loop.
-                        const interpolationStepSize = (1 / rowWidth);
+                        const interpolationStepSize = (1 / (rowWidth + 1));
                         const interpolationDelta = 
                         {
                             u:     (Rngon.lerp(leftEdge[y].u, rightEdge[y].u, interpolationStepSize) - leftEdge[y].u),

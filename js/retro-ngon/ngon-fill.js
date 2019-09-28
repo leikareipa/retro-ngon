@@ -164,7 +164,7 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
                         // We'll interpolate certain parameters across this pixel row. For that,
                         // let's pre-compute delta values we can just add onto the parameter's
                         // base value each step of the loop.
-                        const interpolationStepSize = (1 / rowWidth);
+                        const interpolationStepSize = (1 / (rowWidth + 1));
                         const interpolationDelta = 
                         {
                             u:     (Rngon.lerp(leftEdge[y].u, rightEdge[y].u, interpolationStepSize) - leftEdge[y].u),
