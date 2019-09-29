@@ -27,10 +27,10 @@ Rngon.line_draw = (()=>
                 pixelBuffer[idx + 3] = lineColor.alpha;
             }
 
-            let x0 = Math.floor(vert1.x);
-            let y0 = Math.floor(vert1.y);
-            const x1 = Math.floor(vert2.x);
-            const y1 = Math.floor(vert2.y);
+            let x0 = Math.ceil(vert1.x);
+            let y0 = Math.ceil(vert1.y);
+            const x1 = Math.ceil(vert2.x);
+            const y1 = Math.ceil(vert2.y);
 
             Rngon.assert && (!isNaN(x0) && !isNaN(x1) && !isNaN(y0) && !isNaN(y1))
                          || Rngon.throw("Invalid vertex coordinates for line-drawing.");
@@ -74,12 +74,12 @@ Rngon.line_draw = (()=>
                              array = [],
                              yOffset = 0)
         {
-            yOffset = Math.floor(yOffset);
+            yOffset = Math.ceil(yOffset);
 
-            let x0 = Math.floor(vert1.x);
-            let y0 = Math.floor(vert1.y);
-            const x1 = Math.floor(vert2.x);
-            const y1 = Math.floor(vert2.y);
+            let x0 = Math.ceil(vert1.x);
+            let y0 = Math.ceil(vert1.y);
+            const x1 = Math.ceil(vert2.x);
+            const y1 = Math.ceil(vert2.y);
 
             Rngon.assert && (!isNaN(x0) &&
                              !isNaN(x1) &&

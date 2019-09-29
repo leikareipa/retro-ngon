@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: live (29 September 2019 19:17:31 UTC)
+// VERSION: live (29 September 2019 23:24:28 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -624,10 +624,10 @@ Rngon.line_draw = (()=>
                 pixelBuffer[idx + 3] = lineColor.alpha;
             }
 
-            let x0 = Math.floor(vert1.x);
-            let y0 = Math.floor(vert1.y);
-            const x1 = Math.floor(vert2.x);
-            const y1 = Math.floor(vert2.y);
+            let x0 = Math.ceil(vert1.x);
+            let y0 = Math.ceil(vert1.y);
+            const x1 = Math.ceil(vert2.x);
+            const y1 = Math.ceil(vert2.y);
 
             Rngon.assert && (!isNaN(x0) && !isNaN(x1) && !isNaN(y0) && !isNaN(y1))
                          || Rngon.throw("Invalid vertex coordinates for line-drawing.");
@@ -671,12 +671,12 @@ Rngon.line_draw = (()=>
                              array = [],
                              yOffset = 0)
         {
-            yOffset = Math.floor(yOffset);
+            yOffset = Math.ceil(yOffset);
 
-            let x0 = Math.floor(vert1.x);
-            let y0 = Math.floor(vert1.y);
-            const x1 = Math.floor(vert2.x);
-            const y1 = Math.floor(vert2.y);
+            let x0 = Math.ceil(vert1.x);
+            let y0 = Math.ceil(vert1.y);
+            const x1 = Math.ceil(vert2.x);
+            const y1 = Math.ceil(vert2.y);
 
             Rngon.assert && (!isNaN(x0) &&
                              !isNaN(x1) &&
@@ -929,9 +929,10 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
         }
 
         // Handle n-gons that constitute points and lines.
+        /// TODO: Add depth and alpha testing to points and lines.
         if (ngon.vertices.length === 1)
         {
-            const idx = ((Math.floor(ngon.vertices[0].x) + Math.floor(ngon.vertices[0].y) * renderWidth) * 4);
+            const idx = ((Math.ceil(ngon.vertices[0].x) + Math.ceil(ngon.vertices[0].y) * renderWidth) * 4);
                 
             pixelBuffer[idx + 0] = ngon.material.color.red;
             pixelBuffer[idx + 1] = ngon.material.color.green;
@@ -956,6 +957,8 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
             // the n-gon's outline.
             const leftEdge = [];
             const rightEdge = [];
+            const leftVerts = [];
+            const rightVerts = [];
             {
                 // Figure out which of the n-gon's vertices are on its left edge and which on
                 // the right one. The vertices will be arranged such that the first entry in
@@ -965,8 +968,6 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
                 // following are successively lower in y. Thus, by tracing first through the list
                 // of left vertices and then through the list of right ones, you end up with an
                 // anti-clockwise loop around the ngon.
-                const leftVerts = [];
-                const rightVerts = [];
                 
                 // Generic algorithm for n-sided convex polygons.
                 {
@@ -1029,7 +1030,7 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
                 // Solid or textured fill.
                 if (ngon.material.hasSolidFill)
                 {
-                    const polyYOffset = Math.floor(ngon.vertices[0].y);
+                    const polyYOffset = Math.ceil(ngon.vertices[0].y);
                     const polyHeight = leftEdge.length;
 
                     for (let y = 0; y < polyHeight; y++)
@@ -1147,16 +1148,16 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
                                     default: Rngon.throw("Unknown texture-mapping mode."); break;
                                 }
 
-                                const texelIdx = ((~~u) + (~~v) * ngon.material.texture.width);
+                                const texel = ngon.material.texture.pixels[(~~u) + (~~v) * ngon.material.texture.width];
 
                                 // Verify that the texel isn't out of bounds.
-                                if (!ngon.material.texture.pixels[texelIdx])
+                                if (!texel)
                                 {
                                     continue;
                                 }
 
                                 // Alpha testing. If the pixel is fully opaque, draw it; otherwise, skip it.
-                                if (ngon.material.texture.pixels[texelIdx].alpha !== 255)
+                                if (texel.alpha !== 255)
                                 {
                                     continue;
                                 }
@@ -1170,10 +1171,10 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
                                 }
 
                                 // Draw the pixel.
-                                pixelBuffer[pixelBufferIdx + 0] = (ngon.material.texture.pixels[texelIdx].red   * ngon.material.color.unitRange.red);
-                                pixelBuffer[pixelBufferIdx + 1] = (ngon.material.texture.pixels[texelIdx].green * ngon.material.color.unitRange.green);
-                                pixelBuffer[pixelBufferIdx + 2] = (ngon.material.texture.pixels[texelIdx].blue  * ngon.material.color.unitRange.blue);
-                                pixelBuffer[pixelBufferIdx + 3] = (ngon.material.texture.pixels[texelIdx].alpha * ngon.material.color.unitRange.alpha);
+                                pixelBuffer[pixelBufferIdx + 0] = (texel.red   * ngon.material.color.unitRange.red);
+                                pixelBuffer[pixelBufferIdx + 1] = (texel.green * ngon.material.color.unitRange.green);
+                                pixelBuffer[pixelBufferIdx + 2] = (texel.blue  * ngon.material.color.unitRange.blue);
+                                pixelBuffer[pixelBufferIdx + 3] = (texel.alpha * ngon.material.color.unitRange.alpha);
                             }
 
                             for (let b = 0; b < auxiliaryBuffers.length; b++)
@@ -1181,7 +1182,7 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
                                 if (ngon.material.auxiliary[auxiliaryBuffers[b].property] !== null)
                                 {
                                     // Buffers are expected to consist of one element per pixel.
-                                    auxiliaryBuffers[b].buffer[idx/4] = ngon.material.auxiliary[auxiliaryBuffers[b].property];
+                                    auxiliaryBuffers[b].buffer[pixelBufferIdx/4] = ngon.material.auxiliary[auxiliaryBuffers[b].property];
                                 }
                             }
                         }
