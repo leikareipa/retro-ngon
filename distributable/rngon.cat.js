@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: live (29 September 2019 19:10:18 UTC)
+// VERSION: live (29 September 2019 19:17:31 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -912,6 +912,12 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
         }
     }
 
+    const vertexSorters =
+    {
+        verticalAscending: (vertA, vertB)=>((vertA.y === vertB.y)? 0 : ((vertA.y < vertB.y)? -1 : 1)),
+        verticalDescending: (vertA, vertB)=>((vertA.y === vertB.y)? 0 : ((vertA.y > vertB.y)? -1 : 1))
+    }
+
     // Rasterize the n-gons.
     for (const ngon of ngons)
     {
@@ -965,7 +971,7 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
                 // Generic algorithm for n-sided convex polygons.
                 {
                     // Sort the vertices by height (i.e. by increasing y).
-                    ngon.vertices.sort((vertA, vertB)=>((vertA.y === vertB.y)? 0 : ((vertA.y < vertB.y)? -1 : 1)));
+                    ngon.vertices.sort(vertexSorters.verticalAscending);
                     const topVert = ngon.vertices[0];
                     const bottomVert = ngon.vertices[ngon.vertices.length-1];
 
@@ -984,11 +990,8 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
                         ((ngon.vertices[i].x >= lr)? rightVerts : leftVerts).push(ngon.vertices[i]);
                     }
 
-                    // Sort the two sides' vertices so that we can trace them anti-clockwise starting from the top,
-                    // going down to the bottom vertex on the left side, and then back up to the top vertex along
-                    // the right side.
-                    leftVerts.sort((a, b)=>((a.y === b.y)? 0 : ((a.y < b.y)? -1 : 1)));
-                    rightVerts.sort((a, b)=>((a.y === b.y)? 0 : ((a.y > b.y)? -1 : 1)));
+                    // Make sure the right side is sorted bottom-to-top.
+                    rightVerts.sort(vertexSorters.verticalDescending);
 
                     Rngon.assert && ((leftVerts.length !== 0) &&
                                      (rightVerts.length !== 0))
