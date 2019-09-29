@@ -81,13 +81,16 @@ Rngon.line_draw = (()=>
             const x1 = Math.floor(vert2.x);
             const y1 = Math.floor(vert2.y);
 
-            Rngon.assert && (!isNaN(x0) && !isNaN(x1) && !isNaN(y0) && !isNaN(y1))
+            Rngon.assert && (!isNaN(x0) &&
+                             !isNaN(x1) &&
+                             !isNaN(y0) &&
+                             !isNaN(y1))
                          || Rngon.throw("Invalid vertex coordinates for line-drawing.");
 
             const lineLength = distanceBetween(x0, y0, x1, y1);
 
             // If true, we won't touch non-null elements in the array. Useful in preventing certain
-            // edge rendering errors.
+            // edge-rendering errors.
             const noOverwrite = (y1 <= y0);
 
             // Bresenham line algo. Adapted from https://stackoverflow.com/a/4672319.
@@ -111,7 +114,7 @@ Rngon.line_draw = (()=>
                         const depth = (Rngon.internalState.useDepthBuffer? Rngon.lerp(vert2.w, vert1.w, l)
                                                                          : 0);
                         const uvw = (Rngon.internalState.usePerspectiveCorrectTexturing? Rngon.lerp((1 / vert2.w), (1 / vert1.w), l)
-                                                                                       : 0);
+                                                                                       : 1);
 
                         const pixel = {x:x0, u, v, depth, uvw};
 

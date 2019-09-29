@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: live (28 September 2019 08:03:08 UTC)
+// VERSION: live (29 September 2019 19:10:18 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -678,13 +678,16 @@ Rngon.line_draw = (()=>
             const x1 = Math.floor(vert2.x);
             const y1 = Math.floor(vert2.y);
 
-            Rngon.assert && (!isNaN(x0) && !isNaN(x1) && !isNaN(y0) && !isNaN(y1))
+            Rngon.assert && (!isNaN(x0) &&
+                             !isNaN(x1) &&
+                             !isNaN(y0) &&
+                             !isNaN(y1))
                          || Rngon.throw("Invalid vertex coordinates for line-drawing.");
 
             const lineLength = distanceBetween(x0, y0, x1, y1);
 
             // If true, we won't touch non-null elements in the array. Useful in preventing certain
-            // edge rendering errors.
+            // edge-rendering errors.
             const noOverwrite = (y1 <= y0);
 
             // Bresenham line algo. Adapted from https://stackoverflow.com/a/4672319.
@@ -708,7 +711,7 @@ Rngon.line_draw = (()=>
                         const depth = (Rngon.internalState.useDepthBuffer? Rngon.lerp(vert2.w, vert1.w, l)
                                                                          : 0);
                         const uvw = (Rngon.internalState.usePerspectiveCorrectTexturing? Rngon.lerp((1 / vert2.w), (1 / vert1.w), l)
-                                                                                       : 0);
+                                                                                       : 1);
 
                         const pixel = {x:x0, u, v, depth, uvw};
 
@@ -1065,7 +1068,7 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
 
                             const px = leftEdge[y].x;
                             const py = (y + polyYOffset);
-                            const idx = ((px + py * renderWidth) * 4);
+                            const pixelBufferIdx = ((px + py * renderWidth) * 4);
 
                             if (py < 0 || py >= renderHeight) continue;
 
@@ -1082,15 +1085,15 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
                                 // at this screen position are further away from the camera.
                                 if (Rngon.internalState.useDepthBuffer)
                                 {
-                                    if (depthBuffer.buffer[idx/4] <= interpolatedValue.depth) continue;
-                                    else depthBuffer.buffer[idx/4] = interpolatedValue.depth;
+                                    if (depthBuffer.buffer[pixelBufferIdx/4] <= interpolatedValue.depth) continue;
+                                    else depthBuffer.buffer[pixelBufferIdx/4] = interpolatedValue.depth;
                                 }
 
                                 // Draw the pixel.
-                                pixelBuffer[idx + 0] = ngon.material.color.red;
-                                pixelBuffer[idx + 1] = ngon.material.color.green;
-                                pixelBuffer[idx + 2] = ngon.material.color.blue;
-                                pixelBuffer[idx + 3] = ngon.material.color.alpha;
+                                pixelBuffer[pixelBufferIdx + 0] = ngon.material.color.red;
+                                pixelBuffer[pixelBufferIdx + 1] = ngon.material.color.green;
+                                pixelBuffer[pixelBufferIdx + 2] = ngon.material.color.blue;
+                                pixelBuffer[pixelBufferIdx + 3] = ngon.material.color.alpha;
                             }
                             // Textured fill.
                             else
@@ -1104,14 +1107,8 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
                                         const textureWidth = (ngon.material.texture.width - 0.001);
                                         const textureHeight = (ngon.material.texture.height - 0.001);
 
-                                        u = interpolatedValue.u;
-                                        v = interpolatedValue.v;
-
-                                        if (Rngon.internalState.usePerspectiveCorrectTexturing)
-                                        {
-                                            u /= interpolatedValue.uvw;
-                                            v /= interpolatedValue.uvw;
-                                        }
+                                        u = (interpolatedValue.u / interpolatedValue.uvw);
+                                        v = (interpolatedValue.v / interpolatedValue.uvw);
                                         
                                         /// FIXME: We need to flip v or the textures render upside down. Why?
                                         v = (1 - v);
@@ -1165,15 +1162,15 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
                                 // at this screen position are further away from the camera.
                                 if (Rngon.internalState.useDepthBuffer)
                                 {
-                                    if (depthBuffer.buffer[idx/4] <= interpolatedValue.depth) continue;
-                                    else depthBuffer.buffer[idx/4] = interpolatedValue.depth;
+                                    if (depthBuffer.buffer[pixelBufferIdx/4] <= interpolatedValue.depth) continue;
+                                    else depthBuffer.buffer[pixelBufferIdx/4] = interpolatedValue.depth;
                                 }
 
                                 // Draw the pixel.
-                                pixelBuffer[idx + 0] = (ngon.material.texture.pixels[texelIdx].red   * ngon.material.color.unitRange.red);
-                                pixelBuffer[idx + 1] = (ngon.material.texture.pixels[texelIdx].green * ngon.material.color.unitRange.green);
-                                pixelBuffer[idx + 2] = (ngon.material.texture.pixels[texelIdx].blue  * ngon.material.color.unitRange.blue);
-                                pixelBuffer[idx + 3] = (ngon.material.texture.pixels[texelIdx].alpha * ngon.material.color.unitRange.alpha);
+                                pixelBuffer[pixelBufferIdx + 0] = (ngon.material.texture.pixels[texelIdx].red   * ngon.material.color.unitRange.red);
+                                pixelBuffer[pixelBufferIdx + 1] = (ngon.material.texture.pixels[texelIdx].green * ngon.material.color.unitRange.green);
+                                pixelBuffer[pixelBufferIdx + 2] = (ngon.material.texture.pixels[texelIdx].blue  * ngon.material.color.unitRange.blue);
+                                pixelBuffer[pixelBufferIdx + 3] = (ngon.material.texture.pixels[texelIdx].alpha * ngon.material.color.unitRange.alpha);
                             }
 
                             for (let b = 0; b < auxiliaryBuffers.length; b++)
