@@ -1008,8 +1008,10 @@ At the time of this writing, the renderer is at version alpha.6. At least one mo
 
 The following features are expected to be implemented while in alpha:
 - Face or vertex normals
-- Gouraud shading
+- Gouraud shading (or the like)
 - Distance fog
+
+Some form of mipmapping is on the cards, but whether that be in alpha or beta (or something else) is undecided.
 
 Once in beta, usability (e.g. user workflow) and render performance (including occlusion culling) are likely going to be among the points of focus.
 
