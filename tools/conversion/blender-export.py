@@ -30,20 +30,25 @@ modelName = "model"
 materials = bpy.data.materials
 textures = bpy.data.textures
 with open(outFilename, 'w') as f:
-    f.write("\"use strict\";\n\n")
-    f.write("// A 3d model exported from Blender via the retro n-gon renderer's exporter.\n");
-    f.write("//\n");
-    f.write("// Usage:\n");
-    f.write("//    - call .initialize(), which populates the .ngons array\n");
-    f.write("//    - now you can access the n-gons via .ngons\n");
-    f.write("//    - if you need .initialize() to finish before you start rendering, call it with await inside an async()=>{} wrapper\n");
+    f.write("/*\n");
+    f.write(" * A 3d model exported from Blender using the retro n-gon renderer's exporter.\n");
+    f.write(" *\n");
+    f.write(" * Usage:\n");
+    f.write(" *    - call .initialize(), which populates the .ngons array\n");
+    f.write(" *    - now you can access the n-gons via .ngons\n");
+    f.write(" *    - if you need .initialize() to finish before you start rendering, call it with await inside an async()=>{} wrapper\n");
+    f.write(" *\n");
+    f.write(" */\n\n");
+
+    f.write("\"use strict\";\n\n");
 
     f.write("const %s =\n{\n" % modelName);
     f.write("\tngons:[],\n");
     f.write("\tinitialize: async function()\n\t{\n");
 
-    f.write("\t\t// Shorthands, for a smaller file size.\n")
+    f.write("\t\t// Shorthands.\n")
     f.write("\t\tconst n = Rngon.ngon;\n")
+    f.write("\t\tconst no = Rngon.vector3; // Normal.\n")
     f.write("\t\tconst v = Rngon.vertex;\n")
     f.write("\t\tconst c = Rngon.color_rgba;\n")
     f.write("\t\tconst ct = Rngon.texture_rgba.create_with_data_from_file;\n\n");
@@ -75,11 +80,11 @@ with open(outFilename, 'w') as f:
     f.write("\t\t};\n\n")
     
     # Write the n-gons.
-    f.write("\t\t// N-gons.\n")
+    f.write("\t\t// Create the n-gons.\n")
     f.write("\t\tthis.ngons = Object.freeze(\n\t\t[\n")
     visible_meshes = filter(lambda x: x.type == "MESH", context.visible_objects)
     for mesh in visible_meshes:
-        f.write("\t\t\t// Parent mesh: %s.\n" % mesh.name)
+        f.write("\t\t\t// Mesh: %s.\n" % mesh.name)
         for poly in mesh.data.polygons:
             f.write("\t\t\tn([")
             for v, l in zip(poly.vertices, poly.loop_indices):
@@ -96,7 +101,9 @@ with open(outFilename, 'w') as f:
                 material = mesh.material_slots[poly.material_index].material
                 if material != None:
                     f.write(",m[\"%s\"]" % material.name)
+            # Normals.
+            f.write(",no(%.4f,%.4f,%.4f)" % (poly.normal[0], poly.normal[2], poly.normal[1]))
             f.write("),\n")
             
     # Finalize the file.
-    f.write("\t\t]);\n\t}\n};")
+    f.write("\t\t]);\n\t}\n};\n")
