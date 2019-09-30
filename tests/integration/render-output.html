@@ -211,6 +211,36 @@
 
                                       Rngon.render(canvasId, [quadMesh], renderSettings);
                                   }),
+                    await compare("Quad with non-perspective-correct affine mapping",
+                                  "./render-output/reference-42755d4078c6.png",
+                                  (canvasId)=>
+                                  {
+                                      const quad = Rngon.ngon(quadVerts,
+                                                              {
+                                                                  color: Rngon.color_rgba(255, 255, 255),
+                                                                  textureMapping: "affine",
+                                                                  texture
+                                                              });
+
+                                      const quadMesh = Rngon.mesh([quad], {...meshSettings, rotation: Rngon.rotation_vector(0, 30, 45)});
+
+                                      Rngon.render(canvasId, [quadMesh], {...renderSettings, perspectiveCorrectTexturing: false});
+                                  }),
+                    await compare("Quad with perspective-correct affine mapping",
+                                  "./render-output/reference-9a920763abbe.png",
+                                  (canvasId)=>
+                                  {
+                                      const quad = Rngon.ngon(quadVerts,
+                                                              {
+                                                                  color: Rngon.color_rgba(255, 255, 255),
+                                                                  textureMapping: "affine",
+                                                                  texture
+                                                              });
+
+                                      const quadMesh = Rngon.mesh([quad], {...meshSettings, rotation: Rngon.rotation_vector(0, 30, 45)});
+
+                                      Rngon.render(canvasId, [quadMesh], {...renderSettings, perspectiveCorrectTexturing: true});
+                                  }),
                     await compare("Quad with default material",
                                   "./render-output/reference-6e88gkgb8c6c.png",
                                   (canvasId)=>

@@ -92,10 +92,10 @@ Rngon.render = function(canvasElementId,
 
             for (const mesh of meshes)
             {
-                const meshVerts = mesh.ngons.reduce((array, ngon)=>{array.push(ngon.clone()); return array;}, []);
-                renderSurface.transform_ngons(meshVerts, mesh.objectSpaceMatrix(), cameraMatrix);
+                const meshNgons = mesh.ngons.reduce((array, ngon)=>{array.push(ngon.clone()); return array;}, []);
+                renderSurface.transform_ngons(meshNgons, mesh.objectSpaceMatrix(), cameraMatrix);
 
-                transformedNgons.push(...meshVerts);
+                transformedNgons.push(...meshNgons);
             };
 
             // Apply depth sorting to the transformed ngons.

@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: live (30 September 2019 13:18:13 UTC)
+// VERSION: live (30 September 2019 16:33:36 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -1312,10 +1312,10 @@ Rngon.render = function(canvasElementId,
 
             for (const mesh of meshes)
             {
-                const meshVerts = mesh.ngons.reduce((array, ngon)=>{array.push(ngon.clone()); return array;}, []);
-                renderSurface.transform_ngons(meshVerts, mesh.objectSpaceMatrix(), cameraMatrix);
+                const meshNgons = mesh.ngons.reduce((array, ngon)=>{array.push(ngon.clone()); return array;}, []);
+                renderSurface.transform_ngons(meshNgons, mesh.objectSpaceMatrix(), cameraMatrix);
 
-                transformedNgons.push(...meshVerts);
+                transformedNgons.push(...meshNgons);
             };
 
             // Apply depth sorting to the transformed ngons.
