@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: live (29 September 2019 23:24:28 UTC)
+// VERSION: live (30 September 2019 13:18:13 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -377,11 +377,6 @@ Rngon.vertex = function(x = 0, y = 0, z = 0, u = 0, v = 0, w = 1)
         w,
         u,
         v,
-
-        // For perspective-correct texturing.
-        uPers: 0,
-        vPers: 0,
-        uvwPers: 0,
 
         // Transforms the vertex by the given 4x4 matrix.
         transform: function(m = [])
@@ -1114,23 +1109,25 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
                                         u = (interpolatedValue.u / interpolatedValue.uvw);
                                         v = (interpolatedValue.v / interpolatedValue.uvw);
                                         
-                                        /// FIXME: We need to flip v or the textures render upside down. Why?
-                                        v = (1 - v);
-
                                         u *= textureWidth;
                                         v *= textureHeight;
 
-                                        // Wrap with repetition.
-                                        if ((u < -0.001) ||
-                                            (v < -0.001) ||
-                                            (u >= ngon.material.texture.width) ||
-                                            (v >= ngon.material.texture.height))
-                                        {
-                                            const uWasNeg = (u < -0.001);
-                                            const vWasNeg = (v < -0.001);
+                                        /// FIXME: We need to flip v or the textures render upside down. Why?
+                                        v = (textureHeight - v);
 
-                                            u = (Math.abs(u) % textureWidth);
-                                            v = (Math.abs(v) % textureHeight);
+                                        // Wrap with repetition.
+                                        /// FIXME: Why do we need to test for UV < 0 even when using positive
+                                        /// but tiling UV coordinates? Doesn't render properly unless we do.
+                                        if ((u < 0) ||
+                                            (v < 0) ||
+                                            (u > textureWidth) ||
+                                            (v > textureHeight))
+                                        {
+                                            const uWasNeg = (u < 0);
+                                            const vWasNeg = (v < 0);
+
+                                            u = (Math.abs(u) % ngon.material.texture.width);
+                                            v = (Math.abs(v) % ngon.material.texture.height);
 
                                             if (uWasNeg) u = (textureWidth - u);
                                             if (vWasNeg) v = (textureHeight - v);

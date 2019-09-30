@@ -121,7 +121,7 @@
                                       const quadMesh = Rngon.mesh([quad], meshSettings);
                                       Rngon.render(canvasId, [quadMesh], renderSettings);
                                   }),
-                    await compare("Plain solid-filled quad upscaled",
+                    await compare("Plain solid-filled quad in low resolution",
                                   "./render-output/reference-88aggjdc4g96.png",
                                   (canvasId)=>
                                   {
@@ -158,7 +158,7 @@
                                       const quadMesh = Rngon.mesh([quad], meshSettings);
                                       Rngon.render(canvasId, [quadMesh], renderSettings);
                                   }),
-                    await compare("Quad with tiled UV coordinates textured with affine mapping",
+                    await compare("Quad with tiled UV coordinates textured using affine mapping",
                                   "./render-output/reference-199f0400e329.png",
                                   (canvasId)=>
                                   {
@@ -168,26 +168,6 @@
                                                                 Rngon.vertex(-1,  1, 0, 0, 2)];
 
                                       const quad = Rngon.ngon(quadVertsUVTiled,
-                                                              {
-                                                                  color: Rngon.color_rgba(255, 255, 255),
-                                                                  textureMapping: "affine",
-                                                                  texture
-                                                              });
-
-                                      const quadMesh = Rngon.mesh([quad], meshSettings);
-
-                                      Rngon.render(canvasId, [quadMesh], renderSettings);
-                                  }),
-                    await compare("Quad with flipped UV coordinates textured with affine mapping",
-                                  "./render-output/reference-7f4174b17648.png",
-                                  (canvasId)=>
-                                  {
-                                      const quadVertsUVFlipped = [Rngon.vertex(-1, -1, 0, 0, 0),
-                                                                  Rngon.vertex( 1, -1, 0, -1, 0),
-                                                                  Rngon.vertex( 1,  1, 0, -1, -1),
-                                                                  Rngon.vertex(-1,  1, 0, 0, -1)];
-
-                                      const quad = Rngon.ngon(quadVertsUVFlipped,
                                                               {
                                                                   color: Rngon.color_rgba(255, 255, 255),
                                                                   textureMapping: "affine",
@@ -209,6 +189,26 @@
                                                                   texture: alphaTexture
                                                               });
                                       const quadMesh = Rngon.mesh([quad], meshSettings);
+                                      Rngon.render(canvasId, [quadMesh], renderSettings);
+                                  }),
+                    await compare("Quad with flipped UV coordinates textured using affine mapping",
+                                  "./render-output/reference-7f4174b17648.png",
+                                  (canvasId)=>
+                                  {
+                                      const quadVertsUVFlipped = [Rngon.vertex(-1, -1, 0, 0, 0),
+                                                                  Rngon.vertex( 1, -1, 0, -1, 0),
+                                                                  Rngon.vertex( 1,  1, 0, -1, -1),
+                                                                  Rngon.vertex(-1,  1, 0, 0, -1)];
+
+                                      const quad = Rngon.ngon(quadVertsUVFlipped,
+                                                              {
+                                                                  color: Rngon.color_rgba(255, 255, 255),
+                                                                  textureMapping: "affine",
+                                                                  texture
+                                                              });
+
+                                      const quadMesh = Rngon.mesh([quad], meshSettings);
+
                                       Rngon.render(canvasId, [quadMesh], renderSettings);
                                   }),
                     await compare("Quad with default material",

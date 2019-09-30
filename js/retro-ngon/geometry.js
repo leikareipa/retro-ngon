@@ -73,11 +73,6 @@ Rngon.vertex = function(x = 0, y = 0, z = 0, u = 0, v = 0, w = 1)
         u,
         v,
 
-        // For perspective-correct texturing.
-        uPers: 0,
-        vPers: 0,
-        uvwPers: 0,
-
         // Transforms the vertex by the given 4x4 matrix.
         transform: function(m = [])
         {
