@@ -69,6 +69,7 @@
                                Rngon.vertex( 1, -1, 0, 1, 0),
                                Rngon.vertex( 1,  1, 0, 1, 1),
                                Rngon.vertex(-1,  1, 0, 0, 1)];
+
             const meshSettings = {rotation: Rngon.rotation_vector(0, 0, 45)};
             const renderSettings = {scale:1, cameraPosition:Rngon.translation_vector(0, 0, -5), hibernateWhenNotOnScreen:false};
 
@@ -89,6 +90,33 @@
                                       const quad = Rngon.ngon(quadVerts,
                                                               {
                                                                   color: Rngon.color_rgba(200, 180, 100)
+                                                              });
+                                      const quadMesh = Rngon.mesh([quad], meshSettings);
+                                      Rngon.render(canvasId, [quadMesh], renderSettings);
+                                  }),
+                    await compare("Plain solid-filled quad with wireframe",
+                                  "./render-output/reference-8b10e6a750b6.png",
+                                  (canvasId)=>
+                                  {
+                                      const quad = Rngon.ngon(quadVerts,
+                                                              {
+                                                                  color: Rngon.color_rgba(200, 180, 100),
+                                                                  hasWireframe: true,
+                                                                  wireframeColor: Rngon.color_rgba(55, 155, 255),
+                                                              });
+                                      const quadMesh = Rngon.mesh([quad], meshSettings);
+                                      Rngon.render(canvasId, [quadMesh], renderSettings);
+                                  }),
+                    await compare("Transparent quad with wireframe",
+                                  "./render-output/reference-d7f1b3b88c7d.png",
+                                  (canvasId)=>
+                                  {
+                                      const quad = Rngon.ngon(quadVerts,
+                                                              {
+                                                                  color: Rngon.color_rgba(200, 180, 100),
+                                                                  hasSolidFill: false,
+                                                                  hasWireframe: true,
+                                                                  wireframeColor: Rngon.color_rgba(55, 155, 255),
                                                               });
                                       const quadMesh = Rngon.mesh([quad], meshSettings);
                                       Rngon.render(canvasId, [quadMesh], renderSettings);
@@ -128,6 +156,46 @@
                                                                   texture
                                                               });
                                       const quadMesh = Rngon.mesh([quad], meshSettings);
+                                      Rngon.render(canvasId, [quadMesh], renderSettings);
+                                  }),
+                    await compare("Quad with tiled UV coordinates textured with affine mapping",
+                                  "./render-output/reference-199f0400e329.png",
+                                  (canvasId)=>
+                                  {
+                                      const quadVertsUVTiled = [Rngon.vertex(-1, -1, 0, 0, 0),
+                                                                Rngon.vertex( 1, -1, 0, 2, 0),
+                                                                Rngon.vertex( 1,  1, 0, 2, 2),
+                                                                Rngon.vertex(-1,  1, 0, 0, 2)];
+
+                                      const quad = Rngon.ngon(quadVertsUVTiled,
+                                                              {
+                                                                  color: Rngon.color_rgba(255, 255, 255),
+                                                                  textureMapping: "affine",
+                                                                  texture
+                                                              });
+
+                                      const quadMesh = Rngon.mesh([quad], meshSettings);
+
+                                      Rngon.render(canvasId, [quadMesh], renderSettings);
+                                  }),
+                    await compare("Quad with flipped UV coordinates textured with affine mapping",
+                                  "./render-output/reference-7f4174b17648.png",
+                                  (canvasId)=>
+                                  {
+                                      const quadVertsUVFlipped = [Rngon.vertex(-1, -1, 0, 0, 0),
+                                                                  Rngon.vertex( 1, -1, 0, -1, 0),
+                                                                  Rngon.vertex( 1,  1, 0, -1, -1),
+                                                                  Rngon.vertex(-1,  1, 0, 0, -1)];
+
+                                      const quad = Rngon.ngon(quadVertsUVFlipped,
+                                                              {
+                                                                  color: Rngon.color_rgba(255, 255, 255),
+                                                                  textureMapping: "affine",
+                                                                  texture
+                                                              });
+
+                                      const quadMesh = Rngon.mesh([quad], meshSettings);
+
                                       Rngon.render(canvasId, [quadMesh], renderSettings);
                                   }),
                     await compare("Quad textured with affine mapping and alpha",
