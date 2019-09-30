@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: live (30 September 2019 17:37:30 UTC)
+// VERSION: live (30 September 2019 17:49:00 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -64,6 +64,8 @@ const Rngon = {};
 
     // If set to true, all n-gons will be rendered with a wireframe.
     Rngon.internalState.showGlobalWireframe = false;
+
+    Rngon.internalState.applyViewportClipping = true;
 }
 /*
  * Tarpeeksi Hyvae Soft 2019 /
@@ -1248,6 +1250,7 @@ Rngon.render = function(canvasElementId,
         Rngon.internalState.useDepthBuffer = (options.depthSort === "depthbuffer");
         Rngon.internalState.usePerspectiveCorrectTexturing = (options.perspectiveCorrectTexturing === true);
         Rngon.internalState.showGlobalWireframe = (options.globalWireframe === true);
+        Rngon.internalState.applyViewportClipping = (options.clipToViewport === true);
     }
 
     const renderSurface = Rngon.screen(canvasElementId,
@@ -1345,6 +1348,8 @@ Rngon.render.defaultOptions =
     nearPlane: 1,
     farPlane: 1000,
     depthSort: "painter",
+    clipToViewport: true,
+    globalWireframe: false,
     hibernateWhenNotOnScreen: true,
     perspectiveCorrectTexturing: false,
     auxiliaryBuffers: [],
@@ -1364,12 +1369,13 @@ Rngon.ngon_transformer = function(ngons = [], clipSpaceMatrix = [], screenMatrix
     for (const ngon of ngons)
     {
         ngon.transform(clipSpaceMatrix);
-        ngon.clip_to_viewport();
+        if (Rngon.internalState.applyViewportClipping) ngon.clip_to_viewport();
         ngon.transform(screenMatrix);
         ngon.perspective_divide();
     };
 
     // Remove n-gons that have no vertices (e.g. due to all of them having been all clipped away).
+    if (Rngon.internalState.applyViewportClipping)
     {
         let cur = 0;
         

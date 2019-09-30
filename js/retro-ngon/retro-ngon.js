@@ -45,4 +45,6 @@ const Rngon = {};
 
     // If set to true, all n-gons will be rendered with a wireframe.
     Rngon.internalState.showGlobalWireframe = false;
+
+    Rngon.internalState.applyViewportClipping = true;
 }

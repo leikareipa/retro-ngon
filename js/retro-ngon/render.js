@@ -58,6 +58,7 @@ Rngon.render = function(canvasElementId,
         Rngon.internalState.useDepthBuffer = (options.depthSort === "depthbuffer");
         Rngon.internalState.usePerspectiveCorrectTexturing = (options.perspectiveCorrectTexturing === true);
         Rngon.internalState.showGlobalWireframe = (options.globalWireframe === true);
+        Rngon.internalState.applyViewportClipping = (options.clipToViewport === true);
     }
 
     const renderSurface = Rngon.screen(canvasElementId,
@@ -155,6 +156,8 @@ Rngon.render.defaultOptions =
     nearPlane: 1,
     farPlane: 1000,
     depthSort: "painter",
+    clipToViewport: true,
+    globalWireframe: false,
     hibernateWhenNotOnScreen: true,
     perspectiveCorrectTexturing: false,
     auxiliaryBuffers: [],
