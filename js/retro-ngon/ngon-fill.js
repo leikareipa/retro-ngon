@@ -56,7 +56,7 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
         }
 
         // Handle n-gons that constitute points and lines.
-        /// TODO: Add depth and alpha testing to points and lines.
+        /// TODO: Add depth and alpha testing for points and lines.
         if (ngon.vertices.length === 1)
         {
             const idx = ((Math.ceil(ngon.vertices[0].x) + Math.ceil(ngon.vertices[0].y) * renderWidth) * 4);

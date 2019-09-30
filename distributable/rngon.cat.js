@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: live (30 September 2019 17:49:00 UTC)
+// VERSION: live (30 September 2019 19:22:33 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -351,7 +351,7 @@ Rngon.vector3 = function(x = 0, y = 0, z = 0)
 
             if (sn != 0 && sn != 1)
             {
-                const inv = (1.0 / Math.sqrt(sn));
+                const inv = (1 / Math.sqrt(sn));
                 this.x *= inv;
                 this.y *= inv;
                 this.z *= inv;
@@ -371,7 +371,7 @@ Rngon.scaling_vector = Rngon.vector3;
 Rngon.vertex = function(x = 0, y = 0, z = 0, u = 0, v = 0, w = 1)
 {
     Rngon.assert && (typeof x === "number" && typeof y === "number" && typeof z === "number" &&
-                     typeof w === "number" && typeof u === "number" && typeof v === "number")
+                     typeof u === "number" && typeof v === "number")
                  || Rngon.throw("Expected numbers as parameters to the vertex factory.");
 
     const returnObject =
@@ -379,9 +379,9 @@ Rngon.vertex = function(x = 0, y = 0, z = 0, u = 0, v = 0, w = 1)
         x,
         y,
         z,
-        w,
         u,
         v,
+        w,
 
         // Transforms the vertex by the given 4x4 matrix.
         transform: function(m = [])
@@ -414,7 +414,7 @@ Rngon.vertex = function(x = 0, y = 0, z = 0, u = 0, v = 0, w = 1)
 
 // A single n-sided ngon.
 // NOTE: The return object is not immutable.
-Rngon.ngon = function(vertices = [Rngon.vertex()], material = {})
+Rngon.ngon = function(vertices = [Rngon.vertex()], material = {}, normal = Rngon.vector3(0, 1, 0))
 {
     Rngon.assert && (vertices instanceof Array) || Rngon.throw("Expected an array of vertices to make an ngon.");
     Rngon.assert && (material instanceof Object) || Rngon.throw("Expected an object containing user-supplied options.");
@@ -437,12 +437,13 @@ Rngon.ngon = function(vertices = [Rngon.vertex()], material = {})
     {
         vertices,
         material,
+        normal,
 
-        // Returns clone of the n-gon such that its vertices are deep-copied. The material, however,
-        // is copied by reference.
         clone: function()
         {
-            return Rngon.ngon(this.vertices.map(v=>Rngon.vertex(v.x, v.y, v.z, v.u, v.v, v.w)), this.material);
+            return Rngon.ngon(this.vertices.map(v=>Rngon.vertex(v.x, v.y, v.z, v.u, v.v, v.w)),
+                              this.material,
+                              Rngon.vector3(this.normal.x, this.normal.y, this.normal.z));
         },
         
         // Clips all vertices against the sides of the viewport. Adapted from Benny
@@ -526,6 +527,8 @@ Rngon.ngon = function(vertices = [Rngon.vertex()], material = {})
             {
                 vert.transform(matrix44);
             }
+
+            this.normal.transform(matrix44);
         },
     };
 
@@ -704,16 +707,14 @@ Rngon.line_draw = (()=>
                     {
                         // Interpolate select parameters.
                         const l = (distanceBetween(x1, y1, x0, y0) / (lineLength||1));
-                        const u = (Rngon.internalState.usePerspectiveCorrectTexturing? Rngon.lerp((vert2.u / vert2.w), (vert1.u / vert1.w), l)
-                                                                                     : Rngon.lerp(vert2.u, vert1.u, l));
-                        const v = (Rngon.internalState.usePerspectiveCorrectTexturing? Rngon.lerp((vert2.v / vert2.w), (vert1.v / vert1.w), l)
-                                                                                     : Rngon.lerp(vert2.v, vert1.v, l));
-                        const depth = (Rngon.internalState.useDepthBuffer? Rngon.lerp(vert2.w, vert1.w, l)
-                                                                         : 0);
-                        const uvw = (Rngon.internalState.usePerspectiveCorrectTexturing? Rngon.lerp((1 / vert2.w), (1 / vert1.w), l)
-                                                                                       : 1);
-
-                        const pixel = {x:x0, u, v, depth, uvw};
+                        const pixel =
+                        {
+                            x: x0,
+                            depth: (Rngon.internalState.useDepthBuffer? Rngon.lerp(vert2.w, vert1.w, l) : 0),
+                            uvw: (Rngon.internalState.usePerspectiveCorrectTexturing? Rngon.lerp((1 / vert2.w), (1 / vert1.w), l) : 1),
+                            u: (Rngon.internalState.usePerspectiveCorrectTexturing? Rngon.lerp((vert2.u / vert2.w), (vert1.u / vert1.w), l) : Rngon.lerp(vert2.u, vert1.u, l)),
+                            v: (Rngon.internalState.usePerspectiveCorrectTexturing? Rngon.lerp((vert2.v / vert2.w), (vert1.v / vert1.w), l) : Rngon.lerp(vert2.v, vert1.v, l)),
+                        };
 
                         if (noOverwrite)
                         {
@@ -929,7 +930,7 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
         }
 
         // Handle n-gons that constitute points and lines.
-        /// TODO: Add depth and alpha testing to points and lines.
+        /// TODO: Add depth and alpha testing for points and lines.
         if (ngon.vertices.length === 1)
         {
             const idx = ((Math.ceil(ngon.vertices[0].x) + Math.ceil(ngon.vertices[0].y) * renderWidth) * 4);

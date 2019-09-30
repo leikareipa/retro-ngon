@@ -107,16 +107,14 @@ Rngon.line_draw = (()=>
                     {
                         // Interpolate select parameters.
                         const l = (distanceBetween(x1, y1, x0, y0) / (lineLength||1));
-                        const u = (Rngon.internalState.usePerspectiveCorrectTexturing? Rngon.lerp((vert2.u / vert2.w), (vert1.u / vert1.w), l)
-                                                                                     : Rngon.lerp(vert2.u, vert1.u, l));
-                        const v = (Rngon.internalState.usePerspectiveCorrectTexturing? Rngon.lerp((vert2.v / vert2.w), (vert1.v / vert1.w), l)
-                                                                                     : Rngon.lerp(vert2.v, vert1.v, l));
-                        const depth = (Rngon.internalState.useDepthBuffer? Rngon.lerp(vert2.w, vert1.w, l)
-                                                                         : 0);
-                        const uvw = (Rngon.internalState.usePerspectiveCorrectTexturing? Rngon.lerp((1 / vert2.w), (1 / vert1.w), l)
-                                                                                       : 1);
-
-                        const pixel = {x:x0, u, v, depth, uvw};
+                        const pixel =
+                        {
+                            x: x0,
+                            depth: (Rngon.internalState.useDepthBuffer? Rngon.lerp(vert2.w, vert1.w, l) : 0),
+                            uvw: (Rngon.internalState.usePerspectiveCorrectTexturing? Rngon.lerp((1 / vert2.w), (1 / vert1.w), l) : 1),
+                            u: (Rngon.internalState.usePerspectiveCorrectTexturing? Rngon.lerp((vert2.u / vert2.w), (vert1.u / vert1.w), l) : Rngon.lerp(vert2.u, vert1.u, l)),
+                            v: (Rngon.internalState.usePerspectiveCorrectTexturing? Rngon.lerp((vert2.v / vert2.w), (vert1.v / vert1.w), l) : Rngon.lerp(vert2.v, vert1.v, l)),
+                        };
 
                         if (noOverwrite)
                         {

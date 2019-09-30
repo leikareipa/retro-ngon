@@ -41,7 +41,7 @@ Rngon.vector3 = function(x = 0, y = 0, z = 0)
 
             if (sn != 0 && sn != 1)
             {
-                const inv = (1.0 / Math.sqrt(sn));
+                const inv = (1 / Math.sqrt(sn));
                 this.x *= inv;
                 this.y *= inv;
                 this.z *= inv;
@@ -69,9 +69,9 @@ Rngon.vertex = function(x = 0, y = 0, z = 0, u = 0, v = 0, w = 1)
         x,
         y,
         z,
-        w,
         u,
         v,
+        w,
 
         // Transforms the vertex by the given 4x4 matrix.
         transform: function(m = [])
@@ -104,7 +104,7 @@ Rngon.vertex = function(x = 0, y = 0, z = 0, u = 0, v = 0, w = 1)
 
 // A single n-sided ngon.
 // NOTE: The return object is not immutable.
-Rngon.ngon = function(vertices = [Rngon.vertex()], material = {})
+Rngon.ngon = function(vertices = [Rngon.vertex()], material = {}, normal = Rngon.vector3(0, 1, 0))
 {
     Rngon.assert && (vertices instanceof Array) || Rngon.throw("Expected an array of vertices to make an ngon.");
     Rngon.assert && (material instanceof Object) || Rngon.throw("Expected an object containing user-supplied options.");
@@ -127,12 +127,13 @@ Rngon.ngon = function(vertices = [Rngon.vertex()], material = {})
     {
         vertices,
         material,
+        normal,
 
-        // Returns clone of the n-gon such that its vertices are deep-copied. The material, however,
-        // is copied by reference.
         clone: function()
         {
-            return Rngon.ngon(this.vertices.map(v=>Rngon.vertex(v.x, v.y, v.z, v.u, v.v, v.w)), this.material);
+            return Rngon.ngon(this.vertices.map(v=>Rngon.vertex(v.x, v.y, v.z, v.u, v.v, v.w)),
+                              this.material,
+                              Rngon.vector3(this.normal.x, this.normal.y, this.normal.z));
         },
         
         // Clips all vertices against the sides of the viewport. Adapted from Benny
@@ -216,6 +217,8 @@ Rngon.ngon = function(vertices = [Rngon.vertex()], material = {})
             {
                 vert.transform(matrix44);
             }
+
+            this.normal.transform(matrix44);
         },
     };
 
