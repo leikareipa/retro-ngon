@@ -55,8 +55,9 @@ Rngon.render = function(canvasElementId,
 
     // Modify any internal render parameters based on the user's options.
     {
-        Rngon.internalState.useDepthBuffer = (options.depthSort == "depthbuffer");
-        Rngon.internalState.usePerspectiveCorrectTexturing = (options.perspectiveCorrectTexturing == true);
+        Rngon.internalState.useDepthBuffer = (options.depthSort === "depthbuffer");
+        Rngon.internalState.usePerspectiveCorrectTexturing = (options.perspectiveCorrectTexturing === true);
+        Rngon.internalState.showGlobalWireframe = (options.globalWireframe === true);
     }
 
     const renderSurface = Rngon.screen(canvasElementId,

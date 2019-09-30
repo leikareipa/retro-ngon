@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: live (30 September 2019 16:33:36 UTC)
+// VERSION: live (30 September 2019 17:37:30 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -61,6 +61,9 @@ const Rngon = {};
     Rngon.internalState.useDepthBuffer = false;
 
     Rngon.internalState.usePerspectiveCorrectTexturing = false;
+
+    // If set to true, all n-gons will be rendered with a wireframe.
+    Rngon.internalState.showGlobalWireframe = false;
 }
 /*
  * Tarpeeksi Hyvae Soft 2019 /
@@ -989,35 +992,15 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
                     // Make sure the right side is sorted bottom-to-top.
                     rightVerts.sort(vertexSorters.verticalDescending);
 
-                    Rngon.assert && ((leftVerts.length !== 0) &&
-                                     (rightVerts.length !== 0))
-                                 || Rngon.throw("Expected each side list to have at least one vertex.");
-                    Rngon.assert && ((leftVerts.length + rightVerts.length) === ngon.vertices.length)
-                                 || Rngon.throw("Vertices appear to have gone missing.");
+                    // Add linking vertices, so we can connect the two sides easily in a line loop.
+                    leftVerts.push(bottomVert);
+                    rightVerts.push(topVert);
                 }
 
-                // Now that we known which vertices are on the right-hand side and which on
-                // the left, we can trace the two virtual lines.
-                /// CLEANUP: The code here is a bit unsightly.
-                {
-                    // Virtual line on the left side.
-                    let prevVert = leftVerts[0];
-                    for (let l = 1; l < leftVerts.length; l++)
-                    {
-                        Rngon.line_draw.into_array(prevVert, leftVerts[l], leftEdge, ngon.vertices[0].y);
-                        prevVert = leftVerts[l];
-                    }
-                    Rngon.line_draw.into_array(prevVert, rightVerts[0], leftEdge, ngon.vertices[0].y);
-                    
-                    // Virtual line on the right side.
-                    prevVert = rightVerts[0];
-                    for (let r = 1; r < rightVerts.length; r++)
-                    {
-                        Rngon.line_draw.into_array(prevVert, rightVerts[r], rightEdge, ngon.vertices[0].y);
-                        prevVert = rightVerts[r];
-                    }
-                    Rngon.line_draw.into_array(prevVert, leftVerts[0], rightEdge, ngon.vertices[0].y);
-                }
+                // Now that we known which vertices are on the right-hand side and which on the left,
+                // we can trace the two virtual lines around the polygon.
+                for (let l = 1; l < leftVerts.length; l++) Rngon.line_draw.into_array(leftVerts[l-1], leftVerts[l], leftEdge, ngon.vertices[0].y);
+                for (let r = 1; r < rightVerts.length; r++) Rngon.line_draw.into_array(rightVerts[r-1], rightVerts[r], rightEdge, ngon.vertices[0].y);
             }
 
             // Draw the ngon.
@@ -1187,32 +1170,19 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
                 }
 
                 // Draw a wireframe around any ngons that wish for one.
-                if (ngon.material.hasWireframe)
+                if (Rngon.internalState.showGlobalWireframe ||
+                    ngon.material.hasWireframe)
                 {
                     const putline = (vert1, vert2)=>
                     {
                         Rngon.line_draw.into_pixel_buffer(vert1, vert2,
-                                                        pixelBuffer, renderWidth, renderHeight,
-                                                        ngon.material.wireframeColor)
+                                                          pixelBuffer, renderWidth, renderHeight,
+                                                          ngon.material.wireframeColor)
                     };
 
-                    // Left edge.
-                    let prevVert = leftVerts[0];
-                    for (let l = 1; l < leftVerts.length; l++)
-                    {
-                        putline(prevVert, leftVerts[l]);
-                        prevVert = leftVerts[l];
-                    }
-                    putline(prevVert, rightVerts[0]);
-
-                    // Right edge.
-                    prevVert = rightVerts[0];
-                    for (let r = 1; r < rightVerts.length; r++)
-                    {
-                        putline(prevVert, rightVerts[r]);
-                        prevVert = rightVerts[r];
-                    }
-                    putline(prevVert, leftVerts[0]);
+                    // Draw a line around the polygon.
+                    for (let l = 1; l < leftVerts.length; l++) putline(leftVerts[l-1], leftVerts[l]);
+                    for (let r = 1; r < rightVerts.length; r++) putline(rightVerts[r-1], rightVerts[r]);
                 }
             }
         }
@@ -1275,8 +1245,9 @@ Rngon.render = function(canvasElementId,
 
     // Modify any internal render parameters based on the user's options.
     {
-        Rngon.internalState.useDepthBuffer = (options.depthSort == "depthbuffer");
-        Rngon.internalState.usePerspectiveCorrectTexturing = (options.perspectiveCorrectTexturing == true);
+        Rngon.internalState.useDepthBuffer = (options.depthSort === "depthbuffer");
+        Rngon.internalState.usePerspectiveCorrectTexturing = (options.perspectiveCorrectTexturing === true);
+        Rngon.internalState.showGlobalWireframe = (options.globalWireframe === true);
     }
 
     const renderSurface = Rngon.screen(canvasElementId,

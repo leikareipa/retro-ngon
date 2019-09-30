@@ -42,4 +42,7 @@ const Rngon = {};
     Rngon.internalState.useDepthBuffer = false;
 
     Rngon.internalState.usePerspectiveCorrectTexturing = false;
+
+    // If set to true, all n-gons will be rendered with a wireframe.
+    Rngon.internalState.showGlobalWireframe = false;
 }
