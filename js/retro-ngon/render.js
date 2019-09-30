@@ -68,7 +68,6 @@ Rngon.render = function(canvasElementId,
                                        options.fov,
                                        options.nearPlane,
                                        options.farPlane,
-                                       options.pixelBuffer,
                                        options.auxiliaryBuffers);
 
     callMetadata.renderWidth = renderSurface.width;
@@ -161,5 +160,4 @@ Rngon.render.defaultOptions =
     hibernateWhenNotOnScreen: true,
     perspectiveCorrectTexturing: false,
     auxiliaryBuffers: [],
-    pixelBuffer: {imageData: null},
 };

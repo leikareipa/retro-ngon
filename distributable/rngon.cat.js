@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: live (30 September 2019 19:22:33 UTC)
+// VERSION: live (30 September 2019 22:10:06 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -59,6 +59,10 @@ const Rngon = {};
 
     // Whether to require pixels to pass a depth test before being allowed on screen.
     Rngon.internalState.useDepthBuffer = false;
+    Rngon.internalState.depthBuffer = {width:1, height:1, buffer:new Array(1), clearValue:Number.MAX_VALUE};
+
+    // Pixel buffer for rasterization.
+    Rngon.internalState.pixelBuffer = new ImageData(1, 1);
 
     Rngon.internalState.usePerspectiveCorrectTexturing = false;
 
@@ -371,7 +375,7 @@ Rngon.scaling_vector = Rngon.vector3;
 Rngon.vertex = function(x = 0, y = 0, z = 0, u = 0, v = 0, w = 1)
 {
     Rngon.assert && (typeof x === "number" && typeof y === "number" && typeof z === "number" &&
-                     typeof u === "number" && typeof v === "number")
+                     typeof w === "number" && typeof u === "number" && typeof v === "number")
                  || Rngon.throw("Expected numbers as parameters to the vertex factory.");
 
     const returnObject =
@@ -880,38 +884,13 @@ Rngon.matrix44 = (()=>
 
 "use strict";
 
-const depthBuffer = {width:0, height:0, buffer:new Array(0), clearValue:Number.MAX_SAFE_INTEGER};
-
 // Rasterizes the given ngons into the given RGBA pixel buffer of the given width and height.
-//
-// Note: This function should only be called once per frame - i.e. the 'ngons' array should
-// contain all the n-gons you want rendered to the current frame. The reason for this requirement
-// is that the depth buffer is cleared on entry to this function, so calling it multiple times
-// per frame would mess up depth buffering for that frame.
 //
 Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], renderWidth, renderHeight)
 {
     Rngon.assert && (ngons instanceof Array) || Rngon.throw("Expected an array of ngons to be rasterized.");
     Rngon.assert && ((renderWidth > 0) && (renderHeight > 0))
                  || Rngon.throw("The transform surface can't have zero width or height.");
-
-    // If depth buffering is enabled, clear the buffer in preparation for a new frame's
-    // rendering.
-    if (Rngon.internalState.useDepthBuffer)
-    {
-        if ((depthBuffer.width != renderWidth) ||
-            (depthBuffer.height != renderHeight) ||
-            !depthBuffer.buffer.length)
-        {
-            depthBuffer.width = renderWidth;
-            depthBuffer.height = renderHeight;
-            depthBuffer.buffer = new Array(depthBuffer.width * depthBuffer.height).fill(depthBuffer.clearValue); 
-        }
-        else
-        {
-            depthBuffer.buffer.fill(depthBuffer.clearValue);
-        }
-    }
 
     const vertexSorters =
     {
@@ -1070,8 +1049,8 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
                                 // at this screen position are further away from the camera.
                                 if (Rngon.internalState.useDepthBuffer)
                                 {
-                                    if (depthBuffer.buffer[pixelBufferIdx/4] <= interpolatedValue.depth) continue;
-                                    else depthBuffer.buffer[pixelBufferIdx/4] = interpolatedValue.depth;
+                                    if (Rngon.internalState.depthBuffer.buffer[pixelBufferIdx/4] <= interpolatedValue.depth) continue;
+                                    else Rngon.internalState.depthBuffer.buffer[pixelBufferIdx/4] = interpolatedValue.depth;
                                 }
 
                                 // Draw the pixel.
@@ -1149,8 +1128,8 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
                                 // at this screen position are further away from the camera.
                                 if (Rngon.internalState.useDepthBuffer)
                                 {
-                                    if (depthBuffer.buffer[pixelBufferIdx/4] <= interpolatedValue.depth) continue;
-                                    else depthBuffer.buffer[pixelBufferIdx/4] = interpolatedValue.depth;
+                                    if (Rngon.internalState.depthBuffer.buffer[pixelBufferIdx/4] <= interpolatedValue.depth) continue;
+                                    else Rngon.internalState.depthBuffer.buffer[pixelBufferIdx/4] = interpolatedValue.depth;
                                 }
 
                                 // Draw the pixel.
@@ -1261,7 +1240,6 @@ Rngon.render = function(canvasElementId,
                                        options.fov,
                                        options.nearPlane,
                                        options.farPlane,
-                                       options.pixelBuffer,
                                        options.auxiliaryBuffers);
 
     callMetadata.renderWidth = renderSurface.width;
@@ -1354,7 +1332,6 @@ Rngon.render.defaultOptions =
     hibernateWhenNotOnScreen: true,
     perspectiveCorrectTexturing: false,
     auxiliaryBuffers: [],
-    pixelBuffer: {imageData: null},
 };
 /*
  * Tarpeeksi Hyvae Soft 2019 /
@@ -1513,7 +1490,6 @@ Rngon.screen = function(canvasElementId = "",              // The DOM id of the 
                         fov = 43,
                         nearPlane = 1,
                         farPlane = 1000,
-                        pixelBuffer = {imageData:null},
                         auxiliaryBuffers = [])
 {
     Rngon.assert && (typeof scaleFactor === "number") || Rngon.throw("Expected the scale factor to be a numeric value.");
@@ -1535,11 +1511,27 @@ Rngon.screen = function(canvasElementId = "",              // The DOM id of the 
 
     const renderContext = canvasElement.getContext("2d");
 
-    if (!pixelBuffer.imageData ||
-        (pixelBuffer.imageData.width != screenWidth) ||
-        (pixelBuffer.imageData.height != screenHeight))
+    if ((Rngon.internalState.pixelBuffer.width != screenWidth) ||
+        (Rngon.internalState.pixelBuffer.height != screenHeight))
     {
-        pixelBuffer.imageData = new ImageData(screenWidth, screenHeight);
+        Rngon.internalState.pixelBuffer = new ImageData(screenWidth, screenHeight);
+    }
+
+    if (Rngon.internalState.useDepthBuffer)
+    {
+        if ((Rngon.internalState.depthBuffer.width != screenWidth) ||
+            (Rngon.internalState.depthBuffer.height != screenHeight) ||
+            !Rngon.internalState.depthBuffer.buffer.length)
+        {
+            Rngon.internalState.depthBuffer.width = screenWidth;
+            Rngon.internalState.depthBuffer.height = screenHeight;
+            Rngon.internalState.depthBuffer.buffer = new Array(Rngon.internalState.depthBuffer.width * Rngon.internalState.depthBuffer.height)
+                                                              .fill(Rngon.internalState.depthBuffer.clearValue); 
+        }
+        else
+        {
+            Rngon.internalState.depthBuffer.buffer.fill(Rngon.internalState.depthBuffer.clearValue);
+        }
     }
 
     const publicInterface = Object.freeze(
@@ -1549,7 +1541,7 @@ Rngon.screen = function(canvasElementId = "",              // The DOM id of the 
 
         wipe_clean: function()
         {
-            pixelBuffer.imageData.data.fill(0);
+            Rngon.internalState.pixelBuffer.data.fill(0);
         },
 
         // Returns a copy of the ngons transformed into screen-space for this render surface.
@@ -1566,8 +1558,8 @@ Rngon.screen = function(canvasElementId = "",              // The DOM id of the 
         // Draw the given ngons onto this render surface.
         draw_ngons: function(ngons = [])
         {
-            ngon_fill_f(ngons, pixelBuffer.imageData.data, auxiliaryBuffers, screenWidth, screenHeight);
-            renderContext.putImageData(pixelBuffer.imageData, 0, 0);
+            ngon_fill_f(ngons, Rngon.internalState.pixelBuffer.data, auxiliaryBuffers, screenWidth, screenHeight);
+            renderContext.putImageData(Rngon.internalState.pixelBuffer, 0, 0);
         },
     });
 

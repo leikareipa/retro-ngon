@@ -40,6 +40,10 @@ const Rngon = {};
 
     // Whether to require pixels to pass a depth test before being allowed on screen.
     Rngon.internalState.useDepthBuffer = false;
+    Rngon.internalState.depthBuffer = {width:1, height:1, buffer:new Array(1), clearValue:Number.MAX_VALUE};
+
+    // Pixel buffer for rasterization.
+    Rngon.internalState.pixelBuffer = new ImageData(1, 1);
 
     Rngon.internalState.usePerspectiveCorrectTexturing = false;
 

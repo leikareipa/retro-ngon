@@ -6,38 +6,13 @@
 
 "use strict";
 
-const depthBuffer = {width:0, height:0, buffer:new Array(0), clearValue:Number.MAX_SAFE_INTEGER};
-
 // Rasterizes the given ngons into the given RGBA pixel buffer of the given width and height.
-//
-// Note: This function should only be called once per frame - i.e. the 'ngons' array should
-// contain all the n-gons you want rendered to the current frame. The reason for this requirement
-// is that the depth buffer is cleared on entry to this function, so calling it multiple times
-// per frame would mess up depth buffering for that frame.
 //
 Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], renderWidth, renderHeight)
 {
     Rngon.assert && (ngons instanceof Array) || Rngon.throw("Expected an array of ngons to be rasterized.");
     Rngon.assert && ((renderWidth > 0) && (renderHeight > 0))
                  || Rngon.throw("The transform surface can't have zero width or height.");
-
-    // If depth buffering is enabled, clear the buffer in preparation for a new frame's
-    // rendering.
-    if (Rngon.internalState.useDepthBuffer)
-    {
-        if ((depthBuffer.width != renderWidth) ||
-            (depthBuffer.height != renderHeight) ||
-            !depthBuffer.buffer.length)
-        {
-            depthBuffer.width = renderWidth;
-            depthBuffer.height = renderHeight;
-            depthBuffer.buffer = new Array(depthBuffer.width * depthBuffer.height).fill(depthBuffer.clearValue); 
-        }
-        else
-        {
-            depthBuffer.buffer.fill(depthBuffer.clearValue);
-        }
-    }
 
     const vertexSorters =
     {
@@ -196,8 +171,8 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
                                 // at this screen position are further away from the camera.
                                 if (Rngon.internalState.useDepthBuffer)
                                 {
-                                    if (depthBuffer.buffer[pixelBufferIdx/4] <= interpolatedValue.depth) continue;
-                                    else depthBuffer.buffer[pixelBufferIdx/4] = interpolatedValue.depth;
+                                    if (Rngon.internalState.depthBuffer.buffer[pixelBufferIdx/4] <= interpolatedValue.depth) continue;
+                                    else Rngon.internalState.depthBuffer.buffer[pixelBufferIdx/4] = interpolatedValue.depth;
                                 }
 
                                 // Draw the pixel.
@@ -275,8 +250,8 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
                                 // at this screen position are further away from the camera.
                                 if (Rngon.internalState.useDepthBuffer)
                                 {
-                                    if (depthBuffer.buffer[pixelBufferIdx/4] <= interpolatedValue.depth) continue;
-                                    else depthBuffer.buffer[pixelBufferIdx/4] = interpolatedValue.depth;
+                                    if (Rngon.internalState.depthBuffer.buffer[pixelBufferIdx/4] <= interpolatedValue.depth) continue;
+                                    else Rngon.internalState.depthBuffer.buffer[pixelBufferIdx/4] = interpolatedValue.depth;
                                 }
 
                                 // Draw the pixel.

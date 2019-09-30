@@ -15,7 +15,6 @@ Rngon.screen = function(canvasElementId = "",              // The DOM id of the 
                         fov = 43,
                         nearPlane = 1,
                         farPlane = 1000,
-                        pixelBuffer = {imageData:null},
                         auxiliaryBuffers = [])
 {
     Rngon.assert && (typeof scaleFactor === "number") || Rngon.throw("Expected the scale factor to be a numeric value.");
@@ -37,11 +36,27 @@ Rngon.screen = function(canvasElementId = "",              // The DOM id of the 
 
     const renderContext = canvasElement.getContext("2d");
 
-    if (!pixelBuffer.imageData ||
-        (pixelBuffer.imageData.width != screenWidth) ||
-        (pixelBuffer.imageData.height != screenHeight))
+    if ((Rngon.internalState.pixelBuffer.width != screenWidth) ||
+        (Rngon.internalState.pixelBuffer.height != screenHeight))
     {
-        pixelBuffer.imageData = new ImageData(screenWidth, screenHeight);
+        Rngon.internalState.pixelBuffer = new ImageData(screenWidth, screenHeight);
+    }
+
+    if (Rngon.internalState.useDepthBuffer)
+    {
+        if ((Rngon.internalState.depthBuffer.width != screenWidth) ||
+            (Rngon.internalState.depthBuffer.height != screenHeight) ||
+            !Rngon.internalState.depthBuffer.buffer.length)
+        {
+            Rngon.internalState.depthBuffer.width = screenWidth;
+            Rngon.internalState.depthBuffer.height = screenHeight;
+            Rngon.internalState.depthBuffer.buffer = new Array(Rngon.internalState.depthBuffer.width * Rngon.internalState.depthBuffer.height)
+                                                              .fill(Rngon.internalState.depthBuffer.clearValue); 
+        }
+        else
+        {
+            Rngon.internalState.depthBuffer.buffer.fill(Rngon.internalState.depthBuffer.clearValue);
+        }
     }
 
     const publicInterface = Object.freeze(
@@ -51,7 +66,7 @@ Rngon.screen = function(canvasElementId = "",              // The DOM id of the 
 
         wipe_clean: function()
         {
-            pixelBuffer.imageData.data.fill(0);
+            Rngon.internalState.pixelBuffer.data.fill(0);
         },
 
         // Returns a copy of the ngons transformed into screen-space for this render surface.
@@ -68,8 +83,8 @@ Rngon.screen = function(canvasElementId = "",              // The DOM id of the 
         // Draw the given ngons onto this render surface.
         draw_ngons: function(ngons = [])
         {
-            ngon_fill_f(ngons, pixelBuffer.imageData.data, auxiliaryBuffers, screenWidth, screenHeight);
-            renderContext.putImageData(pixelBuffer.imageData, 0, 0);
+            ngon_fill_f(ngons, Rngon.internalState.pixelBuffer.data, auxiliaryBuffers, screenWidth, screenHeight);
+            renderContext.putImageData(Rngon.internalState.pixelBuffer, 0, 0);
         },
     });
 
