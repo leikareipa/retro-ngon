@@ -1003,11 +1003,19 @@ Below are results from [tests/performance/perftest1.html](tests/performance/perf
 # Project status
 The retro n-gon renderer is currently in alpha. During this phase, you can expect frequent changes to the API, feature-set, performance, and so on.
 
-Development is currently sporadic or on hold; however the project is not abandoned. It is expected to enter beta at some point in the future, once core features, like n-gon clipping, asset workflow, etc., have been implemented and/or refined.
+### Roadmap
+At the time of this writing, the renderer is at version alpha.6. At least one more alpha version is planned; after which the project will emerge into beta.
+
+The following features are expected to be implemented while in alpha:
+- Face or vertex normals
+- Gouraud shading
+- Distance fog
+
+Once in beta, usability (e.g. user workflow) and render performance (including occlusion culling) are likely going to be among the points of focus.
 
 ### Which features typical of 3d engines are missing?
-- Lighting
 - Visibility culling
+- Lighting
 
 Note also that concave n-gons are not supported.
 
