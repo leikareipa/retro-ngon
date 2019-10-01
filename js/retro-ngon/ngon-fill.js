@@ -69,35 +69,36 @@ Rngon.ngon_filler = function(ngons = [], auxiliaryBuffers = [])
                 // following are successively lower in y. Thus, by tracing first through the list
                 // of left vertices and then through the list of right ones, you end up with an
                 // anti-clockwise loop around the ngon.
-                
-                // Generic algorithm for n-sided convex polygons.
                 {
-                    // Sort the vertices by height (i.e. by increasing y).
-                    ngon.vertices.sort(vertexSorters.verticalAscending);
-                    const topVert = ngon.vertices[0];
-                    const bottomVert = ngon.vertices[ngon.vertices.length-1];
-
-                    // The left side will always start with the top-most vertex, and the right side with
-                    // the bottom-most vertex.
-                    leftVerts.push(topVert);
-                    rightVerts.push(bottomVert);
-
-                    // Trace a line along x,y between the top-most vertex and the bottom-most vertex; and for
-                    // the two intervening vertices, find whether they're to the left or right of that line on
-                    // x. Being on the left side of that line means the vertex is on the ngon's left side,
-                    // and same for the right side.
-                    for (let i = 1; i < (ngon.vertices.length - 1); i++)
+                    // Generic algorithm for n-sided convex polygons.
                     {
-                        const lr = Rngon.lerp(topVert.x, bottomVert.x, ((ngon.vertices[i].y - topVert.y) / (bottomVert.y - topVert.y)));
-                        ((ngon.vertices[i].x >= lr)? rightVerts : leftVerts).push(ngon.vertices[i]);
+                        // Sort the vertices by height (i.e. by increasing y).
+                        ngon.vertices.sort(vertexSorters.verticalAscending);
+                        const topVert = ngon.vertices[0];
+                        const bottomVert = ngon.vertices[ngon.vertices.length-1];
+
+                        // The left side will always start with the top-most vertex, and the right side with
+                        // the bottom-most vertex.
+                        leftVerts.push(topVert);
+                        rightVerts.push(bottomVert);
+
+                        // Trace a line along x,y between the top-most vertex and the bottom-most vertex; and for
+                        // the two intervening vertices, find whether they're to the left or right of that line on
+                        // x. Being on the left side of that line means the vertex is on the ngon's left side,
+                        // and same for the right side.
+                        for (let i = 1; i < (ngon.vertices.length - 1); i++)
+                        {
+                            const lr = Rngon.lerp(topVert.x, bottomVert.x, ((ngon.vertices[i].y - topVert.y) / (bottomVert.y - topVert.y)));
+                            ((ngon.vertices[i].x >= lr)? rightVerts : leftVerts).push(ngon.vertices[i]);
+                        }
+
+                        // Make sure the right side is sorted bottom-to-top.
+                        rightVerts.sort(vertexSorters.verticalDescending);
+
+                        // Add linking vertices, so we can connect the two sides easily in a line loop.
+                        leftVerts.push(bottomVert);
+                        rightVerts.push(topVert);
                     }
-
-                    // Make sure the right side is sorted bottom-to-top.
-                    rightVerts.sort(vertexSorters.verticalDescending);
-
-                    // Add linking vertices, so we can connect the two sides easily in a line loop.
-                    leftVerts.push(bottomVert);
-                    rightVerts.push(topVert);
                 }
 
                 // Now that we known which vertices are on the right-hand side and which on the left,
@@ -142,20 +143,27 @@ Rngon.ngon_filler = function(ngons = [], auxiliaryBuffers = [])
                             depth: (leftEdge[y].depth - interpolationDelta.depth),
                         };
 
-                        for (let x = 0; x <= rowWidth; (x++, leftEdge[y].x++))
+                        for (let x = 0; x <= rowWidth; x++)
                         {
+                            // Increment the interpolated values before doing anything else.
                             interpolatedValue.u += interpolationDelta.u;
                             interpolatedValue.v += interpolationDelta.v;
                             interpolatedValue.uvw += interpolationDelta.uvw;
                             interpolatedValue.depth += interpolationDelta.depth;
 
-                            if (leftEdge[y].x < 0 || leftEdge[y].x >= renderWidth) continue;
-
-                            const px = leftEdge[y].x;
+                            // Corresponding position in the pixel buffer.
+                            const px = (leftEdge[y].x + x);
                             const py = (y + polyYOffset);
-                            const pixelBufferIdx = ((px + py * renderWidth) * 4);
 
-                            if (py < 0 || py >= renderHeight) continue;
+                            if ((px < 0) ||
+                                (py < 0) ||
+                                (px >= renderWidth) ||
+                                (py >= renderHeight))
+                            {
+                                continue;
+                            }
+
+                            const pixelBufferIdx = ((px + py * renderWidth) * 4);
 
                             // Solid fill.
                             if (ngon.material.texture == null)

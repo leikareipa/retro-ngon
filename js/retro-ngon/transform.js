@@ -29,9 +29,8 @@ Rngon.ngon_transformer = function(ngons = [], clipSpaceMatrix = [], screenMatrix
         }
 
         // Clipping.
+        ngon.transform(clipSpaceMatrix);
         {
-            ngon.transform(clipSpaceMatrix);
-
             if (Rngon.internalState.applyViewportClipping)
             {
                 ngon.clip_to_viewport();

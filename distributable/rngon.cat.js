@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: live (01 October 2019 13:03:45 UTC)
+// VERSION: live (01 October 2019 23:44:49 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -479,11 +479,15 @@ Rngon.ngon = function(vertices = [Rngon.vertex()], material = {}, normal = Rngon
                 let prevVertex = this.vertices[this.vertices.length - 1];
                 let prevComponent = prevVertex[axis] * factor;
                 let isPrevVertexInside = (prevComponent <= prevVertex.w);
-
-                this.vertices = this.vertices.reduce((clippedVerts, currentVert)=>
+                
+                // The vertices array will be modified in-place by appending the clipped vertices
+                // onto the end of the array, then removing the previous ones.
+                let k = 0;
+                let numOriginalVertices = this.vertices.length;
+                for (let i = 0; i < numOriginalVertices; i++)
                 {
-                    const curComponent = currentVert[axis] * factor;
-                    const isThisVertexInside = (curComponent <= currentVert.w);
+                    const curComponent = this.vertices[i][axis] * factor;
+                    const isThisVertexInside = (curComponent <= this.vertices[i].w);
 
                     // If either the current vertex or the previous vertex is inside but the other isn't,
                     // and they aren't both inside, interpolate a new vertex between them that lies on
@@ -491,34 +495,29 @@ Rngon.ngon = function(vertices = [Rngon.vertex()], material = {}, normal = Rngon
                     if (isThisVertexInside ^ isPrevVertexInside)
                     {
                         const lerpStep = (prevVertex.w - prevComponent) /
-                                          ((prevVertex.w - prevComponent) - (currentVert.w - curComponent));
-                    
-                        clippedVerts.push(interpolated_vertex(prevVertex, currentVert, lerpStep));
+                                          ((prevVertex.w - prevComponent) - (this.vertices[i].w - curComponent));
+
+                        this.vertices[numOriginalVertices + k++] = Rngon.vertex(Rngon.lerp(prevVertex.x, this.vertices[i].x, lerpStep),
+                                                                                Rngon.lerp(prevVertex.y, this.vertices[i].y, lerpStep),
+                                                                                Rngon.lerp(prevVertex.z, this.vertices[i].z, lerpStep),
+                                                                                Rngon.lerp(prevVertex.u, this.vertices[i].u, lerpStep),
+                                                                                Rngon.lerp(prevVertex.v, this.vertices[i].v, lerpStep),
+                                                                                Rngon.lerp(prevVertex.w, this.vertices[i].w, lerpStep))
                     }
                     
                     if (isThisVertexInside)
                     {
-                        clippedVerts.push(currentVert);
+                        this.vertices[numOriginalVertices + k++] = this.vertices[i];
                     }
 
-                    prevVertex = currentVert;
+                    prevVertex = this.vertices[i];
                     prevComponent = curComponent;
                     isPrevVertexInside = isThisVertexInside;
+                }
 
-                    return clippedVerts;
-                }, []);
+                this.vertices.splice(0, numOriginalVertices);
 
                 return;
-
-                function interpolated_vertex(vert1, vert2, lerpStep)
-                {
-                    return Rngon.vertex(Rngon.lerp(vert1.x, vert2.x, lerpStep),
-                                        Rngon.lerp(vert1.y, vert2.y, lerpStep),
-                                        Rngon.lerp(vert1.z, vert2.z, lerpStep),
-                                        Rngon.lerp(vert1.u, vert2.u, lerpStep),
-                                        Rngon.lerp(vert1.v, vert2.v, lerpStep),
-                                        Rngon.lerp(vert1.w, vert2.w, lerpStep));
-                }
             }
         },
 
@@ -731,6 +730,7 @@ Rngon.line_draw = (()=>
                 while (1)
                 {
                     // Mark the pixel into the array.
+                    if (!noOverwrite || (array[y0 - yOffset] == null))
                     {
                         // Interpolate select parameters.
                         const l = (this.distanceBetween(x1, y1, x0, y0) / (lineLength || 1));
@@ -743,11 +743,7 @@ Rngon.line_draw = (()=>
                             v: (interpolatePerspective? Rngon.lerp((vert2.v / vert2.w), (vert1.v / vert1.w), l) : Rngon.lerp(vert2.v, vert1.v, l)),
                         };
 
-                        if (noOverwrite)
-                        {
-                            if (array[y0 - yOffset] == null) array[y0 - yOffset] = pixel;
-                        }
-                        else array[y0 - yOffset] = pixel;
+                        array[y0 - yOffset] = pixel;
                     }
                     
                     if ((x0 === x1) && (y0 === y1)) break;
@@ -970,35 +966,36 @@ Rngon.ngon_filler = function(ngons = [], auxiliaryBuffers = [])
                 // following are successively lower in y. Thus, by tracing first through the list
                 // of left vertices and then through the list of right ones, you end up with an
                 // anti-clockwise loop around the ngon.
-                
-                // Generic algorithm for n-sided convex polygons.
                 {
-                    // Sort the vertices by height (i.e. by increasing y).
-                    ngon.vertices.sort(vertexSorters.verticalAscending);
-                    const topVert = ngon.vertices[0];
-                    const bottomVert = ngon.vertices[ngon.vertices.length-1];
-
-                    // The left side will always start with the top-most vertex, and the right side with
-                    // the bottom-most vertex.
-                    leftVerts.push(topVert);
-                    rightVerts.push(bottomVert);
-
-                    // Trace a line along x,y between the top-most vertex and the bottom-most vertex; and for
-                    // the two intervening vertices, find whether they're to the left or right of that line on
-                    // x. Being on the left side of that line means the vertex is on the ngon's left side,
-                    // and same for the right side.
-                    for (let i = 1; i < (ngon.vertices.length - 1); i++)
+                    // Generic algorithm for n-sided convex polygons.
                     {
-                        const lr = Rngon.lerp(topVert.x, bottomVert.x, ((ngon.vertices[i].y - topVert.y) / (bottomVert.y - topVert.y)));
-                        ((ngon.vertices[i].x >= lr)? rightVerts : leftVerts).push(ngon.vertices[i]);
+                        // Sort the vertices by height (i.e. by increasing y).
+                        ngon.vertices.sort(vertexSorters.verticalAscending);
+                        const topVert = ngon.vertices[0];
+                        const bottomVert = ngon.vertices[ngon.vertices.length-1];
+
+                        // The left side will always start with the top-most vertex, and the right side with
+                        // the bottom-most vertex.
+                        leftVerts.push(topVert);
+                        rightVerts.push(bottomVert);
+
+                        // Trace a line along x,y between the top-most vertex and the bottom-most vertex; and for
+                        // the two intervening vertices, find whether they're to the left or right of that line on
+                        // x. Being on the left side of that line means the vertex is on the ngon's left side,
+                        // and same for the right side.
+                        for (let i = 1; i < (ngon.vertices.length - 1); i++)
+                        {
+                            const lr = Rngon.lerp(topVert.x, bottomVert.x, ((ngon.vertices[i].y - topVert.y) / (bottomVert.y - topVert.y)));
+                            ((ngon.vertices[i].x >= lr)? rightVerts : leftVerts).push(ngon.vertices[i]);
+                        }
+
+                        // Make sure the right side is sorted bottom-to-top.
+                        rightVerts.sort(vertexSorters.verticalDescending);
+
+                        // Add linking vertices, so we can connect the two sides easily in a line loop.
+                        leftVerts.push(bottomVert);
+                        rightVerts.push(topVert);
                     }
-
-                    // Make sure the right side is sorted bottom-to-top.
-                    rightVerts.sort(vertexSorters.verticalDescending);
-
-                    // Add linking vertices, so we can connect the two sides easily in a line loop.
-                    leftVerts.push(bottomVert);
-                    rightVerts.push(topVert);
                 }
 
                 // Now that we known which vertices are on the right-hand side and which on the left,
@@ -1043,20 +1040,27 @@ Rngon.ngon_filler = function(ngons = [], auxiliaryBuffers = [])
                             depth: (leftEdge[y].depth - interpolationDelta.depth),
                         };
 
-                        for (let x = 0; x <= rowWidth; (x++, leftEdge[y].x++))
+                        for (let x = 0; x <= rowWidth; x++)
                         {
+                            // Increment the interpolated values before doing anything else.
                             interpolatedValue.u += interpolationDelta.u;
                             interpolatedValue.v += interpolationDelta.v;
                             interpolatedValue.uvw += interpolationDelta.uvw;
                             interpolatedValue.depth += interpolationDelta.depth;
 
-                            if (leftEdge[y].x < 0 || leftEdge[y].x >= renderWidth) continue;
-
-                            const px = leftEdge[y].x;
+                            // Corresponding position in the pixel buffer.
+                            const px = (leftEdge[y].x + x);
                             const py = (y + polyYOffset);
-                            const pixelBufferIdx = ((px + py * renderWidth) * 4);
 
-                            if (py < 0 || py >= renderHeight) continue;
+                            if ((px < 0) ||
+                                (py < 0) ||
+                                (px >= renderWidth) ||
+                                (py >= renderHeight))
+                            {
+                                continue;
+                            }
+
+                            const pixelBufferIdx = ((px + py * renderWidth) * 4);
 
                             // Solid fill.
                             if (ngon.material.texture == null)
@@ -1385,9 +1389,8 @@ Rngon.ngon_transformer = function(ngons = [], clipSpaceMatrix = [], screenMatrix
         }
 
         // Clipping.
+        ngon.transform(clipSpaceMatrix);
         {
-            ngon.transform(clipSpaceMatrix);
-
             if (Rngon.internalState.applyViewportClipping)
             {
                 ngon.clip_to_viewport();

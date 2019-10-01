@@ -123,6 +123,7 @@ Rngon.line_draw = (()=>
                 while (1)
                 {
                     // Mark the pixel into the array.
+                    if (!noOverwrite || (array[y0 - yOffset] == null))
                     {
                         // Interpolate select parameters.
                         const l = (this.distanceBetween(x1, y1, x0, y0) / (lineLength || 1));
@@ -135,11 +136,7 @@ Rngon.line_draw = (()=>
                             v: (interpolatePerspective? Rngon.lerp((vert2.v / vert2.w), (vert1.v / vert1.w), l) : Rngon.lerp(vert2.v, vert1.v, l)),
                         };
 
-                        if (noOverwrite)
-                        {
-                            if (array[y0 - yOffset] == null) array[y0 - yOffset] = pixel;
-                        }
-                        else array[y0 - yOffset] = pixel;
+                        array[y0 - yOffset] = pixel;
                     }
                     
                     if ((x0 === x1) && (y0 === y1)) break;

@@ -165,11 +165,15 @@ Rngon.ngon = function(vertices = [Rngon.vertex()], material = {}, normal = Rngon
                 let prevVertex = this.vertices[this.vertices.length - 1];
                 let prevComponent = prevVertex[axis] * factor;
                 let isPrevVertexInside = (prevComponent <= prevVertex.w);
-
-                this.vertices = this.vertices.reduce((clippedVerts, currentVert)=>
+                
+                // The vertices array will be modified in-place by appending the clipped vertices
+                // onto the end of the array, then removing the previous ones.
+                let k = 0;
+                let numOriginalVertices = this.vertices.length;
+                for (let i = 0; i < numOriginalVertices; i++)
                 {
-                    const curComponent = currentVert[axis] * factor;
-                    const isThisVertexInside = (curComponent <= currentVert.w);
+                    const curComponent = this.vertices[i][axis] * factor;
+                    const isThisVertexInside = (curComponent <= this.vertices[i].w);
 
                     // If either the current vertex or the previous vertex is inside but the other isn't,
                     // and they aren't both inside, interpolate a new vertex between them that lies on
@@ -177,34 +181,29 @@ Rngon.ngon = function(vertices = [Rngon.vertex()], material = {}, normal = Rngon
                     if (isThisVertexInside ^ isPrevVertexInside)
                     {
                         const lerpStep = (prevVertex.w - prevComponent) /
-                                          ((prevVertex.w - prevComponent) - (currentVert.w - curComponent));
-                    
-                        clippedVerts.push(interpolated_vertex(prevVertex, currentVert, lerpStep));
+                                          ((prevVertex.w - prevComponent) - (this.vertices[i].w - curComponent));
+
+                        this.vertices[numOriginalVertices + k++] = Rngon.vertex(Rngon.lerp(prevVertex.x, this.vertices[i].x, lerpStep),
+                                                                                Rngon.lerp(prevVertex.y, this.vertices[i].y, lerpStep),
+                                                                                Rngon.lerp(prevVertex.z, this.vertices[i].z, lerpStep),
+                                                                                Rngon.lerp(prevVertex.u, this.vertices[i].u, lerpStep),
+                                                                                Rngon.lerp(prevVertex.v, this.vertices[i].v, lerpStep),
+                                                                                Rngon.lerp(prevVertex.w, this.vertices[i].w, lerpStep))
                     }
                     
                     if (isThisVertexInside)
                     {
-                        clippedVerts.push(currentVert);
+                        this.vertices[numOriginalVertices + k++] = this.vertices[i];
                     }
 
-                    prevVertex = currentVert;
+                    prevVertex = this.vertices[i];
                     prevComponent = curComponent;
                     isPrevVertexInside = isThisVertexInside;
+                }
 
-                    return clippedVerts;
-                }, []);
+                this.vertices.splice(0, numOriginalVertices);
 
                 return;
-
-                function interpolated_vertex(vert1, vert2, lerpStep)
-                {
-                    return Rngon.vertex(Rngon.lerp(vert1.x, vert2.x, lerpStep),
-                                        Rngon.lerp(vert1.y, vert2.y, lerpStep),
-                                        Rngon.lerp(vert1.z, vert2.z, lerpStep),
-                                        Rngon.lerp(vert1.u, vert2.u, lerpStep),
-                                        Rngon.lerp(vert1.v, vert2.v, lerpStep),
-                                        Rngon.lerp(vert1.w, vert2.w, lerpStep));
-                }
             }
         },
 
