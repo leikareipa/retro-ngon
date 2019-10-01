@@ -94,7 +94,8 @@ Rngon.render = function(canvasElementId,
             for (const mesh of meshes)
             {
                 const meshNgons = mesh.ngons.reduce((array, ngon)=>{array.push(ngon.clone()); return array;}, []);
-                renderSurface.transform_ngons(meshNgons, mesh.objectSpaceMatrix(), cameraMatrix);
+                
+                renderSurface.transform_ngons(meshNgons, mesh.objectSpaceMatrix(), cameraMatrix, options.cameraPosition);
 
                 transformedNgons.push(...meshNgons);
             };

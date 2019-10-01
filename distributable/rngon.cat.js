@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: live (30 September 2019 22:10:06 UTC)
+// VERSION: live (01 October 2019 10:47:55 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -361,6 +361,11 @@ Rngon.vector3 = function(x = 0, y = 0, z = 0)
                 this.z *= inv;
             }
         },
+
+        dot: function(other)
+        {
+            return ((this.x * other.x) + (this.y * other.y) + (this.z * other.z));
+        }
     };
 
     return returnObject;
@@ -531,8 +536,6 @@ Rngon.ngon = function(vertices = [Rngon.vertex()], material = {}, normal = Rngon
             {
                 vert.transform(matrix44);
             }
-
-            this.normal.transform(matrix44);
         },
     };
 
@@ -546,6 +549,7 @@ Rngon.ngon.defaultMaterial =
     textureMapping: "ortho",
     hasSolidFill: true,
     hasWireframe: false,
+    isTwoSided: true,
     wireframeColor: Rngon.color_rgba(0, 0, 0),
     auxiliary: {},
 };
@@ -1266,7 +1270,8 @@ Rngon.render = function(canvasElementId,
             for (const mesh of meshes)
             {
                 const meshNgons = mesh.ngons.reduce((array, ngon)=>{array.push(ngon.clone()); return array;}, []);
-                renderSurface.transform_ngons(meshNgons, mesh.objectSpaceMatrix(), cameraMatrix);
+                
+                renderSurface.transform_ngons(meshNgons, mesh.objectSpaceMatrix(), cameraMatrix, options.cameraPosition);
 
                 transformedNgons.push(...meshNgons);
             };
@@ -1342,18 +1347,42 @@ Rngon.render.defaultOptions =
 "use strict";
 
 // Transforms the given n-gons into screen space for rendering.
-Rngon.ngon_transformer = function(ngons = [], clipSpaceMatrix = [], screenMatrix = [])
+Rngon.ngon_transformer = function(ngons = [], clipSpaceMatrix = [], screenMatrix = [], cameraPos)
 {
     for (const ngon of ngons)
     {
-        ngon.transform(clipSpaceMatrix);
-        if (Rngon.internalState.applyViewportClipping) ngon.clip_to_viewport();
+        // Backface culling.
+        if (!ngon.material.isTwoSided)
+        {
+            const viewVector =
+            {
+                x: (ngon.vertices[0].x - cameraPos.x),
+                y: (ngon.vertices[0].y - cameraPos.y),
+                z: (ngon.vertices[0].z - cameraPos.z),
+            }
+
+            if (ngon.normal.dot(viewVector) >= 0)
+            {
+                ngon.vertices.length = 0;
+                continue;
+            }
+        }
+
+        // Clipping.
+        {
+            ngon.transform(clipSpaceMatrix);
+
+            if (Rngon.internalState.applyViewportClipping)
+            {
+                ngon.clip_to_viewport();
+            }
+        }
+
         ngon.transform(screenMatrix);
         ngon.perspective_divide();
     };
 
     // Remove n-gons that have no vertices (e.g. due to all of them having been all clipped away).
-    if (Rngon.internalState.applyViewportClipping)
     {
         let cur = 0;
         
@@ -1546,13 +1575,14 @@ Rngon.screen = function(canvasElementId = "",              // The DOM id of the 
 
         // Returns a copy of the ngons transformed into screen-space for this render surface.
         // Takes as input the ngons to be transformed, an object matrix which contains the object's
-        // transforms, and a camera matrix, which contains the camera's translation and rotation.
-        transform_ngons: function(ngons = [], objectMatrix = [], cameraMatrix = [])
+        // transforms, a camera matrix, which contains the camera's translation and rotation, and
+        // a vector containing the camera's raw world position.
+        transform_ngons: function(ngons = [], objectMatrix = [], cameraMatrix = [], cameraPos)
         {
             const objectSpaceMatrix = Rngon.matrix44.matrices_multiplied(cameraMatrix, objectMatrix);
             const clipSpaceMatrix = Rngon.matrix44.matrices_multiplied(perspectiveMatrix, objectSpaceMatrix);
 
-            ngon_transform_f(ngons, clipSpaceMatrix, screenMatrix);
+            ngon_transform_f(ngons, clipSpaceMatrix, screenMatrix, cameraPos);
         },
 
         // Draw the given ngons onto this render surface.

@@ -47,6 +47,11 @@ Rngon.vector3 = function(x = 0, y = 0, z = 0)
                 this.z *= inv;
             }
         },
+
+        dot: function(other)
+        {
+            return ((this.x * other.x) + (this.y * other.y) + (this.z * other.z));
+        }
     };
 
     return returnObject;
@@ -217,8 +222,6 @@ Rngon.ngon = function(vertices = [Rngon.vertex()], material = {}, normal = Rngon
             {
                 vert.transform(matrix44);
             }
-
-            this.normal.transform(matrix44);
         },
     };
 
@@ -232,6 +235,7 @@ Rngon.ngon.defaultMaterial =
     textureMapping: "ortho",
     hasSolidFill: true,
     hasWireframe: false,
+    isTwoSided: true,
     wireframeColor: Rngon.color_rgba(0, 0, 0),
     auxiliary: {},
 };

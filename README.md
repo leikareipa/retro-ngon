@@ -268,6 +268,7 @@ The following are valid properties of an n-gon's material, and the valid values 
     textureMapping: "ortho" | "affine"
     hasSolidFill: true | false
     hasWireframe: true | false
+    isTwoSided: true | false
     wireframeColor: Rngon.color_rgba(...)
     auxiliary: {}
 }
@@ -282,6 +283,8 @@ The `textureMapping` property defines how textures should be mapped onto the n-g
 The `hasSolidFill` property determines whether the face of the n-gon will be rendered. If this is set to false, and the n-gon has no wireframe, it will be invisible.
 
 The `hasWireframe` property determines whether a line should be drawn around the n-gon's face.
+
+The `isTwoSided` property determines whether the n-gon should be visible when viewed from behind (relative to the direction of its surface normal). If set to true, you must also provide the n-gon with a valid surface normal, which otherwise defaults to an *up*-vector of {x:0, y:1, z:0}.
 
 The `wireframeColor` property sets the color of the n-gon's wireframe. Note that if `hasWireframe` is false, no wireframe will be drawn, regardless of its color.
 
@@ -431,7 +434,7 @@ The renderer's public API consists of the following objects:
 | ----------------------------------------------- | ------------------------------------------- |
 | [render](#rendercanvaselementid-meshes-options) | Renders n-gon meshes into a canvas.         |
 | [mesh](#meshngons-transform)                    | Collection of thematically-related n-gons.  |
-| [ngon](#ngonvertices-material)                  | Polygonal shape defined by *n* vertices.    |
+| [ngon](#ngonvertices-material-normal)                  | Polygonal shape defined by *n* vertices.    |
 | [vertex](#vertexx-y-z-u-v-w)                    | Corner of an n-gon.                         |
 | [vector3](#vector3x-y-z)                        | Three-component vector. Aliases: *translation_vector*, *rotation_vector*, *scaling_vector*. |
 | [color_rgba](#color_rgbared-green-blue-alpha)   | RGB color with alpha.                       |
@@ -459,6 +462,7 @@ Renders one or more n-gon meshes onto an existing canvas element.
 | *number*              | nearPlane                | Distance from the camera to the near plane. Vertices closer to the camera will be clipped. Defaults to *1*.|
 | *number*              | farPlane                 | Distance from the camera to the far plane. Vertices further from the camera will be clipped. Defaults to *1000*.|
 | *number*              | perspectiveCorrectTexturing | When set to true, textures whose texture-mapping mode is "affine" will be rendered with perspective correction. This results in less view-dependent texture distortion but will likely reduce performance. Defaults to *false*.|
+| *boolean*             | clipToViewport           | If set to true, the renderer will clip all n-gons against the viewport prior to rendering. If none of your n-gons extend beyond the screen's boundaries, setting this to false may save you some performance. Defaults to *true*. |
 | *translation_vector*  | cameraPosition           | The camera's position. Defaults to *vector3(0, 0, 0)*. |
 | *rotation_vector*     | cameraDirection          | The camera's direction. Defaults to *vector3(0, 0, 0)*. |
 | *array*               | auxiliaryBuffers         | One or more auxiliary render buffers. Each buffer is an object containing the properties *buffer* and *property*; where *buffer* points to an array containing as many elements as there are pixels in the rendering, and *property* names a source property in an n-gon's material. For each pixel rendered, the corresponding element in an auxiliary buffer will be written with the n-gon's material source value. Defaults to *[]*. |
@@ -590,15 +594,16 @@ const mesh = Rngon.mesh([ngon],
                         });
 ```
 
-#### ngon([vertices[, material]])
-A polygonal shape defined by *n* vertices.
+#### ngon([vertices[, material[, normal]]])
+An n-gon &ndash; a shape defined by *n* vertices; typically a triangle or a quad.
 
 *Parameters:*
 
 | Type      | Name            | Description |
 | --------- | --------------- | ----------- |
-| *array*   | vertices        | An array of one or more **vertex** objects, which define the corners of the n-gon. Defaults to *[Rngon.vertex()]*. |
-| *object*  | material       | An object whose properties define the n-gon's material. Defaults to *{}*. |
+| *array*   | vertices        | An array of one or more **vertex** objects, which define the corners of the n-gon. Defaults to *[vertex()]*. |
+| *object*  | material       | An object whose properties define the n-gon's material. Will be combined with the *ngon.defaultMaterial* object such that any colliding parameters are overridden by this object. Defaults to *{}*. |
+| *vector3*  | normal       | A surface normal defining the direction of the n-gon's face. Defaults to *vector3(0, 1, 0)* &ndash; a vector pointing up. |
 
 *The **material** parameter object recognizes the following properties:*
 
@@ -609,6 +614,7 @@ A polygonal shape defined by *n* vertices.
 | *string*             | textureMapping  | Defines how textures (if any) should be mapped onto the n-gon's surface during rendering. Possible values: "ortho" (view-dependent mapping without UV), "affine" (UV mapping). If set to "ortho", vertices do not need UV coordinates, but visual distortions will be introduced in many cases. The "affine" mapping mode requires vertices to have UV coordinates, but results in more visually-accurate mapping. Defaults to *"ortho"*. |
 | *boolean*            | hasSolidFill    | If false, the n-gon's face will not be rendered. If false and the n-gon also has no wireframe, the n-gon will be invisible. Defaults to *true*. |
 | *boolean*            | hasWireframe    | If true, the n-gon will be rendered with a wireframe outline. Is not affected by the *hasSolidFill* property. Defaults to *false*. |
+| *boolean*            | isTwoSided    | If true, the n-gon will be visible when viewed from both front and back. Otherwise, the n-gon will be culled when viewed from behind (as determined by the direction of its surface normal). Defaults to *true* (may become *false* in future releases). |
 | *color_rgba*         | wireframeColor  | If the n-gon has a wireframe, this property gives the wireframe's color as a **color_rgba** object. Defaults to *color_rgba(0, 0, 0)*. |
 | *array*              | auxiliary       | Properties accessible to the auxiliary buffers of **render**. Defaults to *{}*. |
 
