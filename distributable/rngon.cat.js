@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: live (01 October 2019 10:47:55 UTC)
+// VERSION: live (01 October 2019 12:23:37 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -613,16 +613,17 @@ Rngon.line_draw = (()=>
 {
     return Object.freeze(
     {
-        // Draws a line between the two given vertices into the given array of pixels. It's
+        // Draws a line between the two given vertices into the render's pixel buffer. It's
         // expected that the pixel array packs the pixels as consecutive RGBA values, each
         // in the range 0..255.
         into_pixel_buffer: function(vert1 = Rngon.vertex(),
                                     vert2 = Rngon.vertex(),
-                                    pixelBuffer = [],
-                                    bufferWidth = 0,
-                                    bufferHeight = 0,
                                     lineColor = Rngon.color_rgba(127, 127, 127, 255))
         {
+            const pixelBuffer = Rngon.internalState.pixelBuffer.data;
+            const bufferWidth = Rngon.internalState.pixelBuffer.width;
+            const bufferHeight = Rngon.internalState.pixelBuffer.height;
+
             function put_pixel(x = 0, y = 0)
             {
                 if (x < 0 || x >= bufferWidth ||
@@ -888,13 +889,14 @@ Rngon.matrix44 = (()=>
 
 "use strict";
 
-// Rasterizes the given ngons into the given RGBA pixel buffer of the given width and height.
-//
-Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], renderWidth, renderHeight)
+// Rasterizes the given ngons into the rendere's RGBA pixel buffer.
+Rngon.ngon_filler = function(ngons = [], auxiliaryBuffers = [])
 {
     Rngon.assert && (ngons instanceof Array) || Rngon.throw("Expected an array of ngons to be rasterized.");
-    Rngon.assert && ((renderWidth > 0) && (renderHeight > 0))
-                 || Rngon.throw("The transform surface can't have zero width or height.");
+
+    const pixelBuffer = Rngon.internalState.pixelBuffer.data;
+    const renderWidth = Rngon.internalState.pixelBuffer.width;
+    const renderHeight = Rngon.internalState.pixelBuffer.height;
 
     const vertexSorters =
     {
@@ -927,9 +929,7 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
         }
         else if (ngon.vertices.length === 2)
         {
-            Rngon.line_draw.into_pixel_buffer(ngon.vertices[0], ngon.vertices[1],
-                                              pixelBuffer, renderWidth, renderHeight,
-                                              ngon.material.color)
+            Rngon.line_draw.into_pixel_buffer(ngon.vertices[0], ngon.vertices[1], ngon.material.color)
 
             continue;
         }
@@ -1159,16 +1159,8 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
                 if (Rngon.internalState.showGlobalWireframe ||
                     ngon.material.hasWireframe)
                 {
-                    const putline = (vert1, vert2)=>
-                    {
-                        Rngon.line_draw.into_pixel_buffer(vert1, vert2,
-                                                          pixelBuffer, renderWidth, renderHeight,
-                                                          ngon.material.wireframeColor)
-                    };
-
-                    // Draw a line around the polygon.
-                    for (let l = 1; l < leftVerts.length; l++) putline(leftVerts[l-1], leftVerts[l]);
-                    for (let r = 1; r < rightVerts.length; r++) putline(rightVerts[r-1], rightVerts[r]);
+                    for (let l = 1; l < leftVerts.length; l++) Rngon.line_draw.into_pixel_buffer(leftVerts[l-1], leftVerts[l], ngon.material.wireframeColor);
+                    for (let r = 1; r < rightVerts.length; r++) Rngon.line_draw.into_pixel_buffer(rightVerts[r-1], rightVerts[r], ngon.material.wireframeColor);
                 }
             }
         }
@@ -1588,7 +1580,7 @@ Rngon.screen = function(canvasElementId = "",              // The DOM id of the 
         // Draw the given ngons onto this render surface.
         draw_ngons: function(ngons = [])
         {
-            ngon_fill_f(ngons, Rngon.internalState.pixelBuffer.data, auxiliaryBuffers, screenWidth, screenHeight);
+            ngon_fill_f(ngons, auxiliaryBuffers);
             renderContext.putImageData(Rngon.internalState.pixelBuffer, 0, 0);
         },
     });

@@ -84,7 +84,7 @@ Rngon.screen = function(canvasElementId = "",              // The DOM id of the 
         // Draw the given ngons onto this render surface.
         draw_ngons: function(ngons = [])
         {
-            ngon_fill_f(ngons, Rngon.internalState.pixelBuffer.data, auxiliaryBuffers, screenWidth, screenHeight);
+            ngon_fill_f(ngons, auxiliaryBuffers);
             renderContext.putImageData(Rngon.internalState.pixelBuffer, 0, 0);
         },
     });

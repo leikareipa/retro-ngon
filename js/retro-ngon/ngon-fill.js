@@ -6,13 +6,14 @@
 
 "use strict";
 
-// Rasterizes the given ngons into the given RGBA pixel buffer of the given width and height.
-//
-Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], renderWidth, renderHeight)
+// Rasterizes the given ngons into the rendere's RGBA pixel buffer.
+Rngon.ngon_filler = function(ngons = [], auxiliaryBuffers = [])
 {
     Rngon.assert && (ngons instanceof Array) || Rngon.throw("Expected an array of ngons to be rasterized.");
-    Rngon.assert && ((renderWidth > 0) && (renderHeight > 0))
-                 || Rngon.throw("The transform surface can't have zero width or height.");
+
+    const pixelBuffer = Rngon.internalState.pixelBuffer.data;
+    const renderWidth = Rngon.internalState.pixelBuffer.width;
+    const renderHeight = Rngon.internalState.pixelBuffer.height;
 
     const vertexSorters =
     {
@@ -45,9 +46,7 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
         }
         else if (ngon.vertices.length === 2)
         {
-            Rngon.line_draw.into_pixel_buffer(ngon.vertices[0], ngon.vertices[1],
-                                              pixelBuffer, renderWidth, renderHeight,
-                                              ngon.material.color)
+            Rngon.line_draw.into_pixel_buffer(ngon.vertices[0], ngon.vertices[1], ngon.material.color)
 
             continue;
         }
@@ -277,16 +276,8 @@ Rngon.ngon_filler = function(ngons = [], pixelBuffer, auxiliaryBuffers = [], ren
                 if (Rngon.internalState.showGlobalWireframe ||
                     ngon.material.hasWireframe)
                 {
-                    const putline = (vert1, vert2)=>
-                    {
-                        Rngon.line_draw.into_pixel_buffer(vert1, vert2,
-                                                          pixelBuffer, renderWidth, renderHeight,
-                                                          ngon.material.wireframeColor)
-                    };
-
-                    // Draw a line around the polygon.
-                    for (let l = 1; l < leftVerts.length; l++) putline(leftVerts[l-1], leftVerts[l]);
-                    for (let r = 1; r < rightVerts.length; r++) putline(rightVerts[r-1], rightVerts[r]);
+                    for (let l = 1; l < leftVerts.length; l++) Rngon.line_draw.into_pixel_buffer(leftVerts[l-1], leftVerts[l], ngon.material.wireframeColor);
+                    for (let r = 1; r < rightVerts.length; r++) Rngon.line_draw.into_pixel_buffer(rightVerts[r-1], rightVerts[r], ngon.material.wireframeColor);
                 }
             }
         }

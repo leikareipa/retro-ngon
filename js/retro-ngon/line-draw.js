@@ -5,16 +5,17 @@ Rngon.line_draw = (()=>
 {
     return Object.freeze(
     {
-        // Draws a line between the two given vertices into the given array of pixels. It's
+        // Draws a line between the two given vertices into the render's pixel buffer. It's
         // expected that the pixel array packs the pixels as consecutive RGBA values, each
         // in the range 0..255.
         into_pixel_buffer: function(vert1 = Rngon.vertex(),
                                     vert2 = Rngon.vertex(),
-                                    pixelBuffer = [],
-                                    bufferWidth = 0,
-                                    bufferHeight = 0,
                                     lineColor = Rngon.color_rgba(127, 127, 127, 255))
         {
+            const pixelBuffer = Rngon.internalState.pixelBuffer.data;
+            const bufferWidth = Rngon.internalState.pixelBuffer.width;
+            const bufferHeight = Rngon.internalState.pixelBuffer.height;
+
             function put_pixel(x = 0, y = 0)
             {
                 if (x < 0 || x >= bufferWidth ||
