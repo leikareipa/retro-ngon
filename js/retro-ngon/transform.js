@@ -6,9 +6,12 @@
 
 "use strict";
 
-// Transforms the given n-gons into screen space for rendering.
-Rngon.ngon_transformer = function(ngons = [], clipSpaceMatrix = [], screenMatrix = [], cameraPos)
+// Transforms the given n-gons into screen space for rendering. The transformed n-gons
+// are stored in the internal n-gon cache.
+Rngon.ngon_transformer = function(ngons = [], clipSpaceMatrix = [], screenSpaceMatrix = [], cameraPos)
 {
+    const transformedNgonsCache = Rngon.internalState.transformedNgonsCache;
+
     for (const ngon of ngons)
     {
         // Backface culling.
@@ -23,38 +26,52 @@ Rngon.ngon_transformer = function(ngons = [], clipSpaceMatrix = [], screenMatrix
 
             if (ngon.normal.dot(viewVector) >= 0)
             {
-                ngon.vertices.length = 0;
                 continue;
             }
         }
 
+        // Copy the ngon into the internal n-gon cache, so we can operate on it later in the
+        // render pipeline without destroying the original data.
+        const cachedNgon = transformedNgonsCache.ngons[transformedNgonsCache.numActiveNgons++];
+        {
+            cachedNgon.vertices.length = 0;
+
+            // Copy by value.
+            for (let v = 0; v < ngon.vertices.length; v++)
+            {
+                cachedNgon.vertices[v] = Rngon.vertex(ngon.vertices[v].x,
+                                                      ngon.vertices[v].y,
+                                                      ngon.vertices[v].z,
+                                                      ngon.vertices[v].u,
+                                                      ngon.vertices[v].v,
+                                                      ngon.vertices[v].w,);
+            }
+
+            // Copy by reference.
+            cachedNgon.normal = ngon.normal;
+            cachedNgon.material = ngon.material;
+        }
+
         // Clipping.
-        ngon.transform(clipSpaceMatrix);
+        cachedNgon.transform(clipSpaceMatrix);
         {
             if (Rngon.internalState.applyViewportClipping)
             {
-                ngon.clip_to_viewport();
+                cachedNgon.clip_to_viewport();
+
+                // If there are no vertices left after clipping, it means this n-gon is not visible
+                // on the screen at all. We can just ignore it.
+                if (!cachedNgon.vertices.length)
+                {
+                    transformedNgonsCache.numActiveNgons--;
+                    continue;
+                }
             }
         }
 
-        ngon.transform(screenMatrix);
-        ngon.perspective_divide();
+        cachedNgon.transform(screenSpaceMatrix);
+        cachedNgon.perspective_divide();
     };
-
-    // Remove n-gons that have no vertices (e.g. due to all of them having been all clipped away).
-    {
-        let cur = 0;
-        
-        for (let i = 0; i < ngons.length; i++)
-        {
-            if (ngons[i].vertices.length)
-            {
-                ngons[cur++] = ngons[i];
-            }
-        }
-
-        ngons.length = cur;
-    }
 
     return;
 }

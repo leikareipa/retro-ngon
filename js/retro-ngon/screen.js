@@ -32,7 +32,7 @@ Rngon.screen = function(canvasElementId = "",              // The DOM id of the 
     canvasElement.setAttribute("height", screenHeight);
 
     const perspectiveMatrix = Rngon.matrix44.perspective((fov * Math.PI/180), (screenWidth / screenHeight), nearPlane, farPlane);
-    const screenMatrix = Rngon.matrix44.ortho(screenWidth, screenHeight);
+    const screenSpaceMatrix = Rngon.matrix44.ortho(screenWidth, screenHeight);
 
     const renderContext = canvasElement.getContext("2d");
 
@@ -75,16 +75,16 @@ Rngon.screen = function(canvasElementId = "",              // The DOM id of the 
         // a vector containing the camera's raw world position.
         transform_ngons: function(ngons = [], objectMatrix = [], cameraMatrix = [], cameraPos)
         {
-            const objectSpaceMatrix = Rngon.matrix44.matrices_multiplied(cameraMatrix, objectMatrix);
-            const clipSpaceMatrix = Rngon.matrix44.matrices_multiplied(perspectiveMatrix, objectSpaceMatrix);
+            const viewSpaceMatrix = Rngon.matrix44.matrices_multiplied(cameraMatrix, objectMatrix);
+            const clipSpaceMatrix = Rngon.matrix44.matrices_multiplied(perspectiveMatrix, viewSpaceMatrix);
 
-            ngon_transform_f(ngons, clipSpaceMatrix, screenMatrix, cameraPos);
+            ngon_transform_f(ngons, clipSpaceMatrix, screenSpaceMatrix, cameraPos);
         },
 
-        // Draw the given ngons onto this render surface.
-        draw_ngons: function(ngons = [])
+        // Draw all n-gons currently stored in the internal n-gon cache onto the render surface.
+        rasterize_ngon_cache: function()
         {
-            ngon_fill_f(ngons, auxiliaryBuffers);
+            ngon_fill_f(auxiliaryBuffers);
             renderContext.putImageData(Rngon.internalState.pixelBuffer, 0, 0);
         },
     });

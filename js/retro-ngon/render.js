@@ -61,6 +61,24 @@ Rngon.render = function(canvasElementId,
         Rngon.internalState.applyViewportClipping = (options.clipToViewport === true);
     }
 
+    
+
+    // Create or resize the n-gon cache to fit at least the number of n-gons that we've been
+    // given to render.
+    {
+        const sceneNgonCount = meshes.reduce((totalCount, mesh)=>(totalCount + mesh.ngons.length), 0);
+
+        if (!Rngon.internalState.transformedNgonsCache ||
+            !Rngon.internalState.transformedNgonsCache.ngons.length ||
+            (Rngon.internalState.transformedNgonsCache.ngons.length < sceneNgonCount))
+        {
+            const lengthDelta = (sceneNgonCount - Rngon.internalState.transformedNgonsCache.ngons.length);
+            Rngon.internalState.transformedNgonsCache.ngons.push(...new Array(lengthDelta).fill().map(e=>Rngon.ngon()));
+        }
+
+        Rngon.internalState.transformedNgonsCache.numActiveNgons = 0; 
+    }
+
     const renderSurface = Rngon.screen(canvasElementId,
                                        Rngon.ngon_filler,
                                        Rngon.ngon_transformer,
@@ -82,7 +100,6 @@ Rngon.render = function(canvasElementId,
 
         // Transform.
         callMetadata.performance.timingMs.transformation = performance.now();
-        const transformedNgons = [];
         {
             const cameraMatrix = Rngon.matrix44.matrices_multiplied(Rngon.matrix44.rotate(options.cameraDirection.x,
                                                                                           options.cameraDirection.y,
@@ -93,14 +110,11 @@ Rngon.render = function(canvasElementId,
 
             for (const mesh of meshes)
             {
-                const meshNgons = mesh.ngons.reduce((array, ngon)=>{array.push(ngon.clone()); return array;}, []);
-                
-                renderSurface.transform_ngons(meshNgons, mesh.objectSpaceMatrix(), cameraMatrix, options.cameraPosition);
-
-                transformedNgons.push(...meshNgons);
+                renderSurface.transform_ngons(mesh.ngons, mesh.objectSpaceMatrix(), cameraMatrix, options.cameraPosition);
             };
 
-            // Apply depth sorting to the transformed ngons.
+            // Apply depth sorting to the transformed n-gons (which are now stored in the internal
+            // n-gon cache).
             switch (options.depthSort)
             {
                 case "none":
@@ -109,7 +123,14 @@ Rngon.render = function(canvasElementId,
                 // Painter's algorithm, i.e. sort by depth.
                 case "painter":
                 {
-                    transformedNgons.sort((ngonA, ngonB)=>
+                    const cache = Rngon.internalState.transformedNgonsCache;
+
+                    /// TODO: Sub-array sorting in a GC-friendly way. For now, we need to resize the
+                    /// array to exactly the right size, which means we likely then need to resize it
+                    /// up again on the next render iteration.
+                    cache.ngons.length = cache.numActiveNgons;
+
+                    cache.ngons.sort((ngonA, ngonB)=>
                     {
                         const a = (ngonA.vertices.reduce((acc, v)=>(acc + v.z), 0) / ngonA.vertices.length);
                         const b = (ngonB.vertices.reduce((acc, v)=>(acc + v.z), 0) / ngonB.vertices.length);
@@ -127,7 +148,7 @@ Rngon.render = function(canvasElementId,
 
         // Rasterize.
         callMetadata.performance.timingMs.rasterization = performance.now();
-        renderSurface.draw_ngons(transformedNgons);
+        renderSurface.rasterize_ngon_cache();
         callMetadata.performance.timingMs.rasterization = (performance.now() - callMetadata.performance.timingMs.rasterization);
 
         callMetadata.performance.timingMs.total = (performance.now() - callMetadata.performance.timingMs.total);

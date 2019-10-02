@@ -6,11 +6,9 @@
 
 "use strict";
 
-// Rasterizes the given ngons into the rendere's RGBA pixel buffer.
-Rngon.ngon_filler = function(ngons = [], auxiliaryBuffers = [])
+// Rasterizes into the internal pixel buffer all n-gons currently stored in the internal n-gon cache.
+Rngon.ngon_filler = function(auxiliaryBuffers = [])
 {
-    Rngon.assert && (ngons instanceof Array) || Rngon.throw("Expected an array of ngons to be rasterized.");
-
     const pixelBuffer = Rngon.internalState.pixelBuffer.data;
     const renderWidth = Rngon.internalState.pixelBuffer.width;
     const renderHeight = Rngon.internalState.pixelBuffer.height;
@@ -22,8 +20,10 @@ Rngon.ngon_filler = function(ngons = [], auxiliaryBuffers = [])
     }
 
     // Rasterize the n-gons.
-    for (const ngon of ngons)
+    for (let n = 0; n < Rngon.internalState.transformedNgonsCache.numActiveNgons; n++)
     {
+        const ngon = Rngon.internalState.transformedNgonsCache.ngons[n];
+
         // In theory, we should never receive n-gons that have no vertices, but let's check
         // to make sure.
         if (ngon.vertices.length <= 0)

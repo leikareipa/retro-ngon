@@ -134,13 +134,6 @@ Rngon.ngon = function(vertices = [Rngon.vertex()], material = {}, normal = Rngon
         material,
         normal,
 
-        clone: function()
-        {
-            return Rngon.ngon(this.vertices.map(v=>Rngon.vertex(v.x, v.y, v.z, v.u, v.v, v.w)),
-                              this.material,
-                              Rngon.vector3(this.normal.x, this.normal.y, this.normal.z));
-        },
-        
         // Clips all vertices against the sides of the viewport. Adapted from Benny
         // Bobaganoosh's 3d software renderer, the source for which is available at
         // https://github.com/BennyQBD/3DSoftwareRenderer.

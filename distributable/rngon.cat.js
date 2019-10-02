@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: live (02 October 2019 00:24:39 UTC)
+// VERSION: live (02 October 2019 15:11:37 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -54,22 +54,28 @@ const Rngon = {};
 
 // Global render toggles. These should not be modified directly; they're instead
 // set by the renderer based on render parameters requested by the user.
+Rngon.internalState =
 {
-    Rngon.internalState = {};
-
     // Whether to require pixels to pass a depth test before being allowed on screen.
-    Rngon.internalState.useDepthBuffer = false;
-    Rngon.internalState.depthBuffer = {width:1, height:1, buffer:new Array(1), clearValue:Number.MAX_VALUE};
+    useDepthBuffer: false,
+    depthBuffer: {width:1, height:1, buffer:new Array(1), clearValue:Number.MAX_VALUE},
 
     // Pixel buffer for rasterization.
-    Rngon.internalState.pixelBuffer = new ImageData(1, 1);
+    pixelBuffer: new ImageData(1, 1),
 
-    Rngon.internalState.usePerspectiveCorrectTexturing = false;
+    usePerspectiveCorrectTexturing: false,
 
     // If set to true, all n-gons will be rendered with a wireframe.
-    Rngon.internalState.showGlobalWireframe = false;
+    showGlobalWireframe: false,
 
-    Rngon.internalState.applyViewportClipping = true;
+    applyViewportClipping: true,
+
+    // All transformed n-gons on a particular call to render() will be placed here.
+    // The cache size will be dynamically adjusted up to match the largest number
+    // of transformed n-gons, so at any given time the number of active n-gons (those
+    // that have been transformed for the current frame) may be smaller than the
+    // cache's total capacity.
+    transformedNgonsCache: {numActiveNgons:0, ngons:[]},
 }
 /*
  * Tarpeeksi Hyvae Soft 2019 /
@@ -448,13 +454,6 @@ Rngon.ngon = function(vertices = [Rngon.vertex()], material = {}, normal = Rngon
         material,
         normal,
 
-        clone: function()
-        {
-            return Rngon.ngon(this.vertices.map(v=>Rngon.vertex(v.x, v.y, v.z, v.u, v.v, v.w)),
-                              this.material,
-                              Rngon.vector3(this.normal.x, this.normal.y, this.normal.z));
-        },
-        
         // Clips all vertices against the sides of the viewport. Adapted from Benny
         // Bobaganoosh's 3d software renderer, the source for which is available at
         // https://github.com/BennyQBD/3DSoftwareRenderer.
@@ -903,11 +902,9 @@ Rngon.matrix44 = (()=>
 
 "use strict";
 
-// Rasterizes the given ngons into the rendere's RGBA pixel buffer.
-Rngon.ngon_filler = function(ngons = [], auxiliaryBuffers = [])
+// Rasterizes into the internal pixel buffer all n-gons currently stored in the internal n-gon cache.
+Rngon.ngon_filler = function(auxiliaryBuffers = [])
 {
-    Rngon.assert && (ngons instanceof Array) || Rngon.throw("Expected an array of ngons to be rasterized.");
-
     const pixelBuffer = Rngon.internalState.pixelBuffer.data;
     const renderWidth = Rngon.internalState.pixelBuffer.width;
     const renderHeight = Rngon.internalState.pixelBuffer.height;
@@ -919,8 +916,10 @@ Rngon.ngon_filler = function(ngons = [], auxiliaryBuffers = [])
     }
 
     // Rasterize the n-gons.
-    for (const ngon of ngons)
+    for (let n = 0; n < Rngon.internalState.transformedNgonsCache.numActiveNgons; n++)
     {
+        const ngon = Rngon.internalState.transformedNgonsCache.ngons[n];
+
         // In theory, we should never receive n-gons that have no vertices, but let's check
         // to make sure.
         if (ngon.vertices.length <= 0)
@@ -1257,6 +1256,24 @@ Rngon.render = function(canvasElementId,
         Rngon.internalState.applyViewportClipping = (options.clipToViewport === true);
     }
 
+    
+
+    // Create or resize the n-gon cache to fit at least the number of n-gons that we've been
+    // given to render.
+    {
+        const sceneNgonCount = meshes.reduce((totalCount, mesh)=>(totalCount + mesh.ngons.length), 0);
+
+        if (!Rngon.internalState.transformedNgonsCache ||
+            !Rngon.internalState.transformedNgonsCache.ngons.length ||
+            (Rngon.internalState.transformedNgonsCache.ngons.length < sceneNgonCount))
+        {
+            const lengthDelta = (sceneNgonCount - Rngon.internalState.transformedNgonsCache.ngons.length);
+            Rngon.internalState.transformedNgonsCache.ngons.push(...new Array(lengthDelta).fill().map(e=>Rngon.ngon()));
+        }
+
+        Rngon.internalState.transformedNgonsCache.numActiveNgons = 0; 
+    }
+
     const renderSurface = Rngon.screen(canvasElementId,
                                        Rngon.ngon_filler,
                                        Rngon.ngon_transformer,
@@ -1278,7 +1295,6 @@ Rngon.render = function(canvasElementId,
 
         // Transform.
         callMetadata.performance.timingMs.transformation = performance.now();
-        const transformedNgons = [];
         {
             const cameraMatrix = Rngon.matrix44.matrices_multiplied(Rngon.matrix44.rotate(options.cameraDirection.x,
                                                                                           options.cameraDirection.y,
@@ -1289,14 +1305,11 @@ Rngon.render = function(canvasElementId,
 
             for (const mesh of meshes)
             {
-                const meshNgons = mesh.ngons.reduce((array, ngon)=>{array.push(ngon.clone()); return array;}, []);
-                
-                renderSurface.transform_ngons(meshNgons, mesh.objectSpaceMatrix(), cameraMatrix, options.cameraPosition);
-
-                transformedNgons.push(...meshNgons);
+                renderSurface.transform_ngons(mesh.ngons, mesh.objectSpaceMatrix(), cameraMatrix, options.cameraPosition);
             };
 
-            // Apply depth sorting to the transformed ngons.
+            // Apply depth sorting to the transformed n-gons (which are now stored in the internal
+            // n-gon cache).
             switch (options.depthSort)
             {
                 case "none":
@@ -1305,7 +1318,14 @@ Rngon.render = function(canvasElementId,
                 // Painter's algorithm, i.e. sort by depth.
                 case "painter":
                 {
-                    transformedNgons.sort((ngonA, ngonB)=>
+                    const cache = Rngon.internalState.transformedNgonsCache;
+
+                    /// TODO: Sub-array sorting in a GC-friendly way. For now, we need to resize the
+                    /// array to exactly the right size, which means we likely then need to resize it
+                    /// up again on the next render iteration.
+                    cache.ngons.length = cache.numActiveNgons;
+
+                    cache.ngons.sort((ngonA, ngonB)=>
                     {
                         const a = (ngonA.vertices.reduce((acc, v)=>(acc + v.z), 0) / ngonA.vertices.length);
                         const b = (ngonB.vertices.reduce((acc, v)=>(acc + v.z), 0) / ngonB.vertices.length);
@@ -1323,7 +1343,7 @@ Rngon.render = function(canvasElementId,
 
         // Rasterize.
         callMetadata.performance.timingMs.rasterization = performance.now();
-        renderSurface.draw_ngons(transformedNgons);
+        renderSurface.rasterize_ngon_cache();
         callMetadata.performance.timingMs.rasterization = (performance.now() - callMetadata.performance.timingMs.rasterization);
 
         callMetadata.performance.timingMs.total = (performance.now() - callMetadata.performance.timingMs.total);
@@ -1366,9 +1386,12 @@ Rngon.render.defaultOptions =
 
 "use strict";
 
-// Transforms the given n-gons into screen space for rendering.
-Rngon.ngon_transformer = function(ngons = [], clipSpaceMatrix = [], screenMatrix = [], cameraPos)
+// Transforms the given n-gons into screen space for rendering. The transformed n-gons
+// are stored in the internal n-gon cache.
+Rngon.ngon_transformer = function(ngons = [], clipSpaceMatrix = [], screenSpaceMatrix = [], cameraPos)
 {
+    const transformedNgonsCache = Rngon.internalState.transformedNgonsCache;
+
     for (const ngon of ngons)
     {
         // Backface culling.
@@ -1383,38 +1406,52 @@ Rngon.ngon_transformer = function(ngons = [], clipSpaceMatrix = [], screenMatrix
 
             if (ngon.normal.dot(viewVector) >= 0)
             {
-                ngon.vertices.length = 0;
                 continue;
             }
         }
 
+        // Copy the ngon into the internal n-gon cache, so we can operate on it later in the
+        // render pipeline without destroying the original data.
+        const cachedNgon = transformedNgonsCache.ngons[transformedNgonsCache.numActiveNgons++];
+        {
+            cachedNgon.vertices.length = 0;
+
+            // Copy by value.
+            for (let v = 0; v < ngon.vertices.length; v++)
+            {
+                cachedNgon.vertices[v] = Rngon.vertex(ngon.vertices[v].x,
+                                                      ngon.vertices[v].y,
+                                                      ngon.vertices[v].z,
+                                                      ngon.vertices[v].u,
+                                                      ngon.vertices[v].v,
+                                                      ngon.vertices[v].w,);
+            }
+
+            // Copy by reference.
+            cachedNgon.normal = ngon.normal;
+            cachedNgon.material = ngon.material;
+        }
+
         // Clipping.
-        ngon.transform(clipSpaceMatrix);
+        cachedNgon.transform(clipSpaceMatrix);
         {
             if (Rngon.internalState.applyViewportClipping)
             {
-                ngon.clip_to_viewport();
+                cachedNgon.clip_to_viewport();
+
+                // If there are no vertices left after clipping, it means this n-gon is not visible
+                // on the screen at all. We can just ignore it.
+                if (!cachedNgon.vertices.length)
+                {
+                    transformedNgonsCache.numActiveNgons--;
+                    continue;
+                }
             }
         }
 
-        ngon.transform(screenMatrix);
-        ngon.perspective_divide();
+        cachedNgon.transform(screenSpaceMatrix);
+        cachedNgon.perspective_divide();
     };
-
-    // Remove n-gons that have no vertices (e.g. due to all of them having been all clipped away).
-    {
-        let cur = 0;
-        
-        for (let i = 0; i < ngons.length; i++)
-        {
-            if (ngons[i].vertices.length)
-            {
-                ngons[cur++] = ngons[i];
-            }
-        }
-
-        ngons.length = cur;
-    }
 
     return;
 }
@@ -1555,7 +1592,7 @@ Rngon.screen = function(canvasElementId = "",              // The DOM id of the 
     canvasElement.setAttribute("height", screenHeight);
 
     const perspectiveMatrix = Rngon.matrix44.perspective((fov * Math.PI/180), (screenWidth / screenHeight), nearPlane, farPlane);
-    const screenMatrix = Rngon.matrix44.ortho(screenWidth, screenHeight);
+    const screenSpaceMatrix = Rngon.matrix44.ortho(screenWidth, screenHeight);
 
     const renderContext = canvasElement.getContext("2d");
 
@@ -1598,16 +1635,16 @@ Rngon.screen = function(canvasElementId = "",              // The DOM id of the 
         // a vector containing the camera's raw world position.
         transform_ngons: function(ngons = [], objectMatrix = [], cameraMatrix = [], cameraPos)
         {
-            const objectSpaceMatrix = Rngon.matrix44.matrices_multiplied(cameraMatrix, objectMatrix);
-            const clipSpaceMatrix = Rngon.matrix44.matrices_multiplied(perspectiveMatrix, objectSpaceMatrix);
+            const viewSpaceMatrix = Rngon.matrix44.matrices_multiplied(cameraMatrix, objectMatrix);
+            const clipSpaceMatrix = Rngon.matrix44.matrices_multiplied(perspectiveMatrix, viewSpaceMatrix);
 
-            ngon_transform_f(ngons, clipSpaceMatrix, screenMatrix, cameraPos);
+            ngon_transform_f(ngons, clipSpaceMatrix, screenSpaceMatrix, cameraPos);
         },
 
-        // Draw the given ngons onto this render surface.
-        draw_ngons: function(ngons = [])
+        // Draw all n-gons currently stored in the internal n-gon cache onto the render surface.
+        rasterize_ngon_cache: function()
         {
-            ngon_fill_f(ngons, auxiliaryBuffers);
+            ngon_fill_f(auxiliaryBuffers);
             renderContext.putImageData(Rngon.internalState.pixelBuffer, 0, 0);
         },
     });

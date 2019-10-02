@@ -35,20 +35,26 @@ const Rngon = {};
 
 // Global render toggles. These should not be modified directly; they're instead
 // set by the renderer based on render parameters requested by the user.
+Rngon.internalState =
 {
-    Rngon.internalState = {};
-
     // Whether to require pixels to pass a depth test before being allowed on screen.
-    Rngon.internalState.useDepthBuffer = false;
-    Rngon.internalState.depthBuffer = {width:1, height:1, buffer:new Array(1), clearValue:Number.MAX_VALUE};
+    useDepthBuffer: false,
+    depthBuffer: {width:1, height:1, buffer:new Array(1), clearValue:Number.MAX_VALUE},
 
     // Pixel buffer for rasterization.
-    Rngon.internalState.pixelBuffer = new ImageData(1, 1);
+    pixelBuffer: new ImageData(1, 1),
 
-    Rngon.internalState.usePerspectiveCorrectTexturing = false;
+    usePerspectiveCorrectTexturing: false,
 
     // If set to true, all n-gons will be rendered with a wireframe.
-    Rngon.internalState.showGlobalWireframe = false;
+    showGlobalWireframe: false,
 
-    Rngon.internalState.applyViewportClipping = true;
+    applyViewportClipping: true,
+
+    // All transformed n-gons on a particular call to render() will be placed here.
+    // The cache size will be dynamically adjusted up to match the largest number
+    // of transformed n-gons, so at any given time the number of active n-gons (those
+    // that have been transformed for the current frame) may be smaller than the
+    // cache's total capacity.
+    transformedNgonsCache: {numActiveNgons:0, ngons:[]},
 }
