@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: live (01 October 2019 23:44:49 UTC)
+// VERSION: live (02 October 2019 00:24:39 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -737,7 +737,7 @@ Rngon.line_draw = (()=>
                         const pixel =
                         {
                             x: x0,
-                            depth: (Rngon.internalState.useDepthBuffer? Rngon.lerp(vert2.w, vert1.w, l) : 0),
+                            depth: (Rngon.internalState.useDepthBuffer? Rngon.lerp(vert2.z, vert1.z, l) : 0),
                             uvw: (interpolatePerspective? Rngon.lerp((1 / vert2.w), (1 / vert1.w), l) : 1),
                             u: (interpolatePerspective? Rngon.lerp((vert2.u / vert2.w), (vert1.u / vert1.w), l) : Rngon.lerp(vert2.u, vert1.u, l)),
                             v: (interpolatePerspective? Rngon.lerp((vert2.v / vert2.w), (vert1.v / vert1.w), l) : Rngon.lerp(vert2.v, vert1.v, l)),
