@@ -20,6 +20,10 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
         verticalDescending: (vertA, vertB)=>((vertA.y === vertB.y)? 0 : ((vertA.y > vertB.y)? -1 : 1))
     }
 
+    // Used for interpolating values between n-gon edge spans during rasterization.
+    const interpolationDeltas = {};
+    const interpolatedValues = {};
+
     // Rasterize the n-gons.
     for (let n = 0; n < Rngon.internalState.transformedNgonsCache.numActiveNgons; n++)
     {
@@ -110,6 +114,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
 
             // Draw the ngon.
             {
+
                 // Solid or textured fill.
                 if (ngon.material.hasSolidFill)
                 {
@@ -129,24 +134,20 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                         // let's pre-compute delta values we can just add onto the parameter's
                         // base value each step of the loop.
                         const interpolationStepSize = (1 / (rowWidth + 1));
-                        const interpolationDeltas = 
-                        {
-                            u:     (Rngon.lerp(leftEdge[y].u, rightEdge[y].u, interpolationStepSize) - leftEdge[y].u),
-                            v:     (Rngon.lerp(leftEdge[y].v, rightEdge[y].v, interpolationStepSize) - leftEdge[y].v),
-                            uvw:   (Rngon.lerp(leftEdge[y].uvw, rightEdge[y].uvw, interpolationStepSize) - leftEdge[y].uvw),
-                            depth: (Rngon.lerp(leftEdge[y].depth, rightEdge[y].depth, interpolationStepSize) - leftEdge[y].depth),
-                        };
-                        const interpolatedValues = 
-                        {
-                            // Decrement the value by the delta so we can increment at the start
-                            // of the loop rather than at the end of it - so we can e.g. bail out
-                            // of the loop where needed without worry of not correctly incrementing
-                            // the interpolated values.
-                            u:     (leftEdge[y].u - interpolationDeltas.u),
-                            v:     (leftEdge[y].v - interpolationDeltas.v),
-                            uvw:   (leftEdge[y].uvw - interpolationDeltas.uvw),
-                            depth: (leftEdge[y].depth - interpolationDeltas.depth),
-                        };
+
+                        interpolationDeltas.u =     (Rngon.lerp(leftEdge[y].u, rightEdge[y].u, interpolationStepSize) - leftEdge[y].u);
+                        interpolationDeltas.v =     (Rngon.lerp(leftEdge[y].v, rightEdge[y].v, interpolationStepSize) - leftEdge[y].v);
+                        interpolationDeltas.uvw =   (Rngon.lerp(leftEdge[y].uvw, rightEdge[y].uvw, interpolationStepSize) - leftEdge[y].uvw);
+                        interpolationDeltas.depth = (Rngon.lerp(leftEdge[y].depth, rightEdge[y].depth, interpolationStepSize) - leftEdge[y].depth);
+
+                        // Decrement the value by the delta so we can increment at the start
+                        // of the loop rather than at the end of it - so we can e.g. bail out
+                        // of the loop where needed without worry of not correctly incrementing
+                        // the interpolated values.
+                        interpolatedValues.u =     (leftEdge[y].u - interpolationDeltas.u);
+                        interpolatedValues.v =     (leftEdge[y].v - interpolationDeltas.v);
+                        interpolatedValues.uvw =   (leftEdge[y].uvw - interpolationDeltas.uvw);
+                        interpolatedValues.depth = (leftEdge[y].depth - interpolationDeltas.depth);
 
                         for (let x = 0; x <= rowWidth; x++)
                         {
