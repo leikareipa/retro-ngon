@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: live (03 October 2019 16:34:15 UTC)
+// VERSION: live (03 October 2019 17:16:10 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -915,12 +915,6 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
         verticalAscending: (vertA, vertB)=>((vertA.y === vertB.y)? 0 : ((vertA.y < vertB.y)? -1 : 1)),
         verticalDescending: (vertA, vertB)=>((vertA.y === vertB.y)? 0 : ((vertA.y > vertB.y)? -1 : 1))
     }
-    
-   // const spans = new Array(renderHeight);
-
-    // 'spans' contains for each y row the left edge of any polygons on that row
-    //  - the left edge includes the span width, i.e. its distance to the right edge
-    //  - also the interpolation deltas and starting values
 
     // Used for interpolating values between n-gon edge spans during rasterization.
     const interpolationDeltas = {};
@@ -1085,7 +1079,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                 pixelBuffer[pixelBufferIdx + 1] = ngon.material.color.green;
                                 pixelBuffer[pixelBufferIdx + 2] = ngon.material.color.blue;
                                 pixelBuffer[pixelBufferIdx + 3] = ngon.material.color.alpha;
-                                depthBuffer[pixelBufferIdx/4] = interpolatedValues.depth;
+                                if (depthBuffer) depthBuffer[pixelBufferIdx/4] = interpolatedValues.depth;
                             }
                             // Textured fill.
                             else
@@ -1151,7 +1145,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                 pixelBuffer[pixelBufferIdx + 1] = (texel.green * ngon.material.color.unitRange.green);
                                 pixelBuffer[pixelBufferIdx + 2] = (texel.blue  * ngon.material.color.unitRange.blue);
                                 pixelBuffer[pixelBufferIdx + 3] = (texel.alpha * ngon.material.color.unitRange.alpha);
-                                depthBuffer[pixelBufferIdx/4] = interpolatedValues.depth;
+                                if (depthBuffer) depthBuffer[pixelBufferIdx/4] = interpolatedValues.depth;
                             }
 
                             for (let b = 0; b < auxiliaryBuffers.length; b++)
@@ -1310,23 +1304,41 @@ Rngon.render = function(canvasElementId,
             // n-gon cache).
             switch (options.depthSort)
             {
-                case "none":
-                case "depthbuffer": break;
+                case "none": break;
 
-                // Painter's algorithm, i.e. sort by depth.
+                // Sort front-to-back; i.e. so that n-gons closest to the camera will be first in the
+                // list. Together with the depth buffer, this allows early rejection of obscured polygons.
+                case "depthbuffer":
+                {
+                    Rngon.internalState.transformedNgonsCache.ngons.sort((ngonA, ngonB)=>
+                    {
+                        let a;
+                        let b;
+
+                        // Separate inactive n-gons (which are to be ignored when rendering the current
+                        // frame) from the n-gons we're intended to render.
+                        a = (ngonA.isActive? (ngonA.vertices.reduce((acc, v)=>(acc + v.z), 0) / ngonA.vertices.length) : Number.MAX_VALUE);
+                        b = (ngonB.isActive? (ngonB.vertices.reduce((acc, v)=>(acc + v.z), 0) / ngonB.vertices.length) : Number.MAX_VALUE);
+
+                        return ((a === b)? 0 : ((a > b)? 1 : -1));
+                    });
+
+                    break;
+                }
+
+                // Painter's algorithm. Sort back-to-front; i.e. so that n-gons furthest from the camera
+                // will be first in the list.
                 case "painter":
                 {
-                    const cache = Rngon.internalState.transformedNgonsCache;
-
-                    /// TODO: Sub-array sorting in a GC-friendly way. For now, we need to resize the
-                    /// array to exactly the right size, which means we likely then need to resize it
-                    /// up again on the next render iteration.
-                    cache.ngons.length = cache.numActiveNgons;
-
-                    cache.ngons.sort((ngonA, ngonB)=>
+                    Rngon.internalState.transformedNgonsCache.ngons.sort((ngonA, ngonB)=>
                     {
-                        const a = (ngonA.vertices.reduce((acc, v)=>(acc + v.z), 0) / ngonA.vertices.length);
-                        const b = (ngonB.vertices.reduce((acc, v)=>(acc + v.z), 0) / ngonB.vertices.length);
+                        let a;
+                        let b;
+
+                        // Separate inactive n-gons (which are to be ignored when rendering the current
+                        // frame) from the n-gons we're intended to render.
+                        a = (ngonA.isActive? (ngonA.vertices.reduce((acc, v)=>(acc + v.z), 0) / ngonA.vertices.length) : -Number.MAX_VALUE);
+                        b = (ngonB.isActive? (ngonB.vertices.reduce((acc, v)=>(acc + v.z), 0) / ngonB.vertices.length) : -Number.MAX_VALUE);
 
                         return ((a === b)? 0 : ((a < b)? 1 : -1));
                     });
@@ -1428,6 +1440,8 @@ Rngon.ngon_transformer = function(ngons = [], clipSpaceMatrix = [], screenSpaceM
             // Copy by reference.
             cachedNgon.normal = ngon.normal;
             cachedNgon.material = ngon.material;
+
+            cachedNgon.isActive = true;
         }
 
         // Clipping.
@@ -1450,6 +1464,13 @@ Rngon.ngon_transformer = function(ngons = [], clipSpaceMatrix = [], screenSpaceM
         cachedNgon.transform(screenSpaceMatrix);
         cachedNgon.perspective_divide();
     };
+
+    // Mark as inactive any cached n-gons that we didn't touch, so the renderer knows
+    // to ignore them for the current frame.
+    for (let i = transformedNgonsCache.numActiveNgons; i < transformedNgonsCache.ngons.length; i++)
+    {
+        transformedNgonsCache.ngons[i].isActive = false;
+    }
 
     return;
 }

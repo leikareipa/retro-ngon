@@ -19,12 +19,6 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
         verticalAscending: (vertA, vertB)=>((vertA.y === vertB.y)? 0 : ((vertA.y < vertB.y)? -1 : 1)),
         verticalDescending: (vertA, vertB)=>((vertA.y === vertB.y)? 0 : ((vertA.y > vertB.y)? -1 : 1))
     }
-    
-   // const spans = new Array(renderHeight);
-
-    // 'spans' contains for each y row the left edge of any polygons on that row
-    //  - the left edge includes the span width, i.e. its distance to the right edge
-    //  - also the interpolation deltas and starting values
 
     // Used for interpolating values between n-gon edge spans during rasterization.
     const interpolationDeltas = {};

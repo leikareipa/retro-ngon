@@ -125,23 +125,41 @@ Rngon.render = function(canvasElementId,
             // n-gon cache).
             switch (options.depthSort)
             {
-                case "none":
-                case "depthbuffer": break;
+                case "none": break;
 
-                // Painter's algorithm, i.e. sort by depth.
+                // Sort front-to-back; i.e. so that n-gons closest to the camera will be first in the
+                // list. Together with the depth buffer, this allows early rejection of obscured polygons.
+                case "depthbuffer":
+                {
+                    Rngon.internalState.transformedNgonsCache.ngons.sort((ngonA, ngonB)=>
+                    {
+                        let a;
+                        let b;
+
+                        // Separate inactive n-gons (which are to be ignored when rendering the current
+                        // frame) from the n-gons we're intended to render.
+                        a = (ngonA.isActive? (ngonA.vertices.reduce((acc, v)=>(acc + v.z), 0) / ngonA.vertices.length) : Number.MAX_VALUE);
+                        b = (ngonB.isActive? (ngonB.vertices.reduce((acc, v)=>(acc + v.z), 0) / ngonB.vertices.length) : Number.MAX_VALUE);
+
+                        return ((a === b)? 0 : ((a > b)? 1 : -1));
+                    });
+
+                    break;
+                }
+
+                // Painter's algorithm. Sort back-to-front; i.e. so that n-gons furthest from the camera
+                // will be first in the list.
                 case "painter":
                 {
-                    const cache = Rngon.internalState.transformedNgonsCache;
-
-                    /// TODO: Sub-array sorting in a GC-friendly way. For now, we need to resize the
-                    /// array to exactly the right size, which means we likely then need to resize it
-                    /// up again on the next render iteration.
-                    cache.ngons.length = cache.numActiveNgons;
-
-                    cache.ngons.sort((ngonA, ngonB)=>
+                    Rngon.internalState.transformedNgonsCache.ngons.sort((ngonA, ngonB)=>
                     {
-                        const a = (ngonA.vertices.reduce((acc, v)=>(acc + v.z), 0) / ngonA.vertices.length);
-                        const b = (ngonB.vertices.reduce((acc, v)=>(acc + v.z), 0) / ngonB.vertices.length);
+                        let a;
+                        let b;
+
+                        // Separate inactive n-gons (which are to be ignored when rendering the current
+                        // frame) from the n-gons we're intended to render.
+                        a = (ngonA.isActive? (ngonA.vertices.reduce((acc, v)=>(acc + v.z), 0) / ngonA.vertices.length) : -Number.MAX_VALUE);
+                        b = (ngonB.isActive? (ngonB.vertices.reduce((acc, v)=>(acc + v.z), 0) / ngonB.vertices.length) : -Number.MAX_VALUE);
 
                         return ((a === b)? 0 : ((a < b)? 1 : -1));
                     });

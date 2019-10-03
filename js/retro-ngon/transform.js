@@ -50,6 +50,8 @@ Rngon.ngon_transformer = function(ngons = [], clipSpaceMatrix = [], screenSpaceM
             // Copy by reference.
             cachedNgon.normal = ngon.normal;
             cachedNgon.material = ngon.material;
+
+            cachedNgon.isActive = true;
         }
 
         // Clipping.
@@ -72,6 +74,13 @@ Rngon.ngon_transformer = function(ngons = [], clipSpaceMatrix = [], screenSpaceM
         cachedNgon.transform(screenSpaceMatrix);
         cachedNgon.perspective_divide();
     };
+
+    // Mark as inactive any cached n-gons that we didn't touch, so the renderer knows
+    // to ignore them for the current frame.
+    for (let i = transformedNgonsCache.numActiveNgons; i < transformedNgonsCache.ngons.length; i++)
+    {
+        transformedNgonsCache.ngons[i].isActive = false;
+    }
 
     return;
 }
