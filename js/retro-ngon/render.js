@@ -17,6 +17,13 @@ Rngon.render = function(canvasElementId,
     {
         renderWidth: 0,
         renderHeight: 0,
+        scene:
+        {
+            // The total count of n-gons rendered. May be smaller than the number of n-gons
+            // originally submitted for rendering, due to visibility culling etc. performed
+            // during the rendering process.
+            numNgonsRendered: 0,
+        },
         performance:
         {
             // How long we took to perform certain actions. All values are in milliseconds.
@@ -90,7 +97,6 @@ Rngon.render = function(canvasElementId,
 
     callMetadata.renderWidth = renderSurface.width;
     callMetadata.renderHeight = renderSurface.height;
-
     callMetadata.performance.timingMs.initialization = (performance.now() - callMetadata.performance.timingMs.initialization);
 
     // Render a single frame onto the render surface.
@@ -112,6 +118,8 @@ Rngon.render = function(canvasElementId,
             {
                 renderSurface.transform_ngons(mesh.ngons, mesh.objectSpaceMatrix(), cameraMatrix, options.cameraPosition);
             };
+
+            callMetadata.scene.numNgonsRendered = Rngon.internalState.transformedNgonsCache.numActiveNgons;
 
             // Apply depth sorting to the transformed n-gons (which are now stored in the internal
             // n-gon cache).
