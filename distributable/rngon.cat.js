@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: live (03 October 2019 15:12:54 UTC)
+// VERSION: live (03 October 2019 16:34:15 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -915,6 +915,12 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
         verticalAscending: (vertA, vertB)=>((vertA.y === vertB.y)? 0 : ((vertA.y < vertB.y)? -1 : 1)),
         verticalDescending: (vertA, vertB)=>((vertA.y === vertB.y)? 0 : ((vertA.y > vertB.y)? -1 : 1))
     }
+    
+   // const spans = new Array(renderHeight);
+
+    // 'spans' contains for each y row the left edge of any polygons on that row
+    //  - the left edge includes the span width, i.e. its distance to the right edge
+    //  - also the interpolation deltas and starting values
 
     // Used for interpolating values between n-gon edge spans during rasterization.
     const interpolationDeltas = {};
@@ -1057,7 +1063,16 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                             const px = (leftEdge[y].x + x);
                             if (px >= renderWidth) break;
 
+                            // Assumes the pixel buffer is 4 bytes per pixel (RGBA).
                             const pixelBufferIdx = ((px + py * renderWidth) * 4);
+
+                            // Depth testing. Only allow the pixel to be drawn if previous pixels at this
+                            // screen position are further away from the camera.
+                            if (depthBuffer &&
+                                (depthBuffer[pixelBufferIdx/4] <= interpolatedValues.depth))
+                            {
+                                continue;
+                            }
 
                             // Solid fill.
                             if (ngon.material.texture == null)
@@ -1065,19 +1080,12 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                 // Alpha testing. If the pixel is fully opaque, draw it; otherwise, skip it.
                                 if (ngon.material.color.alpha !== 255) continue;
 
-                                // Depth testing. Only allow the pixel to be drawn if any previous pixels
-                                // at this screen position are further away from the camera.
-                                if (depthBuffer)
-                                {
-                                    if (depthBuffer[pixelBufferIdx/4] <= interpolatedValues.depth) continue;
-                                    else depthBuffer[pixelBufferIdx/4] = interpolatedValues.depth;
-                                }
-
                                 // Draw the pixel.
                                 pixelBuffer[pixelBufferIdx + 0] = ngon.material.color.red;
                                 pixelBuffer[pixelBufferIdx + 1] = ngon.material.color.green;
                                 pixelBuffer[pixelBufferIdx + 2] = ngon.material.color.blue;
                                 pixelBuffer[pixelBufferIdx + 3] = ngon.material.color.alpha;
+                                depthBuffer[pixelBufferIdx/4] = interpolatedValues.depth;
                             }
                             // Textured fill.
                             else
@@ -1138,19 +1146,12 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                 // Alpha testing. If the pixel is fully opaque, draw it; otherwise, skip it.
                                 if (texel.alpha !== 255) continue;
 
-                                // Depth testing. Only allow the pixel to be drawn if any previous pixels
-                                // at this screen position are further away from the camera.
-                                if (depthBuffer)
-                                {
-                                    if (depthBuffer[pixelBufferIdx/4] <= interpolatedValues.depth) continue;
-                                    else depthBuffer[pixelBufferIdx/4] = interpolatedValues.depth;
-                                }
-
                                 // Draw the pixel.
                                 pixelBuffer[pixelBufferIdx + 0] = (texel.red   * ngon.material.color.unitRange.red);
                                 pixelBuffer[pixelBufferIdx + 1] = (texel.green * ngon.material.color.unitRange.green);
                                 pixelBuffer[pixelBufferIdx + 2] = (texel.blue  * ngon.material.color.unitRange.blue);
                                 pixelBuffer[pixelBufferIdx + 3] = (texel.alpha * ngon.material.color.unitRange.alpha);
+                                depthBuffer[pixelBufferIdx/4] = interpolatedValues.depth;
                             }
 
                             for (let b = 0; b < auxiliaryBuffers.length; b++)
