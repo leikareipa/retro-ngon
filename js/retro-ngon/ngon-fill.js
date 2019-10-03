@@ -75,10 +75,58 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                 // of left vertices and then through the list of right ones, you end up with an
                 // anti-clockwise loop around the ngon.
                 {
+                    // For triangles.
+                    if (ngon.vertices.length === 3)
+                    {
+                        // Sort the vertices by height.
+                        {
+                            let tmp;
+                            
+                            if (ngon.vertices[0].y > ngon.vertices[1].y)
+                            {
+                                tmp = ngon.vertices[0];
+                                ngon.vertices[0] = ngon.vertices[1];
+                                ngon.vertices[1] = tmp;
+                            }
+
+                            if (ngon.vertices[1].y > ngon.vertices[2].y)
+                            {
+                                tmp = ngon.vertices[1];
+                                ngon.vertices[1] = ngon.vertices[2];
+                                ngon.vertices[2] = tmp;
+                            }
+
+                            if (ngon.vertices[0].y > ngon.vertices[1].y)
+                            {
+                                tmp = ngon.vertices[0];
+                                ngon.vertices[0] = ngon.vertices[1];
+                                ngon.vertices[1] = tmp;
+                            }
+                        }
+
+                        const topVert = ngon.vertices[0];
+                        const midVert = ngon.vertices[1];
+                        const bottomVert = ngon.vertices[2];
+
+                        // The left side will always start with the top-most vertex, and the right side with
+                        // the bottom-most vertex.
+                        leftVerts.push(topVert);
+                        rightVerts.push(bottomVert);
+
+                        // Find whether the mid vertex is on the left or right side.
+                        const lr = Rngon.lerp(topVert.x, bottomVert.x, ((midVert.y - topVert.y) / (bottomVert.y - topVert.y)));
+                        ((midVert.x >= lr)? rightVerts : leftVerts).push(midVert);
+
+                        // Add linking vertices, so we can connect the two sides easily in a line loop.
+                        leftVerts.push(bottomVert);
+                        rightVerts.push(topVert);
+                    }
                     // Generic algorithm for n-sided convex polygons.
+                    else
                     {
                         // Sort the vertices by height (i.e. by increasing y).
                         ngon.vertices.sort(vertexSorters.verticalAscending);
+
                         const topVert = ngon.vertices[0];
                         const bottomVert = ngon.vertices[ngon.vertices.length-1];
 
