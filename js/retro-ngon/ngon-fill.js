@@ -10,6 +10,7 @@
 Rngon.ngon_filler = function(auxiliaryBuffers = [])
 {
     const pixelBuffer = Rngon.internalState.pixelBuffer.data;
+    const depthBuffer = (Rngon.internalState.useDepthBuffer? Rngon.internalState.depthBuffer.buffer : null);
     const renderWidth = Rngon.internalState.pixelBuffer.width;
     const renderHeight = Rngon.internalState.pixelBuffer.height;
 
@@ -117,6 +118,10 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
 
                     for (let y = 0; y < polyHeight; y++)
                     {
+                        // Corresponding position in the pixel buffer.
+                        const py = (y + polyYOffset);
+                        if (py >= renderHeight) break;
+
                         const rowWidth = (rightEdge[y].x - leftEdge[y].x);
                         if (rowWidth <= 0) continue;
 
@@ -124,44 +129,36 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                         // let's pre-compute delta values we can just add onto the parameter's
                         // base value each step of the loop.
                         const interpolationStepSize = (1 / (rowWidth + 1));
-                        const interpolationDelta = 
+                        const interpolationDeltas = 
                         {
                             u:     (Rngon.lerp(leftEdge[y].u, rightEdge[y].u, interpolationStepSize) - leftEdge[y].u),
                             v:     (Rngon.lerp(leftEdge[y].v, rightEdge[y].v, interpolationStepSize) - leftEdge[y].v),
                             uvw:   (Rngon.lerp(leftEdge[y].uvw, rightEdge[y].uvw, interpolationStepSize) - leftEdge[y].uvw),
                             depth: (Rngon.lerp(leftEdge[y].depth, rightEdge[y].depth, interpolationStepSize) - leftEdge[y].depth),
                         };
-                        const interpolatedValue = 
+                        const interpolatedValues = 
                         {
                             // Decrement the value by the delta so we can increment at the start
                             // of the loop rather than at the end of it - so we can e.g. bail out
                             // of the loop where needed without worry of not correctly incrementing
                             // the interpolated values.
-                            u:     (leftEdge[y].u - interpolationDelta.u),
-                            v:     (leftEdge[y].v - interpolationDelta.v),
-                            uvw:   (leftEdge[y].uvw - interpolationDelta.uvw),
-                            depth: (leftEdge[y].depth - interpolationDelta.depth),
+                            u:     (leftEdge[y].u - interpolationDeltas.u),
+                            v:     (leftEdge[y].v - interpolationDeltas.v),
+                            uvw:   (leftEdge[y].uvw - interpolationDeltas.uvw),
+                            depth: (leftEdge[y].depth - interpolationDeltas.depth),
                         };
 
                         for (let x = 0; x <= rowWidth; x++)
                         {
                             // Increment the interpolated values before doing anything else.
-                            interpolatedValue.u += interpolationDelta.u;
-                            interpolatedValue.v += interpolationDelta.v;
-                            interpolatedValue.uvw += interpolationDelta.uvw;
-                            interpolatedValue.depth += interpolationDelta.depth;
+                            interpolatedValues.u += interpolationDeltas.u;
+                            interpolatedValues.v += interpolationDeltas.v;
+                            interpolatedValues.uvw += interpolationDeltas.uvw;
+                            interpolatedValues.depth += interpolationDeltas.depth;
 
                             // Corresponding position in the pixel buffer.
                             const px = (leftEdge[y].x + x);
-                            const py = (y + polyYOffset);
-
-                            if ((px < 0) ||
-                                (py < 0) ||
-                                (px >= renderWidth) ||
-                                (py >= renderHeight))
-                            {
-                                continue;
-                            }
+                            if (px >= renderWidth) break;
 
                             const pixelBufferIdx = ((px + py * renderWidth) * 4);
 
@@ -169,17 +166,14 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                             if (ngon.material.texture == null)
                             {
                                 // Alpha testing. If the pixel is fully opaque, draw it; otherwise, skip it.
-                                if (ngon.material.color.alpha !== 255)
-                                {
-                                    continue;
-                                }
+                                if (ngon.material.color.alpha !== 255) continue;
 
                                 // Depth testing. Only allow the pixel to be drawn if any previous pixels
                                 // at this screen position are further away from the camera.
-                                if (Rngon.internalState.useDepthBuffer)
+                                if (depthBuffer)
                                 {
-                                    if (Rngon.internalState.depthBuffer.buffer[pixelBufferIdx/4] <= interpolatedValue.depth) continue;
-                                    else Rngon.internalState.depthBuffer.buffer[pixelBufferIdx/4] = interpolatedValue.depth;
+                                    if (depthBuffer[pixelBufferIdx/4] <= interpolatedValues.depth) continue;
+                                    else depthBuffer[pixelBufferIdx/4] = interpolatedValues.depth;
                                 }
 
                                 // Draw the pixel.
@@ -200,8 +194,8 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                         const textureWidth = (ngon.material.texture.width - 0.001);
                                         const textureHeight = (ngon.material.texture.height - 0.001);
 
-                                        u = (interpolatedValue.u / interpolatedValue.uvw);
-                                        v = (interpolatedValue.v / interpolatedValue.uvw);
+                                        u = (interpolatedValues.u / interpolatedValues.uvw);
+                                        v = (interpolatedValues.v / interpolatedValues.uvw);
                                         
                                         u *= textureWidth;
                                         v *= textureHeight;
@@ -242,23 +236,17 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                 const texel = ngon.material.texture.pixels[(~~u) + (~~v) * ngon.material.texture.width];
 
                                 // Verify that the texel isn't out of bounds.
-                                if (!texel)
-                                {
-                                    continue;
-                                }
+                                if (!texel) continue;
 
                                 // Alpha testing. If the pixel is fully opaque, draw it; otherwise, skip it.
-                                if (texel.alpha !== 255)
-                                {
-                                    continue;
-                                }
+                                if (texel.alpha !== 255) continue;
 
                                 // Depth testing. Only allow the pixel to be drawn if any previous pixels
                                 // at this screen position are further away from the camera.
-                                if (Rngon.internalState.useDepthBuffer)
+                                if (depthBuffer)
                                 {
-                                    if (Rngon.internalState.depthBuffer.buffer[pixelBufferIdx/4] <= interpolatedValue.depth) continue;
-                                    else Rngon.internalState.depthBuffer.buffer[pixelBufferIdx/4] = interpolatedValue.depth;
+                                    if (depthBuffer[pixelBufferIdx/4] <= interpolatedValues.depth) continue;
+                                    else depthBuffer[pixelBufferIdx/4] = interpolatedValues.depth;
                                 }
 
                                 // Draw the pixel.
