@@ -22,10 +22,6 @@ Rngon.line_draw = (()=>
             let y0 = Math.ceil(vert1.y);
             const x1 = Math.ceil(vert2.x);
             const y1 = Math.ceil(vert2.y);
-
-            Rngon.assert && (!isNaN(x0) && !isNaN(x1) && !isNaN(y0) && !isNaN(y1))
-                         || Rngon.throw("Invalid vertex coordinates for line-drawing.");
-
             const lineLength = (respectDepth? this.distanceBetween(x0, y0, x1, y1) : 1);
 
             // Bresenham line algo. Adapted from https://stackoverflow.com/a/4672319.
@@ -97,15 +93,7 @@ Rngon.line_draw = (()=>
             let y0 = Math.ceil(vert1.y);
             const x1 = Math.ceil(vert2.x);
             const y1 = Math.ceil(vert2.y);
-
-            Rngon.assert && (!isNaN(x0) &&
-                             !isNaN(x1) &&
-                             !isNaN(y0) &&
-                             !isNaN(y1))
-                         || Rngon.throw("Invalid vertex coordinates for line-drawing.");
-
             const interpolatePerspective = Rngon.internalState.usePerspectiveCorrectTexturing;
-
             const lineLength = this.distanceBetween(x0, y0, x1, y1);
 
             // If true, we won't touch non-null elements in the array. Useful in preventing certain
