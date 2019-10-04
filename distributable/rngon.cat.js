@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: live (04 October 2019 20:04:27 UTC)
+// VERSION: live (04 October 2019 20:47:51 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -1282,15 +1282,6 @@ Rngon.render = function(canvasElementId,
         }
     }
 
-    // Confirm that the default render options are valid.
-    Rngon.assert && (typeof Rngon.render.defaultOptions.cameraPosition !== "undefined" &&
-                     typeof Rngon.render.defaultOptions.cameraDirection !== "undefined" &&
-                     typeof Rngon.render.defaultOptions.scale !== "undefined" &&
-                     typeof Rngon.render.defaultOptions.depthSort !== "undefined" &&
-                     typeof Rngon.render.defaultOptions.hibernateWhenNotOnScreen !== "undefined" &&
-                     typeof Rngon.render.defaultOptions.fov !== "undefined")
-                 || Rngon.throw("The default options object for render() is missing required properties.");
-
     // Combine the default render options with the user-supplied ones.
     options = Object.freeze(
     {
@@ -1299,14 +1290,10 @@ Rngon.render = function(canvasElementId,
     });
 
     // Modify any internal render parameters based on the user's options.
-    {
-        Rngon.internalState.useDepthBuffer = (options.depthSort === "depthbuffer");
-        Rngon.internalState.usePerspectiveCorrectTexturing = (options.perspectiveCorrectTexturing === true);
-        Rngon.internalState.showGlobalWireframe = (options.globalWireframe === true);
-        Rngon.internalState.applyViewportClipping = (options.clipToViewport === true);
-    }
-
-    
+    Rngon.internalState.useDepthBuffer = (options.depthSort === "depthbuffer");
+    Rngon.internalState.showGlobalWireframe = (options.globalWireframe === true);
+    Rngon.internalState.applyViewportClipping = (options.clipToViewport === true);
+    Rngon.internalState.usePerspectiveCorrectTexturing = (options.perspectiveCorrectTexturing === true);
 
     // Create or resize the n-gon cache to fit at least the number of n-gons that we've been
     // given to render.
@@ -1318,6 +1305,7 @@ Rngon.render = function(canvasElementId,
             (Rngon.internalState.transformedNgonsCache.ngons.length < sceneNgonCount))
         {
             const lengthDelta = (sceneNgonCount - Rngon.internalState.transformedNgonsCache.ngons.length);
+
             Rngon.internalState.transformedNgonsCache.ngons.push(...new Array(lengthDelta).fill().map(e=>Rngon.ngon()));
         }
 
@@ -1340,107 +1328,31 @@ Rngon.render = function(canvasElementId,
     // Render a single frame onto the render surface.
     if ((!options.hibernateWhenNotOnScreen || is_surface_in_view()))
     {
-        renderSurface.wipe_clean();
-
-        // Transform.
+        const ngonCache = Rngon.internalState.transformedNgonsCache;
+        
         callMetadata.performance.timingMs.transformation = performance.now();
-        {
-            const cameraMatrix = Rngon.matrix44.matrices_multiplied(Rngon.matrix44.rotate(options.cameraDirection.x,
-                                                                                          options.cameraDirection.y,
-                                                                                          options.cameraDirection.z),
-                                                                    Rngon.matrix44.translate(-options.cameraPosition.x,
-                                                                                             -options.cameraPosition.y,
-                                                                                             -options.cameraPosition.z));
+        
+        transform_ngons(meshes, renderSurface, options.cameraPosition, options.cameraDirection);
 
-            for (const mesh of meshes)
-            {
-                renderSurface.transform_ngons(mesh.ngons, mesh.objectSpaceMatrix(), cameraMatrix, options.cameraPosition);
-            };
+        callMetadata.scene.numNgonsRendered = ngonCache.numActiveNgons;
 
-            callMetadata.scene.numNgonsRendered = Rngon.internalState.transformedNgonsCache.numActiveNgons;
+        mark_npot_textures(ngonCache);
 
-            // Mark any non-power-of-two affine-mapped faces as using the non-power-of-two affine
-            // mapper, as the default affine mapper expects textures to be power-of-two.
-            for (let i = 0; i < Rngon.internalState.transformedNgonsCache.numActiveNgons; i++)
-            {
-                const ngon = Rngon.internalState.transformedNgonsCache.ngons[i];
+        depth_sort_ngons(ngonCache.ngons, options.depthSort);
 
-                if (ngon.material.texture &&
-                    ngon.material.textureMapping === "affine")
-                {
-                    const widthIsPOT = ((ngon.material.texture.width & (ngon.material.texture.width - 1)) === 0);
-                    const heightIsPOT = ((ngon.material.texture.height & (ngon.material.texture.height - 1)) === 0);
-
-                    if (ngon.material.texture.width === 0) widthIsPOT = false;
-                    if (ngon.material.texture.height === 0) heightIsPOT = false;
-
-                    if (!widthIsPOT ||
-                        !heightIsPOT)
-                    {
-                        ngon.material.textureMapping = "affine-npot";
-                    }
-                }
-            }
-
-            // Apply depth sorting to the transformed n-gons (which are now stored in the internal
-            // n-gon cache).
-            switch (options.depthSort)
-            {
-                case "none": break;
-
-                // Sort front-to-back; i.e. so that n-gons closest to the camera will be first in the
-                // list. Together with the depth buffer, this allows early rejection of obscured polygons.
-                case "depthbuffer":
-                {
-                    Rngon.internalState.transformedNgonsCache.ngons.sort((ngonA, ngonB)=>
-                    {
-                        let a;
-                        let b;
-
-                        // Separate inactive n-gons (which are to be ignored when rendering the current
-                        // frame) from the n-gons we're intended to render.
-                        a = (ngonA.isActive? (ngonA.vertices.reduce((acc, v)=>(acc + v.z), 0) / ngonA.vertices.length) : Number.MAX_VALUE);
-                        b = (ngonB.isActive? (ngonB.vertices.reduce((acc, v)=>(acc + v.z), 0) / ngonB.vertices.length) : Number.MAX_VALUE);
-
-                        return ((a === b)? 0 : ((a > b)? 1 : -1));
-                    });
-
-                    break;
-                }
-
-                // Painter's algorithm. Sort back-to-front; i.e. so that n-gons furthest from the camera
-                // will be first in the list.
-                case "painter":
-                {
-                    Rngon.internalState.transformedNgonsCache.ngons.sort((ngonA, ngonB)=>
-                    {
-                        let a;
-                        let b;
-
-                        // Separate inactive n-gons (which are to be ignored when rendering the current
-                        // frame) from the n-gons we're intended to render.
-                        a = (ngonA.isActive? (ngonA.vertices.reduce((acc, v)=>(acc + v.z), 0) / ngonA.vertices.length) : -Number.MAX_VALUE);
-                        b = (ngonB.isActive? (ngonB.vertices.reduce((acc, v)=>(acc + v.z), 0) / ngonB.vertices.length) : -Number.MAX_VALUE);
-
-                        return ((a === b)? 0 : ((a < b)? 1 : -1));
-                    });
-
-                    break;
-                }
-                
-                default: Rngon.throw("Unknown depth sort option."); break;
-            }
-        }
         callMetadata.performance.timingMs.transformation = (performance.now() - callMetadata.performance.timingMs.transformation)
 
-        // Rasterize.
         callMetadata.performance.timingMs.rasterization = performance.now();
+
+        renderSurface.wipe_clean();
         renderSurface.rasterize_ngon_cache();
+        
         callMetadata.performance.timingMs.rasterization = (performance.now() - callMetadata.performance.timingMs.rasterization);
 
         callMetadata.performance.timingMs.total = (performance.now() - callMetadata.performance.timingMs.total);
-        return callMetadata;
     }
+
+    return callMetadata;
 
     // Returns true if any horizontal part of the render surface DOM container is within the page's
     // visible region (accounting for the user having possibly scrolled the page up/down to cause
@@ -1449,12 +1361,114 @@ Rngon.render = function(canvasElementId,
     {
         const viewHeight = window.innerHeight;
         const containerRect = document.getElementById(canvasElementId).getBoundingClientRect();
-        Rngon.assert && (containerRect != null) || Rngon.throw("Couldn't find the canvas container element.");
+        
+        Rngon.assert && (containerRect != null)
+                     || Rngon.throw("Couldn't find the canvas container element.");
 
         return Boolean((containerRect.top > -containerRect.height) &&
                        (containerRect.top < viewHeight));
     }
+
+    function transform_ngons(meshes, renderSurface, cameraPosition, cameraDirection)
+    {
+        const cameraMatrix = Rngon.matrix44.matrices_multiplied(Rngon.matrix44.rotate(cameraDirection.x,
+                                                                                      cameraDirection.y,
+                                                                                      cameraDirection.z),
+                                                                Rngon.matrix44.translate(-cameraPosition.x,
+                                                                                         -cameraPosition.y,
+                                                                                         -cameraPosition.z));
+
+        for (const mesh of meshes)
+        {
+            renderSurface.transform_ngons(mesh.ngons, mesh.objectSpaceMatrix(), cameraMatrix, cameraPosition);
+        };
+
+        return;
+    }
+
+    // Mark any non-power-of-two affine-mapped faces as using the non-power-of-two affine
+    // mapper, as the default affine mapper expects textures to be power-of-two.
+    function mark_npot_textures(ngonCache)
+    {
+        for (let i = 0; i < ngonCache.numActiveNgons; i++)
+        {
+            const ngon = ngonCache.ngons[i];
+
+            if (ngon.material.texture &&
+                ngon.material.textureMapping === "affine")
+            {
+                const widthIsPOT = ((ngon.material.texture.width & (ngon.material.texture.width - 1)) === 0);
+                const heightIsPOT = ((ngon.material.texture.height & (ngon.material.texture.height - 1)) === 0);
+
+                if (ngon.material.texture.width === 0) widthIsPOT = false;
+                if (ngon.material.texture.height === 0) heightIsPOT = false;
+
+                if (!widthIsPOT ||
+                    !heightIsPOT)
+                {
+                    ngon.material.textureMapping = "affine-npot";
+                }
+            }
+        }
+
+        return;
+    }
+
+    // Apply depth sorting to the transformed n-gons (which are now stored in the internal
+    // n-gon cache).
+    function depth_sort_ngons(ngons, depthSortingMode)
+    {
+        switch (depthSortingMode)
+        {
+            case "none": break;
+
+            // Sort front-to-back; i.e. so that n-gons closest to the camera will be first in the
+            // list. Together with the depth buffer, this allows early rejection of obscured polygons.
+            case "depthbuffer":
+            {
+                ngons.sort((ngonA, ngonB)=>
+                {
+                    let a;
+                    let b;
+
+                    // Separate inactive n-gons (which are to be ignored when rendering the current
+                    // frame) from the n-gons we're intended to render.
+                    a = (ngonA.isActive? (ngonA.vertices.reduce((acc, v)=>(acc + v.z), 0) / ngonA.vertices.length) : Number.MAX_VALUE);
+                    b = (ngonB.isActive? (ngonB.vertices.reduce((acc, v)=>(acc + v.z), 0) / ngonB.vertices.length) : Number.MAX_VALUE);
+
+                    return ((a === b)? 0 : ((a > b)? 1 : -1));
+                });
+
+                break;
+            }
+
+            // Painter's algorithm. Sort back-to-front; i.e. so that n-gons furthest from the camera
+            // will be first in the list.
+            case "painter":
+            {
+                ngons.sort((ngonA, ngonB)=>
+                {
+                    let a;
+                    let b;
+
+                    // Separate inactive n-gons (which are to be ignored when rendering the current
+                    // frame) from the n-gons we're intended to render.
+                    a = (ngonA.isActive? (ngonA.vertices.reduce((acc, v)=>(acc + v.z), 0) / ngonA.vertices.length) : -Number.MAX_VALUE);
+                    b = (ngonB.isActive? (ngonB.vertices.reduce((acc, v)=>(acc + v.z), 0) / ngonB.vertices.length) : -Number.MAX_VALUE);
+
+                    return ((a === b)? 0 : ((a < b)? 1 : -1));
+                });
+
+                break;
+            }
+            
+            default: Rngon.throw("Unknown depth sort option."); break;
+        }
+
+        return;
+    }
 };
+
 Rngon.render.defaultOptions = 
 {
     cameraPosition: Rngon.vector3(0, 0, 0),
