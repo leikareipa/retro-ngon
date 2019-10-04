@@ -121,6 +121,29 @@ Rngon.render = function(canvasElementId,
 
             callMetadata.scene.numNgonsRendered = Rngon.internalState.transformedNgonsCache.numActiveNgons;
 
+            // Mark any non-power-of-two affine-mapped faces as using the non-power-of-two affine
+            // mapper, as the default affine mapper expects textures to be power-of-two.
+            for (let i = 0; i < Rngon.internalState.transformedNgonsCache.numActiveNgons; i++)
+            {
+                const ngon = Rngon.internalState.transformedNgonsCache.ngons[i];
+
+                if (ngon.material.texture &&
+                    ngon.material.textureMapping === "affine")
+                {
+                    const widthIsPOT = ((ngon.material.texture.width & (ngon.material.texture.width - 1)) === 0);
+                    const heightIsPOT = ((ngon.material.texture.height & (ngon.material.texture.height - 1)) === 0);
+
+                    if (ngon.material.texture.width === 0) widthIsPOT = false;
+                    if (ngon.material.texture.height === 0) heightIsPOT = false;
+
+                    if (!widthIsPOT ||
+                        !heightIsPOT)
+                    {
+                        ngon.material.textureMapping = "affine-npot";
+                    }
+                }
+            }
+
             // Apply depth sorting to the transformed n-gons (which are now stored in the internal
             // n-gon cache).
             switch (options.depthSort)

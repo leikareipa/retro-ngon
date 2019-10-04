@@ -162,7 +162,6 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
 
             // Draw the ngon.
             {
-
                 // Solid or textured fill.
                 if (ngon.material.hasSolidFill)
                 {
@@ -197,28 +196,31 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                         interpolatedValues.uvw =   (leftEdge[y].uvw - interpolationDeltas.uvw);
                         interpolatedValues.depth = (leftEdge[y].depth - interpolationDeltas.depth);
 
+                        // Assumes the pixel buffer is 4 elements per pixel (RGBA).
+                        let pixelBufferIdx = (((leftEdge[y].x + py * renderWidth) * 4) - 4);
+
+                        // Assumes the depth buffer is 1 element per pixel.
+                        let depthBufferIdx = (pixelBufferIdx / 4);
+
                         for (let x = 0; x <= rowWidth; x++)
                         {
-                            // Increment the interpolated values before doing anything else.
+                            // Increment the interpolated values before continuing with the loop.
                             interpolatedValues.u += interpolationDeltas.u;
                             interpolatedValues.v += interpolationDeltas.v;
                             interpolatedValues.uvw += interpolationDeltas.uvw;
                             interpolatedValues.depth += interpolationDeltas.depth;
-
-                            // Corresponding position in the pixel buffer.
-                            const px = (leftEdge[y].x + x);
-                            if (px >= renderWidth) break;
-
-                            // Assumes the pixel buffer is 4 bytes per pixel (RGBA).
-                            const pixelBufferIdx = ((px + py * renderWidth) * 4);
+                            pixelBufferIdx += 4;
+                            depthBufferIdx++;
 
                             // Depth testing. Only allow the pixel to be drawn if previous pixels at this
                             // screen position are further away from the camera.
                             if (depthBuffer &&
-                                (depthBuffer[pixelBufferIdx/4] <= interpolatedValues.depth))
+                                (depthBuffer[depthBufferIdx] <= interpolatedValues.depth))
                             {
                                 continue;
                             }
+
+                            if ((leftEdge[y].x + x) >= renderWidth) break;
 
                             // Solid fill.
                             if (ngon.material.texture == null)
@@ -231,7 +233,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                 pixelBuffer[pixelBufferIdx + 1] = ngon.material.color.green;
                                 pixelBuffer[pixelBufferIdx + 2] = ngon.material.color.blue;
                                 pixelBuffer[pixelBufferIdx + 3] = ngon.material.color.alpha;
-                                if (depthBuffer) depthBuffer[pixelBufferIdx/4] = interpolatedValues.depth;
+                                if (depthBuffer) depthBuffer[depthBufferIdx] = interpolatedValues.depth;
                             }
                             // Textured fill.
                             else
@@ -240,7 +242,27 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                 
                                 switch (ngon.material.textureMapping)
                                 {
+                                    // Affine mapping for power-of-two textures.
                                     case "affine":
+                                    {
+                                        u = (interpolatedValues.u / interpolatedValues.uvw);
+                                        v = (interpolatedValues.v / interpolatedValues.uvw);
+                                        
+                                        u *= ngon.material.texture.width;
+                                        v *= ngon.material.texture.height;
+
+                                        // Modulo for power-of-two.
+                                        u = (u & (ngon.material.texture.width - 1));
+                                        v = (v & (ngon.material.texture.height - 1));
+
+                                        /// FIXME: We need to flip v or the textures render upside down. Why?
+                                        v = (ngon.material.texture.height - v - 1);
+
+                                        break;
+                                    }
+                                    // Affine mapping for non-power-of-two textures.
+                                    /// TODO: This implementation is a bit kludgy.
+                                    case "affine-npot":
                                     {
                                         const textureWidth = (ngon.material.texture.width - 0.001);
                                         const textureHeight = (ngon.material.texture.height - 0.001);
@@ -274,6 +296,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
     
                                         break;
                                     }
+                                    // Screen-space UV mapping, as used e.g. in the DOS game Rally-Sport.
                                     case "ortho":
                                     {
                                         u = x * ((ngon.material.texture.width - 0.001) / rowWidth);
@@ -297,7 +320,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                 pixelBuffer[pixelBufferIdx + 1] = (texel.green * ngon.material.color.unitRange.green);
                                 pixelBuffer[pixelBufferIdx + 2] = (texel.blue  * ngon.material.color.unitRange.blue);
                                 pixelBuffer[pixelBufferIdx + 3] = (texel.alpha * ngon.material.color.unitRange.alpha);
-                                if (depthBuffer) depthBuffer[pixelBufferIdx/4] = interpolatedValues.depth;
+                                if (depthBuffer) depthBuffer[depthBufferIdx] = interpolatedValues.depth;
                             }
 
                             for (let b = 0; b < auxiliaryBuffers.length; b++)

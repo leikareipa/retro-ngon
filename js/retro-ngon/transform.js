@@ -47,9 +47,11 @@ Rngon.ngon_transformer = function(ngons = [], clipSpaceMatrix = [], screenSpaceM
                                                       ngon.vertices[v].w,);
             }
 
+            // Copy by value.
+            cachedNgon.material = {...ngon.material};
+
             // Copy by reference.
             cachedNgon.normal = ngon.normal;
-            cachedNgon.material = ngon.material;
 
             cachedNgon.isActive = true;
         }
