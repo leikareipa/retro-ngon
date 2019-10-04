@@ -42,21 +42,14 @@ Rngon.screen = function(canvasElementId = "",              // The DOM id of the 
         Rngon.internalState.pixelBuffer = new ImageData(screenWidth, screenHeight);
     }
 
-    if (Rngon.internalState.useDepthBuffer)
+    if (Rngon.internalState.useDepthBuffer &&
+        (Rngon.internalState.depthBuffer.width != screenWidth) ||
+        (Rngon.internalState.depthBuffer.height != screenHeight) ||
+        !Rngon.internalState.depthBuffer.buffer.length)
     {
-        if ((Rngon.internalState.depthBuffer.width != screenWidth) ||
-            (Rngon.internalState.depthBuffer.height != screenHeight) ||
-            !Rngon.internalState.depthBuffer.buffer.length)
-        {
-            Rngon.internalState.depthBuffer.width = screenWidth;
-            Rngon.internalState.depthBuffer.height = screenHeight;
-            Rngon.internalState.depthBuffer.buffer = new Array(Rngon.internalState.depthBuffer.width * Rngon.internalState.depthBuffer.height)
-                                                              .fill(Rngon.internalState.depthBuffer.clearValue); 
-        }
-        else
-        {
-            Rngon.internalState.depthBuffer.buffer.fill(Rngon.internalState.depthBuffer.clearValue);
-        }
+        Rngon.internalState.depthBuffer.width = screenWidth;
+        Rngon.internalState.depthBuffer.height = screenHeight;
+        Rngon.internalState.depthBuffer.buffer = new Array(Rngon.internalState.depthBuffer.width * Rngon.internalState.depthBuffer.height); 
     }
 
     const publicInterface = Object.freeze(
@@ -67,6 +60,11 @@ Rngon.screen = function(canvasElementId = "",              // The DOM id of the 
         wipe_clean: function()
         {
             Rngon.internalState.pixelBuffer.data.fill(0);
+
+            if (Rngon.internalState.useDepthBuffer)
+            {
+                Rngon.internalState.depthBuffer.buffer.fill(Rngon.internalState.depthBuffer.clearValue);
+            }
         },
 
         // Returns a copy of the ngons transformed into screen-space for this render surface.
