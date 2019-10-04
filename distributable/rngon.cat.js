@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: live (04 October 2019 20:47:51 UTC)
+// VERSION: live (04 October 2019 21:10:55 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -1255,31 +1255,14 @@ Rngon.render = function(canvasElementId,
     {
         renderWidth: 0,
         renderHeight: 0,
-        scene:
-        {
-            // The total count of n-gons rendered. May be smaller than the number of n-gons
-            // originally submitted for rendering, due to visibility culling etc. performed
-            // during the rendering process.
-            numNgonsRendered: 0,
-        },
-        performance:
-        {
-            // How long we took to perform certain actions. All values are in milliseconds.
-            timingMs:
-            {
-                // How long we took to initialize the renderer.
-                initialization: performance.now(),
 
-                // How long we took to transform all the supplied n-gons into screen space.
-                transformation: 0,
+        // The total count of n-gons rendered. May be smaller than the number of n-gons
+        // originally submitted for rendering, due to visibility culling etc. performed
+        // during the rendering process.
+        numNgonsRendered: 0,
 
-                // How long we took to rasterize the supplied n-gons onto the target canvas.
-                rasterization: 0,
-
-                // How much time this function took, in total.
-                total: performance.now(),
-            }
-        }
+        // The total time this call to render() took, in milliseconds.
+        totalRenderTimeMs: performance.now(),
     }
 
     // Combine the default render options with the user-supplied ones.
@@ -1312,45 +1295,34 @@ Rngon.render = function(canvasElementId,
         Rngon.internalState.transformedNgonsCache.numActiveNgons = 0; 
     }
 
-    const renderSurface = Rngon.screen(canvasElementId,
-                                       Rngon.ngon_filler,
-                                       Rngon.ngon_transformer,
-                                       options.scale,
-                                       options.fov,
-                                       options.nearPlane,
-                                       options.farPlane,
-                                       options.auxiliaryBuffers);
-
-    callMetadata.renderWidth = renderSurface.width;
-    callMetadata.renderHeight = renderSurface.height;
-    callMetadata.performance.timingMs.initialization = (performance.now() - callMetadata.performance.timingMs.initialization);
-
     // Render a single frame onto the render surface.
     if ((!options.hibernateWhenNotOnScreen || is_surface_in_view()))
     {
+        const renderSurface = Rngon.screen(canvasElementId,
+                                           Rngon.ngon_filler,
+                                           Rngon.ngon_transformer,
+                                           options.scale,
+                                           options.fov,
+                                           options.nearPlane,
+                                           options.farPlane,
+                                           options.auxiliaryBuffers);
+
         const ngonCache = Rngon.internalState.transformedNgonsCache;
-        
-        callMetadata.performance.timingMs.transformation = performance.now();
-        
+
+        callMetadata.renderWidth = renderSurface.width;
+        callMetadata.renderHeight = renderSurface.height;
+    
         transform_ngons(meshes, renderSurface, options.cameraPosition, options.cameraDirection);
-
-        callMetadata.scene.numNgonsRendered = ngonCache.numActiveNgons;
-
         mark_npot_textures(ngonCache);
-
         depth_sort_ngons(ngonCache.ngons, options.depthSort);
-
-        callMetadata.performance.timingMs.transformation = (performance.now() - callMetadata.performance.timingMs.transformation)
-
-        callMetadata.performance.timingMs.rasterization = performance.now();
 
         renderSurface.wipe_clean();
         renderSurface.rasterize_ngon_cache();
-        
-        callMetadata.performance.timingMs.rasterization = (performance.now() - callMetadata.performance.timingMs.rasterization);
 
-        callMetadata.performance.timingMs.total = (performance.now() - callMetadata.performance.timingMs.total);
+        callMetadata.numNgonsRendered = ngonCache.numActiveNgons;
     }
+
+    callMetadata.totalRenderTimeMs = (performance.now() - callMetadata.totalRenderTimeMs);
 
     return callMetadata;
 
@@ -1428,13 +1400,10 @@ Rngon.render = function(canvasElementId,
             {
                 ngons.sort((ngonA, ngonB)=>
                 {
-                    let a;
-                    let b;
-
                     // Separate inactive n-gons (which are to be ignored when rendering the current
                     // frame) from the n-gons we're intended to render.
-                    a = (ngonA.isActive? (ngonA.vertices.reduce((acc, v)=>(acc + v.z), 0) / ngonA.vertices.length) : Number.MAX_VALUE);
-                    b = (ngonB.isActive? (ngonB.vertices.reduce((acc, v)=>(acc + v.z), 0) / ngonB.vertices.length) : Number.MAX_VALUE);
+                    const a = (ngonA.isActive? (ngonA.vertices.reduce((acc, v)=>(acc + v.z), 0) / ngonA.vertices.length) : Number.MAX_VALUE);
+                    const b = (ngonB.isActive? (ngonB.vertices.reduce((acc, v)=>(acc + v.z), 0) / ngonB.vertices.length) : Number.MAX_VALUE);
 
                     return ((a === b)? 0 : ((a > b)? 1 : -1));
                 });
@@ -1448,13 +1417,10 @@ Rngon.render = function(canvasElementId,
             {
                 ngons.sort((ngonA, ngonB)=>
                 {
-                    let a;
-                    let b;
-
                     // Separate inactive n-gons (which are to be ignored when rendering the current
                     // frame) from the n-gons we're intended to render.
-                    a = (ngonA.isActive? (ngonA.vertices.reduce((acc, v)=>(acc + v.z), 0) / ngonA.vertices.length) : -Number.MAX_VALUE);
-                    b = (ngonB.isActive? (ngonB.vertices.reduce((acc, v)=>(acc + v.z), 0) / ngonB.vertices.length) : -Number.MAX_VALUE);
+                    const a = (ngonA.isActive? (ngonA.vertices.reduce((acc, v)=>(acc + v.z), 0) / ngonA.vertices.length) : -Number.MAX_VALUE);
+                    const b = (ngonB.isActive? (ngonB.vertices.reduce((acc, v)=>(acc + v.z), 0) / ngonB.vertices.length) : -Number.MAX_VALUE);
 
                     return ((a === b)? 0 : ((a < b)? 1 : -1));
                 });

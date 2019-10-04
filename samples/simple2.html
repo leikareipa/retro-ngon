@@ -88,7 +88,7 @@
 
                 if (frameCount % 60 === 0)
                 {
-                    document.getElementById("fps-display").innerHTML = `FPS: ${Math.floor(1000 / (renderInfo.performance.timingMs.total || 1))}`;
+                    document.getElementById("fps-display").innerHTML = `FPS: ${Math.floor(1000 / (renderInfo.totalRenderTimeMs || 1))}`;
                 }
 
                 window.requestAnimationFrame(()=>render_loop(frameCount + 1));

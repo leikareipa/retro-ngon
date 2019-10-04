@@ -473,31 +473,14 @@ Renders one or more n-gon meshes onto an existing canvas element.
 {
     renderWidth,
     renderHeight,
-    scene:
-    {
-        // The total count of n-gons rendered. May be smaller than the number of n-gons
-        // originally submitted for rendering, due to visibility culling etc. performed
-        // during the rendering process.
-        numNgonsRendered: 0,
-    },
-    performance:
-    {
-        // How long the renderer took to perform certain actions. All values are in milliseconds.
-        timingMs:
-        {
-            // How long it took to initialize the renderer.
-            initialization,
 
-            // How long it took to transform all the supplied n-gons into screen space.
-            transformation,
+    // The total count of n-gons rendered. May be smaller than the number of n-gons
+    // originally submitted for rendering, due to visibility culling etc. performed
+    // during the rendering process.
+    numNgonsRendered,
 
-            // How long it took to rasterize the supplied n-gons onto the target canvas.
-            rasterization,
-
-            // How much time this function call took, in total.
-            total,
-        }
-    }
+    // The total time this call to render() took, in milliseconds.
+    totalRenderTimeMs,
 }
 ```
 
