@@ -58,115 +58,116 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
 
         // Handle n-gons with 3 or more vertices.
         {
-            // Draw two virtual lines around the n-gon, one through its left-hand vertices
-            // and the other through the right-hand ones, such that together the lines trace
-            // the n-gon's outline.
-            const leftEdge = [];
-            const rightEdge = [];
+            // We'll sort the n-gon's vertices into those on its left side and those on its
+            // right side.
             const leftVerts = [];
             const rightVerts = [];
+
+            // Then we'll trace the n-gon's outline by drawing two lines: one connecting the
+            // left-side vertices, and the other the right-side vertices. The lines will be
+            // stored in these off-screen arrays where the array key encodes the Y coordinate
+            // and the value the X coordinate. (Having done that, we can then rasterize the
+            // n-gon by drawing into the pixel buffer the horizontal spans between the left
+            // and right side X coordinates on the particular Y row.)
+            const leftSide = [];
+            const rightSide = [];
+
+            // Figure out which of the n-gon's vertices are on its left side and which on the
+            // right. The vertices on both sides will be arranged from smallest Y to largest
+            // Y, i.e. top-to-bottom in screen space. The top-most vertex and the bottom-most
+            // vertex will be shared between the two sides.
             {
-                // Figure out which of the n-gon's vertices are on its left edge and which on
-                // the right one. The vertices will be arranged such that the first entry in
-                // the list of left vertices will be the ngon's top-most (lowest y) vertex, and
-                // the entries after that are successively higher in y. For the list of right
-                // vertices, the first entry will be the ngon's bottom-most vertex, and entries
-                // following are successively lower in y. Thus, by tracing first through the list
-                // of left vertices and then through the list of right ones, you end up with an
-                // anti-clockwise loop around the ngon.
+                // For triangles.
+                if (ngon.vertices.length === 3)
                 {
-                    // For triangles.
-                    if (ngon.vertices.length === 3)
+                    // Sort the vertices by height from smallest Y to largest Y.
                     {
-                        // Sort the vertices by height.
+                        let tmp;
+                        
+                        if (ngon.vertices[0].y > ngon.vertices[1].y)
                         {
-                            let tmp;
-                            
-                            if (ngon.vertices[0].y > ngon.vertices[1].y)
-                            {
-                                tmp = ngon.vertices[0];
-                                ngon.vertices[0] = ngon.vertices[1];
-                                ngon.vertices[1] = tmp;
-                            }
-
-                            if (ngon.vertices[1].y > ngon.vertices[2].y)
-                            {
-                                tmp = ngon.vertices[1];
-                                ngon.vertices[1] = ngon.vertices[2];
-                                ngon.vertices[2] = tmp;
-                            }
-
-                            if (ngon.vertices[0].y > ngon.vertices[1].y)
-                            {
-                                tmp = ngon.vertices[0];
-                                ngon.vertices[0] = ngon.vertices[1];
-                                ngon.vertices[1] = tmp;
-                            }
+                            tmp = ngon.vertices[0];
+                            ngon.vertices[0] = ngon.vertices[1];
+                            ngon.vertices[1] = tmp;
                         }
 
-                        const topVert = ngon.vertices[0];
-                        const midVert = ngon.vertices[1];
-                        const bottomVert = ngon.vertices[2];
-
-                        // The left side will always start with the top-most vertex, and the right side with
-                        // the bottom-most vertex.
-                        leftVerts.push(topVert);
-                        rightVerts.push(bottomVert);
-
-                        // Find whether the mid vertex is on the left or right side.
-                        const lr = Rngon.lerp(topVert.x, bottomVert.x, ((midVert.y - topVert.y) / (bottomVert.y - topVert.y)));
-                        ((midVert.x >= lr)? rightVerts : leftVerts).push(midVert);
-
-                        // Add linking vertices, so we can connect the two sides easily in a line loop.
-                        leftVerts.push(bottomVert);
-                        rightVerts.push(topVert);
-                    }
-                    // Generic algorithm for n-sided convex polygons.
-                    else
-                    {
-                        // Sort the vertices by height (i.e. by increasing y).
-                        ngon.vertices.sort(vertexSorters.verticalAscending);
-
-                        const topVert = ngon.vertices[0];
-                        const bottomVert = ngon.vertices[ngon.vertices.length-1];
-
-                        // The left side will always start with the top-most vertex, and the right side with
-                        // the bottom-most vertex.
-                        leftVerts.push(topVert);
-                        rightVerts.push(bottomVert);
-
-                        // Trace a line along x,y between the top-most vertex and the bottom-most vertex; and for
-                        // the two intervening vertices, find whether they're to the left or right of that line on
-                        // x. Being on the left side of that line means the vertex is on the ngon's left side,
-                        // and same for the right side.
-                        for (let i = 1; i < (ngon.vertices.length - 1); i++)
+                        if (ngon.vertices[1].y > ngon.vertices[2].y)
                         {
-                            const lr = Rngon.lerp(topVert.x, bottomVert.x, ((ngon.vertices[i].y - topVert.y) / (bottomVert.y - topVert.y)));
-                            ((ngon.vertices[i].x >= lr)? rightVerts : leftVerts).push(ngon.vertices[i]);
+                            tmp = ngon.vertices[1];
+                            ngon.vertices[1] = ngon.vertices[2];
+                            ngon.vertices[2] = tmp;
                         }
 
-                        // Make sure the right side is sorted bottom-to-top.
-                        rightVerts.sort(vertexSorters.verticalDescending);
-
-                        // Add linking vertices, so we can connect the two sides easily in a line loop.
-                        leftVerts.push(bottomVert);
-                        rightVerts.push(topVert);
+                        if (ngon.vertices[0].y > ngon.vertices[1].y)
+                        {
+                            tmp = ngon.vertices[0];
+                            ngon.vertices[0] = ngon.vertices[1];
+                            ngon.vertices[1] = tmp;
+                        }
                     }
+
+                    const topVert = ngon.vertices[0];
+                    const midVert = ngon.vertices[1];
+                    const bottomVert = ngon.vertices[2];
+
+                    leftVerts.push(topVert);
+                    rightVerts.push(topVert);
+
+                    // Find whether the mid vertex is on the left or right side.
+                    const lr = Rngon.lerp(topVert.x, bottomVert.x, ((midVert.y - topVert.y) / (bottomVert.y - topVert.y)));
+                    ((midVert.x >= lr)? rightVerts : leftVerts).push(midVert);
+
+                    leftVerts.push(bottomVert);
+                    rightVerts.push(bottomVert);
                 }
+                // Generic algorithm for n-sided convex polygons.
+                else
+                {
+                    // Sort the vertices by height from smallest Y to largest Y.
+                    ngon.vertices.sort(vertexSorters.verticalAscending);
 
-                // Now that we known which vertices are on the right-hand side and which on the left,
-                // we can trace the two virtual lines around the polygon.
-                for (let l = 1; l < leftVerts.length; l++) Rngon.line_draw.into_array(leftVerts[l-1], leftVerts[l], leftEdge, ngon.vertices[0].y);
-                for (let r = 1; r < rightVerts.length; r++) Rngon.line_draw.into_array(rightVerts[r-1], rightVerts[r], rightEdge, ngon.vertices[0].y);
+                    const topVert = ngon.vertices[0];
+                    const bottomVert = ngon.vertices[ngon.vertices.length-1];
+
+                    leftVerts.push(topVert);
+                    rightVerts.push(topVert);
+
+                    // Trace a line along XY between the top-most vertex and the bottom-most vertex;
+                    // and for the intervening vertices, find whether they're to the left or right of
+                    // that line on X. Being on the left means the vertex is on the n-gon's left side,
+                    // otherwise it's on the right side.
+                    for (let i = 1; i < (ngon.vertices.length - 1); i++)
+                    {
+                        const lr = Rngon.lerp(topVert.x, bottomVert.x, ((ngon.vertices[i].y - topVert.y) / (bottomVert.y - topVert.y)));
+                        ((ngon.vertices[i].x >= lr)? rightVerts : leftVerts).push(ngon.vertices[i]);
+                    }
+
+                    leftVerts.push(bottomVert);
+                    rightVerts.push(bottomVert);
+                }
             }
 
-            // Draw the ngon.
+            // Trace the n-gon's outline into the off-screen left side and right side buffers.
+            {
+                for (let l = 1; l < leftVerts.length; l++)
+                {
+                    Rngon.line_draw.into_array(leftVerts[l-1], leftVerts[l], leftSide, ngon.vertices[0].y);
+                }
+
+                for (let r = 1; r < rightVerts.length; r++)
+                {
+                    Rngon.line_draw.into_array(rightVerts[r-1], rightVerts[r], rightSide, ngon.vertices[0].y);
+                }
+            }
+
+            // Rasterize the n-gon by connecting on each Y row the X ends of the n-gon's left-
+            // and right-side off-screen buffers.
             {
                 // Solid or textured fill.
                 if (ngon.material.hasSolidFill)
                 {
                     const polyYOffset = Math.ceil(ngon.vertices[0].y);
-                    const polyHeight = leftEdge.length;
+                    const polyHeight = leftSide.length;
 
                     for (let y = 0; y < polyHeight; y++)
                     {
@@ -174,7 +175,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                         const py = (y + polyYOffset);
                         if (py >= renderHeight) break;
 
-                        const rowWidth = (rightEdge[y].x - leftEdge[y].x);
+                        const rowWidth = (rightSide[y].x - leftSide[y].x);
                         if (rowWidth <= 0) continue;
 
                         // We'll interpolate certain parameters across this pixel row. For that,
@@ -182,22 +183,22 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                         // base value each step of the loop.
                         const interpolationStepSize = (1 / (rowWidth + 1));
 
-                        interpolationDeltas.u =     (Rngon.lerp(leftEdge[y].u, rightEdge[y].u, interpolationStepSize) - leftEdge[y].u);
-                        interpolationDeltas.v =     (Rngon.lerp(leftEdge[y].v, rightEdge[y].v, interpolationStepSize) - leftEdge[y].v);
-                        interpolationDeltas.uvw =   (Rngon.lerp(leftEdge[y].uvw, rightEdge[y].uvw, interpolationStepSize) - leftEdge[y].uvw);
-                        interpolationDeltas.depth = (Rngon.lerp(leftEdge[y].depth, rightEdge[y].depth, interpolationStepSize) - leftEdge[y].depth);
+                        interpolationDeltas.u =     (Rngon.lerp(leftSide[y].u, rightSide[y].u, interpolationStepSize) - leftSide[y].u);
+                        interpolationDeltas.v =     (Rngon.lerp(leftSide[y].v, rightSide[y].v, interpolationStepSize) - leftSide[y].v);
+                        interpolationDeltas.uvw =   (Rngon.lerp(leftSide[y].uvw, rightSide[y].uvw, interpolationStepSize) - leftSide[y].uvw);
+                        interpolationDeltas.depth = (Rngon.lerp(leftSide[y].depth, rightSide[y].depth, interpolationStepSize) - leftSide[y].depth);
 
                         // Decrement the value by the delta so we can increment at the start
                         // of the loop rather than at the end of it - so we can e.g. bail out
                         // of the loop where needed without worry of not correctly incrementing
                         // the interpolated values.
-                        interpolatedValues.u =     (leftEdge[y].u - interpolationDeltas.u);
-                        interpolatedValues.v =     (leftEdge[y].v - interpolationDeltas.v);
-                        interpolatedValues.uvw =   (leftEdge[y].uvw - interpolationDeltas.uvw);
-                        interpolatedValues.depth = (leftEdge[y].depth - interpolationDeltas.depth);
+                        interpolatedValues.u =     (leftSide[y].u - interpolationDeltas.u);
+                        interpolatedValues.v =     (leftSide[y].v - interpolationDeltas.v);
+                        interpolatedValues.uvw =   (leftSide[y].uvw - interpolationDeltas.uvw);
+                        interpolatedValues.depth = (leftSide[y].depth - interpolationDeltas.depth);
 
                         // Assumes the pixel buffer is 4 elements per pixel (RGBA).
-                        let pixelBufferIdx = (((leftEdge[y].x + py * renderWidth) * 4) - 4);
+                        let pixelBufferIdx = (((leftSide[y].x + py * renderWidth) * 4) - 4);
 
                         // Assumes the depth buffer is 1 element per pixel.
                         let depthBufferIdx = (pixelBufferIdx / 4);
@@ -220,7 +221,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                 continue;
                             }
 
-                            if ((leftEdge[y].x + x) >= renderWidth) break;
+                            if ((leftSide[y].x + x) >= renderWidth) break;
 
                             // Solid fill.
                             if (ngon.material.texture == null)
@@ -335,20 +336,23 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                     }
                 }
 
-                // Draw a wireframe around any ngons that wish for one.
+                // Draw a wireframe around any n-gons that wish for one.
                 if (Rngon.internalState.showGlobalWireframe ||
                     ngon.material.hasWireframe)
                 {
-                    const putline = (vert1, vert2)=>
+                    for (let l = 1; l < leftVerts.length; l++)
                     {
-                        Rngon.line_draw.into_pixel_buffer(vert1, vert2, ngon.material.wireframeColor, Rngon.internalState.useDepthBuffer)
-                    };
+                        Rngon.line_draw.into_pixel_buffer(leftVerts[l-1], leftVerts[l], ngon.material.wireframeColor, Rngon.internalState.useDepthBuffer);
+                    }
 
-                    // Draw a line around the polygon.
-                    for (let l = 1; l < leftVerts.length; l++) putline(leftVerts[l-1], leftVerts[l]);
-                    for (let r = 1; r < rightVerts.length; r++) putline(rightVerts[r-1], rightVerts[r]);
+                    for (let r = 1; r < rightVerts.length; r++)
+                    {
+                        Rngon.line_draw.into_pixel_buffer(rightVerts[r-1], rightVerts[r], ngon.material.wireframeColor, Rngon.internalState.useDepthBuffer);
+                    }
                 }
             }
         }
     }
+    
+    return;
 }
