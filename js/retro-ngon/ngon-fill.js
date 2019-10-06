@@ -353,6 +353,6 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
             }
         }
     }
-    
+
     return;
 }

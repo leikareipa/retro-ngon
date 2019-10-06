@@ -40,23 +40,6 @@ Rngon.render = function(canvasElementId,
     Rngon.internalState.applyViewportClipping = (options.clipToViewport === true);
     Rngon.internalState.usePerspectiveCorrectTexturing = (options.perspectiveCorrectTexturing === true);
 
-    // Create or resize the n-gon cache to fit at least the number of n-gons that we've been
-    // given to render.
-    {
-        const sceneNgonCount = meshes.reduce((totalCount, mesh)=>(totalCount + mesh.ngons.length), 0);
-
-        if (!Rngon.internalState.transformedNgonsCache ||
-            !Rngon.internalState.transformedNgonsCache.ngons.length ||
-            (Rngon.internalState.transformedNgonsCache.ngons.length < sceneNgonCount))
-        {
-            const lengthDelta = (sceneNgonCount - Rngon.internalState.transformedNgonsCache.ngons.length);
-
-            Rngon.internalState.transformedNgonsCache.ngons.push(...new Array(lengthDelta).fill().map(e=>Rngon.ngon()));
-        }
-
-        Rngon.internalState.transformedNgonsCache.numActiveNgons = 0; 
-    }
-
     // Render a single frame onto the render surface.
     if ((!options.hibernateWhenNotOnScreen || is_surface_in_view()))
     {
@@ -69,10 +52,11 @@ Rngon.render = function(canvasElementId,
                                            options.farPlane,
                                            options.auxiliaryBuffers);
 
-        const ngonCache = Rngon.internalState.transformedNgonsCache;
-
         callMetadata.renderWidth = renderSurface.width;
         callMetadata.renderHeight = renderSurface.height;
+
+        const ngonCache = Rngon.internalState.transformedNgonsCache;
+        prepare_ngon_cache(ngonCache, meshes);
     
         transform_ngons(meshes, renderSurface, options.cameraPosition, options.cameraDirection);
         mark_npot_textures(ngonCache);
@@ -103,7 +87,31 @@ Rngon.render = function(canvasElementId,
                        (containerRect.top < viewHeight));
     }
 
-    function transform_ngons(meshes, renderSurface, cameraPosition, cameraDirection)
+    // Creates or resizes the n-gon cache (where we place transformed n-gons for rendering) to fit
+    // at least the number of n-gons contained in the array of meshes we've been asked to render.
+    function prepare_ngon_cache(ngonCache = {}, meshes = [])
+    {
+        Rngon.assert && (typeof ngonCache === "object")
+                     && (meshes instanceof Array)
+                     || Rngon.throw("Invalid arguments to n-gon cache initialization.");
+
+        const sceneNgonCount = meshes.reduce((totalCount, mesh)=>(totalCount + mesh.ngons.length), 0);
+
+        if (!ngonCache ||
+            !ngonCache.ngons.length ||
+            (ngonCache.ngons.length < sceneNgonCount))
+        {
+            const lengthDelta = (sceneNgonCount - ngonCache.ngons.length);
+
+            ngonCache.ngons.push(...new Array(lengthDelta).fill().map(e=>Rngon.ngon()));
+        }
+
+        ngonCache.numActiveNgons = 0;
+
+        return;
+    }
+
+    function transform_ngons(meshes = [], renderSurface, cameraPosition = Rngon.vector3(), cameraDirection = Rngon.vector3())
     {
         const cameraMatrix = Rngon.matrix44.matrices_multiplied(Rngon.matrix44.rotate(cameraDirection.x,
                                                                                       cameraDirection.y,
@@ -122,7 +130,7 @@ Rngon.render = function(canvasElementId,
 
     // Mark any non-power-of-two affine-mapped faces as using the non-power-of-two affine
     // mapper, as the default affine mapper expects textures to be power-of-two.
-    function mark_npot_textures(ngonCache)
+    function mark_npot_textures(ngonCache = {})
     {
         for (let i = 0; i < ngonCache.numActiveNgons; i++)
         {
@@ -150,7 +158,7 @@ Rngon.render = function(canvasElementId,
 
     // Apply depth sorting to the transformed n-gons (which are now stored in the internal
     // n-gon cache).
-    function depth_sort_ngons(ngons, depthSortingMode)
+    function depth_sort_ngons(ngons = [], depthSortingMode = "")
     {
         switch (depthSortingMode)
         {
