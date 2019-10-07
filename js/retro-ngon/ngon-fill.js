@@ -183,10 +183,10 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                         // base value each step of the loop.
                         const interpolationStepSize = (1 / (rowWidth + 1));
 
-                        interpolationDeltas.u =     (Rngon.lerp(leftSide[y].u, rightSide[y].u, interpolationStepSize) - leftSide[y].u);
-                        interpolationDeltas.v =     (Rngon.lerp(leftSide[y].v, rightSide[y].v, interpolationStepSize) - leftSide[y].v);
-                        interpolationDeltas.uvw =   (Rngon.lerp(leftSide[y].uvw, rightSide[y].uvw, interpolationStepSize) - leftSide[y].uvw);
-                        interpolationDeltas.depth = (Rngon.lerp(leftSide[y].depth, rightSide[y].depth, interpolationStepSize) - leftSide[y].depth);
+                        interpolationDeltas.u =     ((rightSide[y].u - leftSide[y].u) * interpolationStepSize);
+                        interpolationDeltas.v =     ((rightSide[y].v - leftSide[y].v) * interpolationStepSize);
+                        interpolationDeltas.uvw =   ((rightSide[y].uvw - leftSide[y].uvw) * interpolationStepSize);
+                        interpolationDeltas.depth = ((rightSide[y].depth - leftSide[y].depth) * interpolationStepSize);
 
                         // Decrement the value by the delta so we can increment at the start
                         // of the loop rather than at the end of it - so we can e.g. bail out
