@@ -77,51 +77,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
             // Y, i.e. top-to-bottom in screen space. The top-most vertex and the bottom-most
             // vertex will be shared between the two sides.
             {
-                // For triangles.
-                if (ngon.vertices.length === 3)
-                {
-                    // Sort the vertices by height from smallest Y to largest Y.
-                    {
-                        let tmp;
-                        
-                        if (ngon.vertices[0].y > ngon.vertices[1].y)
-                        {
-                            tmp = ngon.vertices[0];
-                            ngon.vertices[0] = ngon.vertices[1];
-                            ngon.vertices[1] = tmp;
-                        }
-
-                        if (ngon.vertices[1].y > ngon.vertices[2].y)
-                        {
-                            tmp = ngon.vertices[1];
-                            ngon.vertices[1] = ngon.vertices[2];
-                            ngon.vertices[2] = tmp;
-                        }
-
-                        if (ngon.vertices[0].y > ngon.vertices[1].y)
-                        {
-                            tmp = ngon.vertices[0];
-                            ngon.vertices[0] = ngon.vertices[1];
-                            ngon.vertices[1] = tmp;
-                        }
-                    }
-
-                    const topVert = ngon.vertices[0];
-                    const midVert = ngon.vertices[1];
-                    const bottomVert = ngon.vertices[2];
-
-                    leftVerts.push(topVert);
-                    rightVerts.push(topVert);
-
-                    // Find whether the mid vertex is on the left or right side.
-                    const lr = Rngon.lerp(topVert.x, bottomVert.x, ((midVert.y - topVert.y) / (bottomVert.y - topVert.y)));
-                    ((midVert.x >= lr)? rightVerts : leftVerts).push(midVert);
-
-                    leftVerts.push(bottomVert);
-                    rightVerts.push(bottomVert);
-                }
                 // Generic algorithm for n-sided convex polygons.
-                else
                 {
                     // Sort the vertices by height from smallest Y to largest Y.
                     ngon.vertices.sort(vertexSorters.verticalAscending);
