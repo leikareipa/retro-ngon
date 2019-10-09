@@ -18,6 +18,9 @@ Rngon.line_draw = (()=>
             const bufferWidth = Rngon.internalState.pixelBuffer.width;
             const bufferHeight = Rngon.internalState.pixelBuffer.height;
 
+            /// TODO: Depth-aware drawing is disabled until a better implementation of it is in place.
+            respectDepth = false;
+
             let x0 = Math.ceil(vert1.x);
             let y0 = Math.ceil(vert1.y);
             const x1 = Math.ceil(vert2.x);
@@ -136,7 +139,7 @@ Rngon.line_draw = (()=>
                     {
                         err += dx;
                         y0 += sy;
-                        
+
                         yChanged = true;
                     }
                 }

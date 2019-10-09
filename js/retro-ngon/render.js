@@ -35,7 +35,7 @@ Rngon.render = function(canvasElementId,
     });
 
     // Modify any internal render parameters based on the user's options.
-    Rngon.internalState.useDepthBuffer = (options.depthSort === "depthbuffer");
+    Rngon.internalState.useDepthBuffer = true;
     Rngon.internalState.showGlobalWireframe = (options.globalWireframe === true);
     Rngon.internalState.applyViewportClipping = (options.clipToViewport === true);
     Rngon.internalState.usePerspectiveCorrectTexturing = (options.perspectiveCorrectTexturing === true);
@@ -163,23 +163,6 @@ Rngon.render = function(canvasElementId,
         {
             case "none": break;
 
-            // Sort front-to-back; i.e. so that n-gons closest to the camera will be first in the
-            // list. Together with the depth buffer, this allows early rejection of obscured polygons.
-            case "depthbuffer":
-            {
-                ngons.sort((ngonA, ngonB)=>
-                {
-                    // Separate inactive n-gons (which are to be ignored when rendering the current
-                    // frame) from the n-gons we're intended to render.
-                    const a = (ngonA.isActive? (ngonA.vertices.reduce((acc, v)=>(acc + v.z), 0) / ngonA.vertices.length) : Number.MAX_VALUE);
-                    const b = (ngonB.isActive? (ngonB.vertices.reduce((acc, v)=>(acc + v.z), 0) / ngonB.vertices.length) : Number.MAX_VALUE);
-
-                    return ((a === b)? 0 : ((a > b)? 1 : -1));
-                });
-
-                break;
-            }
-
             // Painter's algorithm. Sort back-to-front; i.e. so that n-gons furthest from the camera
             // will be first in the list.
             case "painter":
@@ -197,7 +180,22 @@ Rngon.render = function(canvasElementId,
                 break;
             }
             
-            default: Rngon.throw("Unknown depth sort option."); break;
+            // Sort front-to-back; i.e. so that n-gons closest to the camera will be first in the
+            // list. Together with the depth buffer, this allows early rejection of obscured polygons.
+            default:
+            {
+                ngons.sort((ngonA, ngonB)=>
+                {
+                    // Separate inactive n-gons (which are to be ignored when rendering the current
+                    // frame) from the n-gons we're intended to render.
+                    const a = (ngonA.isActive? (ngonA.vertices.reduce((acc, v)=>(acc + v.z), 0) / ngonA.vertices.length) : Number.MAX_VALUE);
+                    const b = (ngonB.isActive? (ngonB.vertices.reduce((acc, v)=>(acc + v.z), 0) / ngonB.vertices.length) : Number.MAX_VALUE);
+
+                    return ((a === b)? 0 : ((a > b)? 1 : -1));
+                });
+
+                break;
+            }
         }
 
         return;
@@ -212,7 +210,7 @@ Rngon.render.defaultOptions =
     fov: 43,
     nearPlane: 1,
     farPlane: 1000,
-    depthSort: "painter",
+    depthSort: "", // Use default.
     clipToViewport: true,
     globalWireframe: false,
     hibernateWhenNotOnScreen: true,

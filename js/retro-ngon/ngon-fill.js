@@ -12,17 +12,12 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
     const pixelBuffer = Rngon.internalState.pixelBuffer.data;
     const depthBuffer = (Rngon.internalState.useDepthBuffer? Rngon.internalState.depthBuffer.buffer : null);
     const renderWidth = Rngon.internalState.pixelBuffer.width;
-    const renderHeight = Rngon.internalState.pixelBuffer.height;
 
     const vertexSorters =
     {
         verticalAscending: (vertA, vertB)=>((vertA.y === vertB.y)? 0 : ((vertA.y < vertB.y)? -1 : 1)),
         verticalDescending: (vertA, vertB)=>((vertA.y === vertB.y)? 0 : ((vertA.y > vertB.y)? -1 : 1))
     }
-
-    // Used for interpolating values between n-gon edge spans during rasterization.
-    const interpolationDeltas = {};
-    const interpolatedValues = {};
 
     // Rasterize the n-gons.
     for (let n = 0; n < Rngon.internalState.transformedNgonsCache.numActiveNgons; n++)
@@ -63,15 +58,12 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
             const leftVerts = [];
             const rightVerts = [];
 
-            // Then we'll trace the n-gon's outline by drawing two lines: one connecting the
-            // left-side vertices, and the other the right-side vertices. The lines will be
-            // stored in these off-screen arrays where the array key encodes the Y coordinate
-            // and the value the X coordinate. (Having done that, we can then rasterize the
-            // n-gon by drawing into the pixel buffer the horizontal spans between the left
-            // and right side X coordinates on the particular Y row.)
-            const leftSide = [];
-            const rightSide = [];
-
+            // Then we'll organize the sorted vertices into edges (lines between given two
+            // vertices). Once we've got the edges figured out, we can render the n-gon by filling
+            // in the spans between its edges.
+            const leftEdges = [];
+            const rightEdges = [];
+            
             // Figure out which of the n-gon's vertices are on its left side and which on the
             // right. The vertices on both sides will be arranged from smallest Y to largest
             // Y, i.e. top-to-bottom in screen space. The top-most vertex and the bottom-most
@@ -103,115 +95,149 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                 }
             }
 
-            // Trace the n-gon's outline into the off-screen left side and right side buffers.
+            // Create edges out of the vertices.
             {
-                for (let l = 1; l < leftVerts.length; l++)
-                {
-                    Rngon.line_draw.into_array(leftVerts[l-1], leftVerts[l], leftSide, ngon.vertices[0].y);
-                }
+                const interpolatePerspective = Rngon.internalState.usePerspectiveCorrectTexturing;
 
-                for (let r = 1; r < rightVerts.length; r++)
+                const add_edge = (vert1, vert2, isLeftEdge)=>
                 {
-                    Rngon.line_draw.into_array(rightVerts[r-1], rightVerts[r], rightSide, ngon.vertices[0].y);
-                }
+                    const startY = Math.ceil(vert1.y);
+                    const endY = Math.ceil(vert2.y);
+                    
+                    // Ignore horizontal edges.
+                    if ((endY - startY) === 0) return;
+
+                    const edgeHeight = (endY - startY);
+
+                    const startX = Math.ceil(vert1.x);
+                    const endX = Math.ceil(vert2.x);
+                    const deltaX = ((endX - startX) / edgeHeight);
+
+                    const startDepth = vert1.z;
+                    const deltaDepth = ((vert2.z - vert1.z) / edgeHeight);
+
+                    const startU = interpolatePerspective? (vert1.u / vert1.w)
+                                                         : vert1.u;
+                    const deltaU = interpolatePerspective? (((vert2.u / vert2.w) - (vert1.u / vert1.w)) / edgeHeight)
+                                                         : ((vert2.u- vert1.u) / edgeHeight);
+
+                    const startV = interpolatePerspective? (vert1.v / vert1.w)
+                                                         : vert1.v;
+                    const deltaV = interpolatePerspective? (((vert2.v / vert2.w) - (vert1.v / vert1.w)) / edgeHeight)
+                                                         : ((vert2.v- vert1.v) / edgeHeight);
+
+                    const startUVW = interpolatePerspective? (1 / vert1.w)
+                                                           : 1;
+                    const deltaUVW = interpolatePerspective? (((1 / vert2.w) - (1 / vert1.w)) / edgeHeight)
+                                                           : 0;
+
+                    const edge =
+                    {
+                        startY, endY,
+                        startX, deltaX,
+                        startDepth, deltaDepth,
+                        startU, deltaU,
+                        startV, deltaV,
+                        startUVW, deltaUVW,
+                    }
+
+                    if (isLeftEdge) leftEdges.push(edge);
+                    else rightEdges.push(edge);
+                };
+
+                for (let l = 1; l < leftVerts.length; l++) add_edge(leftVerts[l-1], leftVerts[l], true);
+                for (let r = 1; r < rightVerts.length; r++) add_edge(rightVerts[r-1], rightVerts[r], false);
             }
 
-            // Rasterize the n-gon by connecting on each Y row the X ends of the n-gon's left-
-            // and right-side off-screen buffers.
+            // Draw the n-gon. On each horizontal raster line, there will be two edges: left and right.
+            // We'll render into the pixel buffer each horizontal span that runs between the two edges.
             {
-                // Solid or textured fill.
-                if (ngon.material.hasSolidFill)
+                let curLeftEdgeIdx = 0;
+                let curRightEdgeIdx = 0;
+                let leftEdge = leftEdges[curLeftEdgeIdx];
+                let rightEdge = rightEdges[curRightEdgeIdx];
+                
+                if (!leftEdges.length || !rightEdges.length) continue;
+
+                // Note: We assume the n-gon's vertices to be sorted by increasing Y.
+                const ngonStartY = leftEdges[0].startY;
+                const ngonEndY = leftEdges[leftEdges.length-1].endY;
+                
+                // Rasterize the n-gon in horizontal pixel spans over its height.
+                for (let y = ngonStartY; y < ngonEndY; y++)
                 {
-                    const polyYOffset = Math.ceil(ngon.vertices[0].y);
-                    const polyHeight = leftSide.length;
+                    const spanWidth = ((rightEdge.startX - leftEdge.startX) + 1);
 
-                    for (let y = 0; y < polyHeight; y++)
+                    if (spanWidth > 0)
                     {
-                        // Corresponding position in the pixel buffer.
-                        const py = (y + polyYOffset);
-                        if (py >= renderHeight) break;
+                        const spanStartX = Math.min((renderWidth - 1), Math.max(0, Math.ceil(leftEdge.startX)));
+                        const spanEndX = Math.min((renderWidth - 1), Math.max(0, Math.ceil(rightEdge.startX)));
 
-                        const rowWidth = (rightSide[y].x - leftSide[y].x);
-                        if (rowWidth <= 0) continue;
+                        // We'll interpolate these parameters across the span.
+                        const deltaDepth = ((rightEdge.startDepth - leftEdge.startDepth) / spanWidth);
+                        let iplDepth = (leftEdge.startDepth - deltaDepth);
 
-                        // We'll interpolate certain parameters across this pixel row. For that,
-                        // let's pre-compute delta values we can just add onto the parameter's
-                        // base value each step of the loop.
-                        const interpolationStepSize = (1 / (rowWidth + 1));
+                        const deltaU = ((rightEdge.startU - leftEdge.startU) / spanWidth);
+                        let iplU = (leftEdge.startU - deltaU);
 
-                        interpolationDeltas.u =     ((rightSide[y].u - leftSide[y].u) * interpolationStepSize);
-                        interpolationDeltas.v =     ((rightSide[y].v - leftSide[y].v) * interpolationStepSize);
-                        interpolationDeltas.uvw =   ((rightSide[y].uvw - leftSide[y].uvw) * interpolationStepSize);
-                        interpolationDeltas.depth = ((rightSide[y].depth - leftSide[y].depth) * interpolationStepSize);
+                        const deltaV = ((rightEdge.startV - leftEdge.startV) / spanWidth);
+                        let iplV = (leftEdge.startV - deltaV);
 
-                        // Decrement the value by the delta so we can increment at the start
-                        // of the loop rather than at the end of it - so we can e.g. bail out
-                        // of the loop where needed without worry of not correctly incrementing
-                        // the interpolated values.
-                        interpolatedValues.u =     (leftSide[y].u - interpolationDeltas.u);
-                        interpolatedValues.v =     (leftSide[y].v - interpolationDeltas.v);
-                        interpolatedValues.uvw =   (leftSide[y].uvw - interpolationDeltas.uvw);
-                        interpolatedValues.depth = (leftSide[y].depth - interpolationDeltas.depth);
+                        const deltaUVW = ((rightEdge.startUVW - leftEdge.startUVW) / spanWidth);
+                        let iplUVW = (leftEdge.startUVW - deltaUVW);
 
-                        // Assumes the pixel buffer is 4 elements per pixel (RGBA).
-                        let pixelBufferIdx = (((leftSide[y].x + py * renderWidth) * 4) - 4);
+                        // Assumes the pixel buffer consists of 4 elements (RGBA) per pixel.
+                        let pixelBufferIdx = (((spanStartX + y * renderWidth) * 4) - 4);
 
-                        // Assumes the depth buffer is 1 element per pixel.
+                        // Assumes the depth buffer consists of 1 element per pixel.
                         let depthBufferIdx = (pixelBufferIdx / 4);
 
-                        for (let x = 0; x <= rowWidth; x++)
+                        // Draw the span into the pixel buffer.
+                        for (let x = spanStartX; x <= spanEndX; x++)
                         {
-                            // Increment the interpolated values before continuing with the loop.
-                            interpolatedValues.u += interpolationDeltas.u;
-                            interpolatedValues.v += interpolationDeltas.v;
-                            interpolatedValues.uvw += interpolationDeltas.uvw;
-                            interpolatedValues.depth += interpolationDeltas.depth;
+                            // Update values that're interpolated horizontally along the span.
+                            iplDepth += deltaDepth;
+                            iplU += deltaU;
+                            iplV += deltaV;
+                            iplUVW += deltaUVW;
                             pixelBufferIdx += 4;
                             depthBufferIdx++;
 
-                            // Depth testing. Only allow the pixel to be drawn if previous pixels at this
-                            // screen position are further away from the camera.
-                            if (depthBuffer &&
-                                (depthBuffer[depthBufferIdx] <= interpolatedValues.depth))
-                            {
-                                continue;
-                            }
-
-                            if ((leftSide[y].x + x) >= renderWidth) break;
+                            // Depth test.
+                            if (depthBuffer[depthBufferIdx] <= iplDepth) continue;
 
                             // Solid fill.
                             if (ngon.material.texture == null)
                             {
-                                // Alpha testing. If the pixel is fully opaque, draw it; otherwise, skip it.
+                                // Alpha test. If the pixel is fully opaque, draw it; otherwise, skip it.
                                 if (ngon.material.color.alpha !== 255) continue;
 
-                                // Draw the pixel.
                                 pixelBuffer[pixelBufferIdx + 0] = ngon.material.color.red;
                                 pixelBuffer[pixelBufferIdx + 1] = ngon.material.color.green;
                                 pixelBuffer[pixelBufferIdx + 2] = ngon.material.color.blue;
                                 pixelBuffer[pixelBufferIdx + 3] = ngon.material.color.alpha;
-                                if (depthBuffer) depthBuffer[depthBufferIdx] = interpolatedValues.depth;
+                                depthBuffer[depthBufferIdx] = iplDepth;
                             }
                             // Textured fill.
                             else
                             {
-                                let u = 0, v = 0;
-                                
+                                let u, v;
+
                                 switch (ngon.material.textureMapping)
                                 {
                                     // Affine mapping for power-of-two textures.
                                     case "affine":
                                     {
-                                        u = (interpolatedValues.u / interpolatedValues.uvw);
-                                        v = (interpolatedValues.v / interpolatedValues.uvw);
+                                        u = (iplU / iplUVW);
+                                        v = (iplV / iplUVW);
                                         
                                         u *= ngon.material.texture.width;
                                         v *= ngon.material.texture.height;
-
+                
                                         // Modulo for power-of-two.
                                         u = (u & (ngon.material.texture.width - 1));
                                         v = (v & (ngon.material.texture.height - 1));
-
+                
                                         /// FIXME: We need to flip v or the textures render upside down. Why?
                                         v = (ngon.material.texture.height - v - 1);
 
@@ -223,16 +249,16 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                     {
                                         const textureWidth = (ngon.material.texture.width - 0.001);
                                         const textureHeight = (ngon.material.texture.height - 0.001);
-
-                                        u = (interpolatedValues.u / interpolatedValues.uvw);
-                                        v = (interpolatedValues.v / interpolatedValues.uvw);
+                
+                                        u = (iplU / iplUVW);
+                                        v = (iplV / iplUVW);
                                         
                                         u *= textureWidth;
                                         v *= textureHeight;
-
+                
                                         /// FIXME: We need to flip v or the textures render upside down. Why?
                                         v = (textureHeight - v);
-
+                
                                         // Wrap with repetition.
                                         /// FIXME: Why do we need to test for UV < 0 even when using positive
                                         /// but tiling UV coordinates? Doesn't render properly unless we do.
@@ -243,21 +269,27 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                         {
                                             const uWasNeg = (u < 0);
                                             const vWasNeg = (v < 0);
-
+                
                                             u = (Math.abs(u) % ngon.material.texture.width);
                                             v = (Math.abs(v) % ngon.material.texture.height);
-
+                
                                             if (uWasNeg) u = (textureWidth - u);
                                             if (vWasNeg) v = (textureHeight - v);
                                         }
-    
+                
                                         break;
                                     }
                                     // Screen-space UV mapping, as used e.g. in the DOS game Rally-Sport.
                                     case "ortho":
                                     {
-                                        u = x * ((ngon.material.texture.width - 0.001) / rowWidth);
-                                        v = y * ((ngon.material.texture.height - 0.001) / ((polyHeight - 1) || 1));
+                                        const ngonHeight = (ngonEndY - ngonStartY);
+
+                                        // Pixel coordinates relative to the polygon.
+                                        const ngonX = (x - spanStartX);
+                                        const ngonY = (y - ngonStartY);
+
+                                        u = (ngonX * ((ngon.material.texture.width - 0.001) / spanWidth));
+                                        v = (ngonY * ((ngon.material.texture.height - 0.001) / ((ngonHeight - 1) || 1)));
 
                                         break;
                                     }
@@ -269,15 +301,14 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                 // Verify that the texel isn't out of bounds.
                                 if (!texel) continue;
 
-                                // Alpha testing. If the pixel is fully opaque, draw it; otherwise, skip it.
+                                // Alpha test. If the pixel is fully opaque, draw it; otherwise, skip it.
                                 if (texel.alpha !== 255) continue;
 
-                                // Draw the pixel.
-                                pixelBuffer[pixelBufferIdx + 0] = (texel.red   * ngon.material.color.unitRange.red);
-                                pixelBuffer[pixelBufferIdx + 1] = (texel.green * ngon.material.color.unitRange.green);
-                                pixelBuffer[pixelBufferIdx + 2] = (texel.blue  * ngon.material.color.unitRange.blue);
-                                pixelBuffer[pixelBufferIdx + 3] = (texel.alpha * ngon.material.color.unitRange.alpha);
-                                if (depthBuffer) depthBuffer[depthBufferIdx] = interpolatedValues.depth;
+                                pixelBuffer[pixelBufferIdx + 0] = texel.red;
+                                pixelBuffer[pixelBufferIdx + 1] = texel.green;
+                                pixelBuffer[pixelBufferIdx + 2] = texel.blue;
+                                pixelBuffer[pixelBufferIdx + 3] = texel.alpha;
+                                depthBuffer[depthBufferIdx] = iplDepth;
                             }
 
                             for (let b = 0; b < auxiliaryBuffers.length; b++)
@@ -290,6 +321,25 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                             }
                         }
                     }
+
+                    // Update values that're interpolated vertically along the edges.
+                    {
+                        leftEdge.startX += leftEdge.deltaX;
+                        leftEdge.startDepth += leftEdge.deltaDepth;
+                        leftEdge.startU += leftEdge.deltaU;
+                        leftEdge.startV += leftEdge.deltaV;
+                        leftEdge.startUVW += leftEdge.deltaUVW;
+
+                        rightEdge.startX += rightEdge.deltaX;
+                        rightEdge.startDepth += rightEdge.deltaDepth;
+                        rightEdge.startU += rightEdge.deltaU;
+                        rightEdge.startV += rightEdge.deltaV;
+                        rightEdge.startUVW += rightEdge.deltaUVW;
+                    }
+
+                    // We can move onto the next edge when we're at the end of the current one.
+                    if (y === (leftEdge.endY - 1)) leftEdge = leftEdges[++curLeftEdgeIdx];
+                    if (y === (rightEdge.endY - 1)) rightEdge = rightEdges[++curRightEdgeIdx];
                 }
 
                 // Draw a wireframe around any n-gons that wish for one.
