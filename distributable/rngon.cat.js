@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: live (09 October 2019 16:19:58 UTC)
+// VERSION: live (09 October 2019 18:17:13 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -627,9 +627,9 @@ Rngon.line_draw = (()=>
             /// TODO: Depth-aware drawing is disabled until a better implementation of it is in place.
             respectDepth = false;
 
-            let x0 = Math.ceil(vert1.x);
+            let x0 = Math.round(vert1.x);
             let y0 = Math.ceil(vert1.y);
-            const x1 = Math.ceil(vert2.x);
+            const x1 = Math.round(vert2.x);
             const y1 = Math.ceil(vert2.y);
             const lineLength = (respectDepth? this.distanceBetween(x0, y0, x1, y1) : 1);
 
@@ -683,72 +683,6 @@ Rngon.line_draw = (()=>
                 pixelBuffer[idx + 1] = lineColor.green;
                 pixelBuffer[idx + 2] = lineColor.blue;
                 pixelBuffer[idx + 3] = lineColor.alpha;
-            }
-        },
-        
-        // 'Draws' a line between the two given vertices into the given array, such that
-        // e.g. the coordinates 5,8 would be represented as array[8].x === 5. The yOffset
-        // parameter lets you specify a value that'll be subtracted from all y coordinates
-        // (i.e. from indices when writing into the array). Will interpolate the vertices'
-        // u,v coordinates, as well, and place them into array[].u and array[].v.
-        into_array: function(vert1 = Rngon.vertex(),
-                             vert2 = Rngon.vertex(),
-                             array = [],
-                             yOffset = 0)
-        {
-            yOffset = Math.ceil(yOffset);
-
-            let x0 = Math.ceil(vert1.x);
-            let y0 = Math.ceil(vert1.y);
-            const x1 = Math.ceil(vert2.x);
-            const y1 = Math.ceil(vert2.y);
-            const interpolatePerspective = Rngon.internalState.usePerspectiveCorrectTexturing;
-            const lineLength = this.distanceBetween(x0, y0, x1, y1);
-
-            // Bresenham line algo. Adapted from https://stackoverflow.com/a/4672319.
-            {
-                let dx = Math.abs(x1 - x0);
-                let dy = Math.abs(y1 - y0);
-                const sx = ((x0 < x1)? 1 : -1);
-                const sy = ((y0 < y1)? 1 : -1); 
-                let err = (((dx > dy)? dx : -dy) / 2);
-                
-                let yChanged = true;
-                while (1)
-                {
-                    // Mark the pixel into the array.
-                    if (yChanged)
-                    {
-                        const l = (this.distanceBetween(x1, y1, x0, y0) / (lineLength || 1));
-
-                        array[y0 - yOffset] =
-                        {
-                            x: x0,
-                            depth: (Rngon.internalState.useDepthBuffer? Rngon.lerp(vert2.z, vert1.z, l) : 0),
-                            uvw: (interpolatePerspective? Rngon.lerp((1 / vert2.w), (1 / vert1.w), l) : 1),
-                            u: (interpolatePerspective? Rngon.lerp((vert2.u / vert2.w), (vert1.u / vert1.w), l) : Rngon.lerp(vert2.u, vert1.u, l)),
-                            v: (interpolatePerspective? Rngon.lerp((vert2.v / vert2.w), (vert1.v / vert1.w), l) : Rngon.lerp(vert2.v, vert1.v, l)),
-                        };
-
-                        yChanged = false;
-                    }
-                    
-                    if ((x0 === x1) && (y0 === y1)) break;
-
-                    const e2 = err;
-                    if (e2 > -dx)
-                    {
-                        err -= dy;
-                        x0 += sx;
-                    }
-                    if (e2 < dy)
-                    {
-                        err += dx;
-                        y0 += sy;
-
-                        yChanged = true;
-                    }
-                }
             }
         },
 
@@ -921,7 +855,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
         /// TODO: Add depth and alpha testing for points and lines.
         if (ngon.vertices.length === 1)
         {
-            const idx = ((Math.ceil(ngon.vertices[0].x) + Math.ceil(ngon.vertices[0].y) * renderWidth) * 4);
+            const idx = ((Math.round(ngon.vertices[0].x) + Math.round(ngon.vertices[0].y) * renderWidth) * 4);
                 
             pixelBuffer[idx + 0] = ngon.material.color.red;
             pixelBuffer[idx + 1] = ngon.material.color.green;
@@ -995,8 +929,8 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
 
                     const edgeHeight = (endY - startY);
 
-                    const startX = Math.ceil(vert1.x);
-                    const endX = Math.ceil(vert2.x);
+                    const startX = Math.round(vert1.x);
+                    const endX = Math.round(vert2.x);
                     const deltaX = ((endX - startX) / edgeHeight);
 
                     const startDepth = vert1.z;
@@ -1056,8 +990,8 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
 
                     if (spanWidth > 0)
                     {
-                        const spanStartX = Math.min((renderWidth - 1), Math.max(0, Math.ceil(leftEdge.startX)));
-                        const spanEndX = Math.min((renderWidth - 1), Math.max(0, Math.ceil(rightEdge.startX)));
+                        const spanStartX = Math.min((renderWidth - 1), Math.max(0, Math.round(leftEdge.startX)));
+                        const spanEndX = Math.min((renderWidth - 1), Math.max(0, Math.round(rightEdge.startX)));
 
                         // We'll interpolate these parameters across the span.
                         const deltaDepth = ((rightEdge.startDepth - leftEdge.startDepth) / spanWidth);
@@ -1079,7 +1013,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                         let depthBufferIdx = (pixelBufferIdx / 4);
 
                         // Draw the span into the pixel buffer.
-                        for (let x = spanStartX; x <= spanEndX; x++)
+                        for (let x = spanStartX; x < spanEndX; x++)
                         {
                             // Update values that're interpolated horizontally along the span.
                             iplDepth += deltaDepth;
@@ -1093,7 +1027,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                             if (depthBuffer[depthBufferIdx] <= iplDepth) continue;
 
                             // Solid fill.
-                            if (ngon.material.texture == null)
+                            if (!ngon.material.texture)
                             {
                                 // Alpha test. If the pixel is fully opaque, draw it; otherwise, skip it.
                                 if (ngon.material.color.alpha !== 255) continue;
@@ -1171,11 +1105,11 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                         const ngonHeight = (ngonEndY - ngonStartY);
 
                                         // Pixel coordinates relative to the polygon.
-                                        const ngonX = (x - spanStartX);
+                                        const ngonX = (x - spanStartX + 1);
                                         const ngonY = (y - ngonStartY);
 
                                         u = (ngonX * ((ngon.material.texture.width - 0.001) / spanWidth));
-                                        v = (ngonY * ((ngon.material.texture.height - 0.001) / ((ngonHeight - 1) || 1)));
+                                        v = (ngonY * ((ngon.material.texture.height - 0.001) / ngonHeight));
 
                                         break;
                                     }

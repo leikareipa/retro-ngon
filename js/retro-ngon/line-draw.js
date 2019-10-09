@@ -21,9 +21,9 @@ Rngon.line_draw = (()=>
             /// TODO: Depth-aware drawing is disabled until a better implementation of it is in place.
             respectDepth = false;
 
-            let x0 = Math.ceil(vert1.x);
+            let x0 = Math.round(vert1.x);
             let y0 = Math.ceil(vert1.y);
-            const x1 = Math.ceil(vert2.x);
+            const x1 = Math.round(vert2.x);
             const y1 = Math.ceil(vert2.y);
             const lineLength = (respectDepth? this.distanceBetween(x0, y0, x1, y1) : 1);
 
@@ -77,72 +77,6 @@ Rngon.line_draw = (()=>
                 pixelBuffer[idx + 1] = lineColor.green;
                 pixelBuffer[idx + 2] = lineColor.blue;
                 pixelBuffer[idx + 3] = lineColor.alpha;
-            }
-        },
-        
-        // 'Draws' a line between the two given vertices into the given array, such that
-        // e.g. the coordinates 5,8 would be represented as array[8].x === 5. The yOffset
-        // parameter lets you specify a value that'll be subtracted from all y coordinates
-        // (i.e. from indices when writing into the array). Will interpolate the vertices'
-        // u,v coordinates, as well, and place them into array[].u and array[].v.
-        into_array: function(vert1 = Rngon.vertex(),
-                             vert2 = Rngon.vertex(),
-                             array = [],
-                             yOffset = 0)
-        {
-            yOffset = Math.ceil(yOffset);
-
-            let x0 = Math.ceil(vert1.x);
-            let y0 = Math.ceil(vert1.y);
-            const x1 = Math.ceil(vert2.x);
-            const y1 = Math.ceil(vert2.y);
-            const interpolatePerspective = Rngon.internalState.usePerspectiveCorrectTexturing;
-            const lineLength = this.distanceBetween(x0, y0, x1, y1);
-
-            // Bresenham line algo. Adapted from https://stackoverflow.com/a/4672319.
-            {
-                let dx = Math.abs(x1 - x0);
-                let dy = Math.abs(y1 - y0);
-                const sx = ((x0 < x1)? 1 : -1);
-                const sy = ((y0 < y1)? 1 : -1); 
-                let err = (((dx > dy)? dx : -dy) / 2);
-                
-                let yChanged = true;
-                while (1)
-                {
-                    // Mark the pixel into the array.
-                    if (yChanged)
-                    {
-                        const l = (this.distanceBetween(x1, y1, x0, y0) / (lineLength || 1));
-
-                        array[y0 - yOffset] =
-                        {
-                            x: x0,
-                            depth: (Rngon.internalState.useDepthBuffer? Rngon.lerp(vert2.z, vert1.z, l) : 0),
-                            uvw: (interpolatePerspective? Rngon.lerp((1 / vert2.w), (1 / vert1.w), l) : 1),
-                            u: (interpolatePerspective? Rngon.lerp((vert2.u / vert2.w), (vert1.u / vert1.w), l) : Rngon.lerp(vert2.u, vert1.u, l)),
-                            v: (interpolatePerspective? Rngon.lerp((vert2.v / vert2.w), (vert1.v / vert1.w), l) : Rngon.lerp(vert2.v, vert1.v, l)),
-                        };
-
-                        yChanged = false;
-                    }
-                    
-                    if ((x0 === x1) && (y0 === y1)) break;
-
-                    const e2 = err;
-                    if (e2 > -dx)
-                    {
-                        err -= dy;
-                        x0 += sx;
-                    }
-                    if (e2 < dy)
-                    {
-                        err += dx;
-                        y0 += sy;
-
-                        yChanged = true;
-                    }
-                }
             }
         },
 

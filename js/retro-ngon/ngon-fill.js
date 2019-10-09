@@ -35,7 +35,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
         /// TODO: Add depth and alpha testing for points and lines.
         if (ngon.vertices.length === 1)
         {
-            const idx = ((Math.ceil(ngon.vertices[0].x) + Math.ceil(ngon.vertices[0].y) * renderWidth) * 4);
+            const idx = ((Math.round(ngon.vertices[0].x) + Math.round(ngon.vertices[0].y) * renderWidth) * 4);
                 
             pixelBuffer[idx + 0] = ngon.material.color.red;
             pixelBuffer[idx + 1] = ngon.material.color.green;
@@ -109,8 +109,8 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
 
                     const edgeHeight = (endY - startY);
 
-                    const startX = Math.ceil(vert1.x);
-                    const endX = Math.ceil(vert2.x);
+                    const startX = Math.round(vert1.x);
+                    const endX = Math.round(vert2.x);
                     const deltaX = ((endX - startX) / edgeHeight);
 
                     const startDepth = vert1.z;
@@ -170,8 +170,8 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
 
                     if (spanWidth > 0)
                     {
-                        const spanStartX = Math.min((renderWidth - 1), Math.max(0, Math.ceil(leftEdge.startX)));
-                        const spanEndX = Math.min((renderWidth - 1), Math.max(0, Math.ceil(rightEdge.startX)));
+                        const spanStartX = Math.min((renderWidth - 1), Math.max(0, Math.round(leftEdge.startX)));
+                        const spanEndX = Math.min((renderWidth - 1), Math.max(0, Math.round(rightEdge.startX)));
 
                         // We'll interpolate these parameters across the span.
                         const deltaDepth = ((rightEdge.startDepth - leftEdge.startDepth) / spanWidth);
@@ -193,7 +193,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                         let depthBufferIdx = (pixelBufferIdx / 4);
 
                         // Draw the span into the pixel buffer.
-                        for (let x = spanStartX; x <= spanEndX; x++)
+                        for (let x = spanStartX; x < spanEndX; x++)
                         {
                             // Update values that're interpolated horizontally along the span.
                             iplDepth += deltaDepth;
@@ -207,7 +207,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                             if (depthBuffer[depthBufferIdx] <= iplDepth) continue;
 
                             // Solid fill.
-                            if (ngon.material.texture == null)
+                            if (!ngon.material.texture)
                             {
                                 // Alpha test. If the pixel is fully opaque, draw it; otherwise, skip it.
                                 if (ngon.material.color.alpha !== 255) continue;
@@ -285,11 +285,11 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                         const ngonHeight = (ngonEndY - ngonStartY);
 
                                         // Pixel coordinates relative to the polygon.
-                                        const ngonX = (x - spanStartX);
+                                        const ngonX = (x - spanStartX + 1);
                                         const ngonY = (y - ngonStartY);
 
                                         u = (ngonX * ((ngon.material.texture.width - 0.001) / spanWidth));
-                                        v = (ngonY * ((ngon.material.texture.height - 0.001) / ((ngonHeight - 1) || 1)));
+                                        v = (ngonY * ((ngon.material.texture.height - 0.001) / ngonHeight));
 
                                         break;
                                     }
