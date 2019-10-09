@@ -55,17 +55,16 @@ Rngon.render = function(canvasElementId,
         callMetadata.renderWidth = renderSurface.width;
         callMetadata.renderHeight = renderSurface.height;
 
-        const ngonCache = Rngon.internalState.transformedNgonsCache;
-        prepare_ngon_cache(ngonCache, meshes);
+        prepare_ngon_cache(Rngon.internalState.transformedNgonsCache, meshes);
     
         transform_ngons(meshes, renderSurface, options.cameraPosition, options.cameraDirection);
-        mark_npot_textures(ngonCache);
-        depth_sort_ngons(ngonCache.ngons, options.depthSort);
+        mark_npot_textures(Rngon.internalState.transformedNgonsCache);
+        depth_sort_ngons(Rngon.internalState.transformedNgonsCache.ngons, options.depthSort);
 
         renderSurface.wipe_clean();
         renderSurface.rasterize_ngon_cache();
 
-        callMetadata.numNgonsRendered = ngonCache.numActiveNgons;
+        callMetadata.numNgonsRendered = Rngon.internalState.transformedNgonsCache.numActiveNgons;
     }
 
     callMetadata.totalRenderTimeMs = (performance.now() - callMetadata.totalRenderTimeMs);

@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: live (07 October 2019 03:23:17 UTC)
+// VERSION: live (09 October 2019 12:51:10 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -702,10 +702,6 @@ Rngon.line_draw = (()=>
             const interpolatePerspective = Rngon.internalState.usePerspectiveCorrectTexturing;
             const lineLength = this.distanceBetween(x0, y0, x1, y1);
 
-            // If true, we won't touch non-null elements in the array. Useful in preventing certain
-            // edge-rendering errors.
-            const noOverwrite = (y1 <= y0);
-
             // Bresenham line algo. Adapted from https://stackoverflow.com/a/4672319.
             {
                 let dx = Math.abs(x1 - x0);
@@ -714,14 +710,15 @@ Rngon.line_draw = (()=>
                 const sy = ((y0 < y1)? 1 : -1); 
                 let err = (((dx > dy)? dx : -dy) / 2);
                 
+                let yChanged = true;
                 while (1)
                 {
                     // Mark the pixel into the array.
-                    if (!noOverwrite || (array[y0 - yOffset] == null))
+                    if (yChanged)
                     {
-                        // Interpolate select parameters.
                         const l = (this.distanceBetween(x1, y1, x0, y0) / (lineLength || 1));
-                        const pixel =
+
+                        array[y0 - yOffset] =
                         {
                             x: x0,
                             depth: (Rngon.internalState.useDepthBuffer? Rngon.lerp(vert2.z, vert1.z, l) : 0),
@@ -730,7 +727,7 @@ Rngon.line_draw = (()=>
                             v: (interpolatePerspective? Rngon.lerp((vert2.v / vert2.w), (vert1.v / vert1.w), l) : Rngon.lerp(vert2.v, vert1.v, l)),
                         };
 
-                        array[y0 - yOffset] = pixel;
+                        yChanged = false;
                     }
                     
                     if ((x0 === x1) && (y0 === y1)) break;
@@ -745,6 +742,8 @@ Rngon.line_draw = (()=>
                     {
                         err += dx;
                         y0 += sy;
+                        
+                        yChanged = true;
                     }
                 }
             }
@@ -961,51 +960,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
             // Y, i.e. top-to-bottom in screen space. The top-most vertex and the bottom-most
             // vertex will be shared between the two sides.
             {
-                // For triangles.
-                if (ngon.vertices.length === 3)
-                {
-                    // Sort the vertices by height from smallest Y to largest Y.
-                    {
-                        let tmp;
-                        
-                        if (ngon.vertices[0].y > ngon.vertices[1].y)
-                        {
-                            tmp = ngon.vertices[0];
-                            ngon.vertices[0] = ngon.vertices[1];
-                            ngon.vertices[1] = tmp;
-                        }
-
-                        if (ngon.vertices[1].y > ngon.vertices[2].y)
-                        {
-                            tmp = ngon.vertices[1];
-                            ngon.vertices[1] = ngon.vertices[2];
-                            ngon.vertices[2] = tmp;
-                        }
-
-                        if (ngon.vertices[0].y > ngon.vertices[1].y)
-                        {
-                            tmp = ngon.vertices[0];
-                            ngon.vertices[0] = ngon.vertices[1];
-                            ngon.vertices[1] = tmp;
-                        }
-                    }
-
-                    const topVert = ngon.vertices[0];
-                    const midVert = ngon.vertices[1];
-                    const bottomVert = ngon.vertices[2];
-
-                    leftVerts.push(topVert);
-                    rightVerts.push(topVert);
-
-                    // Find whether the mid vertex is on the left or right side.
-                    const lr = Rngon.lerp(topVert.x, bottomVert.x, ((midVert.y - topVert.y) / (bottomVert.y - topVert.y)));
-                    ((midVert.x >= lr)? rightVerts : leftVerts).push(midVert);
-
-                    leftVerts.push(bottomVert);
-                    rightVerts.push(bottomVert);
-                }
                 // Generic algorithm for n-sided convex polygons.
-                else
                 {
                     // Sort the vertices by height from smallest Y to largest Y.
                     ngon.vertices.sort(vertexSorters.verticalAscending);
@@ -1297,17 +1252,16 @@ Rngon.render = function(canvasElementId,
         callMetadata.renderWidth = renderSurface.width;
         callMetadata.renderHeight = renderSurface.height;
 
-        const ngonCache = Rngon.internalState.transformedNgonsCache;
-        prepare_ngon_cache(ngonCache, meshes);
+        prepare_ngon_cache(Rngon.internalState.transformedNgonsCache, meshes);
     
         transform_ngons(meshes, renderSurface, options.cameraPosition, options.cameraDirection);
-        mark_npot_textures(ngonCache);
-        depth_sort_ngons(ngonCache.ngons, options.depthSort);
+        mark_npot_textures(Rngon.internalState.transformedNgonsCache);
+        depth_sort_ngons(Rngon.internalState.transformedNgonsCache.ngons, options.depthSort);
 
         renderSurface.wipe_clean();
         renderSurface.rasterize_ngon_cache();
 
-        callMetadata.numNgonsRendered = ngonCache.numActiveNgons;
+        callMetadata.numNgonsRendered = Rngon.internalState.transformedNgonsCache.numActiveNgons;
     }
 
     callMetadata.totalRenderTimeMs = (performance.now() - callMetadata.totalRenderTimeMs);
