@@ -50,6 +50,9 @@ The retro n-gon renderer encourages low resolutions, very low polycounts, and de
 ![A scene from Thief 2](/images/screenshots/alpha/thief2-rngon-1.png)
 **An alleyway** in Thief 2 rendered in medium resolution. Note the low frame rate resulting from a lack of visibility culling. (Based on textures and 3d models produced by Looking Glass Studios for *Thief II: The Metal Age*. Looking Glass Studios is not associated with the retro n-gon renderer.)
 
+![A model from Gothic 1](/images/screenshots/alpha/gothic-rngon-1.png)
+**A skeleton** model from Gothic 1 rendered as a triangle mesh with partially transparent texturing. (Based on textures and 3d models produced by Piranha Bytes for *Gothic*. Piranha Bytes is not associated with the retro n-gon renderer.)
+
 # How to use
 In this section, you'll find both theoretical and practical guidance on using the retro n-gon renderer; including a reference manual for the renderer's API.
 
