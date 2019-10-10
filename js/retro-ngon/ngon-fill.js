@@ -304,10 +304,10 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                 // Alpha test. If the pixel is fully opaque, draw it; otherwise, skip it.
                                 if (texel.alpha !== 255) continue;
 
-                                pixelBuffer[pixelBufferIdx + 0] = texel.red;
-                                pixelBuffer[pixelBufferIdx + 1] = texel.green;
-                                pixelBuffer[pixelBufferIdx + 2] = texel.blue;
-                                pixelBuffer[pixelBufferIdx + 3] = texel.alpha;
+                                pixelBuffer[pixelBufferIdx + 0] = (texel.red   * ngon.material.color.unitRange.red);
+                                pixelBuffer[pixelBufferIdx + 1] = (texel.green * ngon.material.color.unitRange.green);
+                                pixelBuffer[pixelBufferIdx + 2] = (texel.blue  * ngon.material.color.unitRange.blue);
+                                pixelBuffer[pixelBufferIdx + 3] = (texel.alpha * ngon.material.color.unitRange.alpha);
                                 depthBuffer[depthBufferIdx] = iplDepth;
                             }
 
