@@ -22,9 +22,9 @@ Rngon.line_draw = (()=>
             respectDepth = false;
 
             let x0 = Math.round(vert1.x);
-            let y0 = Math.ceil(vert1.y);
+            let y0 = Math.round(vert1.y);
             const x1 = Math.round(vert2.x);
-            const y1 = Math.ceil(vert2.y);
+            const y1 = Math.round(vert2.y);
             const lineLength = (respectDepth? this.distanceBetween(x0, y0, x1, y1) : 1);
 
             // Bresenham line algo. Adapted from https://stackoverflow.com/a/4672319.

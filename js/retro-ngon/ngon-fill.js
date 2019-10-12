@@ -117,15 +117,20 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                     const startDepth = vert1.z;
                     const deltaDepth = ((vert2.z - vert1.z) / edgeHeight);
 
-                    const startU = interpolatePerspective? (vert1.u / vert1.w)
-                                                         : vert1.u;
-                    const deltaU = interpolatePerspective? (((vert2.u / vert2.w) - (vert1.u / vert1.w)) / edgeHeight)
-                                                         : ((vert2.u- vert1.u) / edgeHeight);
+                    const u1 = (ngon.material.texture? (vert1.u * ngon.material.texture.width) : 1);
+                    const v1 = (ngon.material.texture? (vert1.v * ngon.material.texture.height) : 1);
+                    const u2 = (ngon.material.texture? (vert2.u * ngon.material.texture.width) : 1);
+                    const v2 = (ngon.material.texture? (vert2.v * ngon.material.texture.height) : 1);
 
-                    const startV = interpolatePerspective? (vert1.v / vert1.w)
-                                                         : vert1.v;
-                    const deltaV = interpolatePerspective? (((vert2.v / vert2.w) - (vert1.v / vert1.w)) / edgeHeight)
-                                                         : ((vert2.v- vert1.v) / edgeHeight);
+                    const startU = interpolatePerspective? (u1 / vert1.w)
+                                                         : u1;
+                    const deltaU = interpolatePerspective? (((u2 / vert2.w) - (u1 / vert1.w)) / edgeHeight)
+                                                         : ((u2 - u1) / edgeHeight);
+
+                    const startV = interpolatePerspective? (v1 / vert1.w)
+                                                         : v1;
+                    const deltaV = interpolatePerspective? (((v2 / vert2.w) - (v1 / vert1.w)) / edgeHeight)
+                                                         : ((v2- v1) / edgeHeight);
 
                     const startUVW = interpolatePerspective? (1 / vert1.w)
                                                            : 1;
@@ -230,9 +235,6 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                     {
                                         u = (iplU / iplUVW);
                                         v = (iplV / iplUVW);
-                                        
-                                        u *= ngon.material.texture.width;
-                                        v *= ngon.material.texture.height;
                 
                                         // Modulo for power-of-two.
                                         u = (u & (ngon.material.texture.width - 1));
@@ -247,25 +249,19 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                     /// TODO: This implementation is a bit kludgy.
                                     case "affine-npot":
                                     {
-                                        const textureWidth = (ngon.material.texture.width - 0.001);
-                                        const textureHeight = (ngon.material.texture.height - 0.001);
-                
                                         u = (iplU / iplUVW);
                                         v = (iplV / iplUVW);
                                         
-                                        u *= textureWidth;
-                                        v *= textureHeight;
-                
                                         /// FIXME: We need to flip v or the textures render upside down. Why?
-                                        v = (textureHeight - v);
+                                        v = (ngon.material.texture.height - v);
                 
                                         // Wrap with repetition.
                                         /// FIXME: Why do we need to test for UV < 0 even when using positive
                                         /// but tiling UV coordinates? Doesn't render properly unless we do.
                                         if ((u < 0) ||
                                             (v < 0) ||
-                                            (u > textureWidth) ||
-                                            (v > textureHeight))
+                                            (u >= ngon.material.texture.width) ||
+                                            (v >= ngon.material.texture.height))
                                         {
                                             const uWasNeg = (u < 0);
                                             const vWasNeg = (v < 0);
@@ -273,8 +269,8 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                             u = (Math.abs(u) % ngon.material.texture.width);
                                             v = (Math.abs(v) % ngon.material.texture.height);
                 
-                                            if (uWasNeg) u = (textureWidth - u);
-                                            if (vWasNeg) v = (textureHeight - v);
+                                            if (uWasNeg) u = (ngon.material.texture.width - u);
+                                            if (vWasNeg) v = (ngon.material.texture.height - v);
                                         }
                 
                                         break;
