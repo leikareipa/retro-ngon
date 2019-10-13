@@ -38,17 +38,14 @@ The retro n-gon renderer encourages low resolutions, very low polycounts, and de
 ![A scene from Tomb Raider, solid-filled](/images/screenshots/alpha/tr-rngon-2.png)
 **A scene** from Tomb Raider 1 rendered with solid-filled polygons. (Based on assets produced by Core Design for *Tomb Raider*. Core Design is not associated with the retro n-gon renderer.)
 
-![A scene from Quake, low-res](/images/screenshots/alpha/q1-rngon-2.png)
-**Level E1M1** from Quake 1 rendered using texture-mapped triangles and quads. Note that lightmaps are not used. (Based on textures and 3d models produced by id Software for *Quake*; id Software is not associated with the retro n-gon renderer.)
-
-![A scene from Quake, high-res](/images/screenshots/alpha/q1-rngon-3.png)
+![A scene from Quake, high-res](/images/screenshots/alpha/q1-rngon-5.png)
 **Level E1M1** from Quake 1 rendered in high resolution. Note that lightmaps are not used. (Based on textures and 3d models produced by id Software for *Quake*; id Software is not associated with the retro n-gon renderer.)
+
+![A scene from Quake, low-res](/images/screenshots/alpha/q1-rngon-4.png)
+**A door** on level E1M1 of Quake 1 rendered in low resolution. (Based on textures and 3d models produced by id Software for *Quake*; id Software is not associated with the retro n-gon renderer.)
 
 ![A scene from RallySportED-js](/images/screenshots/alpha/rsed-rngon-1.png)
 **The track** editor view in RallySportED-js, with geometry built from texture-mapped, wireframed quads. (Based on textures and 3d models produced by Jukka Jäkälä for *Rally-Sport*. Jukka Jäkälä is not associated with the retro n-gon renderer.)
-
-![A scene from Thief 2](/images/screenshots/alpha/thief2-rngon-1.png)
-**An alleyway** in Thief 2 rendered in medium resolution. Note the low frame rate resulting from a lack of visibility culling. (Based on textures and 3d models produced by Looking Glass Studios for *Thief II: The Metal Age*. Looking Glass Studios is not associated with the retro n-gon renderer.)
 
 ![A model from Gothic 1](/images/screenshots/alpha/gothic-rngon-1.png)
 **A skeleton** model from Gothic 1 rendered as a triangle mesh with partially transparent texturing. (Based on textures and 3d models produced by Piranha Bytes for *Gothic*. Piranha Bytes is not associated with the retro n-gon renderer.)
