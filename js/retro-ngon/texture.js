@@ -65,13 +65,20 @@ Rngon.texture_rgba = function(data = {width: 0, height: 0, pixels: []})
                  || Rngon.throw("The texture's pixel array size doesn't match its width and height.");
 
     // Convert the raw pixel data into objects of the form {red, green, blue, alpha}.
+    // Note: We also flip the texture on the Y axis, to counter the fact that textures
+    // become flipped on Y during rendering (i.e. we pre-emptively un-flip it, here).
     const pixelArray = [];
-    for (let i = 0; i < data.pixels.length; i += numColorChannels)
+    for (let y = 0; y < data.height; y++)
     {
-        pixelArray.push({red:   data.pixels[i+0],
-                         green: data.pixels[i+1],
-                         blue:  data.pixels[i+2],
-                         alpha: data.pixels[i+3]});
+        for (let x = 0; x < data.width; x++)
+        {
+            const idx = ((x + (data.height - y - 1) * data.width) * numColorChannels);
+
+            pixelArray.push({red:   data.pixels[idx + 0],
+                             green: data.pixels[idx + 1],
+                             blue:  data.pixels[idx + 2],
+                             alpha: data.pixels[idx + 3]});
+        }
     }
         
     const publicInterface = Object.freeze(

@@ -153,40 +153,8 @@
                                                               {
                                                                   color: Rngon.color_rgba(255, 255, 255),
                                                                   textureMapping: "affine",
+                                                                  uvWrapping: "clamp",
                                                                   texture
-                                                              });
-                                      const quadMesh = Rngon.mesh([quad], meshSettings);
-                                      Rngon.render(canvasId, [quadMesh], renderSettings);
-                                  }),
-                    await compare("Quad with tiled UV coordinates textured using affine mapping",
-                                  "./render-output/reference-199f0400e329.png",
-                                  (canvasId)=>
-                                  {
-                                      const quadVertsUVTiled = [Rngon.vertex(-1, -1, 0, 0, 0),
-                                                                Rngon.vertex( 1, -1, 0, 2, 0),
-                                                                Rngon.vertex( 1,  1, 0, 2, 2),
-                                                                Rngon.vertex(-1,  1, 0, 0, 2)];
-
-                                      const quad = Rngon.ngon(quadVertsUVTiled,
-                                                              {
-                                                                  color: Rngon.color_rgba(255, 255, 255),
-                                                                  textureMapping: "affine",
-                                                                  texture
-                                                              });
-
-                                      const quadMesh = Rngon.mesh([quad], meshSettings);
-
-                                      Rngon.render(canvasId, [quadMesh], renderSettings);
-                                  }),
-                    await compare("Quad textured with affine mapping and alpha",
-                                  "./render-output/reference-jg2dja4hei9a.png",
-                                  (canvasId)=>
-                                  {
-                                      const quad = Rngon.ngon(quadVerts,
-                                                              {
-                                                                  color: Rngon.color_rgba(255, 255, 255),
-                                                                  textureMapping: "affine",
-                                                                  texture: alphaTexture
                                                               });
                                       const quadMesh = Rngon.mesh([quad], meshSettings);
                                       Rngon.render(canvasId, [quadMesh], renderSettings);
@@ -204,11 +172,48 @@
                                                               {
                                                                   color: Rngon.color_rgba(255, 255, 255),
                                                                   textureMapping: "affine",
+                                                                  uvWrapping: "clamp",
                                                                   texture
                                                               });
 
                                       const quadMesh = Rngon.mesh([quad], meshSettings);
 
+                                      Rngon.render(canvasId, [quadMesh], renderSettings);
+                                  }),
+                    await compare("Quad with repeating UV coordinates textured using affine mapping",
+                                  "./render-output/reference-199f0400e329.png",
+                                  (canvasId)=>
+                                  {
+                                      const repeatAmt = 2-Number.EPSILON;
+                                      const quadVertsUVTiled = [Rngon.vertex(-1, -1, 0, 0, 0),
+                                                                Rngon.vertex( 1, -1, 0, repeatAmt, 0),
+                                                                Rngon.vertex( 1,  1, 0, repeatAmt, repeatAmt),
+                                                                Rngon.vertex(-1,  1, 0, 0, repeatAmt)];
+
+                                      const quad = Rngon.ngon(quadVertsUVTiled,
+                                                              {
+                                                                  color: Rngon.color_rgba(255, 255, 255),
+                                                                  textureMapping: "affine",
+                                                                  uvWrapping: "repeat",
+                                                                  texture
+                                                              });
+
+                                      const quadMesh = Rngon.mesh([quad], meshSettings);
+
+                                      Rngon.render(canvasId, [quadMesh], renderSettings);
+                                  }),
+                    await compare("Quad textured with affine mapping and alpha",
+                                  "./render-output/reference-jg2dja4hei9a.png",
+                                  (canvasId)=>
+                                  {
+                                      const quad = Rngon.ngon(quadVerts,
+                                                              {
+                                                                  color: Rngon.color_rgba(255, 255, 255),
+                                                                  textureMapping: "affine",
+                                                                  uvWrapping: "clamp",
+                                                                  texture: alphaTexture
+                                                              });
+                                      const quadMesh = Rngon.mesh([quad], meshSettings);
                                       Rngon.render(canvasId, [quadMesh], renderSettings);
                                   }),
                     await compare("Quad with non-perspective-correct affine mapping",
@@ -256,9 +261,9 @@
                     document.getElementById("pairs-container").style.opacity = 1;
 
                     resultsElement.innerHTML = "";
-                    resultsElement.appendChild(document.createTextNode("Test completed. Image pairs matching: " +
-                                                                       results.filter(r=>r.pairMatch).length +
-                                                                       "/" + results.length));
+                    resultsElement.appendChild(document.createTextNode(`Test completed:
+                                                                        ${results.filter(r=>r.pairMatch).length}/${results.length}
+                                                                        image pairs match`));
 
                     // The names of failing tests.
                     results.filter(r=>!r.pairMatch).forEach(r=>

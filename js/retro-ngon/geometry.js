@@ -24,7 +24,7 @@ Rngon.vector3 = function(x = 0, y = 0, z = 0)
         transform: function(m = [])
         {
             Rngon.assert && (m.length === 16)
-                            || Rngon.throw("Expected a 4 x 4 matrix to transform the vector by.");
+                         || Rngon.throw("Expected a 4 x 4 matrix to transform the vector by.");
             
             const x_ = ((m[0] * this.x) + (m[4] * this.y) + (m[ 8] * this.z));
             const y_ = ((m[1] * this.x) + (m[5] * this.y) + (m[ 9] * this.z));
@@ -51,7 +51,18 @@ Rngon.vector3 = function(x = 0, y = 0, z = 0)
         dot: function(other)
         {
             return ((this.x * other.x) + (this.y * other.y) + (this.z * other.z));
-        }
+        },
+
+        cross: function(other)
+        {
+            const c = Rngon.vector3();
+
+            c.x = ((this.y * other.z) - (this.z * other.y));
+            c.y = ((this.z * other.x) - (this.x * other.z));
+            c.z = ((this.x * other.y) - (this.y * other.x));
+
+            return c;
+        },
     };
 
     return returnObject;
@@ -127,6 +138,22 @@ Rngon.ngon = function(vertices = [Rngon.vertex()], material = {}, normal = Rngon
         ...Rngon.ngon.defaultMaterial,
         ...material
     };
+
+    // If we get vertex U or V coordinates in the range [0,-x], we want to change 0 to
+    // -eps to avoid incorrect rounding during texture-mapping.
+    {
+        const hasNegativeU = vertices.map(v=>v.u).some(u=>(u < 0));
+        const hasNegativeV = vertices.map(v=>v.v).some(v=>(v < 0));
+
+        if (hasNegativeU || hasNegativeV)
+        {
+            for (const vert of vertices)
+            {
+                if (hasNegativeU && vert.u === 0) vert.u = -Number.EPSILON;
+                if (hasNegativeV && vert.v === 0) vert.v = -Number.EPSILON;
+            }
+        }
+    }
 
     const returnObject =
     {
@@ -225,6 +252,7 @@ Rngon.ngon.defaultMaterial =
     color: Rngon.color_rgba(255, 255, 255, 255),
     texture: null,
     textureMapping: "ortho",
+    uvWrapping: "repeat",
     hasSolidFill: true,
     hasWireframe: false,
     isTwoSided: true,

@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: live (12 October 2019 21:13:04 UTC)
+// VERSION: live (26 October 2019 02:14:17 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -344,7 +344,7 @@ Rngon.vector3 = function(x = 0, y = 0, z = 0)
         transform: function(m = [])
         {
             Rngon.assert && (m.length === 16)
-                            || Rngon.throw("Expected a 4 x 4 matrix to transform the vector by.");
+                         || Rngon.throw("Expected a 4 x 4 matrix to transform the vector by.");
             
             const x_ = ((m[0] * this.x) + (m[4] * this.y) + (m[ 8] * this.z));
             const y_ = ((m[1] * this.x) + (m[5] * this.y) + (m[ 9] * this.z));
@@ -371,7 +371,18 @@ Rngon.vector3 = function(x = 0, y = 0, z = 0)
         dot: function(other)
         {
             return ((this.x * other.x) + (this.y * other.y) + (this.z * other.z));
-        }
+        },
+
+        cross: function(other)
+        {
+            const c = Rngon.vector3();
+
+            c.x = ((this.y * other.z) - (this.z * other.y));
+            c.y = ((this.z * other.x) - (this.x * other.z));
+            c.z = ((this.x * other.y) - (this.y * other.x));
+
+            return c;
+        },
     };
 
     return returnObject;
@@ -447,6 +458,22 @@ Rngon.ngon = function(vertices = [Rngon.vertex()], material = {}, normal = Rngon
         ...Rngon.ngon.defaultMaterial,
         ...material
     };
+
+    // If we get vertex U or V coordinates in the range [0,-x], we want to change 0 to
+    // -eps to avoid incorrect rounding during texture-mapping.
+    {
+        const hasNegativeU = vertices.map(v=>v.u).some(u=>(u < 0));
+        const hasNegativeV = vertices.map(v=>v.v).some(v=>(v < 0));
+
+        if (hasNegativeU || hasNegativeV)
+        {
+            for (const vert of vertices)
+            {
+                if (hasNegativeU && vert.u === 0) vert.u = -Number.EPSILON;
+                if (hasNegativeV && vert.v === 0) vert.v = -Number.EPSILON;
+            }
+        }
+    }
 
     const returnObject =
     {
@@ -545,6 +572,7 @@ Rngon.ngon.defaultMaterial =
     color: Rngon.color_rgba(255, 255, 255, 255),
     texture: null,
     textureMapping: "ortho",
+    uvWrapping: "repeat",
     hasSolidFill: true,
     hasWireframe: false,
     isTwoSided: true,
@@ -937,10 +965,10 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                     const startDepth = vert1.z;
                     const deltaDepth = ((vert2.z - vert1.z) / edgeHeight);
 
-                    const u1 = (ngon.material.texture? (vert1.u * ngon.material.texture.width) : 1);
-                    const v1 = (ngon.material.texture? (vert1.v * ngon.material.texture.height) : 1);
-                    const u2 = (ngon.material.texture? (vert2.u * ngon.material.texture.width) : 1);
-                    const v2 = (ngon.material.texture? (vert2.v * ngon.material.texture.height) : 1);
+                    const u1 = (ngon.material.texture? vert1.u : 1);
+                    const v1 = (ngon.material.texture? vert1.v : 1);
+                    const u2 = (ngon.material.texture? vert2.u : 1);
+                    const v2 = (ngon.material.texture? vert2.v : 1);
 
                     const startU = interpolatePerspective? (u1 / vert1.w)
                                                          : u1;
@@ -950,7 +978,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                     const startV = interpolatePerspective? (v1 / vert1.w)
                                                          : v1;
                     const deltaV = interpolatePerspective? (((v2 / vert2.w) - (v1 / vert1.w)) / edgeHeight)
-                                                         : ((v2- v1) / edgeHeight);
+                                                         : ((v2 - v1) / edgeHeight);
 
                     const startUVW = interpolatePerspective? (1 / vert1.w)
                                                            : 1;
@@ -1055,25 +1083,58 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                     {
                                         u = (iplU / iplUVW);
                                         v = (iplV / iplUVW);
-                
-                                        // Modulo for power-of-two.
-                                        u = (u & (ngon.material.texture.width - 1));
-                                        v = (v & (ngon.material.texture.height - 1));
-                
-                                        /// FIXME: We need to flip v or the textures render upside down. Why?
-                                        v = (ngon.material.texture.height - v - 1);
+
+                                        switch (ngon.material.uvWrapping)
+                                        {
+                                            case "clamp":
+                                            {
+                                                const signU = Math.sign(u);
+                                                const signV = Math.sign(v);
+                                                const upperLimit = (1 - Number.EPSILON);
+
+                                                u = Math.max(0, Math.min(Math.abs(u), upperLimit));
+                                                v = Math.max(0, Math.min(Math.abs(v), upperLimit));
+
+                                                // Negative UV coordinates flip the texture.
+                                                if (signU === -1) u = (upperLimit - u);
+                                                if (signV === -1) v = (upperLimit - v);
+
+                                                u *= ngon.material.texture.width;
+                                                v *= ngon.material.texture.height;
+
+                                                break;
+                                            }
+                                            case "repeat":
+                                            {
+                                                u -= Math.floor(u);
+                                                v -= Math.floor(v);
+
+                                                u *= ngon.material.texture.width;
+                                                v *= ngon.material.texture.height;
+
+                                                // Modulo for power-of-two. This will also flip the texture for
+                                                // negative UV coordinates.
+                                                u = (u & (ngon.material.texture.width - 1));
+                                                v = (v & (ngon.material.texture.height - 1));
+
+                                                break;
+                                            }
+                                            default: Rngon.throw("Unrecognized UV wrapping mode."); break;
+                                        }
 
                                         break;
                                     }
-                                    // Affine mapping for non-power-of-two textures.
-                                    /// TODO: This implementation is a bit kludgy.
+                                    // Affine mapping for wrapping non-power-of-two textures.
+                                    /// FIXME: This implementation is a bit kludgy.
+                                    /// TODO: Add clamped UV wrapping mode (we can just use the one for
+                                    /// power-of-two textures).
                                     case "affine-npot":
                                     {
                                         u = (iplU / iplUVW);
                                         v = (iplV / iplUVW);
-                                        
-                                        /// FIXME: We need to flip v or the textures render upside down. Why?
-                                        v = (ngon.material.texture.height - v);
+
+                                        u *= ngon.material.texture.width;
+                                        v *= ngon.material.texture.height;
                 
                                         // Wrap with repetition.
                                         /// FIXME: Why do we need to test for UV < 0 even when using positive
@@ -1106,6 +1167,9 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
 
                                         u = (ngonX * ((ngon.material.texture.width - 0.001) / spanWidth));
                                         v = (ngonY * ((ngon.material.texture.height - 0.001) / ngonHeight));
+
+                                        // The texture image is flipped, so we need to flip V as well.
+                                        v = (ngon.material.texture.height - v);
 
                                         break;
                                     }
@@ -1409,6 +1473,7 @@ Rngon.render.defaultOptions =
 // are stored in the internal n-gon cache.
 Rngon.ngon_transformer = function(ngons = [], clipSpaceMatrix = [], screenSpaceMatrix = [], cameraPos)
 {
+    let viewVector = {x:0.0, y:0.0, z:0.0};
     const transformedNgonsCache = Rngon.internalState.transformedNgonsCache;
 
     for (const ngon of ngons)
@@ -1416,12 +1481,9 @@ Rngon.ngon_transformer = function(ngons = [], clipSpaceMatrix = [], screenSpaceM
         // Backface culling.
         if (!ngon.material.isTwoSided)
         {
-            const viewVector =
-            {
-                x: (ngon.vertices[0].x - cameraPos.x),
-                y: (ngon.vertices[0].y - cameraPos.y),
-                z: (ngon.vertices[0].z - cameraPos.z),
-            }
+            viewVector.x = (ngon.vertices[0].x - cameraPos.x);
+            viewVector.y = (ngon.vertices[0].y - cameraPos.y);
+            viewVector.z = (ngon.vertices[0].z - cameraPos.z);
 
             if (ngon.normal.dot(viewVector) >= 0)
             {
@@ -1552,13 +1614,20 @@ Rngon.texture_rgba = function(data = {width: 0, height: 0, pixels: []})
                  || Rngon.throw("The texture's pixel array size doesn't match its width and height.");
 
     // Convert the raw pixel data into objects of the form {red, green, blue, alpha}.
+    // Note: We also flip the texture on the Y axis, to counter the fact that textures
+    // become flipped on Y during rendering (i.e. we pre-emptively un-flip it, here).
     const pixelArray = [];
-    for (let i = 0; i < data.pixels.length; i += numColorChannels)
+    for (let y = 0; y < data.height; y++)
     {
-        pixelArray.push({red:   data.pixels[i+0],
-                         green: data.pixels[i+1],
-                         blue:  data.pixels[i+2],
-                         alpha: data.pixels[i+3]});
+        for (let x = 0; x < data.width; x++)
+        {
+            const idx = ((x + (data.height - y - 1) * data.width) * numColorChannels);
+
+            pixelArray.push({red:   data.pixels[idx + 0],
+                             green: data.pixels[idx + 1],
+                             blue:  data.pixels[idx + 2],
+                             alpha: data.pixels[idx + 3]});
+        }
     }
         
     const publicInterface = Object.freeze(

@@ -10,6 +10,7 @@
 // are stored in the internal n-gon cache.
 Rngon.ngon_transformer = function(ngons = [], clipSpaceMatrix = [], screenSpaceMatrix = [], cameraPos)
 {
+    let viewVector = {x:0.0, y:0.0, z:0.0};
     const transformedNgonsCache = Rngon.internalState.transformedNgonsCache;
 
     for (const ngon of ngons)
@@ -17,12 +18,9 @@ Rngon.ngon_transformer = function(ngons = [], clipSpaceMatrix = [], screenSpaceM
         // Backface culling.
         if (!ngon.material.isTwoSided)
         {
-            const viewVector =
-            {
-                x: (ngon.vertices[0].x - cameraPos.x),
-                y: (ngon.vertices[0].y - cameraPos.y),
-                z: (ngon.vertices[0].z - cameraPos.z),
-            }
+            viewVector.x = (ngon.vertices[0].x - cameraPos.x);
+            viewVector.y = (ngon.vertices[0].y - cameraPos.y);
+            viewVector.z = (ngon.vertices[0].z - cameraPos.z);
 
             if (ngon.normal.dot(viewVector) >= 0)
             {
