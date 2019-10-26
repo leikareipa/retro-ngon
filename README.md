@@ -50,6 +50,9 @@ The retro n-gon renderer encourages low resolutions, very low polycounts, and de
 ![A model from Gothic 1](/images/screenshots/alpha/gothic-rngon-1.png)
 **A skeleton** model from Gothic 1 rendered as a triangle mesh with partially transparent texturing. (Based on textures and 3d models produced by Piranha Bytes for *Gothic*. Piranha Bytes is not associated with the retro n-gon renderer.)
 
+![A view from Grand Prix Legends](/images/screenshots/alpha/rngon-gpl-2.png)
+**A view** of the race track at Rouen in Grand Prix Legends. (Based on textures and 3d models produced by Papyrus Design Group for *Grand Prix Legends*. Papyrus Design Group is not associated with the retro n-gon renderer.)
+
 # How to use
 In this section, you'll find both theoretical and practical guidance on using the retro n-gon renderer; including a reference manual for the renderer's API.
 
