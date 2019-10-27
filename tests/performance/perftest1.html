@@ -22,9 +22,9 @@
                                                 pixels: Array(32*32*4).fill(0).map((pixel, idx)=>((idx+1)%4===0? 255 : idx%256))});
 
             const quadVerts = [Rngon.vertex(-0.5, -0.5, 0, 0, 0),
-                               Rngon.vertex(0.5, -0.5, 0, 1, 0),
-                               Rngon.vertex(0.5, 0.5, 0, 1, 1),
-                               Rngon.vertex(-0.5, 0.5, 0, 0, 1)];
+                               Rngon.vertex( 0.5, -0.5, 0, 1, 0),
+                               Rngon.vertex( 0.5,  0.5, 0, 1, 1),
+                               Rngon.vertex(-0.5,  0.5, 0, 0, 1)];
 
             const wireframeQuad = Rngon.ngon(quadVerts, {
                                                  color: Rngon.color_rgba(127, 0, 127, 0),
@@ -47,6 +47,7 @@
                                                 texture: texture,
                                                 hasWireframe: false,
                                                 textureMapping: "affine",
+                                                uvWrapping: "clamp",
                                             });
 
             (async()=>
