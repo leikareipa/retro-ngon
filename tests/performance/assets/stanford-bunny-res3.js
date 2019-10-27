@@ -3,12 +3,12 @@
 // The Stanford bunny (Stanford University Computer Graphics Laboratory, http://graphics.stanford.edu/data/3Dscanrep/).
 // Converted from the original mesh data with slight changes (vertex coordinates * 100, and most of the triangles made
 // into quads).
-const stanford_bunny_res3 = function(texture = null, hasSolidFill = true, hasWireframe = false)
+const stanford_bunny_res3 = function(texture = null, hasWireframe = false)
 {
 	const n = Rngon.ngon;
 	const v = Rngon.vertex;
 	const c = Rngon.color_rgba
-	const m = {texture, hasSolidFill, hasWireframe, textureMapping:"ortho"} // Material.
+	const m = {texture, hasWireframe, textureMapping:"ortho"} // Material.
 
 	return Object.freeze(
 	[

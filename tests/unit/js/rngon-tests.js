@@ -94,7 +94,7 @@ const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
         {
             const vertex = Rngon.vertex(1.1, 2.2, 3.3);
             const ngon = Rngon.ngon([vertex],
-                                    {color: Rngon.color_rgba(0, 111, 222), texture: null, hasSolidFill: true, hasWireframe: false});
+                                    {color: Rngon.color_rgba(0, 111, 222), texture: null, hasWireframe: false});
 
             expect_true([()=>(ngon.vertices.length === 1),
                          ()=>(ngon.vertices[0] === vertex),
@@ -102,7 +102,6 @@ const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
                          ()=>(ngon.material.color.green === 111),
                          ()=>(ngon.material.color.blue === 222),
                          ()=>(ngon.material.texture === null),
-                         ()=>(ngon.material.hasSolidFill === true),
                          ()=>(ngon.material.hasWireframe === false)]);
 
             // Mutability.
@@ -119,7 +118,6 @@ const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
                                     {
                                         color: Rngon.color_rgba(0, 111, 222),
                                         texture: null,
-                                        hasSolidFill: true,
                                         hasWireframe: false,
                                     });
             const mesh = Rngon.mesh([ngon],
@@ -238,7 +236,6 @@ const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
                                     {
                                         color: Rngon.color_rgba(colorShade, colorShade, colorShade, colorShade),
                                         texture: null,
-                                        hasSolidFill: true,
                                         hasWireframe: false
                                     });
             const mesh = Rngon.mesh([ngon],

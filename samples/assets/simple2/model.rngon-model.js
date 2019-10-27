@@ -25,7 +25,7 @@ const texturedCubeModel2 =
 
 		// Set up the materials.
 		const m = {
-			"cube1":{color:c(255,255,255),hasWireframe:true,hasSolidFill:false,wireframeColor:c(100,100,100),},
+			"cube1":{color:c(255,255,255, 0),hasWireframe:true,wireframeColor:c(100,100,100),},
 			"cube2":{color:c(188,188,188),},
 			"cube3":{color:c(255,255,255),texture:t["wood.png"],},
 			"cube3-front":{color:c(255,255,255),texture:t["painting.png"],},

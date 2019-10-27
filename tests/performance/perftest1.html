@@ -27,28 +27,24 @@
                                Rngon.vertex(-0.5, 0.5, 0, 0, 1)];
 
             const wireframeQuad = Rngon.ngon(quadVerts, {
-                                                 color: Rngon.color_rgba(127, 0, 127),
+                                                 color: Rngon.color_rgba(127, 0, 127, 0),
                                                  texture: null,
-                                                 hasSolidFill: false,
                                                  hasWireframe: true
                                              });
             const untexturedQuad = Rngon.ngon(quadVerts, {
                                                  color: Rngon.color_rgba(127, 0, 127),
                                                  texture: null,
-                                                 hasSolidFill: true,
                                                  hasWireframe: false
                                              });
             const orthoTexturedQuad = Rngon.ngon(quadVerts, {
                                                  color: Rngon.color_rgba(255, 255, 255),
                                                  texture: texture,
-                                                 hasSolidFill: true,
                                                  hasWireframe: false,
                                                  textureMapping: "ortho",
                                              });
             const affineTexturedQuad = Rngon.ngon(quadVerts, {
                                                 color: Rngon.color_rgba(255, 255, 255),
                                                 texture: texture,
-                                                hasSolidFill: true,
                                                 hasWireframe: false,
                                                 textureMapping: "affine",
                                             });

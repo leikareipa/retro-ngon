@@ -269,7 +269,6 @@ The following are valid properties of an n-gon's material, and the valid values 
     color: Rngon.color_rgba(...)
     texture: Rngon.texture_rgba(...)
     textureMapping: "ortho" | "affine"
-    hasSolidFill: true | false
     hasWireframe: true | false
     isTwoSided: true | false
     wireframeColor: Rngon.color_rgba(...)
@@ -282,8 +281,6 @@ The `color` property sets the n-gon's base color. If the n-gon has no texture, i
 The `texture` property sets the n-gon's texture. You can read more about texturing further down this document.
 
 The `textureMapping` property defines how textures should be mapped onto the n-gon's face. You can read more about texturing further down this document.
-
-The `hasSolidFill` property determines whether the face of the n-gon will be rendered. If this is set to false, and the n-gon has no wireframe, it will be invisible.
 
 The `hasWireframe` property determines whether a line should be drawn around the n-gon's face.
 
@@ -606,8 +603,7 @@ An n-gon &ndash; a shape defined by *n* vertices; typically a triangle or a quad
 | *mixed*              | texture         | Gives the n-gon's texture as a **texture_rgba** object; or, if null, the n-gon will be rendered without a texture. Defaults to *null*. |
 | *string*             | textureMapping  | Defines how textures (if any) should be mapped onto the n-gon's surface during rendering. Possible values: "ortho" (view-dependent mapping without UV), "affine" (UV mapping). If set to "ortho", vertices do not need UV coordinates, but visual distortions will be introduced in many cases. The "affine" mapping mode requires vertices to have UV coordinates, but results in more visually-accurate mapping. Defaults to *"ortho"*. |
 | *string*             | uvWrapping  | Controls how the texture sampler should interpret UV coordinates. Possible values: "clamp" (UV coordinates are clamped to [0,1-ϵ], or [-ϵ,-1] if negative values are given), "repeat" (discards the coordinate's integer part and repeats the texture). Defaults to *"repeat"*. |
-| *boolean*            | hasSolidFill    | If false, the n-gon's face will not be rendered. If false and the n-gon also has no wireframe, the n-gon will be invisible. Defaults to *true*. |
-| *boolean*            | hasWireframe    | If true, the n-gon will be rendered with a wireframe outline. Is not affected by the *hasSolidFill* property. Defaults to *false*. |
+| *boolean*            | hasWireframe    | If true, the n-gon will be rendered with a wireframe outline. Defaults to *false*. |
 | *boolean*            | isTwoSided    | If true, the n-gon will be visible when viewed from both front and back. Otherwise, the n-gon will be culled when viewed from behind (as determined by the direction of its surface normal). Defaults to *true* (may become *false* in future releases). |
 | *color_rgba*         | wireframeColor  | If the n-gon has a wireframe, this property gives the wireframe's color as a **color_rgba** object. Defaults to *color_rgba(0, 0, 0)*. |
 | *array*              | auxiliary       | Properties accessible to the auxiliary buffers of **render**. Defaults to *{}*. |

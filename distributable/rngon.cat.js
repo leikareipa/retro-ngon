@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: live (26 October 2019 02:14:17 UTC)
+// VERSION: live (27 October 2019 04:54:48 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -447,7 +447,6 @@ Rngon.ngon = function(vertices = [Rngon.vertex()], material = {}, normal = Rngon
 
     Rngon.assert && (typeof Rngon.ngon.defaultMaterial.color !== "undefined" &&
                      typeof Rngon.ngon.defaultMaterial.texture !== "undefined" &&
-                     typeof Rngon.ngon.defaultMaterial.hasSolidFill !== "undefined" &&
                      typeof Rngon.ngon.defaultMaterial.hasWireframe !== "undefined" &&
                      typeof Rngon.ngon.defaultMaterial.wireframeColor !== "undefined")
                  || Rngon.throw("The default material object for ngon() is missing required properties.");
@@ -573,7 +572,6 @@ Rngon.ngon.defaultMaterial =
     texture: null,
     textureMapping: "ortho",
     uvWrapping: "repeat",
-    hasSolidFill: true,
     hasWireframe: false,
     isTwoSided: true,
     wireframeColor: Rngon.color_rgba(0, 0, 0),
