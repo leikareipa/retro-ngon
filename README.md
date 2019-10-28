@@ -35,9 +35,6 @@ The retro n-gon renderer encourages low resolutions, very low polycounts, and de
 ![A scene from Tomb Raider, textured](/images/screenshots/alpha/tr-rngon-1.png)
 **A scene** from Tomb Raider 1 as rendered by the retro n-gon renderer and consisting of textured quads and triangles. (Based on assets produced by Core Design for *Tomb Raider*. Core Design is not associated with the retro n-gon renderer.)
 
-![A scene from Tomb Raider, solid-filled](/images/screenshots/alpha/tr-rngon-2.png)
-**A scene** from Tomb Raider 1 rendered with solid-filled polygons. (Based on assets produced by Core Design for *Tomb Raider*. Core Design is not associated with the retro n-gon renderer.)
-
 ![A scene from Quake, high-res](/images/screenshots/alpha/q1-rngon-5.png)
 **Level E1M1** from Quake 1 rendered in high resolution. Note that lightmaps are not used. (Based on textures and 3d models produced by id Software for *Quake*; id Software is not associated with the retro n-gon renderer.)
 
