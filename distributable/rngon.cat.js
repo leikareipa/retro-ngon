@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: live (27 October 2019 04:54:48 UTC)
+// VERSION: live (12 November 2019 20:53:38 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -1163,11 +1163,11 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                         const ngonX = (x - spanStartX + 1);
                                         const ngonY = (y - ngonStartY);
 
-                                        u = (ngonX * ((ngon.material.texture.width - 0.001) / spanWidth));
-                                        v = (ngonY * ((ngon.material.texture.height - 0.001) / ngonHeight));
+                                        u = (ngonX * (ngon.material.texture.width / spanWidth));
+                                        v = (ngonY * (ngon.material.texture.height / ngonHeight));
 
                                         // The texture image is flipped, so we need to flip V as well.
-                                        v = (ngon.material.texture.height - v);
+                                        v = (ngon.material.texture.height - v - 1);
 
                                         break;
                                     }

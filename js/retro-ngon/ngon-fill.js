@@ -317,11 +317,11 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                         const ngonX = (x - spanStartX + 1);
                                         const ngonY = (y - ngonStartY);
 
-                                        u = (ngonX * ((ngon.material.texture.width - 0.001) / spanWidth));
-                                        v = (ngonY * ((ngon.material.texture.height - 0.001) / ngonHeight));
+                                        u = (ngonX * (ngon.material.texture.width / spanWidth));
+                                        v = (ngonY * (ngon.material.texture.height / ngonHeight));
 
                                         // The texture image is flipped, so we need to flip V as well.
-                                        v = (ngon.material.texture.height - v);
+                                        v = (ngon.material.texture.height - v - 1);
 
                                         break;
                                     }
