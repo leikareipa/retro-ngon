@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: live (12 November 2019 20:53:38 UTC)
+// VERSION: live (23 November 2019 07:17:52 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -948,16 +948,16 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
 
                 const add_edge = (vert1, vert2, isLeftEdge, )=>
                 {
-                    const startY = Math.min((renderHeight - 1), Math.max(0, Math.round(vert1.y)));
-                    const endY = Math.min((renderHeight - 1), Math.max(0, Math.round(vert2.y)));
+                    const startY = Math.min(renderHeight, Math.max(0, Math.round(vert1.y)));
+                    const endY = Math.min(renderHeight, Math.max(0, Math.round(vert2.y)));
                     
                     // Ignore horizontal edges.
                     if ((endY - startY) === 0) return;
 
                     const edgeHeight = (endY - startY);
 
-                    const startX = Math.min((renderWidth - 1), Math.max(0, Math.round(vert1.x)));
-                    const endX = Math.min((renderWidth - 1), Math.max(0, Math.ceil(vert2.x)));
+                    const startX = Math.min(renderWidth, Math.max(0, Math.round(vert1.x)));
+                    const endX = Math.min(renderWidth, Math.max(0, Math.ceil(vert2.x)));
                     const deltaX = ((endX - startX) / edgeHeight);
 
                     const startDepth = vert1.z;
@@ -1018,8 +1018,8 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                 // Rasterize the n-gon in horizontal pixel spans over its height.
                 for (let y = ngonStartY; y < ngonEndY; y++)
                 {
-                    const spanStartX = Math.min((renderWidth - 1), Math.max(0, Math.round(leftEdge.startX)));
-                    const spanEndX = Math.min((renderWidth - 1), Math.max(0, Math.round(rightEdge.startX)));
+                    const spanStartX = Math.min(renderWidth, Math.max(0, Math.round(leftEdge.startX)));
+                    const spanEndX = Math.min(renderWidth, Math.max(0, Math.round(rightEdge.startX)));
                     const spanWidth = ((spanEndX - spanStartX) + 1);
 
                     if (spanWidth > 0)
@@ -1689,7 +1689,7 @@ Rngon.screen = function(canvasElementId = "",              // The DOM id of the 
     canvasElement.setAttribute("height", screenHeight);
 
     const perspectiveMatrix = Rngon.matrix44.perspective((fov * Math.PI/180), (screenWidth / screenHeight), nearPlane, farPlane);
-    const screenSpaceMatrix = Rngon.matrix44.ortho(screenWidth, screenHeight);
+    const screenSpaceMatrix = Rngon.matrix44.ortho((screenWidth + 1), (screenHeight + 1));
 
     const renderContext = canvasElement.getContext("2d");
 
