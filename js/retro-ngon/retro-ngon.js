@@ -23,7 +23,11 @@ const Rngon = {};
 
     Rngon.throw = (errMessage = "")=>
     {
-        alert("Retro n-gon error: " + errMessage);
+        if (Rngon.internalState.allowWindowAlert)
+        {
+            window.alert("Retro n-gon error: " + errMessage);
+        }
+
         throw Error("Retro n-gon error: " + errMessage);
     }
 
@@ -33,8 +37,9 @@ const Rngon = {};
     }
 }
 
-// Global render toggles. These should not be modified directly; they're instead
-// set by the renderer based on render parameters requested by the user.
+// Global app state, for internal use by the renderer. Unless otherwise noted, these
+// parameters should not be modified directly; they're instead set by the renderer
+// based on settings requested by the user.
 Rngon.internalState =
 {
     // Whether to require pixels to pass a depth test before being allowed on screen.
@@ -49,7 +54,13 @@ Rngon.internalState =
     // If set to true, all n-gons will be rendered with a wireframe.
     showGlobalWireframe: false,
 
+    // If true, all n-gons will be clipped against the viewport.
     applyViewportClipping: true,
+
+    // Whether the renderer is allowed to call window.alert(), e.g. to alert the user
+    // to errors. This parameter can be set directly, as the render API doesn't yet
+    // expose a way to toggle it otherwise.
+    allowWindowAlert: false,
 
     // All transformed n-gons on a particular call to render() will be placed here.
     // The cache size will be dynamically adjusted up to match the largest number
