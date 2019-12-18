@@ -994,25 +994,15 @@ Below are results from [tests/performance/perftest1.html](tests/performance/perf
 </table>
 
 # Project status
-The retro n-gon renderer is currently in alpha. During this phase, you can expect frequent changes to the API, feature-set, performance, and so on.
+The project is currently in beta - its core functionality is in place, but notable bugs, API-breaking changes, etc. are to be expected.
 
 ### Roadmap
-At the time of this writing, the renderer is at version alpha.6. At least one more alpha version is planned; after which the project will emerge into beta.
 
-The following features are expected to be implemented while in alpha:
-- Face or vertex normals
+The following is a partial list of features scheduled for implementation:
 - Gouraud shading (or the like)
 - Distance fog
-
-Some form of mipmapping is on the cards, but whether that be in alpha or beta (or something else) is undecided.
-
-Once in beta, usability (e.g. user workflow) and render performance (including occlusion culling) are likely going to be among the points of focus.
-
-### Which features typical of 3d engines are missing?
-- Visibility culling
-- Lighting
-
-Note also that concave n-gons are not supported.
+- Mipmapping
+- Improved asset workflow
 
 ### Browser compatibility
 Below are rough estimates of the required browser versions for a given version of the retro n-gon renderer. Browsers marked with "No" are not compatible at all.
@@ -1051,8 +1041,8 @@ Below are rough estimates of the required browser versions for a given version o
         <td align="center">55</td>
         <td align="center">50</td>
         <td align="center">11?</td>
-        <td align="center">No</td>
-        <td align="center">No</td>
+        <td align="center"><i>No</i></td>
+        <td align="center"><i>No</i></td>
     </tr>
 </table>
 

@@ -4,7 +4,7 @@
 
 DIRECTORY="./distributable/"
 FILENAME="rngon.cat.js"
-VERSION="alpha live"
+VERSION="beta live"
 
 SOURCE_FILES=("./js/retro-ngon/retro-ngon.js"
               "./js/retro-ngon/trig.js"
