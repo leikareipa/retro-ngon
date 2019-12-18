@@ -32,25 +32,25 @@ The retro n-gon renderer encourages low resolutions, very low polycounts, and de
 - Visualizing 3d models in an old-fashioned manner
 
 # Screenshots
-![A scene from Tomb Raider, textured](/images/screenshots/alpha/tr-rngon-1.png)
+![A scene from Tomb Raider, textured](/images/screenshots/alpha/tr-rngon-1.png)\
 **A scene** from Tomb Raider 1 as rendered by the retro n-gon renderer and consisting of textured quads and triangles. (Based on assets produced by Core Design for *Tomb Raider*. Core Design is not associated with the retro n-gon renderer.)
 
-![A scene from Quake, high-res](/images/screenshots/alpha/q1-rngon-5.png)
+![A scene from Quake, high-res](/images/screenshots/alpha/q1-rngon-5.png)\
 **Level E1M1** from Quake 1 rendered in high resolution. Note that lightmaps are not used. (Based on textures and 3d models produced by id Software for *Quake*; id Software is not associated with the retro n-gon renderer.)
 
-![A scene from Quake, low-res](/images/screenshots/alpha/q1-rngon-4.png)
+![A scene from Quake, low-res](/images/screenshots/alpha/q1-rngon-4.png)\
 **A door** on level E1M1 of Quake 1 rendered in low resolution. (Based on textures and 3d models produced by id Software for *Quake*; id Software is not associated with the retro n-gon renderer.)
 
-![A scene from RallySportED-js](/images/screenshots/alpha/rsed-rngon-1.png)
+![A scene from RallySportED-js](/images/screenshots/alpha/rsed-rngon-1.png)\
 **The track** editor view in RallySportED-js, with geometry built from texture-mapped, wireframed quads. (Based on textures and 3d models produced by Jukka Jäkälä for *Rally-Sport*. Jukka Jäkälä is not associated with the retro n-gon renderer.)
 
-![A model from Gothic 1](/images/screenshots/alpha/gothic-rngon-1.png)
+![A model from Gothic 1](/images/screenshots/alpha/gothic-rngon-1.png)\
 **A skeleton** model from Gothic 1 rendered as a triangle mesh with partially transparent texturing. (Based on textures and 3d models produced by Piranha Bytes for *Gothic*. Piranha Bytes is not associated with the retro n-gon renderer.)
 
-![A view from Grand Prix Legends](/images/screenshots/alpha/rngon-gpl-2.png)
+![A view from Grand Prix Legends](/images/screenshots/alpha/rngon-gpl-2.png)\
 **A view** of the race track at Rouen in Grand Prix Legends. (Based on textures and 3d models produced by Papyrus Design Group for *Grand Prix Legends*. Papyrus Design Group is not associated with the retro n-gon renderer.)
 
-# How to use
+# User's manual
 In this section, you'll find both theoretical and practical guidance on using the retro n-gon renderer; including a reference manual for the renderer's API.
 
 Contents:
@@ -546,7 +546,7 @@ A collection of thematically-related n-gons, rendered as a unit with shared tran
 | Type                 | Name            | Description |
 | -------------------- | --------------- | ----------- |
 | *translation_vector* | translation     | The amount by and direction in which to displace the mesh's n-gons. This is in addition to the n-gons' local coordinates; such that if an n-gon's vertex is located at x = 10, and the mesh it belongs to is translated by 10 on x, the vertex's new location will be x = 20. Defaults to *translation_vector(0, 0, 0)*. |
-| *rotation_vector*    | rotation        | The amount of rotation, in degrees 0-359, to apply to each of the mesh's n-gons. Defaults to *rotation_vector(0, 0, 0)*. |
+| *rotation_vector*    | rotation        | The amount of rotation, in degrees 0-359, to apply to each of the mesh's n-gons. Defaults to *rotation_vector(0, 0, 0)*.<br><br>NOTE: The rotation is not applied to the n-gons' surface normals. If you require the surface normals to respect the mesh's rotation, the rotation must be applied - e.g. in your 3d editor of choice - prior to importing the mesh into the renderer, and no further rotation should be requested via this property. |
 | *scaling_vector*     | scaling         | The amount by which to scale each of the mesh's n-gons along each of the three axes. Defaults to *scaling_vector(1, 1, 1)*. |
 
 *Note:* If both *translation* and *rotation* are given, the rotation will be applied first.
@@ -590,7 +590,7 @@ An n-gon &ndash; a shape defined by *n* vertices; typically a triangle or a quad
 | --------- | --------------- | ----------- |
 | *array*   | vertices        | An array of one or more **vertex** objects, which define the corners of the n-gon. Defaults to *[vertex()]*. |
 | *object*  | material       | An object whose properties define the n-gon's material. Will be combined with the *ngon.defaultMaterial* object such that any colliding parameters are overridden by this object. Defaults to *{}*. |
-| *vector3*  | normal       | A surface normal defining the direction of the n-gon's face. Defaults to *vector3(0, 1, 0)* &ndash; a vector pointing up. |
+| *vector3*  | normal       | A surface normal defining the direction of the n-gon's face. Defaults to *vector3(0, 1, 0)* &ndash; a vector pointing up.<br><br>NOTE: Surface normals do not react to rotation applied to the n-gon's **mesh** object. They are therefore best used for static meshes. |
 
 *The **material** parameter object recognizes the following properties:*
 
@@ -601,7 +601,7 @@ An n-gon &ndash; a shape defined by *n* vertices; typically a triangle or a quad
 | *string*             | textureMapping  | Defines how textures (if any) should be mapped onto the n-gon's surface during rendering. Possible values: "ortho" (view-dependent mapping without UV), "affine" (UV mapping). If set to "ortho", vertices do not need UV coordinates, but visual distortions will be introduced in many cases. The "affine" mapping mode requires vertices to have UV coordinates, but results in more visually-accurate mapping. Defaults to *"ortho"*. |
 | *string*             | uvWrapping  | Controls how the texture sampler should interpret UV coordinates. Possible values: "clamp" (UV coordinates are clamped to [0,1-ϵ], or [-ϵ,-1] if negative values are given), "repeat" (discards the coordinate's integer part and repeats the texture). Defaults to *"repeat"*. |
 | *boolean*            | hasWireframe    | If true, the n-gon will be rendered with a wireframe outline. Defaults to *false*. |
-| *boolean*            | isTwoSided    | If true, the n-gon will be visible when viewed from both front and back. Otherwise, the n-gon will be culled when viewed from behind (as determined by the direction of its surface normal). Defaults to *true* (may become *false* in future releases). |
+| *boolean*            | isTwoSided    | If true, the n-gon can be viewed from both front and back. Otherwise, the n-gon will be culled when viewed from behind, as determined by the direction of its surface normal. Defaults to *true*.<br><br>NOTE: Should not be set to false for n-gons that are part of a **mesh** object to which you have applied rotation. This is because surface normals ignore rotation, so applying backface culling in these cases would give an incorrect result. |
 | *color_rgba*         | wireframeColor  | If the n-gon has a wireframe, this property gives the wireframe's color as a **color_rgba** object. Defaults to *color_rgba(0, 0, 0)*. |
 | *array*              | auxiliary       | Properties accessible to the auxiliary buffers of **render**. Defaults to *{}*. |
 
