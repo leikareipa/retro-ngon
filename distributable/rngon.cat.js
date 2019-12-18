@@ -1,20 +1,20 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: live (07 December 2019 13:02:07 UTC)
+// VERSION: alpha live (18 December 2019 14:11:42 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
-//	../js/retro-ngon/retro-ngon.js
-//	../js/retro-ngon/trig.js
-//	../js/retro-ngon/color.js
-//	../js/retro-ngon/geometry.js
-//	../js/retro-ngon/line-draw.js
-//	../js/retro-ngon/matrix44.js
-//	../js/retro-ngon/ngon-fill.js
-//	../js/retro-ngon/render.js
-//	../js/retro-ngon/transform.js
-//	../js/retro-ngon/texture.js
-//	../js/retro-ngon/screen.js
+//	./js/retro-ngon/retro-ngon.js
+//	./js/retro-ngon/trig.js
+//	./js/retro-ngon/color.js
+//	./js/retro-ngon/geometry.js
+//	./js/retro-ngon/line-draw.js
+//	./js/retro-ngon/matrix44.js
+//	./js/retro-ngon/ngon-fill.js
+//	./js/retro-ngon/render.js
+//	./js/retro-ngon/transform.js
+//	./js/retro-ngon/texture.js
+//	./js/retro-ngon/screen.js
 /////////////////////////////////////////////////
 
 /*
