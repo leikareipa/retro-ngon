@@ -55,22 +55,23 @@ In this section, you'll find both theoretical and practical guidance on using th
 
 Contents:
 - [Introduction and intro tutorial](#introduction-and-intro-tutorial)
-    - The gist of it in theory
-    - Rendering a quad, in practice
-    - Rendering a textured quad
-    - Giving the quad a spin
-    - Adding pixelation
-    - More examples
+    - [The gist of it in theory](#the-gist-of-it-in-theory)
+    - [Rendering a quad, in practice](#rendering-a-quad-in-practice)
+    - [Rendering a textured quad](#rendering-a-textured-quad)
+    - [Giving the quad a spin](#giving-the-quad-a-spin)
+    - [Adding pixelation](#adding-pixelation)
+    - [More examples](#more-examples)
 - [Creating and rendering 3d models](#creating-and-rendering-3d-models)
-    - N-gons
-    - Meshes
-    - Models
-    - Exporting models from Blender
-    - Texturing
+    - [N-gons](#n-gons)
+    - [Meshes](#meshes)
+    - [Models](#models)
+    - [Exporting models from Blender](#exporting-models-from-blender)
+    - [Texturing](#texturing)
 - [API reference](#api-reference)
 
-### Introduction and intro tutorial
-**The gist of it in theory.** At the heart of the renderer is the `render()` function, which transforms and rasterizes a set of n-gons onto a HTML5 canvas. You call it with the HTML id of the canvas you want the image rendered into, an array of the n-gon meshes you want rendered, and additional, optional parameters to define the position of the camera, etc.
+## Introduction and intro tutorial
+### The gist of it in theory
+At the heart of the renderer is the `render()` function, which transforms and rasterizes a set of n-gons onto a HTML5 canvas. You call it with the HTML id of the canvas you want the image rendered into, an array of the n-gon meshes you want rendered, and additional, optional parameters to define the position of the camera, etc.
 
 The following pseudocode outlines the basic program flow for rendering an n-gon onto a canvas element:
 ```
@@ -97,8 +98,8 @@ await scene.initialize()
 const mesh = Rngon.mesh(scene.ngons)
 ```
 
-
-**Rendering a quad, in practice.** The following code first constructs a HTML5 canvas element to render into, using CSS to set the size of the rendering to 300 x 300 pixels. It then creates an n-gon quad (i.e. a 4-gon), wraps it up in a mesh, and asks the renderer to draw the mesh onto the canvas. Note also that the mesh is given a 45-degree rotation, the renderer's camera is moved back by 5 units, and the quad is colored blue.
+### Rendering a quad, in practice
+The following code first constructs a HTML5 canvas element to render into, using CSS to set the size of the rendering to 300 x 300 pixels. It then creates an n-gon quad (i.e. a 4-gon), wraps it up in a mesh, and asks the renderer to draw the mesh onto the canvas. Note also that the mesh is given a 45-degree rotation, the renderer's camera is moved back by 5 units, and the quad is colored blue.
 ```
 <canvas id="canvas" style="width: 300px; height: 300px; background-color: rgba(0, 0, 0, .05);"></canvas>
 <script src="distributable/rngon.cat.js"></script>
@@ -125,7 +126,8 @@ const mesh = Rngon.mesh(scene.ngons)
 ```
 ![A blue quad](images/tutorials/blue-quad.png)
 
-**Rendering a textured quad.** Textures are a staple of 3d rendering, so let's add one. The code below is otherwise the same as above, but additionally creates a `texture` object and appends it to the quad's material property. You'll learn more about textures later in this document, but for right now, the details don't need worrying about. Just know that this is roughly how textures are added to n-gons. Since the base color of an n-gon also modifies the color of its texture, we set the color to white instead of blue, as we don't want the texture to be tinted blue, here.
+### Rendering a textured quad
+Textures are a staple of 3d rendering, so let's add one. The code below is otherwise the same as above, but additionally creates a `texture` object and appends it to the quad's material property. You'll learn more about textures later in this document, but for right now, the details don't need worrying about. Just know that this is roughly how textures are added to n-gons. Since the base color of an n-gon also modifies the color of its texture, we set the color to white instead of blue, as we don't want the texture to be tinted blue, here.
 ```
 <canvas id="canvas" style="width: 300px; height: 300px; background-color: rgba(0, 0, 0, .05);"></canvas>
 <script src="distributable/rngon.cat.js"></script>
@@ -174,7 +176,8 @@ The code below modifies the `quad` object given above to add UV texture coordina
 ```
 ![A textured quad with affine mapping](images/tutorials/textured-quad-affine.png)
 
-**Giving the quad a spin.** With a few simple additions, we can modify the code so far to add a spinning animation to the quad. We'll do this by repeatedly calling `render()` in sync with the device's refresh rate via `window.requestAnimationFrame()`, and for each frame wrapping the quad in a new mesh with a slightly increased rotation value. (The retro n-gon renderer favors immutable data, which is why we're creating the mesh object from scratch each frame, rather than modifying the rotation of an existing mesh. Although note that since alpha.5 and later versions, the renderer has now begun moving away from immutable structures, for reasons of performance.)
+### Giving the quad a spin
+With a few simple additions, we can modify the code so far to add a spinning animation to the quad. We'll do this by repeatedly calling `render()` in sync with the device's refresh rate via `window.requestAnimationFrame()`, and for each frame wrapping the quad in a new mesh with a slightly increased rotation value. (The retro n-gon renderer favors immutable data, which is why we're creating the mesh object from scratch each frame, rather than modifying the rotation of an existing mesh. Although note that since alpha.5 and later versions, the renderer has now begun moving away from immutable structures, for reasons of performance.)
 ```
 <canvas id="canvas" style="width: 300px; height: 300px; background-color: rgba(0, 0, 0, .05);"></canvas>
 <script src="distributable/rngon.cat.js"></script>
@@ -216,7 +219,8 @@ The code below modifies the `quad` object given above to add UV texture coordina
 </script>
 ```
 
-**Adding pixelation.** In the examples above, the renderer's pixel size is 1:1 with the output resolution, so there is no visible pixelation that one might expect from a retro style. Not to worry, though, as the degree of pixelation can be controlled via the `scale` property provided to `render()`. What happens if we set it to, say, 0.14?
+### Adding pixelation
+In the examples above, the renderer's pixel size is 1:1 with the output resolution, so there is no visible pixelation that one might expect from a retro style. Not to worry, though, as the degree of pixelation can be controlled via the `scale` property provided to `render()`. What happens if we set it to, say, 0.14?
 ```
 Rngon.render("canvas", [rotatingQuad(frameCount)],
              {
@@ -244,10 +248,12 @@ image-rendering: -o-crisp-edges;      /* For Opera*/
 image-rendering: -webkit-crisp-edges; /* For Safari*/
 ```
 
-**More examples.** The [samples/](samples/) directory collects together various examples of the renderer's usage.
+### More examples
+The [samples/](samples/) directory collects together various examples of the renderer's usage.
 
-### Creating and rendering 3d models
-**N-gons.** The building-block of 3d models in the retro n-gon renderer is the n-gon. It's a polygon of _n_ sides (_n_-gon), or a line (2-gon), or a single point (1-gon). An n-gon is made up of one or more vertices, and a material that describes how the n-gon should look when rendered (its color, texture, and so on).
+## Creating and rendering 3d models
+### N-gons
+The building-block of 3d models in the retro n-gon renderer is the n-gon. It's a polygon of _n_ sides (_n_-gon), or a line (2-gon), or a single point (1-gon). An n-gon is made up of one or more vertices, and a material that describes how the n-gon should look when rendered (its color, texture, and so on).
 
 A red triangle, for instance, could be created like so:
 ```
@@ -287,7 +293,8 @@ The `wireframeColor` property sets the color of the n-gon's wireframe. Note that
 
 The `auxiliary` property defines an object containing properties to which auxiliary render buffers have read access.
 
-**Meshes.** To render n-gons, you first wrap them in a mesh. Meshes are collections of n-gons that share a purpose; for instance, the n-gons that make up a model of a spoon. A mesh thus consists of an array one or more n-gons, and a particular set of 3d transformations that affect the mesh's n-gons in unison.
+### Meshes
+To render n-gons, you first wrap them in a mesh. Meshes are collections of n-gons that share a purpose; for instance, the n-gons that make up a model of a spoon. A mesh thus consists of an array one or more n-gons, and a particular set of 3d transformations that affect the mesh's n-gons in unison.
 
 A mesh containing one triangle rotated by 45 degrees and moved by 11 units along an axis could be created like so:
 ```
@@ -318,7 +325,8 @@ The `scaling` property scales each of the mesh's n-gons by the given amount alon
 
 If both translation and rotation are defined, the rotation will be applied first.
 
-**Models.** Meshes and n-gons are the retro n-gon renderer's native objects. Models, on the other hand, are an interface between these native objects and external 3d assets.
+### Models
+Meshes and n-gons are the retro n-gon renderer's native objects. Models, on the other hand, are an interface between these native objects and external 3d assets.
 
 For instance, when you create a 3d scene in Blender and export it using the retro n-gon renderer's Blender export script (more of which in the sections, below), you get a model: a JavaScript file whose code, after some processing to load any assets from disk etc., returns an array of n-gons corresponding to the original scene's polygons. Something like the following:
 ```
@@ -352,7 +360,8 @@ The `scene` object (though it could be called anything) contains the `ngons` arr
 </script>
 ```
 
-**Exporting models from Blender.** You can use the free 3d modeling program, [Blender](https://www.blender.org/), to create 3d assets for use with the retro n-gon renderer. A script to export scenes from Blender into the retro n-gon renderer's format is provided under [tools/conversion/](tools/conversion/).
+### Exporting models from Blender
+You can use the free 3d modeling program, [Blender](https://www.blender.org/), to create 3d assets for use with the retro n-gon renderer. A script to export scenes from Blender into the retro n-gon renderer's format is provided under [tools/conversion/](tools/conversion/).
 
 At the moment, the Blender export script is quite rudimentary, and doesn't necessarily allow for a convenient asset workflow. Nonetheless, with certain precautions as discussed below, it allows you to create 3d scenes in Blender using native n-gons, and to import the results directly for use with the retro n-gon renderer.
 
@@ -366,7 +375,8 @@ Once the file has been exported, it's likely that you'll have to make a few edit
 
 As the retro n-gon renderer expects textures to be in its custom JSON format, you'll want to convert any textures to that format, first, and also adjust their filenames accordingly in the exported file. You'll find more information about converting textures, below.
 
-**Texturing.** Examples of the basics of texturing were given earlier in the documentation. Now, you'll find out about all the details.
+### Texturing
+Examples of the basics of texturing were given earlier in the documentation. Now, you'll find out about all the details.
 
 Each n-gon can have one texture applied to it. To apply a texture to an n-gon, assign it as the n-gon's `texture` material property:
 ```
@@ -424,7 +434,7 @@ If your JSON texture data is stored in a JSON file rather than as a JavaScript o
 
 Be aware, however, that `texture_rgba.create_with_data_from_file()` uses the Fetch API, which typically requires the content to be served via a server rather than from a local file directly. If you want to use this functionality locally, you can set up a server on localhost &ndash; e.g. by executing `$ php -S localhost:8000` in the retro n-gon renderer's root &ndash; and then accessing the code's HTML via `localhost:8000/*`.
 
-### API reference
+## API reference
 The renderer's public API consists of the following objects:
 
 | Object                                          | Brief description                           |
@@ -437,7 +447,7 @@ The renderer's public API consists of the following objects:
 | [color_rgba](#color_rgbared-green-blue-alpha)   | RGB color with alpha.                       |
 | [texture_rgba](#texture_rgbadata)               | RGB texture with alpha.                     |
 
-#### render(canvasElementId[, meshes[, options]])
+### render(canvasElementId[, meshes[, options]])
 Renders one or more n-gon meshes onto an existing canvas element.
 
 *Parameters:*
@@ -531,7 +541,7 @@ Rngon.render("canvas", [Rngon.mesh([ngon])],
 // The 'mousePickingBuffer' array now holds the rendered n-gon's 'mousePickingId' value wherever the n-gon is visibile in the rendered image.
 ```
 
-#### mesh([ngons[, transform]])
+### mesh([ngons[, transform]])
 A collection of thematically-related n-gons, rendered as a unit with shared transformations.
 
 *Parameters:*
@@ -581,7 +591,7 @@ const mesh = Rngon.mesh([ngon],
                         });
 ```
 
-#### ngon([vertices[, material[, normal]]])
+### ngon([vertices[, material[, normal]]])
 An n-gon &ndash; a shape defined by *n* vertices; typically a triangle or a quad.
 
 *Parameters:*
@@ -644,7 +654,7 @@ const quad = Rngon.ngon([Rngon.vertex(-1, -1, 0),
                         });
 ```
 
-#### vertex([x[, y[, z[, u[, v[, w]]]]]])
+### vertex([x[, y[, z[, u[, v[, w]]]]]])
 One corner of an n-gon.
 
 *Parameters:*
@@ -688,7 +698,7 @@ const vertex2 = Rngon.vertex(-1, -1, 0);
 const ngon = Rngon.ngon([vertex1, vertex2]);
 ```
 
-#### vector3([x[, y[, z]]])
+### vector3([x[, y[, z]]])
 A three-component vector.
 
 *Aliases:* **rotation_vector**\*, **translation_vector**, **scaling_vector**
@@ -724,7 +734,7 @@ A three-component vector.
 const vector = Rngon.vector3(1, 2, 3);
 ```
 
-#### color_rgba([red[, green[, blue[, alpha]]]])
+### color_rgba([red[, green[, blue[, alpha]]]])
 RGB color with alpha. The alpha channel is either fully transparent or fully opaque.
 
 *Parameters:*
@@ -751,7 +761,7 @@ RGB color with alpha. The alpha channel is either fully transparent or fully opa
 }
 ```
 
-#### texture_rgba([data])
+### texture_rgba([data])
 A texture whose pixels are RGB with alpha.
 
 *Parameters:*
@@ -825,7 +835,7 @@ As suggested in the sections, above, the retro n-gon renderer is not intended fo
 
 With that in mind, here's some performance figures on various platforms.
 
-### Performance on the desktop
+## Performance on the desktop
 The table below lists test results from [tests/performance/perftest1.html](tests/performance/perftest1.html) as of [5bb8960](https://github.com/leikareipa/retro-ngon/tree/5bb8960f433e99d615253ad56014abf3f19f6b4c) running on a Xeon E3-1230 v3 desktop PC in Chrome 72 (top) and Firefox 65 (bottom). The values given are frames per second (FPS) for polycounts 30, 60, ..., 960. A bullet indicates that the FPS was at least 60, the screen's refresh rate during the tests.
 
 <table>
@@ -910,7 +920,7 @@ Below are results from [tests/performance/perftest1.html](tests/performance/perf
 
 The gist of these data is that the renderer performs better on Chrome than it does on Firefox, most notably so when texturing is enabled. On Chrome, polycounts of roughly 100 to 300 could be maintained at 60 FPS; or about 1000 at 30 FPS.
 
-### Performance on mobile
+## Performance on mobile
 Below are results from [tests/performance/perftest1.html](tests/performance/perftest1.html) as of [f340393](https://github.com/leikareipa/retro-ngon/tree/f340393162243b4a6808f31a2db2843bac29833a) running on an Honor View20 (2019) phone in Chrome. The notes from the tests above apply.
 
 <table>
@@ -996,7 +1006,7 @@ Below are results from [tests/performance/perftest1.html](tests/performance/perf
 # Project status
 The project is currently in beta - its core functionality is in place, but notable bugs, API-breaking changes, etc. are to be expected.
 
-### Roadmap
+## Roadmap
 
 The following is a partial list of features scheduled for implementation:
 - Gouraud shading (or the like)
@@ -1004,7 +1014,7 @@ The following is a partial list of features scheduled for implementation:
 - Mipmapping
 - Improved asset workflow
 
-### Browser compatibility
+## Browser compatibility
 Below are rough estimates of the required browser versions for a given version of the retro n-gon renderer. Browsers marked with "No" are not compatible at all.
 
 <table>
