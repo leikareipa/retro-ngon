@@ -1,9 +1,9 @@
 # The retro n-gon renderer
 A minimalist 3d software renderer that draws n-sided polygons (as well as lines and points) onto a user-supplied HTML5 canvas. Its intended use cases are chiefly those where a minimalist retro aesthetic is preferred.
 
-You can view an interactive sample of the renderer's output [here](http://tarpeeksihyvaesoft.com/s/retro-ngon/samples/tr/home-test.html?fov=55&scale=0.2&depthBuffer=true&perspectiveCorrect=true) (interaction requires a mouse and keyboard; click on the page to engage mouse lock). This renders a scene from the PC game *Tomb Raider* in which you can move around using the mouse and keyboard (the ESDF keys, specifically).
+You can view an interactive sample of the renderer's output [here](https://tarpeeksihyvaesoft.com/s/retro-ngon/samples/tr/home-test.html?fov=55&scale=0.2&depthBuffer=true&perspectiveCorrect=true) (interaction requires a mouse and keyboard; click on the page to engage mouse lock). This renders a scene from the PC game *Tomb Raider* in which you can move around using the mouse and keyboard (the ESDF keys, specifically).
 
-A non-interactive render sample is also available [here](http://tarpeeksihyvaesoft.com/s/retro-ngon/samples/simple2.html). It produces a spinning texture-mapped cube.
+A non-interactive render sample is also available [here](https://tarpeeksihyvaesoft.com/s/retro-ngon/samples/simple2.html). It produces a spinning texture-mapped cube.
 
 ![A textured cube](/images/painting-cube.png)
 
@@ -1057,7 +1057,7 @@ Below are rough estimates of the required browser versions for a given version o
 </table>
 
 # Authors and credits
-The main author of the retro n-gon renderer is the one-man Tarpeeksi Hyvae Soft (see on [GitHub](https://github.com/leikareipa) and the [Web](http://www.tarpeeksihyvaesoft.com)).
+The main author of the retro n-gon renderer is the one-man Tarpeeksi Hyvae Soft (see on [GitHub](https://github.com/leikareipa) and the [Web](https://www.tarpeeksihyvaesoft.com)).
 
 On 3d software rendering in general, the aforementioned main author has benefited a good bit from tutorials by Benny Bobaganoosh. You can check out his [YouTube](https://www.youtube.com/playlist?list=PLEETnX-uPtBUbVOok816vTl1K9vV1GgH5) and [GitHub](https://github.com/BennyQBD/3DSoftwareRenderer). The retro n-gon renderer's matrix code ([js/retro-ngon/matrix44.js](js/retro-ngon/matrix44.js)) is adapted, with superficial changes, from [Benny's code](https://github.com/BennyQBD/3DSoftwareRenderer/blob/master/src/Matrix4f.java).
 
