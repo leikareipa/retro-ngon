@@ -23,8 +23,8 @@ I have a number of other open-source software renderer projects also, some of wh
 - [Wray](https://github.com/leikareipa/wray/) for path tracing in JavaScript
 - [Vond](https://github.com/leikareipa/vond/), a low-res hybrid voxel/polygon software renderer in C++
 - [Vond Jr.](https://github.com/leikareipa/vond-jr/) is a Java version of Vond
+- [Kelpo](https://github.com/leikareipa/kelpo/), an up-coming C89-based retro-themed minimalism-oriented 3D API wrapper for Win32 (Windows 95, 98, ...) with support for Direct3D, OpenGL, Glide, and others.
 - [dccb](https://github.com/leikareipa/dccb/)'s is a simple software renderer in C for 16-bit DOS
-- [shiet](https://github.com/leikareipa/shiet/) is an up-coming C-based retro-themed renderer and API wrapper with support for OpenGL, Glide, and software rasterization on the Win32 platform (and possibly others)
 
 The retro n-gon renderer encourages low resolutions, very low polycounts, and designing your way around technical limitations &ndash; like in the old days of software rendering. You might use the renderer for some of the following purposes:
 - Engagement in feature minimalism
