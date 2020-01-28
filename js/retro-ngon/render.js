@@ -181,7 +181,8 @@ Rngon.render = function(canvasElementId,
             }
             
             // Sort front-to-back; i.e. so that n-gons closest to the camera will be first in the
-            // list. Together with the depth buffer, this allows early rejection of obscured polygons.
+            // list. Allows for early rejection of occluded pixels during rasterization.
+            case "painter-reverse":
             default:
             {
                 ngons.sort((ngonA, ngonB)=>
