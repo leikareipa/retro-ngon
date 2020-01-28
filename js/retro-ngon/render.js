@@ -56,7 +56,7 @@ Rngon.render = function(canvasElementId,
         callMetadata.renderHeight = renderSurface.height;
 
         prepare_ngon_cache(Rngon.internalState.transformedNgonsCache, meshes);
-    
+
         transform_ngons(meshes, renderSurface, options.cameraPosition, options.cameraDirection);
         mark_npot_textures(Rngon.internalState.transformedNgonsCache);
         depth_sort_ngons(Rngon.internalState.transformedNgonsCache.ngons, options.depthSort);

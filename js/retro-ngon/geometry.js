@@ -255,6 +255,7 @@ Rngon.ngon.defaultMaterial =
     hasWireframe: false,
     isTwoSided: true,
     wireframeColor: Rngon.color_rgba(0, 0, 0),
+    allowTransform: true,
     auxiliary: {},
 };
 

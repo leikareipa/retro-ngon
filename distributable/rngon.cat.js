@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (18 December 2019 22:46:41 UTC)
+// VERSION: beta live (28 January 2020 13:56:52 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -586,6 +586,7 @@ Rngon.ngon.defaultMaterial =
     hasWireframe: false,
     isTwoSided: true,
     wireframeColor: Rngon.color_rgba(0, 0, 0),
+    allowTransform: true,
     auxiliary: {},
 };
 
@@ -957,7 +958,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
             {
                 const interpolatePerspective = Rngon.internalState.usePerspectiveCorrectTexturing;
 
-                const add_edge = (vert1, vert2, isLeftEdge, )=>
+                const add_edge = (vert1, vert2, isLeftEdge)=>
                 {
                     const startY = Math.min(renderHeight, Math.max(0, Math.round(vert1.y)));
                     const endY = Math.min(renderHeight, Math.max(0, Math.round(vert2.y)));
@@ -1048,7 +1049,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                         const deltaUVW = ((rightEdge.startUVW - leftEdge.startUVW) / spanWidth);
                         let iplUVW = (leftEdge.startUVW - deltaUVW);
 
-                        // Assumes the pixel buffer consists of 4 elements (RGBA) per pixel.
+                        // Assumes the pixel buffer consists of 4 elements per pixel (e.g. RGBA).
                         let pixelBufferIdx = (((spanStartX + y * renderWidth) * 4) - 4);
 
                         // Assumes the depth buffer consists of 1 element per pixel.
@@ -1309,7 +1310,7 @@ Rngon.render = function(canvasElementId,
         callMetadata.renderHeight = renderSurface.height;
 
         prepare_ngon_cache(Rngon.internalState.transformedNgonsCache, meshes);
-    
+
         transform_ngons(meshes, renderSurface, options.cameraPosition, options.cameraDirection);
         mark_npot_textures(Rngon.internalState.transformedNgonsCache);
         depth_sort_ngons(Rngon.internalState.transformedNgonsCache.ngons, options.depthSort);
@@ -1526,25 +1527,25 @@ Rngon.ngon_transformer = function(ngons = [], clipSpaceMatrix = [], screenSpaceM
             cachedNgon.isActive = true;
         }
 
-        // Clipping.
-        cachedNgon.transform(clipSpaceMatrix);
+        if (cachedNgon.material.allowTransform)
         {
+            cachedNgon.transform(clipSpaceMatrix);
             if (Rngon.internalState.applyViewportClipping)
             {
                 cachedNgon.clip_to_viewport();
-
-                // If there are no vertices left after clipping, it means this n-gon is not visible
-                // on the screen at all. We can just ignore it.
-                if (!cachedNgon.vertices.length)
-                {
-                    transformedNgonsCache.numActiveNgons--;
-                    continue;
-                }
             }
-        }
 
-        cachedNgon.transform(screenSpaceMatrix);
-        cachedNgon.perspective_divide();
+            // If there are no vertices left after clipping, it means this n-gon is not
+            // visible on the screen at all, and we don't need to consider it for rendering.
+            if (!cachedNgon.vertices.length)
+            {
+                transformedNgonsCache.numActiveNgons--;
+                continue;
+            }
+
+            cachedNgon.transform(screenSpaceMatrix);
+            cachedNgon.perspective_divide();
+        }
     };
 
     // Mark as inactive any cached n-gons that we didn't touch, so the renderer knows

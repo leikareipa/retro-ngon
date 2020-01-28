@@ -100,7 +100,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
             {
                 const interpolatePerspective = Rngon.internalState.usePerspectiveCorrectTexturing;
 
-                const add_edge = (vert1, vert2, isLeftEdge, )=>
+                const add_edge = (vert1, vert2, isLeftEdge)=>
                 {
                     const startY = Math.min(renderHeight, Math.max(0, Math.round(vert1.y)));
                     const endY = Math.min(renderHeight, Math.max(0, Math.round(vert2.y)));
@@ -191,7 +191,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                         const deltaUVW = ((rightEdge.startUVW - leftEdge.startUVW) / spanWidth);
                         let iplUVW = (leftEdge.startUVW - deltaUVW);
 
-                        // Assumes the pixel buffer consists of 4 elements (RGBA) per pixel.
+                        // Assumes the pixel buffer consists of 4 elements per pixel (e.g. RGBA).
                         let pixelBufferIdx = (((spanStartX + y * renderWidth) * 4) - 4);
 
                         // Assumes the depth buffer consists of 1 element per pixel.

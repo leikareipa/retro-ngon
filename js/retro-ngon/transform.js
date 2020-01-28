@@ -54,25 +54,25 @@ Rngon.ngon_transformer = function(ngons = [], clipSpaceMatrix = [], screenSpaceM
             cachedNgon.isActive = true;
         }
 
-        // Clipping.
-        cachedNgon.transform(clipSpaceMatrix);
+        if (cachedNgon.material.allowTransform)
         {
+            cachedNgon.transform(clipSpaceMatrix);
             if (Rngon.internalState.applyViewportClipping)
             {
                 cachedNgon.clip_to_viewport();
-
-                // If there are no vertices left after clipping, it means this n-gon is not visible
-                // on the screen at all. We can just ignore it.
-                if (!cachedNgon.vertices.length)
-                {
-                    transformedNgonsCache.numActiveNgons--;
-                    continue;
-                }
             }
-        }
 
-        cachedNgon.transform(screenSpaceMatrix);
-        cachedNgon.perspective_divide();
+            // If there are no vertices left after clipping, it means this n-gon is not
+            // visible on the screen at all, and we don't need to consider it for rendering.
+            if (!cachedNgon.vertices.length)
+            {
+                transformedNgonsCache.numActiveNgons--;
+                continue;
+            }
+
+            cachedNgon.transform(screenSpaceMatrix);
+            cachedNgon.perspective_divide();
+        }
     };
 
     // Mark as inactive any cached n-gons that we didn't touch, so the renderer knows

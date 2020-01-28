@@ -253,6 +253,26 @@
                                       const quadMesh = Rngon.mesh([quad], meshSettings);
                                       Rngon.render(canvasId, [quadMesh], renderSettings);
                                   }),
+
+                    await compare("Quad with screen-space vertex coordinates textured using affine mapping (0bd812caba8d)",
+                                  "./render-output/reference-0bd812caba8d.png",
+                                  (canvasId)=>
+                                  {
+                                      const screenSpaceQuadVerts = [Rngon.vertex( 75,  75, 0, 0, 1),
+                                                                    Rngon.vertex(225,  75, 0, 1, 1),
+                                                                    Rngon.vertex(225, 225, 0, 1, 0),
+                                                                    Rngon.vertex( 75, 225, 0, 0, 0)];
+                                      const quad = Rngon.ngon(screenSpaceQuadVerts,
+                                                              {
+                                                                  color: Rngon.color_rgba(255, 255, 255),
+                                                                  textureMapping: "affine",
+                                                                  uvWrapping: "clamp",
+                                                                  allowTransform: false,
+                                                                  texture: texture,
+                                                              });
+                                      const quadMesh = Rngon.mesh([quad], meshSettings);
+                                      Rngon.render(canvasId, [quadMesh], renderSettings);
+                                  }),
                 ];
 
                 // Print out the tests' results.
