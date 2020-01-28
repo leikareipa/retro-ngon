@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (28 January 2020 13:56:52 UTC)
+// VERSION: beta live (28 January 2020 15:10:21 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -1067,7 +1067,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                             depthBufferIdx++;
 
                             // Depth test.
-                            if (depthBuffer[depthBufferIdx] <= iplDepth) continue;
+                            if (depthBuffer && (depthBuffer[depthBufferIdx] <= iplDepth)) continue;
 
                             // Solid fill.
                             if (!ngon.material.texture)
@@ -1079,7 +1079,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                 pixelBuffer[pixelBufferIdx + 1] = ngon.material.color.green;
                                 pixelBuffer[pixelBufferIdx + 2] = ngon.material.color.blue;
                                 pixelBuffer[pixelBufferIdx + 3] = ngon.material.color.alpha;
-                                depthBuffer[depthBufferIdx] = iplDepth;
+                                if (depthBuffer) depthBuffer[depthBufferIdx] = iplDepth;
                             }
                             // Textured fill.
                             else
@@ -1198,7 +1198,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                 pixelBuffer[pixelBufferIdx + 1] = (texel.green * ngon.material.color.unitRange.green);
                                 pixelBuffer[pixelBufferIdx + 2] = (texel.blue  * ngon.material.color.unitRange.blue);
                                 pixelBuffer[pixelBufferIdx + 3] = (texel.alpha * ngon.material.color.unitRange.alpha);
-                                depthBuffer[depthBufferIdx] = iplDepth;
+                                if (depthBuffer) depthBuffer[depthBufferIdx] = iplDepth;
                             }
 
                             for (let b = 0; b < auxiliaryBuffers.length; b++)
@@ -1289,10 +1289,10 @@ Rngon.render = function(canvasElementId,
     });
 
     // Modify any internal render parameters based on the user's options.
-    Rngon.internalState.useDepthBuffer = true;
-    Rngon.internalState.showGlobalWireframe = (options.globalWireframe === true);
-    Rngon.internalState.applyViewportClipping = (options.clipToViewport === true);
-    Rngon.internalState.usePerspectiveCorrectTexturing = (options.perspectiveCorrectTexturing === true);
+    Rngon.internalState.useDepthBuffer = (options.useDepthBuffer == true);
+    Rngon.internalState.showGlobalWireframe = (options.globalWireframe == true);
+    Rngon.internalState.applyViewportClipping = (options.clipToViewport == true);
+    Rngon.internalState.usePerspectiveCorrectTexturing = (options.perspectiveCorrectTexturing == true);
 
     // Render a single frame onto the render surface.
     if ((!options.hibernateWhenNotOnScreen || is_surface_in_view()))
@@ -1435,7 +1435,9 @@ Rngon.render = function(canvasElementId,
             }
             
             // Sort front-to-back; i.e. so that n-gons closest to the camera will be first in the
-            // list. Together with the depth buffer, this allows early rejection of obscured polygons.
+            // list. When used together with depth buffering, allows for early rejection of occluded
+            // pixels during rasterization.
+            case "painter-reverse":
             default:
             {
                 ngons.sort((ngonA, ngonB)=>
@@ -1465,6 +1467,7 @@ Rngon.render.defaultOptions =
     nearPlane: 1,
     farPlane: 1000,
     depthSort: "", // Use default.
+    useDepthBuffer: true,
     clipToViewport: true,
     globalWireframe: false,
     hibernateWhenNotOnScreen: true,

@@ -35,10 +35,10 @@ Rngon.render = function(canvasElementId,
     });
 
     // Modify any internal render parameters based on the user's options.
-    Rngon.internalState.useDepthBuffer = true;
-    Rngon.internalState.showGlobalWireframe = (options.globalWireframe === true);
-    Rngon.internalState.applyViewportClipping = (options.clipToViewport === true);
-    Rngon.internalState.usePerspectiveCorrectTexturing = (options.perspectiveCorrectTexturing === true);
+    Rngon.internalState.useDepthBuffer = (options.useDepthBuffer == true);
+    Rngon.internalState.showGlobalWireframe = (options.globalWireframe == true);
+    Rngon.internalState.applyViewportClipping = (options.clipToViewport == true);
+    Rngon.internalState.usePerspectiveCorrectTexturing = (options.perspectiveCorrectTexturing == true);
 
     // Render a single frame onto the render surface.
     if ((!options.hibernateWhenNotOnScreen || is_surface_in_view()))
@@ -181,7 +181,8 @@ Rngon.render = function(canvasElementId,
             }
             
             // Sort front-to-back; i.e. so that n-gons closest to the camera will be first in the
-            // list. Allows for early rejection of occluded pixels during rasterization.
+            // list. When used together with depth buffering, allows for early rejection of occluded
+            // pixels during rasterization.
             case "painter-reverse":
             default:
             {
@@ -212,6 +213,7 @@ Rngon.render.defaultOptions =
     nearPlane: 1,
     farPlane: 1000,
     depthSort: "", // Use default.
+    useDepthBuffer: true,
     clipToViewport: true,
     globalWireframe: false,
     hibernateWhenNotOnScreen: true,

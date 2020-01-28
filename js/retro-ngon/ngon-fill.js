@@ -209,7 +209,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                             depthBufferIdx++;
 
                             // Depth test.
-                            if (depthBuffer[depthBufferIdx] <= iplDepth) continue;
+                            if (depthBuffer && (depthBuffer[depthBufferIdx] <= iplDepth)) continue;
 
                             // Solid fill.
                             if (!ngon.material.texture)
@@ -221,7 +221,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                 pixelBuffer[pixelBufferIdx + 1] = ngon.material.color.green;
                                 pixelBuffer[pixelBufferIdx + 2] = ngon.material.color.blue;
                                 pixelBuffer[pixelBufferIdx + 3] = ngon.material.color.alpha;
-                                depthBuffer[depthBufferIdx] = iplDepth;
+                                if (depthBuffer) depthBuffer[depthBufferIdx] = iplDepth;
                             }
                             // Textured fill.
                             else
@@ -340,7 +340,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                 pixelBuffer[pixelBufferIdx + 1] = (texel.green * ngon.material.color.unitRange.green);
                                 pixelBuffer[pixelBufferIdx + 2] = (texel.blue  * ngon.material.color.unitRange.blue);
                                 pixelBuffer[pixelBufferIdx + 3] = (texel.alpha * ngon.material.color.unitRange.alpha);
-                                depthBuffer[depthBufferIdx] = iplDepth;
+                                if (depthBuffer) depthBuffer[depthBufferIdx] = iplDepth;
                             }
 
                             for (let b = 0; b < auxiliaryBuffers.length; b++)
