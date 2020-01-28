@@ -83,7 +83,7 @@
             (async ()=>
             {
                 const results = [
-                    await compare("Plain solid-filled quad",
+                    await compare("Plain solid-filled quad (7bd323cj63bc)",
                                   "./render-output/reference-7bd323cj63bc.png",
                                   (canvasId)=>
                                   {
@@ -94,7 +94,7 @@
                                       const quadMesh = Rngon.mesh([quad], meshSettings);
                                       Rngon.render(canvasId, [quadMesh], renderSettings);
                                   }),
-                    await compare("Plain solid-filled quad with wireframe",
+                    await compare("Plain solid-filled quad with wireframe (8b10e6a750b6)",
                                   "./render-output/reference-8b10e6a750b6.png",
                                   (canvasId)=>
                                   {
@@ -107,7 +107,7 @@
                                       const quadMesh = Rngon.mesh([quad], meshSettings);
                                       Rngon.render(canvasId, [quadMesh], renderSettings);
                                   }),
-                    await compare("Transparent quad with wireframe",
+                    await compare("Transparent quad with wireframe (d7f1b3b88c7d)",
                                   "./render-output/reference-d7f1b3b88c7d.png",
                                   (canvasId)=>
                                   {
@@ -120,7 +120,7 @@
                                       const quadMesh = Rngon.mesh([quad], meshSettings);
                                       Rngon.render(canvasId, [quadMesh], renderSettings);
                                   }),
-                    await compare("Plain solid-filled quad in low resolution",
+                    await compare("Plain solid-filled quad in low resolution (88aggjdc4g96)",
                                   "./render-output/reference-88aggjdc4g96.png",
                                   (canvasId)=>
                                   {
@@ -131,7 +131,7 @@
                                       const quadMesh = Rngon.mesh([quad], meshSettings);
                                       Rngon.render(canvasId, [quadMesh], {...renderSettings, scale:0.1});
                                   }),
-                    await compare("Quad textured with ortho mapping",
+                    await compare("Quad textured with ortho mapping (2ikgd535e376)",
                                   "./render-output/reference-2ikgd535e376.png",
                                   (canvasId)=>
                                   {
@@ -144,7 +144,7 @@
                                       const quadMesh = Rngon.mesh([quad], meshSettings);
                                       Rngon.render(canvasId, [quadMesh], renderSettings);
                                   }),
-                    await compare("Quad textured with affine mapping",
+                    await compare("Quad textured with affine mapping (e23k64bd7ehf)",
                                   "./render-output/reference-e23k64bd7ehf.png",
                                   (canvasId)=>
                                   {
@@ -158,7 +158,7 @@
                                       const quadMesh = Rngon.mesh([quad], meshSettings);
                                       Rngon.render(canvasId, [quadMesh], renderSettings);
                                   }),
-                    await compare("Quad with flipped UV coordinates textured using affine mapping",
+                    await compare("Quad with flipped UV coordinates textured using affine mapping (7f4174b17648)",
                                   "./render-output/reference-7f4174b17648.png",
                                   (canvasId)=>
                                   {
@@ -179,7 +179,7 @@
 
                                       Rngon.render(canvasId, [quadMesh], renderSettings);
                                   }),
-                    await compare("Quad with repeating UV coordinates textured using affine mapping",
+                    await compare("Quad with repeating UV coordinates textured using affine mapping (199f0400e329)",
                                   "./render-output/reference-199f0400e329.png",
                                   (canvasId)=>
                                   {
@@ -201,7 +201,7 @@
 
                                       Rngon.render(canvasId, [quadMesh], renderSettings);
                                   }),
-                    await compare("Quad textured with affine mapping and alpha",
+                    await compare("Quad textured with affine mapping and alpha (jg2dja4hei9a)",
                                   "./render-output/reference-jg2dja4hei9a.png",
                                   (canvasId)=>
                                   {
@@ -215,7 +215,7 @@
                                       const quadMesh = Rngon.mesh([quad], meshSettings);
                                       Rngon.render(canvasId, [quadMesh], renderSettings);
                                   }),
-                    await compare("Quad with non-perspective-correct affine mapping",
+                    await compare("Quad with non-perspective-correct affine mapping (42755d4078c6)",
                                   "./render-output/reference-42755d4078c6.png",
                                   (canvasId)=>
                                   {
@@ -230,7 +230,7 @@
 
                                       Rngon.render(canvasId, [quadMesh], {...renderSettings, perspectiveCorrectTexturing: false});
                                   }),
-                    await compare("Quad with perspective-correct affine mapping",
+                    await compare("Quad with perspective-correct affine mapping (9a920763abbe)",
                                   "./render-output/reference-9a920763abbe.png",
                                   (canvasId)=>
                                   {
@@ -245,7 +245,7 @@
 
                                       Rngon.render(canvasId, [quadMesh], {...renderSettings, perspectiveCorrectTexturing: true});
                                   }),
-                    await compare("Quad with default material",
+                    await compare("Quad with default material (6e88gkgb8c6c)",
                                   "./render-output/reference-6e88gkgb8c6c.png",
                                   (canvasId)=>
                                   {
