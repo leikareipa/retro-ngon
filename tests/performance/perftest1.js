@@ -43,7 +43,9 @@ const rngon_perftest1 = function(title = "", polygon, numClones, maxNumClones, c
                 cameraPosition: Rngon.translation_vector(0, 0, -9),
                 cameraDirection: Rngon.rotation_vector(0, 0, 0),
                 scale: 1,
-                hibernateWhenNotOnScreen:false
+                hibernateWhenNotOnScreen: false,
+                useDepthBuffer: false,
+                depthSort: "painter",
             });
         }
 
@@ -75,7 +77,9 @@ const rngon_perftest1 = function(title = "", polygon, numClones, maxNumClones, c
                 cameraPosition: Rngon.translation_vector(0, 0, -9),
                 cameraDirection: Rngon.rotation_vector(0, 0, frameCount),
                 scale: 1,
-                hibernateWhenNotOnScreen:false
+                hibernateWhenNotOnScreen: false,
+                useDepthBuffer: false,
+                depthSort: "painter",
             });
 
             if (frameCount >= numFrames) done();
