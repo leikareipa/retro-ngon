@@ -833,16 +833,16 @@ const texture = Rngon.texture_rgba(
 ```
 
 # Performance
-As suggested in the sections, above, the retro n-gon renderer is not intended for real-time display of high-polycount scenes, nor for real-time high-resolution rendering. Its principal target resolution is along the lines of 320 x 200 &ndash; upscaled by whichever amount &ndash; with spartan 3d scenes.
+As suggested in the sections, above, the retro n-gon renderer is not intended to provide fluid rendering of high-polycount, high-resolution scenes. Rather, low resolutions and spartan scenes are its domains.
 
-With that in mind, here's some performance figures on various platforms.
+## Performance on desktop
+The table below lists the results of [tests/performance/perftest1.html](tests/performance/perftest1.html) as of [de12aa8](https://github.com/leikareipa/retro-ngon/tree/de12aa8b6dd64308ac851659ac1c4da5cf437ee3) running on a Xeon E3-1230 v3 desktop PC in Chrome 79 (top value) and Firefox 72 (bottom value).
 
-## Performance on the desktop
-The table below lists test results from [tests/performance/perftest1.html](tests/performance/perftest1.html) as of [5bb8960](https://github.com/leikareipa/retro-ngon/tree/5bb8960f433e99d615253ad56014abf3f19f6b4c) running on a Xeon E3-1230 v3 desktop PC in Chrome 72 (top) and Firefox 65 (bottom). The values given are frames per second (FPS) for polycounts 30, 60, ..., 960. A bullet indicates that the FPS was at least 60, the screen's refresh rate during the tests.
+The values given are frames per second for scenes with 30, 60, ..., 960 polygons. A bullet indicates that the frame rate was at least 60, the screen's refresh rate during the tests.
 
 <table>
     <tr>
-        <td align="left" width="110">E3-1230 v3</td>
+        <td align="left" width="130">E3-1230 v3</td>
         <th align="center">30</th>
         <th align="center">60</th>
         <th align="center">120</th>
@@ -857,7 +857,7 @@ The table below lists test results from [tests/performance/perftest1.html](tests
         <td align="center">&bull;</td>
         <td align="center">&bull;</td>
         <td align="center">&bull;</td>
-        <td align="center">58<br>44</td>
+        <td align="center">&bull;</td>
     </tr>
     <tr>
         <th align="left">Solid fill</th>
@@ -865,69 +865,30 @@ The table below lists test results from [tests/performance/perftest1.html](tests
         <td align="center">&bull;</td>
         <td align="center">&bull;</td>
         <td align="center">&bull;</td>
-        <td align="center">59<br>56</td>
-        <td align="center">44<br>34</td>
-    </tr>
-    <tr>
-        <th align="left">Textured</th>
         <td align="center">&bull;</td>
-        <td align="center">&bull;<br>59</td>
-        <td align="center">&bull;<br>59</td>
-        <td align="center">&bull;<br>46</td>
-        <td align="center">57<br>26</td>
-        <td align="center">36<br>14</td>
-    </tr>
-</table>
-
-Below are results from [tests/performance/perftest1.html](tests/performance/perftest1.html) as of [5bb8960](https://github.com/leikareipa/retro-ngon/tree/5bb8960f433e99d615253ad56014abf3f19f6b4c) running on a Pentium G4560 desktop PC in Chrome 72. The notes from the tests above apply.
-
-<table>
-    <tr>
-        <td align="left" width="110">G4560</td>
-        <th align="center">30</th>
-        <th align="center">60</th>
-        <th align="center">120</th>
-        <th align="center">240</th>
-        <th align="center">480</th>
-        <th align="center">960</th>
-    </tr>
-    <tr>
-        <th align="left">Wireframe</th>
-        <td align="center">&bull;</td>
-        <td align="center">&bull;</td>
-        <td align="center">&bull;</td>
-        <td align="center">&bull;</td>
-        <td align="center">58</td>
-        <td align="center">58</td>
-    </tr>
-    <tr>
-        <th align="left">Solid fill</th>
-        <td align="center">&bull;</td>
-        <td align="center">&bull;</td>
-        <td align="center">&bull;</td>
-        <td align="center">58</td>
-        <td align="center">59</td>
-        <td align="center">41</td>
+        <td align="center">51<br>40</td>
     </tr>
     <tr>
         <th align="left">Textured</th>
         <td align="center">&bull;</td>
         <td align="center">&bull;</td>
         <td align="center">&bull;</td>
-        <td align="center">56</td>
-        <td align="center">56</td>
-        <td align="center">34</td>
+        <td align="center">&bull;</td>
+        <td align="center">57<br>43</td>
+        <td align="center">32<br>24</td>
     </tr>
 </table>
 
-The gist of these data is that the renderer performs better on Chrome than it does on Firefox, most notably so when texturing is enabled. On Chrome, polycounts of roughly 100 to 300 could be maintained at 60 FPS; or about 1000 at 30 FPS.
+Overall, Chrome is somewhat faster than Firefox, but both browsers are able to reach 60 FPS with scenes of up to 300 textured or 500 untextured polygons.
 
 ## Performance on mobile
-Below are results from [tests/performance/perftest1.html](tests/performance/perftest1.html) as of [f340393](https://github.com/leikareipa/retro-ngon/tree/f340393162243b4a6808f31a2db2843bac29833a) running on an Honor View20 (2019) phone in Chrome. The notes from the tests above apply.
+The table below lists the results of [tests/performance/perftest1.html](tests/performance/perftest1.html) as of [de12aa8](https://github.com/leikareipa/retro-ngon/tree/de12aa8b6dd64308ac851659ac1c4da5cf437ee3) running on an Honor View20 phone in Chrome 79.
+
+The values given are frames per second for scenes with 30, 60, ..., 960 polygons. A bullet indicates that the frame rate was at least 60, the screen's refresh rate during the tests.
 
 <table>
     <tr>
-        <td align="left" width="110">View20</td>
+        <td align="left" width="130">View20</td>
         <th align="center">30</th>
         <th align="center">60</th>
         <th align="center">120</th>
@@ -941,69 +902,30 @@ Below are results from [tests/performance/perftest1.html](tests/performance/perf
         <td align="center">&bull;</td>
         <td align="center">&bull;</td>
         <td align="center">&bull;</td>
-        <td align="center">54</td>
-        <td align="center">27</td>
+        <td align="center">&bull;</td>
+        <td align="center">43</td>
     </tr>
     <tr>
         <th align="left">Solid fill</th>
         <td align="center">&bull;</td>
         <td align="center">&bull;</td>
         <td align="center">&bull;</td>
-        <td align="center">59</td>
-        <td align="center">41</td>
-        <td align="center">20</td>
+        <td align="center">&bull;</td>
+        <td align="center">&bull;</td>
+        <td align="center">34</td>
     </tr>
     <tr>
         <th align="left">Textured</th>
         <td align="center">&bull;</td>
         <td align="center">&bull;</td>
         <td align="center">&bull;</td>
-        <td align="center">56</td>
-        <td align="center">33</td>
+        <td align="center">52</td>
+        <td align="center">34</td>
         <td align="center">17</td>
     </tr>
 </table>
 
-Below are results from [tests/performance/perftest1.html](tests/performance/perftest1.html) as of [5bb8960](https://github.com/leikareipa/retro-ngon/tree/5bb8960f433e99d615253ad56014abf3f19f6b4c) running on a Huawei MediaPad T1-A21L (2014? 2015?) tablet in Chrome. The notes from the tests above apply. An empty cell indicates that no test was run for that polycount.
-
-<table>
-    <tr>
-        <td align="left" width="110">T1-A21L</td>
-        <th align="center">30</th>
-        <th align="center">60</th>
-        <th align="center">120</th>
-        <th align="center">240</th>
-        <th align="center">480</th>
-        <th align="center">960</th>
-    </tr>
-    <tr>
-        <th align="left">Wireframe</th>
-        <td align="center">55</td>
-        <td align="center">56</td>
-        <td align="center">42</td>
-        <td align="center">27</td>
-        <td align="center">13</td>
-        <td align="center">6</td>
-    </tr>
-    <tr>
-        <th align="left">Solid fill</th>
-        <td align="center">43</td>
-        <td align="center">31</td>
-        <td align="center">27</td>
-        <td align="center">14</td>
-        <td align="center">7</td>
-        <td align="center">3</td>
-    </tr>
-    <tr>
-        <th align="left">Textured</th>
-        <td align="center">31</td>
-        <td align="center">12</td>
-        <td align="center">6</td>
-        <td align="center"></td>
-        <td align="center"></td>
-        <td align="center"></td>
-    </tr>
-</table>
+Enabling texturing halves the number of polygons that can be rendered at 60 FPS - but one can still maintain a scene of 500 untextured polygons at that rate.
 
 # Project status
 The project is currently in beta - its core functionality is in place, but notable bugs, API-breaking changes, etc. are to be expected.
