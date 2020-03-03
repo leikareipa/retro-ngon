@@ -3,7 +3,7 @@ A minimalist 3d software renderer that draws n-sided polygons (as well as lines 
 
 You can view an interactive sample of the renderer's output [here](https://tarpeeksihyvaesoft.com/s/retro-ngon/samples/tr/home-test.html?fov=55&scale=0.2&depthBuffer=true&perspectiveCorrect=true) (interaction requires a mouse and keyboard; click on the page to engage mouse lock). This renders a scene from the PC game *Tomb Raider* in which you can move around using the mouse and keyboard (the ESDF keys, specifically).
 
-A non-interactive render sample is also available [here](https://tarpeeksihyvaesoft.com/s/retro-ngon/samples/simple2.html). It produces a spinning texture-mapped cube.
+A non-interactive render sample is also available [here](https://tarpeeksihyvaesoft.com/s/retro-ngon/samples/textured-cube-model/). It produces a spinning texture-mapped cube.
 
 ![A textured cube](/images/painting-cube.png)
 
@@ -249,7 +249,7 @@ image-rendering: -webkit-crisp-edges; /* For Safari*/
 ```
 
 ### More examples
-The [samples/](samples/) directory collects together various examples of the renderer's usage.
+The [samples/](samples/) directory contains various examples of using the renderer.
 
 ## Creating and rendering 3d models
 ### N-gons
