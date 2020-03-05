@@ -1,3 +1,12 @@
+/*
+ * 2020 Tarpeeksi Hyvae Soft
+ *
+ * Software: Retro n-gon renderer
+ * 
+ */
+
+"use strict";
+
 import {texturedCubeModel} from "./assets/models/textured-cube.rngon-model.js";
 
 // Initialize the model's n-gons. This will also load into memory any textures

@@ -1,3 +1,12 @@
+/*
+ * 2020 Tarpeeksi Hyvae Soft
+ *
+ * Software: Retro n-gon renderer
+ * 
+ */
+
+"use strict";
+
 export const sample_scene = (frameCount)=>
 {
     const rotationSpeed = 1;
