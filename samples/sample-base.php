@@ -23,7 +23,7 @@
         <script src="../distributable/rngon.cat.js"></script>
         <script>
             var renderSettings = {
-                scale: 0.2,
+                scale: 0.2  ,
                 cameraDirection: Rngon.rotation_vector(0, 0, 0),
                 cameraPosition: Rngon.translation_vector(0, 0, -170),
             };
@@ -47,6 +47,7 @@
                 const renderInfo = Rngon.render("canvas", [scene],
                 {
                     clipToViewport: true,
+                    depthSort: "painter-reverse",
                     useDepthBuffer: true,
                     perspectiveCorrectTexturing: true,
                     cameraDirection: renderSettings.cameraDirection,

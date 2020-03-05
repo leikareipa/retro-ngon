@@ -15,6 +15,7 @@ Rngon.line_draw = (()=>
                                     respectDepth = false)
         {
             const pixelBuffer = Rngon.internalState.pixelBuffer.data;
+            const depthBuffer = (Rngon.internalState.useDepthBuffer? Rngon.internalState.depthBuffer.buffer : null);
             const bufferWidth = Rngon.internalState.pixelBuffer.width;
             const bufferHeight = Rngon.internalState.pixelBuffer.height;
 
@@ -67,8 +68,7 @@ Rngon.line_draw = (()=>
 
                 const idx = ((x + y * bufferWidth) * 4);
 
-                if (respectDepth &&
-                    (Rngon.internalState.depthBuffer.buffer[idx/4] <= depth))
+                if (respectDepth && (depthBuffer[idx/4] <= depth))
                 {
                     return;
                 }
@@ -77,6 +77,7 @@ Rngon.line_draw = (()=>
                 pixelBuffer[idx + 1] = lineColor.green;
                 pixelBuffer[idx + 2] = lineColor.blue;
                 pixelBuffer[idx + 3] = lineColor.alpha;
+                if (depthBuffer) depthBuffer[idx/4] = depth;
             }
         },
 
