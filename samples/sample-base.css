@@ -58,12 +58,83 @@ body
     border-radius: 0px;
 }
 
-#fps-display
+.infoboxes-container
 {
     position: absolute;
-    top: 0;
-    right: 0;
-    background-color: black;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    flex-direction: row;
+}
+
+.infoboxes-container .infobox + .infobox
+{
+    margin-left: 10px;
+}
+
+.infobox
+{
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    padding: 0 20px;
+    width: 90px;
+    height: 65px;
+    background-color: rgba(0, 0, 0, 0.3);
     color: white;
-    padding: 5px;
+    border-radius: 4px;
+    justify-content: center;
+    align-items: center;
+}
+
+.infobox > .title
+{
+    color: lightgray;
+    font-size: 80%;
+    text-align: center;
+}
+
+.infobox > .value
+{
+    font-weight: bold;
+    text-align: center;
+    margin: 0 5px;
+}
+
+.infobox > .adjust
+{
+    cursor: pointer;
+    padding: 5px 15px;
+    color: lightgray;
+    font-weight: bold;
+    position: absolute;
+    transform: translateY(-50%);
+}
+
+.infobox > .adjust.left
+{
+    left: 5px;
+    top: 50%;
+}
+
+.infobox > .adjust.right
+{
+    right: 5px;
+    top: 50%;
+}
+
+.infobox > .adjust::before
+{
+    font-family: "Font Awesome 5 Free";
+    font-weight: bold;
+}
+
+.infobox > .adjust.left::before
+{
+    content: "\f0d9";
+}
+
+.infobox > .adjust.right::before
+{
+    content: "\f0da";
 }

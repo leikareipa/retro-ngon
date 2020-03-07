@@ -17,7 +17,21 @@
                 class="rngon-canvas rngon-pixelated-upscale">
         </canvas>
 
-        <div id="fps-display">
+        <div class="infoboxes-container">
+            <div class="infobox scale">
+                <div class="title">Scale</div>
+                <div class="value">0.20</div>
+                <div class="adjust left" onclick="change_scale(-1);"></div>
+                <div class="adjust right" onclick="change_scale(1);"></div>
+            </div>
+            <div class="infobox polycount">
+                <div class="title">Polys</div>
+                <div class="value">0</div>
+            </div>
+            <div class="infobox fps">
+                <div class="title">FPS</div>
+                <div class="value">0</div>
+            </div>
         </div>
         
         <script src="../distributable/rngon.cat.js"></script>
@@ -27,6 +41,15 @@
                 cameraDirection: Rngon.rotation_vector(0, 0, 0),
                 cameraPosition: Rngon.translation_vector(0, 0, -170),
             };
+
+            function change_scale(dir)
+            {
+                const scales = [0.15, 0.2, 0.3, 0.5, 0.75, 1];
+                const newScaleIdx = Math.max(0, Math.min((scales.length - 1), (scales.indexOf(renderSettings.scale) + Math.sign(dir))));
+
+                renderSettings.scale = (scales[newScaleIdx] || scales[0]);
+                document.querySelector(".infobox.scale .value").innerHTML = renderSettings.scale.toFixed(2);
+            }
         </script>
         <script type="module">
             import {sample_scene} from "<?php $sampleID = ($_GET["sample"] ?? "rotating-triangle"); echo "./{$sampleID}/{$sampleID}.js"; ?>";
@@ -55,9 +78,10 @@
                     scale: renderSettings.scale,
                 });
 
-                if (frameCount % 60 === 0)
+                if (frameCount % 30 === 0)
                 {
-                    document.getElementById("fps-display").innerHTML = `FPS: ${Math.floor(1000 / (renderInfo.totalRenderTimeMs || 1))}`;
+                    document.querySelector(".infobox.fps .value").innerHTML = Math.floor(1000 / (renderInfo.totalRenderTimeMs || 1));
+                    document.querySelector(".infobox.polycount .value").innerHTML = renderInfo.numNgonsRendered;
                 }
 
                 window.requestAnimationFrame(()=>render_loop(frameCount + 1));
