@@ -1,0 +1,7 @@
+Painting:
+    Source: https://opengameart.org/node/8754
+    Author: eleazzaar (https://opengameart.org/users/eleazzaar; opengameart.org)
+    License: CC0 (The authors of this content agree to license it under later versions of the license)
+
+Notes:
+- The textures have been downconverted in resolution and color depth
