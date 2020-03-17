@@ -214,8 +214,10 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                             // Solid fill.
                             if (!ngon.material.texture)
                             {
-                                // Alpha test. If the pixel is fully opaque, draw it; otherwise, skip it.
-                                if (ngon.material.color.alpha !== 255) continue;
+                                // Alpha-test the polygon.
+                                if (ngon.material.color.alpha <= 0) continue;
+                                else if ((ngon.material.color.alpha < 255) && ((x + y) % 2)) continue; // Partial transparency with a stipple pattern.
+
 
                                 pixelBuffer[pixelBufferIdx + 0] = ngon.material.color.red;
                                 pixelBuffer[pixelBufferIdx + 1] = ngon.material.color.green;
@@ -333,13 +335,17 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                 // Verify that the texel isn't out of bounds.
                                 if (!texel) continue;
 
-                                // Alpha test. If the pixel is fully opaque, draw it; otherwise, skip it.
+                                // Alpha-test the texture. If the texel isn't fully opaque, skip it.
                                 if (texel.alpha !== 255) continue;
+
+                                // Alpha-test the polygon.
+                                if (ngon.material.color.alpha <= 0) continue;
+                                else if ((ngon.material.color.alpha < 255) && ((x + y) % 2)) continue; // Partial transparency with a stipple pattern.
 
                                 pixelBuffer[pixelBufferIdx + 0] = (texel.red   * ngon.material.color.unitRange.red);
                                 pixelBuffer[pixelBufferIdx + 1] = (texel.green * ngon.material.color.unitRange.green);
                                 pixelBuffer[pixelBufferIdx + 2] = (texel.blue  * ngon.material.color.unitRange.blue);
-                                pixelBuffer[pixelBufferIdx + 3] = (texel.alpha * ngon.material.color.unitRange.alpha);
+                                pixelBuffer[pixelBufferIdx + 3] = texel.alpha;
                                 if (depthBuffer) depthBuffer[depthBufferIdx] = iplDepth;
                             }
 

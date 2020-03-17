@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (05 March 2020 04:39:18 UTC)
+// VERSION: beta live (17 March 2020 22:20:01 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -1192,13 +1192,17 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                 // Verify that the texel isn't out of bounds.
                                 if (!texel) continue;
 
-                                // Alpha test. If the pixel is fully opaque, draw it; otherwise, skip it.
+                                // Alpha-test the texture. If the texel isn't fully opaque, skip it.
                                 if (texel.alpha !== 255) continue;
+
+                                // Alpha-test the polygon.
+                                if (ngon.material.color.alpha <= 0) continue;
+                                else if (ngon.material.color.alpha < 255 && ((x + y) % 2)) continue; // Partial transparency with a stipple pattern.
 
                                 pixelBuffer[pixelBufferIdx + 0] = (texel.red   * ngon.material.color.unitRange.red);
                                 pixelBuffer[pixelBufferIdx + 1] = (texel.green * ngon.material.color.unitRange.green);
                                 pixelBuffer[pixelBufferIdx + 2] = (texel.blue  * ngon.material.color.unitRange.blue);
-                                pixelBuffer[pixelBufferIdx + 3] = (texel.alpha * ngon.material.color.unitRange.alpha);
+                                pixelBuffer[pixelBufferIdx + 3] = texel.alpha;
                                 if (depthBuffer) depthBuffer[depthBufferIdx] = iplDepth;
                             }
 
