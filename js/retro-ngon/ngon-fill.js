@@ -214,15 +214,32 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                             // Solid fill.
                             if (!ngon.material.texture)
                             {
-                                // Alpha-test the polygon.
-                                if (ngon.material.color.alpha <= 0) continue;
-                                else if ((ngon.material.color.alpha < 255) && ((x + y) % 2)) continue; // Partial transparency with a stipple pattern.
+                                // Alpha-test the polygon. For partial transparency, we'll reject
+                                // pixels in a particular pattern to create a see-through stipple
+                                // effect.
+                                if (ngon.material.color.alpha < 255)
+                                {
+                                    // Full transparency.
+                                    if (ngon.material.color.alpha <= 0)
+                                    {
+                                        continue;
+                                    }
+                                    // Partial transparency.
+                                    else
+                                    {
+                                        const stipplePatternIdx = Math.floor(ngon.material.color.alpha / (256 / Rngon.ngon_filler.stipple_patterns.length));
+                                        const stipplePattern = Rngon.ngon_filler.stipple_patterns[stipplePatternIdx];
+                                        const stipplePixelIdx = ((x % stipplePattern.width) + (y % stipplePattern.height) * stipplePattern.width);
 
+                                        // Reject by stipple pattern.
+                                        if (stipplePattern.pixels[stipplePixelIdx]) continue;
+                                    }   
+                                }
 
                                 pixelBuffer[pixelBufferIdx + 0] = ngon.material.color.red;
                                 pixelBuffer[pixelBufferIdx + 1] = ngon.material.color.green;
                                 pixelBuffer[pixelBufferIdx + 2] = ngon.material.color.blue;
-                                pixelBuffer[pixelBufferIdx + 3] = ngon.material.color.alpha;
+                                pixelBuffer[pixelBufferIdx + 3] = 255;
                                 if (depthBuffer) depthBuffer[depthBufferIdx] = iplDepth;
                             }
                             // Textured fill.
@@ -338,14 +355,32 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                 // Alpha-test the texture. If the texel isn't fully opaque, skip it.
                                 if (texel.alpha !== 255) continue;
 
-                                // Alpha-test the polygon.
-                                if (ngon.material.color.alpha <= 0) continue;
-                                else if ((ngon.material.color.alpha < 255) && ((x + y) % 2)) continue; // Partial transparency with a stipple pattern.
+                                // Alpha-test the polygon. For partial transparency, we'll reject
+                                // pixels in a particular pattern to create a see-through stipple
+                                // effect.
+                                if (ngon.material.color.alpha < 255)
+                                {
+                                    // Full transparency.
+                                    if (ngon.material.color.alpha <= 0)
+                                    {
+                                        continue;
+                                    }
+                                    // Partial transparency.
+                                    else
+                                    {
+                                        const stipplePatternIdx = Math.floor(ngon.material.color.alpha / (256 / Rngon.ngon_filler.stipple_patterns.length));
+                                        const stipplePattern = Rngon.ngon_filler.stipple_patterns[stipplePatternIdx];
+                                        const stipplePixelIdx = ((x % stipplePattern.width) + (y % stipplePattern.height) * stipplePattern.width);
+
+                                        // Reject by stipple pattern.
+                                        if (stipplePattern.pixels[stipplePixelIdx]) continue;
+                                    }   
+                                }
 
                                 pixelBuffer[pixelBufferIdx + 0] = (texel.red   * ngon.material.color.unitRange.red);
                                 pixelBuffer[pixelBufferIdx + 1] = (texel.green * ngon.material.color.unitRange.green);
                                 pixelBuffer[pixelBufferIdx + 2] = (texel.blue  * ngon.material.color.unitRange.blue);
-                                pixelBuffer[pixelBufferIdx + 3] = texel.alpha;
+                                pixelBuffer[pixelBufferIdx + 3] = 255;
                                 if (depthBuffer) depthBuffer[depthBufferIdx] = iplDepth;
                             }
 
@@ -399,4 +434,48 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
     }
 
     return;
+}
+
+// Create a set of stipple patterns for emulating transparency.
+{
+    Rngon.ngon_filler.stipple_patterns = [
+        // ~1% transparent.
+        {
+            width: 8,
+            height: 6,
+            pixels: [0,1,1,1,0,1,1,1,
+                     1,1,1,1,1,1,1,1,
+                     1,1,1,1,1,1,1,1,
+                     1,1,0,1,1,1,0,1,
+                     1,1,1,1,1,1,1,1,
+                     1,1,1,1,1,1,1,1],
+        },
+
+        {
+            width: 4,
+            height: 4,
+            pixels: [0,1,0,1,
+                     1,1,1,1,
+                     1,0,1,0,
+                     1,1,1,1],
+        },
+
+        // 50% transparent.
+        {
+            width: 2,
+            height: 2,
+            pixels: [1,0,
+                     0,1],
+        },
+    ];
+
+    // Append a reverse set of patterns to go from 50% to 99% transparent.
+    for (let i = (Rngon.ngon_filler.stipple_patterns.length - 2); i >= 0; i--)
+    {
+        Rngon.ngon_filler.stipple_patterns.push({
+                width: Rngon.ngon_filler.stipple_patterns[i].width,
+                height: Rngon.ngon_filler.stipple_patterns[i].height,
+                pixels: Rngon.ngon_filler.stipple_patterns[i].pixels.map(p=>Number(!p)),
+            });
+    }
 }
