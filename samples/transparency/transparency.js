@@ -23,8 +23,8 @@ export const sample_scene = ()=>
 {
     return Rngon.mesh(transparencyModel.ngons,
     {
-        translation: Rngon.translation_vector(-22, -4, 0),
+        translation: Rngon.translation_vector(-22, -10, 0),
         rotation: Rngon.rotation_vector(0, -90, 0),
-        scaling: Rngon.scaling_vector(35, 35, 40)
+        scaling: Rngon.scaling_vector(25, 25, 30)
     });
 };
