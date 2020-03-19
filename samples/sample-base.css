@@ -68,6 +68,15 @@ body
     flex-direction: row;
 }
 
+/* For infoboxes created by individual samples.*/
+.infoboxes-container.additional
+{
+    width: 100%;
+    justify-content: center;
+    top: calc(100% - 20px - 65px);
+    pointer-events: none;
+}
+
 .infoboxes-container .infobox + .infobox
 {
     margin-left: 10px;
@@ -75,6 +84,7 @@ body
 
 .infobox
 {
+    pointer-events: initial;
     position: relative;
     display: flex;
     flex-direction: column;
