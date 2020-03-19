@@ -15,6 +15,12 @@ Rngon.ngon_transformer = function(ngons = [], clipSpaceMatrix = [], screenSpaceM
 
     for (const ngon of ngons)
     {
+        // Ignore fully transparent polygons.
+        if (!ngon.material.color.alpha)
+        {
+            continue;
+        }
+
         // Backface culling.
         if (!ngon.material.isTwoSided)
         {
