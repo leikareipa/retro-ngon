@@ -8,9 +8,9 @@
 
 "use strict";
 
-Rngon.screen = function(canvasElementId = "",              // The DOM id of the canvas element.
-                        ngon_fill_f = function(){},        // A function that rasterizes the given ngons onto the canvas.
-                        ngon_transform_f = function(){},   // A function that transforms the given ngons into screen-space for the canvas.
+Rngon.screen = function(canvasElementId = "",                      // The DOM id of the canvas element.
+                        ngon_fill_f = function(){},                // A function that rasterizes the given ngons onto the canvas.
+                        ngon_transform_and_light_f = function(){}, // A function applies lighting to the given ngons, and transforms them into screen-space for the canvas.
                         scaleFactor = 1,
                         fov = 43,
                         nearPlane = 1,
@@ -18,7 +18,7 @@ Rngon.screen = function(canvasElementId = "",              // The DOM id of the 
                         auxiliaryBuffers = [])
 {
     Rngon.assert && (typeof scaleFactor === "number") || Rngon.throw("Expected the scale factor to be a numeric value.");
-    Rngon.assert && (typeof ngon_fill_f === "function" && typeof ngon_transform_f === "function")
+    Rngon.assert && (typeof ngon_fill_f === "function" && typeof ngon_transform_and_light_f === "function")
                  || Rngon.throw("Expected ngon-manipulation functions to be provided.");
 
     const canvasElement = document.getElementById(canvasElementId);
@@ -68,15 +68,13 @@ Rngon.screen = function(canvasElementId = "",              // The DOM id of the 
         },
 
         // Returns a copy of the ngons transformed into screen-space for this render surface.
+        // The n-gons will also have any of the scene's light(s) applied to them.
         // Takes as input the ngons to be transformed, an object matrix which contains the object's
         // transforms, a camera matrix, which contains the camera's translation and rotation, and
         // a vector containing the camera's raw world position.
-        transform_ngons: function(ngons = [], objectMatrix = [], cameraMatrix = [], cameraPos)
+        transform_and_light_ngons: function(ngons = [], objectMatrix = [], cameraMatrix = [], cameraPos)
         {
-            const viewSpaceMatrix = Rngon.matrix44.matrices_multiplied(cameraMatrix, objectMatrix);
-            const clipSpaceMatrix = Rngon.matrix44.matrices_multiplied(perspectiveMatrix, viewSpaceMatrix);
-
-            ngon_transform_f(ngons, clipSpaceMatrix, screenSpaceMatrix, cameraPos);
+            ngon_transform_and_light_f(ngons, objectMatrix, cameraMatrix, perspectiveMatrix, screenSpaceMatrix, cameraPos);
         },
 
         // Draw all n-gons currently stored in the internal n-gon cache onto the render surface.

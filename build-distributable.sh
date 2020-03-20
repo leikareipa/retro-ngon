@@ -8,13 +8,14 @@ VERSION="beta live"
 
 SOURCE_FILES=("./js/retro-ngon/retro-ngon.js"
               "./js/retro-ngon/trig.js"
+              "./js/retro-ngon/light.js"
               "./js/retro-ngon/color.js"
               "./js/retro-ngon/geometry.js"
               "./js/retro-ngon/line-draw.js"
               "./js/retro-ngon/matrix44.js"
               "./js/retro-ngon/ngon-fill.js"
               "./js/retro-ngon/render.js"
-              "./js/retro-ngon/transform.js"
+              "./js/retro-ngon/transform-and-light.js"
               "./js/retro-ngon/texture.js"
               "./js/retro-ngon/screen.js")
 

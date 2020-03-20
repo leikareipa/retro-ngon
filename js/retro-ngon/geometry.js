@@ -252,6 +252,8 @@ Rngon.ngon.defaultMaterial =
     texture: null,
     textureMapping: "ortho",
     uvWrapping: "repeat",
+    shading: "none",
+    ambientLightLevel: 0,
     hasWireframe: false,
     isTwoSided: true,
     wireframeColor: Rngon.color_rgba(0, 0, 0),

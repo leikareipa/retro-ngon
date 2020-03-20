@@ -39,13 +39,14 @@ Rngon.render = function(canvasElementId,
     Rngon.internalState.showGlobalWireframe = (options.globalWireframe == true);
     Rngon.internalState.applyViewportClipping = (options.clipToViewport == true);
     Rngon.internalState.usePerspectiveCorrectTexturing = (options.perspectiveCorrectTexturing == true);
+    Rngon.internalState.lights = options.lights;
 
     // Render a single frame onto the render surface.
     if ((!options.hibernateWhenNotOnScreen || is_surface_in_view()))
     {
         const renderSurface = Rngon.screen(canvasElementId,
                                            Rngon.ngon_filler,
-                                           Rngon.ngon_transformer,
+                                           Rngon.ngon_transform_and_light,
                                            options.scale,
                                            options.fov,
                                            options.nearPlane,
@@ -121,7 +122,7 @@ Rngon.render = function(canvasElementId,
 
         for (const mesh of meshes)
         {
-            renderSurface.transform_ngons(mesh.ngons, mesh.objectSpaceMatrix(), cameraMatrix, cameraPosition);
+            renderSurface.transform_and_light_ngons(mesh.ngons, mesh.objectSpaceMatrix(), cameraMatrix, cameraPosition);
         };
 
         return;
@@ -219,4 +220,5 @@ Rngon.render.defaultOptions =
     hibernateWhenNotOnScreen: true,
     perspectiveCorrectTexturing: false,
     auxiliaryBuffers: [],
+    lights: [],
 };

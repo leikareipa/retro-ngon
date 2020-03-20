@@ -68,4 +68,14 @@ Rngon.internalState =
     // that have been transformed for the current frame) may be smaller than the
     // cache's total capacity.
     transformedNgonsCache: {numActiveNgons:0, ngons:[]},
+
+    // All transformed (to eye space) lights on a particular call to render() will
+    // be placed here. The cache size will be dynamically adjusted up to match the
+    // largest number of transformed lights, so at any given time the number of active
+    // lights (those that have been transformed for the current frame) may be smaller
+    // than the cache's total capacity.
+    transformedLightsCache: {numActiveLights:0, lights:[]},
+
+    // All light sources that should currently apply to rendered n-gons.
+    lights: [],
 }

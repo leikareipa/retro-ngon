@@ -1,18 +1,19 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (19 March 2020 21:55:20 UTC)
+// VERSION: beta live (21 March 2020 05:38:22 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
 //	./js/retro-ngon/retro-ngon.js
 //	./js/retro-ngon/trig.js
+//	./js/retro-ngon/light.js
 //	./js/retro-ngon/color.js
 //	./js/retro-ngon/geometry.js
 //	./js/retro-ngon/line-draw.js
 //	./js/retro-ngon/matrix44.js
 //	./js/retro-ngon/ngon-fill.js
 //	./js/retro-ngon/render.js
-//	./js/retro-ngon/transform.js
+//	./js/retro-ngon/transform-and-light.js
 //	./js/retro-ngon/texture.js
 //	./js/retro-ngon/screen.js
 /////////////////////////////////////////////////
@@ -87,6 +88,16 @@ Rngon.internalState =
     // that have been transformed for the current frame) may be smaller than the
     // cache's total capacity.
     transformedNgonsCache: {numActiveNgons:0, ngons:[]},
+
+    // All transformed (to eye space) lights on a particular call to render() will
+    // be placed here. The cache size will be dynamically adjusted up to match the
+    // largest number of transformed lights, so at any given time the number of active
+    // lights (those that have been transformed for the current frame) may be smaller
+    // than the cache's total capacity.
+    transformedLightsCache: {numActiveLights:0, lights:[]},
+
+    // All light sources that should currently apply to rendered n-gons.
+    lights: [],
 }
 /*
  * Tarpeeksi Hyvae Soft 2019 /
@@ -282,6 +293,28 @@ Rngon.trig = (function()
 
     return publicInterface;
 })();
+/*
+ * 2020 Tarpeeksi Hyvae Soft
+ *
+ * Software: Retro n-gon renderer
+ *
+ */
+
+"use strict";
+
+// A light source.
+Rngon.light = function(position = Rngon.translation_vector(0, 0, 0))
+{
+    Rngon.assert && (typeof position === "object")
+                 || Rngon.throw("Expected numbers as parameters to the light factory.");
+
+    const returnObject =
+    {
+        position,
+    };
+
+    return returnObject;
+}
 /*
  * Tarpeeksi Hyvae Soft 2019 /
  * Retro n-gon renderer
@@ -583,6 +616,8 @@ Rngon.ngon.defaultMaterial =
     texture: null,
     textureMapping: "ortho",
     uvWrapping: "repeat",
+    shading: "none",
+    ambientLightLevel: 0,
     hasWireframe: false,
     isTwoSided: true,
     wireframeColor: Rngon.color_rgba(0, 0, 0),
@@ -959,6 +994,9 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
             {
                 const interpolatePerspective = Rngon.internalState.usePerspectiveCorrectTexturing;
 
+                // Note: For performance reasons, we don't use a utility function
+                // to reduce code repetition in parts of this function - it would
+                // run tangibly slower.
                 const add_edge = (vert1, vert2, isLeftEdge)=>
                 {
                     const startY = Math.min(renderHeight, Math.max(0, Math.round(vert1.y)));
@@ -996,18 +1034,14 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                     const deltaUVW = interpolatePerspective? (((1 / vert2.w) - (1 / vert1.w)) / edgeHeight)
                                                            : 0;
 
-                    const edge =
-                    {
+                    (isLeftEdge? leftEdges : rightEdges).push({
                         startY, endY,
                         startX, deltaX,
                         startDepth, deltaDepth,
                         startU, deltaU,
                         startV, deltaV,
                         startUVW, deltaUVW,
-                    }
-
-                    if (isLeftEdge) leftEdges.push(edge);
-                    else rightEdges.push(edge);
+                    });
                 };
 
                 for (let l = 1; l < leftVerts.length; l++) add_edge(leftVerts[l-1], leftVerts[l], true);
@@ -1038,6 +1072,8 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                     if (spanWidth > 0)
                     {
                         // We'll interpolate these parameters across the span.
+                        // Note: For performance reasons, we don't use a utility function
+                        // to reduce code repetition - it would run tangibly slower.
                         const deltaDepth = ((rightEdge.startDepth - leftEdge.startDepth) / spanWidth);
                         let iplDepth = (leftEdge.startDepth - deltaDepth);
 
@@ -1379,13 +1415,14 @@ Rngon.render = function(canvasElementId,
     Rngon.internalState.showGlobalWireframe = (options.globalWireframe == true);
     Rngon.internalState.applyViewportClipping = (options.clipToViewport == true);
     Rngon.internalState.usePerspectiveCorrectTexturing = (options.perspectiveCorrectTexturing == true);
+    Rngon.internalState.lights = options.lights;
 
     // Render a single frame onto the render surface.
     if ((!options.hibernateWhenNotOnScreen || is_surface_in_view()))
     {
         const renderSurface = Rngon.screen(canvasElementId,
                                            Rngon.ngon_filler,
-                                           Rngon.ngon_transformer,
+                                           Rngon.ngon_transform_and_light,
                                            options.scale,
                                            options.fov,
                                            options.nearPlane,
@@ -1461,7 +1498,7 @@ Rngon.render = function(canvasElementId,
 
         for (const mesh of meshes)
         {
-            renderSurface.transform_ngons(mesh.ngons, mesh.objectSpaceMatrix(), cameraMatrix, cameraPosition);
+            renderSurface.transform_and_light_ngons(mesh.ngons, mesh.objectSpaceMatrix(), cameraMatrix, cameraPosition);
         };
 
         return;
@@ -1559,6 +1596,7 @@ Rngon.render.defaultOptions =
     hibernateWhenNotOnScreen: true,
     perspectiveCorrectTexturing: false,
     auxiliaryBuffers: [],
+    lights: [],
 };
 /*
  * Tarpeeksi Hyvae Soft 2019 /
@@ -1568,12 +1606,18 @@ Rngon.render.defaultOptions =
 
 "use strict";
 
-// Transforms the given n-gons into screen space for rendering. The transformed n-gons
-// are stored in the internal n-gon cache.
-Rngon.ngon_transformer = function(ngons = [], clipSpaceMatrix = [], screenSpaceMatrix = [], cameraPos)
+// Applies lighting to the given n-gons, and transforms them into screen space
+// for rendering. The processed n-gons are stored in the internal n-gon cache.
+Rngon.ngon_transform_and_light = function(ngons = [],
+                                          objectMatrix = [],
+                                          cameraMatrix = [],
+                                          projectionMatrix = [],
+                                          screenSpaceMatrix = [],
+                                          cameraPos)
 {
-    let viewVector = {x:0.0, y:0.0, z:0.0};
+    const viewVector = {x:0.0, y:0.0, z:0.0};
     const transformedNgonsCache = Rngon.internalState.transformedNgonsCache;
+    const clipSpaceMatrix = Rngon.matrix44.matrices_multiplied(projectionMatrix, cameraMatrix);
 
     for (const ngon of ngons)
     {
@@ -1613,21 +1657,33 @@ Rngon.ngon_transformer = function(ngons = [], clipSpaceMatrix = [], screenSpaceM
                                                       ngon.vertices[v].w,);
             }
 
-            // Copy by value.
             cachedNgon.material = {...ngon.material};
-
-            // Copy by reference.
-            cachedNgon.normal = ngon.normal;
-
+            cachedNgon.normal = {...ngon.normal};
             cachedNgon.isActive = true;
         }
 
         if (cachedNgon.material.allowTransform)
         {
-            cachedNgon.transform(clipSpaceMatrix);
-            if (Rngon.internalState.applyViewportClipping)
+            // Eye space.
             {
-                cachedNgon.clip_to_viewport();
+                cachedNgon.transform(objectMatrix);
+
+                if (cachedNgon.material.shading !== "none")
+                {
+                    cachedNgon.normal.transform(objectMatrix);
+                    cachedNgon.normal.normalize();
+                    Rngon.ngon_transform_and_light.apply_lighting(cachedNgon);
+                }
+            }
+
+            // Clip space.
+            {
+                cachedNgon.transform(clipSpaceMatrix);
+
+                if (Rngon.internalState.applyViewportClipping)
+                {
+                    cachedNgon.clip_to_viewport();
+                }
             }
 
             // If there are no vertices left after clipping, it means this n-gon is not
@@ -1649,6 +1705,35 @@ Rngon.ngon_transformer = function(ngons = [], clipSpaceMatrix = [], screenSpaceM
     {
         transformedNgonsCache.ngons[i].isActive = false;
     }
+
+    return;
+}
+
+Rngon.ngon_transform_and_light.apply_lighting = function(ngon)
+{
+    const lightDirection = Rngon.vector3();
+
+    // Find the brightest shade falling on this n-gon.
+    let shade = 0;
+    for (const light of Rngon.internalState.lights)
+    {
+        // If we've already found the maximum brightness, we don't need to continue.
+        if (shade >= 255) break;
+
+        lightDirection.x = (light.position.x - ngon.vertices[0].x);
+        lightDirection.y = (light.position.y - ngon.vertices[0].y);
+        lightDirection.z = (light.position.z - ngon.vertices[0].z);
+        lightDirection.normalize();
+
+        const shadeFromThisLight = Math.max(ngon.material.ambientLightLevel, Math.min(1, ngon.normal.dot(lightDirection)));
+
+        shade = Math.max(shade, shadeFromThisLight);
+    }
+
+    ngon.material.color = Rngon.color_rgba(ngon.material.color.red   * shade,
+                                           ngon.material.color.green * shade,
+                                           ngon.material.color.blue  * shade,
+                                           ngon.material.color.alpha);
 
     return;
 }
@@ -1772,9 +1857,9 @@ Rngon.texture_rgba.create_with_data_from_file = function(filename)
 
 "use strict";
 
-Rngon.screen = function(canvasElementId = "",              // The DOM id of the canvas element.
-                        ngon_fill_f = function(){},        // A function that rasterizes the given ngons onto the canvas.
-                        ngon_transform_f = function(){},   // A function that transforms the given ngons into screen-space for the canvas.
+Rngon.screen = function(canvasElementId = "",                      // The DOM id of the canvas element.
+                        ngon_fill_f = function(){},                // A function that rasterizes the given ngons onto the canvas.
+                        ngon_transform_and_light_f = function(){}, // A function applies lighting to the given ngons, and transforms them into screen-space for the canvas.
                         scaleFactor = 1,
                         fov = 43,
                         nearPlane = 1,
@@ -1782,7 +1867,7 @@ Rngon.screen = function(canvasElementId = "",              // The DOM id of the 
                         auxiliaryBuffers = [])
 {
     Rngon.assert && (typeof scaleFactor === "number") || Rngon.throw("Expected the scale factor to be a numeric value.");
-    Rngon.assert && (typeof ngon_fill_f === "function" && typeof ngon_transform_f === "function")
+    Rngon.assert && (typeof ngon_fill_f === "function" && typeof ngon_transform_and_light_f === "function")
                  || Rngon.throw("Expected ngon-manipulation functions to be provided.");
 
     const canvasElement = document.getElementById(canvasElementId);
@@ -1832,15 +1917,13 @@ Rngon.screen = function(canvasElementId = "",              // The DOM id of the 
         },
 
         // Returns a copy of the ngons transformed into screen-space for this render surface.
+        // The n-gons will also have any of the scene's light(s) applied to them.
         // Takes as input the ngons to be transformed, an object matrix which contains the object's
         // transforms, a camera matrix, which contains the camera's translation and rotation, and
         // a vector containing the camera's raw world position.
-        transform_ngons: function(ngons = [], objectMatrix = [], cameraMatrix = [], cameraPos)
+        transform_and_light_ngons: function(ngons = [], objectMatrix = [], cameraMatrix = [], cameraPos)
         {
-            const viewSpaceMatrix = Rngon.matrix44.matrices_multiplied(cameraMatrix, objectMatrix);
-            const clipSpaceMatrix = Rngon.matrix44.matrices_multiplied(perspectiveMatrix, viewSpaceMatrix);
-
-            ngon_transform_f(ngons, clipSpaceMatrix, screenSpaceMatrix, cameraPos);
+            ngon_transform_and_light_f(ngons, objectMatrix, cameraMatrix, perspectiveMatrix, screenSpaceMatrix, cameraPos);
         },
 
         // Draw all n-gons currently stored in the internal n-gon cache onto the render surface.

@@ -100,6 +100,9 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
             {
                 const interpolatePerspective = Rngon.internalState.usePerspectiveCorrectTexturing;
 
+                // Note: For performance reasons, we don't use a utility function
+                // to reduce code repetition in parts of this function - it would
+                // run tangibly slower.
                 const add_edge = (vert1, vert2, isLeftEdge)=>
                 {
                     const startY = Math.min(renderHeight, Math.max(0, Math.round(vert1.y)));
@@ -137,18 +140,14 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                     const deltaUVW = interpolatePerspective? (((1 / vert2.w) - (1 / vert1.w)) / edgeHeight)
                                                            : 0;
 
-                    const edge =
-                    {
+                    (isLeftEdge? leftEdges : rightEdges).push({
                         startY, endY,
                         startX, deltaX,
                         startDepth, deltaDepth,
                         startU, deltaU,
                         startV, deltaV,
                         startUVW, deltaUVW,
-                    }
-
-                    if (isLeftEdge) leftEdges.push(edge);
-                    else rightEdges.push(edge);
+                    });
                 };
 
                 for (let l = 1; l < leftVerts.length; l++) add_edge(leftVerts[l-1], leftVerts[l], true);
@@ -179,6 +178,8 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                     if (spanWidth > 0)
                     {
                         // We'll interpolate these parameters across the span.
+                        // Note: For performance reasons, we don't use a utility function
+                        // to reduce code repetition - it would run tangibly slower.
                         const deltaDepth = ((rightEdge.startDepth - leftEdge.startDepth) / spanWidth);
                         let iplDepth = (leftEdge.startDepth - deltaDepth);
 

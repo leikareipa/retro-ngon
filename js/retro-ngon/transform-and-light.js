@@ -6,12 +6,18 @@
 
 "use strict";
 
-// Transforms the given n-gons into screen space for rendering. The transformed n-gons
-// are stored in the internal n-gon cache.
-Rngon.ngon_transformer = function(ngons = [], clipSpaceMatrix = [], screenSpaceMatrix = [], cameraPos)
+// Applies lighting to the given n-gons, and transforms them into screen space
+// for rendering. The processed n-gons are stored in the internal n-gon cache.
+Rngon.ngon_transform_and_light = function(ngons = [],
+                                          objectMatrix = [],
+                                          cameraMatrix = [],
+                                          projectionMatrix = [],
+                                          screenSpaceMatrix = [],
+                                          cameraPos)
 {
-    let viewVector = {x:0.0, y:0.0, z:0.0};
+    const viewVector = {x:0.0, y:0.0, z:0.0};
     const transformedNgonsCache = Rngon.internalState.transformedNgonsCache;
+    const clipSpaceMatrix = Rngon.matrix44.matrices_multiplied(projectionMatrix, cameraMatrix);
 
     for (const ngon of ngons)
     {
@@ -51,21 +57,33 @@ Rngon.ngon_transformer = function(ngons = [], clipSpaceMatrix = [], screenSpaceM
                                                       ngon.vertices[v].w,);
             }
 
-            // Copy by value.
             cachedNgon.material = {...ngon.material};
-
-            // Copy by reference.
-            cachedNgon.normal = ngon.normal;
-
+            cachedNgon.normal = {...ngon.normal};
             cachedNgon.isActive = true;
         }
 
         if (cachedNgon.material.allowTransform)
         {
-            cachedNgon.transform(clipSpaceMatrix);
-            if (Rngon.internalState.applyViewportClipping)
+            // Eye space.
             {
-                cachedNgon.clip_to_viewport();
+                cachedNgon.transform(objectMatrix);
+
+                if (cachedNgon.material.shading !== "none")
+                {
+                    cachedNgon.normal.transform(objectMatrix);
+                    cachedNgon.normal.normalize();
+                    Rngon.ngon_transform_and_light.apply_lighting(cachedNgon);
+                }
+            }
+
+            // Clip space.
+            {
+                cachedNgon.transform(clipSpaceMatrix);
+
+                if (Rngon.internalState.applyViewportClipping)
+                {
+                    cachedNgon.clip_to_viewport();
+                }
             }
 
             // If there are no vertices left after clipping, it means this n-gon is not
@@ -87,6 +105,35 @@ Rngon.ngon_transformer = function(ngons = [], clipSpaceMatrix = [], screenSpaceM
     {
         transformedNgonsCache.ngons[i].isActive = false;
     }
+
+    return;
+}
+
+Rngon.ngon_transform_and_light.apply_lighting = function(ngon)
+{
+    const lightDirection = Rngon.vector3();
+
+    // Find the brightest shade falling on this n-gon.
+    let shade = 0;
+    for (const light of Rngon.internalState.lights)
+    {
+        // If we've already found the maximum brightness, we don't need to continue.
+        if (shade >= 255) break;
+
+        lightDirection.x = (light.position.x - ngon.vertices[0].x);
+        lightDirection.y = (light.position.y - ngon.vertices[0].y);
+        lightDirection.z = (light.position.z - ngon.vertices[0].z);
+        lightDirection.normalize();
+
+        const shadeFromThisLight = Math.max(ngon.material.ambientLightLevel, Math.min(1, ngon.normal.dot(lightDirection)));
+
+        shade = Math.max(shade, shadeFromThisLight);
+    }
+
+    ngon.material.color = Rngon.color_rgba(ngon.material.color.red   * shade,
+                                           ngon.material.color.green * shade,
+                                           ngon.material.color.blue  * shade,
+                                           ngon.material.color.alpha);
 
     return;
 }
