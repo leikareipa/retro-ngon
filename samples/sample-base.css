@@ -56,7 +56,6 @@ body
     margin: 0;
     border: none;
     border-radius: 0px;
-    pointer-events: none;
 }
 
 .infoboxes-container
