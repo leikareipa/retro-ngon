@@ -22,7 +22,8 @@ Rngon.ngon_transform_and_light = function(ngons = [],
     for (const ngon of ngons)
     {
         // Ignore fully transparent polygons.
-        if (!ngon.material.color.alpha)
+        if (!ngon.material.color.alpha &&
+            !ngon.material.hasWireframe)
         {
             continue;
         }

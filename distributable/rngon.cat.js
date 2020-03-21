@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (21 March 2020 05:38:22 UTC)
+// VERSION: beta live (21 March 2020 16:31:54 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -1622,7 +1622,7 @@ Rngon.ngon_transform_and_light = function(ngons = [],
     for (const ngon of ngons)
     {
         // Ignore fully transparent polygons.
-        if (!ngon.material.color.alpha)
+        if (!ngon.material.color.alpha && !ngon.material.hasWireframe)
         {
             continue;
         }
