@@ -36,4 +36,6 @@ export const sample_scene = (frameCount = 0)=>
                                         0),
         scaling: Rngon.scaling_vector(30, 30, 30)
     });
-};
+}; 
+
+export const sampleRenderOptions = {}

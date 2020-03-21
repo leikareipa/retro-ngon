@@ -28,3 +28,5 @@ export const sample_scene = ()=>
         scaling: Rngon.scaling_vector(25, 25, 30)
     });
 };
+
+export const sampleRenderOptions = {}

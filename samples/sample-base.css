@@ -72,7 +72,7 @@ body
 {
     width: 100%;
     justify-content: center;
-    top: calc(100% - 20px - 65px);
+    top: calc(100% - 45px - 70px);
     pointer-events: none;
 }
 
@@ -97,10 +97,16 @@ body
     align-items: center;
 }
 
+.infoboxes-container.additional .infobox
+{
+    width: 110px;
+    height: 70px;
+}
+
 .infobox > .title
 {
     color: lightgray;
-    font-size: 80%;
+    font-size: 90%;
     text-align: center;
 }
 
@@ -147,4 +153,10 @@ body
 .infobox > .adjust.right::before
 {
     content: "\f0da";
+}
+
+.infoboxes-container.additional .infobox > .adjust.left::before,
+.infoboxes-container.additional .infobox > .adjust.right::before
+{
+    font-size: 140%;
 }

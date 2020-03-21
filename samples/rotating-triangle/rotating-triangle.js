@@ -27,3 +27,5 @@ export const sample_scene = (frameCount)=>
         scaling: Rngon.scaling_vector(50, 50, 50)
     });
 };
+
+export const sampleRenderOptions = {}

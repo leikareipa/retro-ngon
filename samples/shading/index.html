@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width">
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <title>Shading - Render sample - Retro n-gon renderer</title>
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" integrity="sha384-gfdkjb5BdAXd+lj+gudLWI+BXq4IuLW5IT+brZEZsLFm++aCMlF1V92rMkPaX4PP" crossorigin="anonymous">
+        <link rel="stylesheet" type="text/css" href="../sample-base.css">
+    </head>
+    <body id="sample-container">
+        <iframe id="render-target"
+                src="../sample-base.php?sample=shading"
+                style="width: 100vw; height: 100vh; border: none;">
+        </iframe>
+
+        <div class="infoboxes-container additional">
+            <div class="infobox shading">
+                <div class="title">Shading</div>
+                <div class="value">Flat</div>
+                <div class="adjust left" onclick="change_shading(-1);"></div>
+                <div class="adjust right" onclick="change_shading(1);"></div>
+            </div>
+
+            <div class="infobox ambient">
+                <div class="title">Ambient</div>
+                <div class="value">0.3</div>
+                <div class="adjust left" onclick="change_ambient(-0.1);"></div>
+                <div class="adjust right" onclick="change_ambient(0.1);"></div>
+            </div>
+        </div>
+
+        <script>
+            const shadingTypes = ["None", "Flat"];
+            let shadingTypeIdx = 1;
+
+            var MODEL_SHADING = shadingTypes[shadingTypeIdx];
+            var MODEL_AMBIENT = 0.3;
+
+            function change_shading(direction = 1)
+            {
+                shadingTypeIdx = Math.max(0, Math.min((shadingTypes.length - 1), (shadingTypeIdx + direction)));
+                MODEL_SHADING = shadingTypes[shadingTypeIdx];
+
+                document.querySelector(".infobox.shading .value").innerHTML = MODEL_SHADING;
+
+                return;
+            }
+
+            function change_ambient(delta = 1)
+            {
+                MODEL_AMBIENT = Math.max(0, Math.min(1, (MODEL_AMBIENT + delta)));
+
+                document.querySelector(".infobox.ambient .value").innerHTML = MODEL_AMBIENT.toFixed(1);
+
+                return;
+            }
+        </script>
+    </body>
+</html>

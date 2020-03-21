@@ -52,7 +52,7 @@
             }
         </script>
         <script type="module">
-            import {sample_scene} from "<?php $sampleID = ($_GET["sample"] ?? "rotating-triangle"); echo "./{$sampleID}/{$sampleID}.js"; ?>";
+            import {sample_scene, sampleRenderOptions} from "<?php $sampleID = ($_GET["sample"] ?? "rotating-triangle"); echo "./{$sampleID}/{$sampleID}.js"; ?>";
 
             // Runs the renderer continuously, in sync with the device's refresh rate.
             (function render_loop(frameCount = 0)
@@ -76,6 +76,7 @@
                     cameraDirection: renderSettings.cameraDirection,
                     cameraPosition: renderSettings.cameraPosition,
                     scale: renderSettings.scale,
+                    ...sampleRenderOptions,
                 });
 
                 if (frameCount % 30 === 0)
