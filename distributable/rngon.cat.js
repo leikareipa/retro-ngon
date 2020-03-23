@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (21 March 2020 16:31:54 UTC)
+// VERSION: beta live (23 March 2020 17:05:33 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -8,7 +8,10 @@
 //	./js/retro-ngon/trig.js
 //	./js/retro-ngon/light.js
 //	./js/retro-ngon/color.js
-//	./js/retro-ngon/geometry.js
+//	./js/retro-ngon/vector3.js
+//	./js/retro-ngon/vertex.js
+//	./js/retro-ngon/mesh.js
+//	./js/retro-ngon/ngon.js
 //	./js/retro-ngon/line-draw.js
 //	./js/retro-ngon/matrix44.js
 //	./js/retro-ngon/ngon-fill.js
@@ -363,10 +366,9 @@ Rngon.color_rgba = function(red = 55, green = 55, blue = 55, alpha = 255)
     return publicInterface;
 }
 /*
- * Tarpeeksi Hyvae Soft 2019 /
- * Retro n-gon renderer
- *
- * Functions to do with space; like vectors, vertices, etc.
+ * 2019 Tarpeeksi Hyvae Soft
+ * 
+ * Software: Retro n-gon renderer
  *
  */
 
@@ -436,6 +438,14 @@ Rngon.vector3 = function(x = 0, y = 0, z = 0)
 Rngon.translation_vector = Rngon.vector3;
 Rngon.rotation_vector = (x, y, z)=>Rngon.vector3(Rngon.trig.deg(x), Rngon.trig.deg(y), Rngon.trig.deg(z));
 Rngon.scaling_vector = Rngon.vector3;
+/*
+ * 2019 Tarpeeksi Hyvae Soft
+ * 
+ * Software: Retro n-gon renderer
+ *
+ */
+
+"use strict";
 
 // NOTE: The returned object is not immutable.
 Rngon.vertex = function(x = 0, y = 0, z = 0, u = 0, v = 0, w = 1)
@@ -481,6 +491,75 @@ Rngon.vertex = function(x = 0, y = 0, z = 0, u = 0, v = 0, w = 1)
 
     return returnObject;
 }
+/*
+ * 2019 Tarpeeksi Hyvae Soft
+ * 
+ * Software: Retro n-gon renderer
+ *
+ */
+
+"use strict";
+
+// A collection of ngons, with shared translation and rotation.
+// NOTE: Expects to remain immutable.
+Rngon.mesh = function(ngons = [Rngon.ngon()], transform = {})
+{
+    Rngon.assert && (ngons instanceof Array) || Rngon.throw("Expected a list of ngons for creating an ngon mesh.");
+    Rngon.assert && (transform instanceof Object) || Rngon.throw("Expected an object with transformation properties.");
+
+    Rngon.assert && (typeof Rngon.mesh.defaultTransform.rotation !== "undefined" &&
+                     typeof Rngon.mesh.defaultTransform.translation !== "undefined" &&
+                     typeof Rngon.mesh.defaultTransform.scaling !== "undefined")
+                 || Rngon.throw("The default transforms object for mesh() is missing required properties.");
+
+    // Combine default transformations with the user-supplied ones.
+    transform =
+    {
+        ...Rngon.mesh.defaultTransform,
+        ...transform
+    };
+
+    const publicInterface =
+    {
+        ngons,
+        rotation: transform.rotation,
+        translation: transform.translation,
+        scale: transform.scaling,
+        objectSpaceMatrix: function()
+        {
+            const translationMatrix = Rngon.matrix44.translate(this.translation.x,
+                                                               this.translation.y,
+                                                               this.translation.z);
+
+            const rotationMatrix = Rngon.matrix44.rotate(this.rotation.x,
+                                                         this.rotation.y,
+                                                         this.rotation.z);
+
+            const scalingMatrix = Rngon.matrix44.scale(this.scale.x,
+                                                       this.scale.y,
+                                                       this.scale.z);
+
+            return Rngon.matrix44.matrices_multiplied(Rngon.matrix44.matrices_multiplied(translationMatrix, rotationMatrix), scalingMatrix);
+        },
+    };
+    
+    return publicInterface;
+}
+
+Rngon.mesh.defaultTransform = 
+{
+    translation: Rngon.translation_vector(0, 0, 0),
+    rotation: Rngon.rotation_vector(0, 0, 0),
+    scaling: Rngon.scaling_vector(1, 1, 1)
+};
+/*
+ * 2019 Tarpeeksi Hyvae Soft
+ * 
+ * Software: Retro n-gon renderer
+ *
+ */
+
+"use strict";
 
 // A single n-sided ngon.
 // NOTE: The return object is not immutable.
@@ -623,59 +702,6 @@ Rngon.ngon.defaultMaterial =
     wireframeColor: Rngon.color_rgba(0, 0, 0),
     allowTransform: true,
     auxiliary: {},
-};
-
-// A collection of ngons, with shared translation and rotation.
-// NOTE: Expects to remain immutable.
-Rngon.mesh = function(ngons = [Rngon.ngon()], transform = {})
-{
-    Rngon.assert && (ngons instanceof Array) || Rngon.throw("Expected a list of ngons for creating an ngon mesh.");
-    Rngon.assert && (transform instanceof Object) || Rngon.throw("Expected an object with transformation properties.");
-
-    Rngon.assert && (typeof Rngon.mesh.defaultTransform.rotation !== "undefined" &&
-                     typeof Rngon.mesh.defaultTransform.translation !== "undefined" &&
-                     typeof Rngon.mesh.defaultTransform.scaling !== "undefined")
-                 || Rngon.throw("The default transforms object for mesh() is missing required properties.");
-
-    // Combine default transformations with the user-supplied ones.
-    transform =
-    {
-        ...Rngon.mesh.defaultTransform,
-        ...transform
-    };
-
-    const publicInterface =
-    {
-        ngons,
-        rotation: transform.rotation,
-        translation: transform.translation,
-        scale: transform.scaling,
-        objectSpaceMatrix: function()
-        {
-            const translationMatrix = Rngon.matrix44.translate(this.translation.x,
-                                                               this.translation.y,
-                                                               this.translation.z);
-
-            const rotationMatrix = Rngon.matrix44.rotate(this.rotation.x,
-                                                         this.rotation.y,
-                                                         this.rotation.z);
-
-            const scalingMatrix = Rngon.matrix44.scale(this.scale.x,
-                                                       this.scale.y,
-                                                       this.scale.z);
-
-            return Rngon.matrix44.matrices_multiplied(Rngon.matrix44.matrices_multiplied(translationMatrix, rotationMatrix), scalingMatrix);
-        },
-    };
-    
-    return publicInterface;
-}
-
-Rngon.mesh.defaultTransform = 
-{
-    translation: Rngon.translation_vector(0, 0, 0),
-    rotation: Rngon.rotation_vector(0, 0, 0),
-    scaling: Rngon.scaling_vector(1, 1, 1)
 };
 "use strict";
 
@@ -893,14 +919,22 @@ Rngon.matrix44 = (()=>
     });
 })();
 /*
- * Tarpeeksi Hyvae Soft 2019 /
- * Retro n-gon renderer
+ * 2019, 2020 Tarpeeksi Hyvae Soft
+ * 
+ * Software: Retro n-gon renderer
  * 
  */
 
 "use strict";
 
-// Rasterizes into the internal pixel buffer all n-gons currently stored in the internal n-gon cache.
+// Rasterizes into the internal pixel buffer all n-gons currently stored in the
+// internal n-gon cache.
+//
+// Note: Consider this the inner render loop; it may contain ugly things like
+// code repetition for the benefit of performance. If you'd like to refactor the
+// code, please benchmark its effects on performance first - maintaining or
+// improving performance would be great, losing performance would be bad.
+//
 Rngon.ngon_filler = function(auxiliaryBuffers = [])
 {
     const pixelBuffer = Rngon.internalState.pixelBuffer.data;
@@ -994,9 +1028,6 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
             {
                 const interpolatePerspective = Rngon.internalState.usePerspectiveCorrectTexturing;
 
-                // Note: For performance reasons, we don't use a utility function
-                // to reduce code repetition in parts of this function - it would
-                // run tangibly slower.
                 const add_edge = (vert1, vert2, isLeftEdge)=>
                 {
                     const startY = Math.min(renderHeight, Math.max(0, Math.round(vert1.y)));
@@ -1071,9 +1102,6 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
 
                     if (spanWidth > 0)
                     {
-                        // We'll interpolate these parameters across the span.
-                        // Note: For performance reasons, we don't use a utility function
-                        // to reduce code repetition - it would run tangibly slower.
                         const deltaDepth = ((rightEdge.startDepth - leftEdge.startDepth) / spanWidth);
                         let iplDepth = (leftEdge.startDepth - deltaDepth);
 
@@ -1364,7 +1392,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
         },
     ];
 
-    // Append a reverse set of patterns to go from 50% to 99% transparent.
+    // Append a reverse set of patterns to go from 50% to ~99% transparent.
     for (let i = (Rngon.ngon_filler.stipple_patterns.length - 2); i >= 0; i--)
     {
         Rngon.ngon_filler.stipple_patterns.push({
@@ -1622,7 +1650,8 @@ Rngon.ngon_transform_and_light = function(ngons = [],
     for (const ngon of ngons)
     {
         // Ignore fully transparent polygons.
-        if (!ngon.material.color.alpha && !ngon.material.hasWireframe)
+        if (!ngon.material.color.alpha &&
+            !ngon.material.hasWireframe)
         {
             continue;
         }

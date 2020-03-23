@@ -1,12 +1,20 @@
 /*
- * Tarpeeksi Hyvae Soft 2019 /
- * Retro n-gon renderer
+ * 2019, 2020 Tarpeeksi Hyvae Soft
+ * 
+ * Software: Retro n-gon renderer
  * 
  */
 
 "use strict";
 
-// Rasterizes into the internal pixel buffer all n-gons currently stored in the internal n-gon cache.
+// Rasterizes into the internal pixel buffer all n-gons currently stored in the
+// internal n-gon cache.
+//
+// Note: Consider this the inner render loop; it may contain ugly things like
+// code repetition for the benefit of performance. If you'd like to refactor the
+// code, please benchmark its effects on performance first - maintaining or
+// improving performance would be great, losing performance would be bad.
+//
 Rngon.ngon_filler = function(auxiliaryBuffers = [])
 {
     const pixelBuffer = Rngon.internalState.pixelBuffer.data;
@@ -100,9 +108,6 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
             {
                 const interpolatePerspective = Rngon.internalState.usePerspectiveCorrectTexturing;
 
-                // Note: For performance reasons, we don't use a utility function
-                // to reduce code repetition in parts of this function - it would
-                // run tangibly slower.
                 const add_edge = (vert1, vert2, isLeftEdge)=>
                 {
                     const startY = Math.min(renderHeight, Math.max(0, Math.round(vert1.y)));
@@ -177,9 +182,6 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
 
                     if (spanWidth > 0)
                     {
-                        // We'll interpolate these parameters across the span.
-                        // Note: For performance reasons, we don't use a utility function
-                        // to reduce code repetition - it would run tangibly slower.
                         const deltaDepth = ((rightEdge.startDepth - leftEdge.startDepth) / spanWidth);
                         let iplDepth = (leftEdge.startDepth - deltaDepth);
 
@@ -470,7 +472,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
         },
     ];
 
-    // Append a reverse set of patterns to go from 50% to 99% transparent.
+    // Append a reverse set of patterns to go from 50% to ~99% transparent.
     for (let i = (Rngon.ngon_filler.stipple_patterns.length - 2); i >= 0; i--)
     {
         Rngon.ngon_filler.stipple_patterns.push({
