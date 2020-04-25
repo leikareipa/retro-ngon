@@ -51,42 +51,47 @@
                 document.querySelector(".infobox.scale .value").innerHTML = renderSettings.scale.toFixed(2);
             }
         </script>
-        <script type="module">
-            import {sample_scene, sampleRenderOptions} from "<?php $sampleID = ($_GET["sample"] ?? "rotating-triangle"); echo "./{$sampleID}/{$sampleID}.js"; ?>";
-
-            // Runs the renderer continuously, in sync with the device's refresh rate.
-            (function render_loop(frameCount = 0)
+        <script>
+            (async()=>
             {
-                const scene = sample_scene(frameCount);
+                const sampleId = (new URLSearchParams(window.location.search).get("sample") || "rotating-triangle");
+                
+                const sampleModule = await import(`./${sampleId}/${sampleId}.js`);
 
-                // Scenes load async (first textures, then ngons), so we assume
-                // that once the scene's ngon array is non-empty, the scene is
-                // close enough to having finished loading.
-                if (scene.ngons.length && document.getElementById("loading-bar"))
+                // Runs the renderer continuously, in sync with the device's refresh rate.
+                (function render_loop(frameCount = 0)
                 {
-                    document.getElementById("loading-bar").remove();
-                }
+                    const scene = sampleModule.sample_scene(frameCount);
 
-                const renderInfo = Rngon.render("canvas", [scene],
-                {
-                    clipToViewport: true,
-                    depthSort: "painter-reverse",
-                    useDepthBuffer: true,
-                    perspectiveCorrectTexturing: true,
-                    cameraDirection: renderSettings.cameraDirection,
-                    cameraPosition: renderSettings.cameraPosition,
-                    scale: renderSettings.scale,
-                    ...sampleRenderOptions,
-                });
+                    // Scenes load async (first textures, then ngons), so we assume
+                    // that once the scene's ngon array is non-empty, the scene is
+                    // close enough to having finished loading.
+                    if (scene.ngons.length && document.getElementById("loading-bar"))
+                    {
+                        document.getElementById("loading-bar").remove();
+                    }
 
-                if (frameCount % 30 === 0)
-                {
-                    document.querySelector(".infobox.fps .value").innerHTML = Math.floor(1000 / (renderInfo.totalRenderTimeMs || 1));
-                    document.querySelector(".infobox.polycount .value").innerHTML = renderInfo.numNgonsRendered;
-                }
+                    const renderInfo = Rngon.render("canvas", [scene],
+                    {
+                        clipToViewport: true,
+                        depthSort: "painter-reverse",
+                        useDepthBuffer: true,
+                        perspectiveCorrectTexturing: true,
+                        cameraDirection: renderSettings.cameraDirection,
+                        cameraPosition: renderSettings.cameraPosition,
+                        scale: renderSettings.scale,
+                        ...sampleModule.sampleRenderOptions,
+                    });
 
-                window.requestAnimationFrame(()=>render_loop(frameCount + 1));
-            })();
+                    if (frameCount % 30 === 0)
+                    {
+                        document.querySelector(".infobox.fps .value").innerHTML = Math.floor(1000 / (renderInfo.totalRenderTimeMs || 1));
+                        document.querySelector(".infobox.polycount .value").innerHTML = renderInfo.numNgonsRendered;
+                    }
+
+                    window.requestAnimationFrame(()=>render_loop(frameCount + 1));
+                })();
+        })();
         </script>
     </body>
 </html>
