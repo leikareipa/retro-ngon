@@ -1,9 +1,9 @@
 # The retro n-gon renderer
 A minimalist 3d software renderer that draws n-sided polygons (as well as lines and points) onto a user-supplied HTML5 canvas. Its intended use cases are chiefly those where a minimalist retro aesthetic is preferred.
 
-You can view an interactive sample of the renderer's output [here](https://tarpeeksihyvaesoft.com/s/retro-ngon/samples/tr/home-test.html?fov=55&scale=0.2&depthBuffer=true&perspectiveCorrect=true) (interaction requires a mouse and keyboard; click on the page to engage mouse lock). This renders a scene from the PC game *Tomb Raider* in which you can move around using the mouse and keyboard (the ESDF keys, specifically).
+You can view an interactive sample of the renderer's output [here](https://www.tarpeeksihyvaesoft.com/s/retro-ngon/samples/tomb-raider-home/) (interaction requires a mouse and keyboard; click on the page to engage mouse lock). This renders a scene from the PC game *Tomb Raider* in which you can move around using the mouse and keyboard (the ESDF keys, specifically).
 
-A non-interactive render sample is also available [here](https://tarpeeksihyvaesoft.com/s/retro-ngon/samples/textured-cube-model/). It produces a spinning texture-mapped cube.
+A non-interactive render sample is also available [here](https://www.tarpeeksihyvaesoft.com/s/retro-ngon/samples/textured-cube-model/). It produces a spinning texture-mapped cube.
 
 ![A textured cube](/images/painting-cube.png)
 

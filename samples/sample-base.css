@@ -35,6 +35,7 @@ body
     margin: 0px;
     text-align: center;
     overflow: hidden;
+    font-family: sans-serif;
 }
 
 /* Upscale the n-gon renderer's output with nearest-neighbor interpolation.*/
