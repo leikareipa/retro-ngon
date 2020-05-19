@@ -11,7 +11,7 @@
         <div id="loading-bar">
             <i class="fas fa-wheelchair fa-fw spin"></i>
             Loading render sample...
-            <span id="loading-bar-percentage"></span>
+            <span id="loading-bar-percentage">0%</span>
         </div>
 
         <canvas id="canvas"
@@ -38,7 +38,7 @@
         <script src="../distributable/rngon.cat.js"></script>
         <script>
             var renderSettings = {
-                scale: 0.2  ,
+                scale: 0.2,
                 cameraDirection: Rngon.rotation_vector(0, 0, 0),
                 cameraPosition: Rngon.translation_vector(0, 0, -170),
             };
