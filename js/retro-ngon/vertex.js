@@ -23,6 +23,11 @@ Rngon.vertex = function(x = 0, y = 0, z = 0, u = 0, v = 0, w = 1)
         v,
         w,
 
+        // The vertex's original coordinates, before any transformations.
+        worldX: x,
+        worldY: y,
+        worldZ: z,
+
         // Transforms the vertex by the given 4x4 matrix.
         transform: function(m = [])
         {

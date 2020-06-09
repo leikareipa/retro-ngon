@@ -11,6 +11,7 @@
 Rngon.screen = function(canvasElementId = "",                      // The DOM id of the canvas element.
                         ngon_fill_f = function(){},                // A function that rasterizes the given ngons onto the canvas.
                         ngon_transform_and_light_f = function(){}, // A function applies lighting to the given ngons, and transforms them into screen-space for the canvas.
+                        shader_f = function(){},                   // A function that applies shaders to the rendered image. 
                         scaleFactor = 1,
                         fov = 43,
                         nearPlane = 1,
@@ -42,14 +43,26 @@ Rngon.screen = function(canvasElementId = "",                      // The DOM id
         Rngon.internalState.pixelBuffer = new ImageData(screenWidth, screenHeight);
     }
 
+    if (Rngon.internalState.useShaders &&
+        (Rngon.internalState.fragmentBuffer.width != screenWidth) ||
+        (Rngon.internalState.fragmentBuffer.height != screenHeight))
+    {
+
+        Rngon.internalState.fragmentBuffer.width = screenWidth;
+        Rngon.internalState.fragmentBuffer.height = screenHeight;
+        Rngon.internalState.fragmentBuffer.data = new Array(screenWidth * screenHeight)
+                                                  .fill()
+                                                  .map(e=>({}));
+    }
+
     if (Rngon.internalState.useDepthBuffer &&
         (Rngon.internalState.depthBuffer.width != screenWidth) ||
         (Rngon.internalState.depthBuffer.height != screenHeight) ||
-        !Rngon.internalState.depthBuffer.buffer.length)
+        !Rngon.internalState.depthBuffer.data.length)
     {
         Rngon.internalState.depthBuffer.width = screenWidth;
         Rngon.internalState.depthBuffer.height = screenHeight;
-        Rngon.internalState.depthBuffer.buffer = new Array(Rngon.internalState.depthBuffer.width * Rngon.internalState.depthBuffer.height); 
+        Rngon.internalState.depthBuffer.data = new Array(Rngon.internalState.depthBuffer.width * Rngon.internalState.depthBuffer.height); 
     }
 
     const publicInterface = Object.freeze(
@@ -61,17 +74,21 @@ Rngon.screen = function(canvasElementId = "",                      // The DOM id
         {
             Rngon.internalState.pixelBuffer.data.fill(0);
 
+            /// TODO: Wipe the raster fragment buffer.
+
             if (Rngon.internalState.useDepthBuffer)
             {
-                Rngon.internalState.depthBuffer.buffer.fill(Rngon.internalState.depthBuffer.clearValue);
+                Rngon.internalState.depthBuffer.data.fill(Rngon.internalState.depthBuffer.clearValue);
             }
         },
 
         // Returns a copy of the ngons transformed into screen-space for this render surface.
         // The n-gons will also have any of the scene's light(s) applied to them.
+        //
         // Takes as input the ngons to be transformed, an object matrix which contains the object's
         // transforms, a camera matrix, which contains the camera's translation and rotation, and
         // a vector containing the camera's raw world position.
+        //
         transform_and_light_ngons: function(ngons = [], objectMatrix = [], cameraMatrix = [], cameraPos)
         {
             ngon_transform_and_light_f(ngons, objectMatrix, cameraMatrix, perspectiveMatrix, screenSpaceMatrix, cameraPos);
@@ -81,6 +98,18 @@ Rngon.screen = function(canvasElementId = "",                      // The DOM id
         rasterize_ngon_cache: function()
         {
             ngon_fill_f(auxiliaryBuffers);
+
+            if (Rngon.internalState.useShaders)
+            {
+                shader_f({
+                    renderWidth: screenWidth,
+                    renderHeight: screenHeight,
+                    fragmentBuffer: Rngon.internalState.fragmentBuffer.data,
+                    pixelBuffer: Rngon.internalState.pixelBuffer.data,
+                    ngonCache: Rngon.internalState.transformedNgonsCache.ngons,
+                });
+            }
+
             renderContext.putImageData(Rngon.internalState.pixelBuffer, 0, 0);
         },
     });

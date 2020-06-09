@@ -29,12 +29,13 @@ Rngon.render = function(canvasElementId,
 
     // Combine the default render options with the user-supplied ones.
     options = Object.freeze(
-    {
+{
         ...Rngon.render.defaultOptions,
         ...options
     });
 
     // Modify any internal render parameters based on the user's options.
+    Rngon.internalState.useShaders = (typeof options.shaderFunction === "function");
     Rngon.internalState.useDepthBuffer = (options.useDepthBuffer == true);
     Rngon.internalState.showGlobalWireframe = (options.globalWireframe == true);
     Rngon.internalState.applyViewportClipping = (options.clipToViewport == true);
@@ -47,6 +48,7 @@ Rngon.render = function(canvasElementId,
         const renderSurface = Rngon.screen(canvasElementId,
                                            Rngon.ngon_filler,
                                            Rngon.ngon_transform_and_light,
+                                           options.shaderFunction,
                                            options.scale,
                                            options.fov,
                                            options.nearPlane,
@@ -57,7 +59,6 @@ Rngon.render = function(canvasElementId,
         callMetadata.renderHeight = renderSurface.height;
 
         prepare_ngon_cache(Rngon.internalState.transformedNgonsCache, meshes);
-
         transform_ngons(meshes, renderSurface, options.cameraPosition, options.cameraDirection);
         mark_npot_textures(Rngon.internalState.transformedNgonsCache);
         depth_sort_ngons(Rngon.internalState.transformedNgonsCache.ngons, options.depthSort);
@@ -65,7 +66,7 @@ Rngon.render = function(canvasElementId,
         renderSurface.wipe_clean();
         renderSurface.rasterize_ngon_cache();
 
-        callMetadata.numNgonsRendered = Rngon.internalState.transformedNgonsCache.numActiveNgons;
+        callMetadata.numNgonsRendered = Rngon.internalState.transformedNgonsCache.count;
     }
 
     callMetadata.totalRenderTimeMs = (performance.now() - callMetadata.totalRenderTimeMs);
@@ -106,7 +107,7 @@ Rngon.render = function(canvasElementId,
             ngonCache.ngons.push(...new Array(lengthDelta).fill().map(e=>Rngon.ngon()));
         }
 
-        ngonCache.numActiveNgons = 0;
+        ngonCache.count = 0;
 
         return;
     }
@@ -132,7 +133,7 @@ Rngon.render = function(canvasElementId,
     // mapper, as the default affine mapper expects textures to be power-of-two.
     function mark_npot_textures(ngonCache = {})
     {
-        for (let i = 0; i < ngonCache.numActiveNgons; i++)
+        for (let i = 0; i < ngonCache.count; i++)
         {
             const ngon = ngonCache.ngons[i];
 
@@ -209,6 +210,7 @@ Rngon.render.defaultOptions =
 {
     cameraPosition: Rngon.vector3(0, 0, 0),
     cameraDirection: Rngon.vector3(0, 0, 0),
+    shaderFunction: null,
     scale: 1,
     fov: 43,
     nearPlane: 1,

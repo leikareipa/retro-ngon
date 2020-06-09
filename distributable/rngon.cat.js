@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (23 March 2020 18:35:40 UTC)
+// VERSION: beta live (10 June 2020 00:25:52 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -67,10 +67,43 @@ Rngon.internalState =
 {
     // Whether to require pixels to pass a depth test before being allowed on screen.
     useDepthBuffer: false,
-    depthBuffer: {width:1, height:1, buffer:new Array(1), clearValue:Number.MAX_VALUE},
+    depthBuffer: {width:1, height:1, data:new Array(1), clearValue:Number.MAX_VALUE},
 
-    // Pixel buffer for rasterization.
+    // Pixel buffer for rasterization. This will be scaled to match the requested
+    // render resolution; and the renderer's rasterization pass will populate it
+    // with the rendered frame's pixel values.
     pixelBuffer: new ImageData(1, 1),
+
+    // For each pixel in the rendered frame, metadata about the state of the renderer
+    // at that pixel, intended to be used by shaders. The array's size will be set to
+    // match the requested render resolution.
+    fragmentBuffer: {width:1, height:1, data:new Array(1), clearValue:{
+            // Index of this polygon in the list of transformed polygons.
+            polygonIdx: undefined,
+
+            // Texture coordinates at this pixel.
+            textureU: undefined,
+            textureV: undefined,
+
+            // World coordinates at this pixel.
+            worldX: undefined,
+            worldY: undefined,
+            worldZ: undefined,
+
+            // Normal at this pixel.
+            normalX: undefined,
+            normalY: undefined,
+            normalZ: undefined,
+
+            // The value written into the depth buffer by this fragment.
+            depth: undefined,
+        }
+    },
+
+    // If true, enables the fragment buffer and allows the use of shaders. Note that
+    // enabling shaders carries a performance penalty even if you don't actually make
+    // use any shaders.
+    useShaders: false,
 
     usePerspectiveCorrectTexturing: false,
 
@@ -85,21 +118,11 @@ Rngon.internalState =
     // expose a way to toggle it otherwise.
     allowWindowAlert: false,
 
-    // All transformed n-gons on a particular call to render() will be placed here.
-    // The cache size will be dynamically adjusted up to match the largest number
-    // of transformed n-gons, so at any given time the number of active n-gons (those
-    // that have been transformed for the current frame) may be smaller than the
-    // cache's total capacity.
-    transformedNgonsCache: {numActiveNgons:0, ngons:[]},
+    // All of the n-gons that were most recently passed to render(), transformed into
+    // screen space.
+    transformedNgonsCache: {count:0, ngons:[]},
 
-    // All transformed (to eye space) lights on a particular call to render() will
-    // be placed here. The cache size will be dynamically adjusted up to match the
-    // largest number of transformed lights, so at any given time the number of active
-    // lights (those that have been transformed for the current frame) may be smaller
-    // than the cache's total capacity.
-    transformedLightsCache: {numActiveLights:0, lights:[]},
-
-    // All light sources that should currently apply to rendered n-gons.
+    // All light sources that should currently apply to n-gons passed to render().
     lights: [],
 }
 /*
@@ -463,6 +486,11 @@ Rngon.vertex = function(x = 0, y = 0, z = 0, u = 0, v = 0, w = 1)
         v,
         w,
 
+        // The vertex's original coordinates, before any transformations.
+        worldX: x,
+        worldY: y,
+        worldZ: z,
+
         // Transforms the vertex by the given 4x4 matrix.
         transform: function(m = [])
         {
@@ -720,7 +748,7 @@ Rngon.line_draw = (()=>
                                     respectDepth = false)
         {
             const pixelBuffer = Rngon.internalState.pixelBuffer.data;
-            const depthBuffer = (Rngon.internalState.useDepthBuffer? Rngon.internalState.depthBuffer.buffer : null);
+            const depthBuffer = (Rngon.internalState.useDepthBuffer? Rngon.internalState.depthBuffer.data : null);
             const bufferWidth = Rngon.internalState.pixelBuffer.width;
             const bufferHeight = Rngon.internalState.pixelBuffer.height;
 
@@ -937,8 +965,9 @@ Rngon.matrix44 = (()=>
 //
 Rngon.ngon_filler = function(auxiliaryBuffers = [])
 {
+    const fragmentBuffer = Rngon.internalState.fragmentBuffer.data;
     const pixelBuffer = Rngon.internalState.pixelBuffer.data;
-    const depthBuffer = (Rngon.internalState.useDepthBuffer? Rngon.internalState.depthBuffer.buffer : null);
+    const depthBuffer = (Rngon.internalState.useDepthBuffer? Rngon.internalState.depthBuffer.data : null);
     const renderWidth = Rngon.internalState.pixelBuffer.width;
     const renderHeight = Rngon.internalState.pixelBuffer.height;
 
@@ -949,7 +978,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
     }
 
     // Rasterize the n-gons.
-    for (let n = 0; n < Rngon.internalState.transformedNgonsCache.numActiveNgons; n++)
+    for (let n = 0; n < Rngon.internalState.transformedNgonsCache.count; n++)
     {
         const ngon = Rngon.internalState.transformedNgonsCache.ngons[n];
 
@@ -961,7 +990,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
         }
 
         // Handle n-gons that constitute points and lines.
-        /// TODO: Add depth and alpha testing for points and lines.
+        /// TODO: Add the fragment buffer, depth testing, and alpha testing for points and lines.
         if (ngon.vertices.length === 1)
         {
             const idx = ((Math.round(ngon.vertices[0].x) + Math.round(ngon.vertices[0].y) * renderWidth) * 4);
@@ -1045,6 +1074,13 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                     const startDepth = vert1.z;
                     const deltaDepth = ((vert2.z - vert1.z) / edgeHeight);
 
+                    const startWorldX = vert1.worldX;
+                    const deltaWorldX = ((vert2.worldX - vert1.worldX) / edgeHeight);
+                    const startWorldY = vert1.worldY;
+                    const deltaWorldY = ((vert2.worldY - vert1.worldY) / edgeHeight);
+                    const startWorldZ = vert1.worldZ;
+                    const deltaWorldZ = ((vert2.worldZ - vert1.worldZ) / edgeHeight);
+
                     const u1 = (ngon.material.texture? vert1.u : 1);
                     const v1 = (ngon.material.texture? vert1.v : 1);
                     const u2 = (ngon.material.texture? vert2.u : 1);
@@ -1072,6 +1108,9 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                         startU, deltaU,
                         startV, deltaV,
                         startUVW, deltaUVW,
+                        startWorldX, deltaWorldX,
+                        startWorldY, deltaWorldY,
+                        startWorldZ, deltaWorldZ,
                     });
                 };
 
@@ -1114,6 +1153,15 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                         const deltaUVW = ((rightEdge.startUVW - leftEdge.startUVW) / spanWidth);
                         let iplUVW = (leftEdge.startUVW - deltaUVW);
 
+                        const deltaWorldX = ((rightEdge.startWorldX - leftEdge.startWorldX) / spanWidth);
+                        let iplWorldX = (leftEdge.startWorldX - deltaWorldX);
+
+                        const deltaWorldY = ((rightEdge.startWorldY - leftEdge.startWorldY) / spanWidth);
+                        let iplWorldY = (leftEdge.startWorldY - deltaWorldY);
+
+                        const deltaWorldZ = ((rightEdge.startWorldZ - leftEdge.startWorldZ) / spanWidth);
+                        let iplWorldZ = (leftEdge.startWorldZ - deltaWorldZ);
+
                         // Assumes the pixel buffer consists of 4 elements per pixel (e.g. RGBA).
                         let pixelBufferIdx = (((spanStartX + y * renderWidth) * 4) - 4);
 
@@ -1123,11 +1171,18 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                         // Draw the span into the pixel buffer.
                         for (let x = spanStartX; x < spanEndX; x++)
                         {
+                            // Will hold the texture coordinates used if we end up drawing
+                            // a textured pixel at the current x,y screen location.
+                            let u = 0.0, v = 0.0;
+
                             // Update values that're interpolated horizontally along the span.
                             iplDepth += deltaDepth;
                             iplU += deltaU;
                             iplV += deltaV;
                             iplUVW += deltaUVW;
+                            iplWorldX += deltaWorldX;
+                            iplWorldY += deltaWorldY;
+                            iplWorldZ += deltaWorldZ;
                             pixelBufferIdx += 4;
                             depthBufferIdx++;
 
@@ -1168,8 +1223,6 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                             // Textured fill.
                             else
                             {
-                                let u, v;
-
                                 switch (ngon.material.textureMapping)
                                 {
                                     // Affine mapping for power-of-two textures.
@@ -1307,12 +1360,32 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                 if (depthBuffer) depthBuffer[depthBufferIdx] = iplDepth;
                             }
 
-                            for (let b = 0; b < auxiliaryBuffers.length; b++)
+                            // This part of the loop is reached only if we ended up drawing
+                            // into the pixel at the current x,y screen location (i.e. if the
+                            // pixel passed the depth test, the alpha test, and so on).
                             {
-                                if (ngon.material.auxiliary[auxiliaryBuffers[b].property] !== null)
+                                for (let b = 0; b < auxiliaryBuffers.length; b++)
                                 {
-                                    // Buffers are expected to consist of one element per pixel.
-                                    auxiliaryBuffers[b].buffer[pixelBufferIdx/4] = ngon.material.auxiliary[auxiliaryBuffers[b].property];
+                                    if (ngon.material.auxiliary[auxiliaryBuffers[b].property] !== null)
+                                    {
+                                        // Buffers are expected to consist of one element per pixel.
+                                        auxiliaryBuffers[b].buffer[pixelBufferIdx/4] = ngon.material.auxiliary[auxiliaryBuffers[b].property];
+                                    }
+                                }
+
+                                if (Rngon.internalState.useShaders)
+                                {
+                                    const fragment = fragmentBuffer[depthBufferIdx];
+                                    fragment.textureU = (iplU / iplUVW);
+                                    fragment.textureV = (iplV / iplUVW);
+                                    fragment.depth = iplDepth;
+                                    fragment.worldX = iplWorldX;
+                                    fragment.worldY = iplWorldY;
+                                    fragment.worldZ = iplWorldZ;
+                                    fragment.normalX = ngon.normal.x;
+                                    fragment.normalY = ngon.normal.y;
+                                    fragment.normalZ = ngon.normal.z;
+                                    fragment.polygonIdx = n;
                                 }
                             }
                         }
@@ -1325,12 +1398,18 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                         leftEdge.startU += leftEdge.deltaU;
                         leftEdge.startV += leftEdge.deltaV;
                         leftEdge.startUVW += leftEdge.deltaUVW;
+                        leftEdge.startWorldX += leftEdge.deltaWorldX;
+                        leftEdge.startWorldY += leftEdge.deltaWorldY;
+                        leftEdge.startWorldZ += leftEdge.deltaWorldZ;
 
                         rightEdge.startX += rightEdge.deltaX;
                         rightEdge.startDepth += rightEdge.deltaDepth;
                         rightEdge.startU += rightEdge.deltaU;
                         rightEdge.startV += rightEdge.deltaV;
                         rightEdge.startUVW += rightEdge.deltaUVW;
+                        rightEdge.startWorldX += rightEdge.deltaWorldX;
+                        rightEdge.startWorldY += rightEdge.deltaWorldY;
+                        rightEdge.startWorldZ += rightEdge.deltaWorldZ;
                     }
 
                     // We can move onto the next edge when we're at the end of the current one.
@@ -1433,12 +1512,13 @@ Rngon.render = function(canvasElementId,
 
     // Combine the default render options with the user-supplied ones.
     options = Object.freeze(
-    {
+{
         ...Rngon.render.defaultOptions,
         ...options
     });
 
     // Modify any internal render parameters based on the user's options.
+    Rngon.internalState.useShaders = (typeof options.shaderFunction === "function");
     Rngon.internalState.useDepthBuffer = (options.useDepthBuffer == true);
     Rngon.internalState.showGlobalWireframe = (options.globalWireframe == true);
     Rngon.internalState.applyViewportClipping = (options.clipToViewport == true);
@@ -1451,6 +1531,7 @@ Rngon.render = function(canvasElementId,
         const renderSurface = Rngon.screen(canvasElementId,
                                            Rngon.ngon_filler,
                                            Rngon.ngon_transform_and_light,
+                                           options.shaderFunction,
                                            options.scale,
                                            options.fov,
                                            options.nearPlane,
@@ -1461,7 +1542,6 @@ Rngon.render = function(canvasElementId,
         callMetadata.renderHeight = renderSurface.height;
 
         prepare_ngon_cache(Rngon.internalState.transformedNgonsCache, meshes);
-
         transform_ngons(meshes, renderSurface, options.cameraPosition, options.cameraDirection);
         mark_npot_textures(Rngon.internalState.transformedNgonsCache);
         depth_sort_ngons(Rngon.internalState.transformedNgonsCache.ngons, options.depthSort);
@@ -1469,7 +1549,7 @@ Rngon.render = function(canvasElementId,
         renderSurface.wipe_clean();
         renderSurface.rasterize_ngon_cache();
 
-        callMetadata.numNgonsRendered = Rngon.internalState.transformedNgonsCache.numActiveNgons;
+        callMetadata.numNgonsRendered = Rngon.internalState.transformedNgonsCache.count;
     }
 
     callMetadata.totalRenderTimeMs = (performance.now() - callMetadata.totalRenderTimeMs);
@@ -1510,7 +1590,7 @@ Rngon.render = function(canvasElementId,
             ngonCache.ngons.push(...new Array(lengthDelta).fill().map(e=>Rngon.ngon()));
         }
 
-        ngonCache.numActiveNgons = 0;
+        ngonCache.count = 0;
 
         return;
     }
@@ -1536,7 +1616,7 @@ Rngon.render = function(canvasElementId,
     // mapper, as the default affine mapper expects textures to be power-of-two.
     function mark_npot_textures(ngonCache = {})
     {
-        for (let i = 0; i < ngonCache.numActiveNgons; i++)
+        for (let i = 0; i < ngonCache.count; i++)
         {
             const ngon = ngonCache.ngons[i];
 
@@ -1613,6 +1693,7 @@ Rngon.render.defaultOptions =
 {
     cameraPosition: Rngon.vector3(0, 0, 0),
     cameraDirection: Rngon.vector3(0, 0, 0),
+    shaderFunction: null,
     scale: 1,
     fov: 43,
     nearPlane: 1,
@@ -1669,13 +1750,12 @@ Rngon.ngon_transform_and_light = function(ngons = [],
             }
         }
 
-        // Copy the ngon into the internal n-gon cache, so we can operate on it later in the
-        // render pipeline without destroying the original data.
-        const cachedNgon = transformedNgonsCache.ngons[transformedNgonsCache.numActiveNgons++];
+        // Copy the ngon into the internal n-gon caches, so we can operate on it later
+        // along the render pipeline.
+        const cachedNgon = transformedNgonsCache.ngons[transformedNgonsCache.count++];
         {
             cachedNgon.vertices.length = 0;
 
-            // Copy by value.
             for (let v = 0; v < ngon.vertices.length; v++)
             {
                 cachedNgon.vertices[v] = Rngon.vertex(ngon.vertices[v].x,
@@ -1683,7 +1763,7 @@ Rngon.ngon_transform_and_light = function(ngons = [],
                                                       ngon.vertices[v].z,
                                                       ngon.vertices[v].u,
                                                       ngon.vertices[v].v,
-                                                      ngon.vertices[v].w,);
+                                                      ngon.vertices[v].w);
             }
 
             cachedNgon.material = {...ngon.material};
@@ -1719,7 +1799,7 @@ Rngon.ngon_transform_and_light = function(ngons = [],
             // visible on the screen at all, and we don't need to consider it for rendering.
             if (!cachedNgon.vertices.length)
             {
-                transformedNgonsCache.numActiveNgons--;
+                transformedNgonsCache.count--;
                 continue;
             }
 
@@ -1730,7 +1810,7 @@ Rngon.ngon_transform_and_light = function(ngons = [],
 
     // Mark as inactive any cached n-gons that we didn't touch, so the renderer knows
     // to ignore them for the current frame.
-    for (let i = transformedNgonsCache.numActiveNgons; i < transformedNgonsCache.ngons.length; i++)
+    for (let i = transformedNgonsCache.count; i < transformedNgonsCache.ngons.length; i++)
     {
         transformedNgonsCache.ngons[i].isActive = false;
     }
@@ -1889,6 +1969,7 @@ Rngon.texture_rgba.create_with_data_from_file = function(filename)
 Rngon.screen = function(canvasElementId = "",                      // The DOM id of the canvas element.
                         ngon_fill_f = function(){},                // A function that rasterizes the given ngons onto the canvas.
                         ngon_transform_and_light_f = function(){}, // A function applies lighting to the given ngons, and transforms them into screen-space for the canvas.
+                        shader_f = function(){},                   // A function that applies shaders to the rendered image. 
                         scaleFactor = 1,
                         fov = 43,
                         nearPlane = 1,
@@ -1920,14 +2001,26 @@ Rngon.screen = function(canvasElementId = "",                      // The DOM id
         Rngon.internalState.pixelBuffer = new ImageData(screenWidth, screenHeight);
     }
 
+    if (Rngon.internalState.useShaders &&
+        (Rngon.internalState.fragmentBuffer.width != screenWidth) ||
+        (Rngon.internalState.fragmentBuffer.height != screenHeight))
+    {
+
+        Rngon.internalState.fragmentBuffer.width = screenWidth;
+        Rngon.internalState.fragmentBuffer.height = screenHeight;
+        Rngon.internalState.fragmentBuffer.data = new Array(screenWidth * screenHeight)
+                                                  .fill()
+                                                  .map(e=>({}));
+    }
+
     if (Rngon.internalState.useDepthBuffer &&
         (Rngon.internalState.depthBuffer.width != screenWidth) ||
         (Rngon.internalState.depthBuffer.height != screenHeight) ||
-        !Rngon.internalState.depthBuffer.buffer.length)
+        !Rngon.internalState.depthBuffer.data.length)
     {
         Rngon.internalState.depthBuffer.width = screenWidth;
         Rngon.internalState.depthBuffer.height = screenHeight;
-        Rngon.internalState.depthBuffer.buffer = new Array(Rngon.internalState.depthBuffer.width * Rngon.internalState.depthBuffer.height); 
+        Rngon.internalState.depthBuffer.data = new Array(Rngon.internalState.depthBuffer.width * Rngon.internalState.depthBuffer.height); 
     }
 
     const publicInterface = Object.freeze(
@@ -1939,17 +2032,21 @@ Rngon.screen = function(canvasElementId = "",                      // The DOM id
         {
             Rngon.internalState.pixelBuffer.data.fill(0);
 
+            /// TODO: Wipe the raster fragment buffer.
+
             if (Rngon.internalState.useDepthBuffer)
             {
-                Rngon.internalState.depthBuffer.buffer.fill(Rngon.internalState.depthBuffer.clearValue);
+                Rngon.internalState.depthBuffer.data.fill(Rngon.internalState.depthBuffer.clearValue);
             }
         },
 
         // Returns a copy of the ngons transformed into screen-space for this render surface.
         // The n-gons will also have any of the scene's light(s) applied to them.
+        //
         // Takes as input the ngons to be transformed, an object matrix which contains the object's
         // transforms, a camera matrix, which contains the camera's translation and rotation, and
         // a vector containing the camera's raw world position.
+        //
         transform_and_light_ngons: function(ngons = [], objectMatrix = [], cameraMatrix = [], cameraPos)
         {
             ngon_transform_and_light_f(ngons, objectMatrix, cameraMatrix, perspectiveMatrix, screenSpaceMatrix, cameraPos);
@@ -1959,6 +2056,18 @@ Rngon.screen = function(canvasElementId = "",                      // The DOM id
         rasterize_ngon_cache: function()
         {
             ngon_fill_f(auxiliaryBuffers);
+
+            if (Rngon.internalState.useShaders)
+            {
+                shader_f({
+                    renderWidth: screenWidth,
+                    renderHeight: screenHeight,
+                    fragmentBuffer: Rngon.internalState.fragmentBuffer.data,
+                    pixelBuffer: Rngon.internalState.pixelBuffer.data,
+                    ngonCache: Rngon.internalState.transformedNgonsCache.ngons,
+                });
+            }
+
             renderContext.putImageData(Rngon.internalState.pixelBuffer, 0, 0);
         },
     });

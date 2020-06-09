@@ -17,8 +17,9 @@
 //
 Rngon.ngon_filler = function(auxiliaryBuffers = [])
 {
+    const fragmentBuffer = Rngon.internalState.fragmentBuffer.data;
     const pixelBuffer = Rngon.internalState.pixelBuffer.data;
-    const depthBuffer = (Rngon.internalState.useDepthBuffer? Rngon.internalState.depthBuffer.buffer : null);
+    const depthBuffer = (Rngon.internalState.useDepthBuffer? Rngon.internalState.depthBuffer.data : null);
     const renderWidth = Rngon.internalState.pixelBuffer.width;
     const renderHeight = Rngon.internalState.pixelBuffer.height;
 
@@ -29,7 +30,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
     }
 
     // Rasterize the n-gons.
-    for (let n = 0; n < Rngon.internalState.transformedNgonsCache.numActiveNgons; n++)
+    for (let n = 0; n < Rngon.internalState.transformedNgonsCache.count; n++)
     {
         const ngon = Rngon.internalState.transformedNgonsCache.ngons[n];
 
@@ -41,7 +42,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
         }
 
         // Handle n-gons that constitute points and lines.
-        /// TODO: Add depth and alpha testing for points and lines.
+        /// TODO: Add the fragment buffer, depth testing, and alpha testing for points and lines.
         if (ngon.vertices.length === 1)
         {
             const idx = ((Math.round(ngon.vertices[0].x) + Math.round(ngon.vertices[0].y) * renderWidth) * 4);
@@ -125,6 +126,13 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                     const startDepth = vert1.z;
                     const deltaDepth = ((vert2.z - vert1.z) / edgeHeight);
 
+                    const startWorldX = vert1.worldX;
+                    const deltaWorldX = ((vert2.worldX - vert1.worldX) / edgeHeight);
+                    const startWorldY = vert1.worldY;
+                    const deltaWorldY = ((vert2.worldY - vert1.worldY) / edgeHeight);
+                    const startWorldZ = vert1.worldZ;
+                    const deltaWorldZ = ((vert2.worldZ - vert1.worldZ) / edgeHeight);
+
                     const u1 = (ngon.material.texture? vert1.u : 1);
                     const v1 = (ngon.material.texture? vert1.v : 1);
                     const u2 = (ngon.material.texture? vert2.u : 1);
@@ -152,6 +160,9 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                         startU, deltaU,
                         startV, deltaV,
                         startUVW, deltaUVW,
+                        startWorldX, deltaWorldX,
+                        startWorldY, deltaWorldY,
+                        startWorldZ, deltaWorldZ,
                     });
                 };
 
@@ -194,6 +205,15 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                         const deltaUVW = ((rightEdge.startUVW - leftEdge.startUVW) / spanWidth);
                         let iplUVW = (leftEdge.startUVW - deltaUVW);
 
+                        const deltaWorldX = ((rightEdge.startWorldX - leftEdge.startWorldX) / spanWidth);
+                        let iplWorldX = (leftEdge.startWorldX - deltaWorldX);
+
+                        const deltaWorldY = ((rightEdge.startWorldY - leftEdge.startWorldY) / spanWidth);
+                        let iplWorldY = (leftEdge.startWorldY - deltaWorldY);
+
+                        const deltaWorldZ = ((rightEdge.startWorldZ - leftEdge.startWorldZ) / spanWidth);
+                        let iplWorldZ = (leftEdge.startWorldZ - deltaWorldZ);
+
                         // Assumes the pixel buffer consists of 4 elements per pixel (e.g. RGBA).
                         let pixelBufferIdx = (((spanStartX + y * renderWidth) * 4) - 4);
 
@@ -203,11 +223,18 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                         // Draw the span into the pixel buffer.
                         for (let x = spanStartX; x < spanEndX; x++)
                         {
+                            // Will hold the texture coordinates used if we end up drawing
+                            // a textured pixel at the current x,y screen location.
+                            let u = 0.0, v = 0.0;
+
                             // Update values that're interpolated horizontally along the span.
                             iplDepth += deltaDepth;
                             iplU += deltaU;
                             iplV += deltaV;
                             iplUVW += deltaUVW;
+                            iplWorldX += deltaWorldX;
+                            iplWorldY += deltaWorldY;
+                            iplWorldZ += deltaWorldZ;
                             pixelBufferIdx += 4;
                             depthBufferIdx++;
 
@@ -248,8 +275,6 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                             // Textured fill.
                             else
                             {
-                                let u, v;
-
                                 switch (ngon.material.textureMapping)
                                 {
                                     // Affine mapping for power-of-two textures.
@@ -387,12 +412,32 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                 if (depthBuffer) depthBuffer[depthBufferIdx] = iplDepth;
                             }
 
-                            for (let b = 0; b < auxiliaryBuffers.length; b++)
+                            // This part of the loop is reached only if we ended up drawing
+                            // into the pixel at the current x,y screen location (i.e. if the
+                            // pixel passed the depth test, the alpha test, and so on).
                             {
-                                if (ngon.material.auxiliary[auxiliaryBuffers[b].property] !== null)
+                                for (let b = 0; b < auxiliaryBuffers.length; b++)
                                 {
-                                    // Buffers are expected to consist of one element per pixel.
-                                    auxiliaryBuffers[b].buffer[pixelBufferIdx/4] = ngon.material.auxiliary[auxiliaryBuffers[b].property];
+                                    if (ngon.material.auxiliary[auxiliaryBuffers[b].property] !== null)
+                                    {
+                                        // Buffers are expected to consist of one element per pixel.
+                                        auxiliaryBuffers[b].buffer[pixelBufferIdx/4] = ngon.material.auxiliary[auxiliaryBuffers[b].property];
+                                    }
+                                }
+
+                                if (Rngon.internalState.useShaders)
+                                {
+                                    const fragment = fragmentBuffer[depthBufferIdx];
+                                    fragment.textureU = (iplU / iplUVW);
+                                    fragment.textureV = (iplV / iplUVW);
+                                    fragment.depth = iplDepth;
+                                    fragment.worldX = iplWorldX;
+                                    fragment.worldY = iplWorldY;
+                                    fragment.worldZ = iplWorldZ;
+                                    fragment.normalX = ngon.normal.x;
+                                    fragment.normalY = ngon.normal.y;
+                                    fragment.normalZ = ngon.normal.z;
+                                    fragment.polygonIdx = n;
                                 }
                             }
                         }
@@ -405,12 +450,18 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                         leftEdge.startU += leftEdge.deltaU;
                         leftEdge.startV += leftEdge.deltaV;
                         leftEdge.startUVW += leftEdge.deltaUVW;
+                        leftEdge.startWorldX += leftEdge.deltaWorldX;
+                        leftEdge.startWorldY += leftEdge.deltaWorldY;
+                        leftEdge.startWorldZ += leftEdge.deltaWorldZ;
 
                         rightEdge.startX += rightEdge.deltaX;
                         rightEdge.startDepth += rightEdge.deltaDepth;
                         rightEdge.startU += rightEdge.deltaU;
                         rightEdge.startV += rightEdge.deltaV;
                         rightEdge.startUVW += rightEdge.deltaUVW;
+                        rightEdge.startWorldX += rightEdge.deltaWorldX;
+                        rightEdge.startWorldY += rightEdge.deltaWorldY;
+                        rightEdge.startWorldZ += rightEdge.deltaWorldZ;
                     }
 
                     // We can move onto the next edge when we're at the end of the current one.

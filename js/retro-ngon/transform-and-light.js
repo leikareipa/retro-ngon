@@ -41,13 +41,12 @@ Rngon.ngon_transform_and_light = function(ngons = [],
             }
         }
 
-        // Copy the ngon into the internal n-gon cache, so we can operate on it later in the
-        // render pipeline without destroying the original data.
-        const cachedNgon = transformedNgonsCache.ngons[transformedNgonsCache.numActiveNgons++];
+        // Copy the ngon into the internal n-gon caches, so we can operate on it later
+        // along the render pipeline.
+        const cachedNgon = transformedNgonsCache.ngons[transformedNgonsCache.count++];
         {
             cachedNgon.vertices.length = 0;
 
-            // Copy by value.
             for (let v = 0; v < ngon.vertices.length; v++)
             {
                 cachedNgon.vertices[v] = Rngon.vertex(ngon.vertices[v].x,
@@ -55,7 +54,7 @@ Rngon.ngon_transform_and_light = function(ngons = [],
                                                       ngon.vertices[v].z,
                                                       ngon.vertices[v].u,
                                                       ngon.vertices[v].v,
-                                                      ngon.vertices[v].w,);
+                                                      ngon.vertices[v].w);
             }
 
             cachedNgon.material = {...ngon.material};
@@ -91,7 +90,7 @@ Rngon.ngon_transform_and_light = function(ngons = [],
             // visible on the screen at all, and we don't need to consider it for rendering.
             if (!cachedNgon.vertices.length)
             {
-                transformedNgonsCache.numActiveNgons--;
+                transformedNgonsCache.count--;
                 continue;
             }
 
@@ -102,7 +101,7 @@ Rngon.ngon_transform_and_light = function(ngons = [],
 
     // Mark as inactive any cached n-gons that we didn't touch, so the renderer knows
     // to ignore them for the current frame.
-    for (let i = transformedNgonsCache.numActiveNgons; i < transformedNgonsCache.ngons.length; i++)
+    for (let i = transformedNgonsCache.count; i < transformedNgonsCache.ngons.length; i++)
     {
         transformedNgonsCache.ngons[i].isActive = false;
     }

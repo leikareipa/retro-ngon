@@ -15,7 +15,7 @@ Rngon.line_draw = (()=>
                                     respectDepth = false)
         {
             const pixelBuffer = Rngon.internalState.pixelBuffer.data;
-            const depthBuffer = (Rngon.internalState.useDepthBuffer? Rngon.internalState.depthBuffer.buffer : null);
+            const depthBuffer = (Rngon.internalState.useDepthBuffer? Rngon.internalState.depthBuffer.data : null);
             const bufferWidth = Rngon.internalState.pixelBuffer.width;
             const bufferHeight = Rngon.internalState.pixelBuffer.height;
 

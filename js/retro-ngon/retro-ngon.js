@@ -44,10 +44,43 @@ Rngon.internalState =
 {
     // Whether to require pixels to pass a depth test before being allowed on screen.
     useDepthBuffer: false,
-    depthBuffer: {width:1, height:1, buffer:new Array(1), clearValue:Number.MAX_VALUE},
+    depthBuffer: {width:1, height:1, data:new Array(1), clearValue:Number.MAX_VALUE},
 
-    // Pixel buffer for rasterization.
+    // Pixel buffer for rasterization. This will be scaled to match the requested
+    // render resolution; and the renderer's rasterization pass will populate it
+    // with the rendered frame's pixel values.
     pixelBuffer: new ImageData(1, 1),
+
+    // For each pixel in the rendered frame, metadata about the state of the renderer
+    // at that pixel, intended to be used by shaders. The array's size will be set to
+    // match the requested render resolution.
+    fragmentBuffer: {width:1, height:1, data:new Array(1), clearValue:{
+            // Index of this polygon in the list of transformed polygons.
+            polygonIdx: undefined,
+
+            // Texture coordinates at this pixel.
+            textureU: undefined,
+            textureV: undefined,
+
+            // World coordinates at this pixel.
+            worldX: undefined,
+            worldY: undefined,
+            worldZ: undefined,
+
+            // Normal at this pixel.
+            normalX: undefined,
+            normalY: undefined,
+            normalZ: undefined,
+
+            // The value written into the depth buffer by this fragment.
+            depth: undefined,
+        }
+    },
+
+    // If true, enables the fragment buffer and allows the use of shaders. Note that
+    // enabling shaders carries a performance penalty even if you don't actually make
+    // use any shaders.
+    useShaders: false,
 
     usePerspectiveCorrectTexturing: false,
 
@@ -62,20 +95,10 @@ Rngon.internalState =
     // expose a way to toggle it otherwise.
     allowWindowAlert: false,
 
-    // All transformed n-gons on a particular call to render() will be placed here.
-    // The cache size will be dynamically adjusted up to match the largest number
-    // of transformed n-gons, so at any given time the number of active n-gons (those
-    // that have been transformed for the current frame) may be smaller than the
-    // cache's total capacity.
-    transformedNgonsCache: {numActiveNgons:0, ngons:[]},
+    // All of the n-gons that were most recently passed to render(), transformed into
+    // screen space.
+    transformedNgonsCache: {count:0, ngons:[]},
 
-    // All transformed (to eye space) lights on a particular call to render() will
-    // be placed here. The cache size will be dynamically adjusted up to match the
-    // largest number of transformed lights, so at any given time the number of active
-    // lights (those that have been transformed for the current frame) may be smaller
-    // than the cache's total capacity.
-    transformedLightsCache: {numActiveLights:0, lights:[]},
-
-    // All light sources that should currently apply to rendered n-gons.
+    // All light sources that should currently apply to n-gons passed to render().
     lights: [],
 }
