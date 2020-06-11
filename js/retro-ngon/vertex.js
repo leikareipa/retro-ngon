@@ -51,7 +51,6 @@ Rngon.vertex = function(x = 0, y = 0, z = 0, u = 0, v = 0, w = 1, worldX = x, wo
         {
             this.x /= this.w;
             this.y /= this.w;
-            this.z /= this.w;
         }
     };
 

@@ -124,11 +124,13 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                                           Math.min(renderWidth, Math.max(0, Math.ceil(vert2.x))),
                                                           false);
                     
-                    const [startDepth, deltaDepth] = interpolants(vert1.z, vert2.z, false);
+                    const [startDepth, deltaDepth] = interpolants((vert1.z / Rngon.internalState.farPlaneDistance),
+                                                                  (vert2.z / Rngon.internalState.farPlaneDistance),
+                                                                  interpolatePerspective);
 
-                    const [startWorldX, deltaWorldX] = interpolants(vert1.worldX, vert2.worldX, true);
-                    const [startWorldY, deltaWorldY] = interpolants(vert1.worldY, vert2.worldY, true);
-                    const [startWorldZ, deltaWorldZ] = interpolants(vert1.worldZ, vert2.worldZ, true);
+                    const [startWorldX, deltaWorldX] = interpolants(vert1.worldX, vert2.worldX, interpolatePerspective);
+                    const [startWorldY, deltaWorldY] = interpolants(vert1.worldY, vert2.worldY, interpolatePerspective);
+                    const [startWorldZ, deltaWorldZ] = interpolants(vert1.worldZ, vert2.worldZ, interpolatePerspective);
 
                     const u1 = (ngon.material.texture? vert1.u : 1);
                     const v1 = (ngon.material.texture? vert1.v : 1);
@@ -216,7 +218,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                         let iplV = (leftEdge.startV - deltaV);
 
                         const deltaInvW = ((rightEdge.startInvW - leftEdge.startInvW) / spanWidth);
-                        let iplUVW = (leftEdge.startInvW - deltaInvW);
+                        let iplInvW = (leftEdge.startInvW - deltaInvW);
 
                         const deltaWorldX = ((rightEdge.startWorldX - leftEdge.startWorldX) / spanWidth);
                         let iplWorldX = (leftEdge.startWorldX - deltaWorldX);
@@ -244,7 +246,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                             iplDepth += deltaDepth;
                             iplU += deltaU;
                             iplV += deltaV;
-                            iplUVW += deltaInvW;
+                            iplInvW += deltaInvW;
                             iplWorldX += deltaWorldX;
                             iplWorldY += deltaWorldY;
                             iplWorldZ += deltaWorldZ;
@@ -252,7 +254,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                             depthBufferIdx++;
 
                             // Depth test.
-                            if (depthBuffer && (depthBuffer[depthBufferIdx] <= iplDepth)) continue;
+                            if (depthBuffer && (depthBuffer[depthBufferIdx] <= (iplDepth / iplInvW))) continue;
 
                             // Solid fill.
                             if (!ngon.material.texture)
@@ -283,7 +285,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                 pixelBuffer[pixelBufferIdx + 1] = ngon.material.color.green;
                                 pixelBuffer[pixelBufferIdx + 2] = ngon.material.color.blue;
                                 pixelBuffer[pixelBufferIdx + 3] = 255;
-                                if (depthBuffer) depthBuffer[depthBufferIdx] = iplDepth;
+                                if (depthBuffer) depthBuffer[depthBufferIdx] = (iplDepth / iplInvW);
                             }
                             // Textured fill.
                             else
@@ -293,8 +295,8 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                     // Affine mapping for power-of-two textures.
                                     case "affine":
                                     {
-                                        u = (iplU / iplUVW);
-                                        v = (iplV / iplUVW);
+                                        u = (iplU / iplInvW);
+                                        v = (iplV / iplInvW);
 
                                         switch (ngon.material.uvWrapping)
                                         {
@@ -342,8 +344,8 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                     /// power-of-two textures).
                                     case "affine-npot":
                                     {
-                                        u = (iplU / iplUVW);
-                                        v = (iplV / iplUVW);
+                                        u = (iplU / iplInvW);
+                                        v = (iplV / iplInvW);
 
                                         u *= ngon.material.texture.width;
                                         v *= ngon.material.texture.height;
@@ -422,7 +424,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                 pixelBuffer[pixelBufferIdx + 1] = (texel.green * ngon.material.color.unitRange.green);
                                 pixelBuffer[pixelBufferIdx + 2] = (texel.blue  * ngon.material.color.unitRange.blue);
                                 pixelBuffer[pixelBufferIdx + 3] = 255;
-                                if (depthBuffer) depthBuffer[depthBufferIdx] = iplDepth;
+                                if (depthBuffer) depthBuffer[depthBufferIdx] = (iplDepth / iplInvW);
                             }
 
                             // This part of the loop is reached only if we ended up drawing
@@ -441,12 +443,12 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                 if (Rngon.internalState.useShaders)
                                 {
                                     const fragment = fragmentBuffer[depthBufferIdx];
-                                    fragment.textureU = (iplU / iplUVW);
-                                    fragment.textureV = (iplV / iplUVW);
-                                    fragment.depth = iplDepth;
-                                    fragment.worldX = (iplWorldX / iplUVW);
-                                    fragment.worldY = (iplWorldY / iplUVW);
-                                    fragment.worldZ = (iplWorldZ / iplUVW);
+                                    fragment.textureU = (iplU / iplInvW);
+                                    fragment.textureV = (iplV / iplInvW);
+                                    fragment.depth = (iplDepth / iplInvW);
+                                    fragment.worldX = (iplWorldX / iplInvW);
+                                    fragment.worldY = (iplWorldY / iplInvW);
+                                    fragment.worldZ = (iplWorldZ / iplInvW);
                                     fragment.normalX = ngon.normal.x;
                                     fragment.normalY = ngon.normal.y;
                                     fragment.normalZ = ngon.normal.z;

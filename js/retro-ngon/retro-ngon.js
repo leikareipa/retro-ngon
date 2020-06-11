@@ -90,6 +90,9 @@ Rngon.internalState =
     // If true, all n-gons will be clipped against the viewport.
     applyViewportClipping: true,
 
+    // Distance, in world units, to the far clipping plane.
+    farPlaneDistance: 1,
+
     // Whether the renderer is allowed to call window.alert(), e.g. to alert the user
     // to errors. This parameter can be set directly, as the render API doesn't yet
     // expose a way to toggle it otherwise.

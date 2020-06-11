@@ -41,6 +41,7 @@ Rngon.render = function(canvasElementId,
     Rngon.internalState.applyViewportClipping = (options.clipToViewport == true);
     Rngon.internalState.usePerspectiveCorrectTexturing = (options.perspectiveCorrectTexturing == true);
     Rngon.internalState.lights = options.lights;
+    Rngon.internalState.farPlaneDistance = options.farPlane;
 
     // Render a single frame onto the render surface.
     if ((!options.hibernateWhenNotOnScreen || is_surface_in_view()))
@@ -210,12 +211,12 @@ Rngon.render.defaultOptions =
 {
     cameraPosition: Rngon.vector3(0, 0, 0),
     cameraDirection: Rngon.vector3(0, 0, 0),
-    shaderFunction: null,
+    shaderFunction: null, // If null, all shader functionality will be disabled.
     scale: 1,
     fov: 43,
     nearPlane: 1,
     farPlane: 1000,
-    depthSort: "", // Use default.
+    depthSort: "", // An empty string will make the renderer use its default depth sort option.
     useDepthBuffer: true,
     clipToViewport: true,
     globalWireframe: false,
