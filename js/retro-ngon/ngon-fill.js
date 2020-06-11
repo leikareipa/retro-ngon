@@ -107,52 +107,38 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
 
             // Create edges out of the vertices.
             {
-                const interpolatePerspective = Rngon.internalState.usePerspectiveCorrectTexturing;
+                for (let l = 1; l < leftVerts.length; l++) add_edge(leftVerts[l-1], leftVerts[l], true);
+                for (let r = 1; r < rightVerts.length; r++) add_edge(rightVerts[r-1], rightVerts[r], false);
 
-                const add_edge = (vert1, vert2, isLeftEdge)=>
+                function add_edge(vert1, vert2, isLeftEdge)
                 {
+                    const interpolatePerspective = Rngon.internalState.usePerspectiveCorrectTexturing;
                     const startY = Math.min(renderHeight, Math.max(0, Math.round(vert1.y)));
                     const endY = Math.min(renderHeight, Math.max(0, Math.round(vert2.y)));
+                    const edgeHeight = (endY - startY);
                     
                     // Ignore horizontal edges.
-                    if ((endY - startY) === 0) return;
+                    if (edgeHeight === 0) return;
 
-                    const edgeHeight = (endY - startY);
+                    const [startX, deltaX] = interpolants(Math.min(renderWidth, Math.max(0, Math.round(vert1.x))),
+                                                          Math.min(renderWidth, Math.max(0, Math.ceil(vert2.x))),
+                                                          false);
+                    
+                    const [startDepth, deltaDepth] = interpolants(vert1.z, vert2.z, false);
 
-                    const startX = Math.min(renderWidth, Math.max(0, Math.round(vert1.x)));
-                    const endX = Math.min(renderWidth, Math.max(0, Math.ceil(vert2.x)));
-                    const deltaX = ((endX - startX) / edgeHeight);
-
-                    const startDepth = vert1.z;
-                    const deltaDepth = ((vert2.z - vert1.z) / edgeHeight);
-
-                    // Note: world coordinates are always perspective-corrected (divided by w).
-                    const startWorldX = (vert1.worldX / vert1.w);
-                    const deltaWorldX = (((vert2.worldX  / vert2.w) - (vert1.worldX / vert1.w)) / edgeHeight);
-                    const startWorldY = (vert1.worldY / vert1.w);
-                    const deltaWorldY = (((vert2.worldY / vert2.w) - (vert1.worldY / vert1.w)) / edgeHeight);
-                    const startWorldZ = (vert1.worldZ / vert1.w);
-                    const deltaWorldZ = (((vert2.worldZ / vert2.w) - (vert1.worldZ / vert1.w)) / edgeHeight);
+                    const [startWorldX, deltaWorldX] = interpolants(vert1.worldX, vert2.worldX, true);
+                    const [startWorldY, deltaWorldY] = interpolants(vert1.worldY, vert2.worldY, true);
+                    const [startWorldZ, deltaWorldZ] = interpolants(vert1.worldZ, vert2.worldZ, true);
 
                     const u1 = (ngon.material.texture? vert1.u : 1);
                     const v1 = (ngon.material.texture? vert1.v : 1);
                     const u2 = (ngon.material.texture? vert2.u : 1);
                     const v2 = (ngon.material.texture? vert2.v : 1);
+                    const [startU, deltaU] = interpolants(u1, u2, interpolatePerspective);
+                    const [startV, deltaV] = interpolants(v1, v2, interpolatePerspective);
 
-                    const startU = interpolatePerspective? (u1 / vert1.w)
-                                                         : u1;
-                    const deltaU = interpolatePerspective? (((u2 / vert2.w) - (u1 / vert1.w)) / edgeHeight)
-                                                         : ((u2 - u1) / edgeHeight);
-
-                    const startV = interpolatePerspective? (v1 / vert1.w)
-                                                         : v1;
-                    const deltaV = interpolatePerspective? (((v2 / vert2.w) - (v1 / vert1.w)) / edgeHeight)
-                                                         : ((v2 - v1) / edgeHeight);
-
-                    const startInvW = interpolatePerspective? (1 / vert1.w)
-                                                            : 1;
-                    const deltaInvW = interpolatePerspective? (((1 / vert2.w) - (1 / vert1.w)) / edgeHeight)
-                                                            : 0;
+                    // (1 / W), for perspective-correct mapping.
+                    const [startInvW, deltaInvW] = interpolatePerspective? interpolants(1, 1, true) : [1, 0];
 
                     (isLeftEdge? leftEdges : rightEdges).push({
                         startY, endY,
@@ -165,10 +151,36 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                         startWorldY, deltaWorldY,
                         startWorldZ, deltaWorldZ,
                     });
-                };
 
-                for (let l = 1; l < leftVerts.length; l++) add_edge(leftVerts[l-1], leftVerts[l], true);
-                for (let r = 1; r < rightVerts.length; r++) add_edge(rightVerts[r-1], rightVerts[r], false);
+                    // For the given starting and ending values (corresponding to the current
+                    // edge's starting and ending vertices), returns as an array (1) the starting
+                    // value, and (2) an increment value; such that when the increment is appended
+                    // to the starting value x times, it will equal the ending value, with x being
+                    // the pixel height of the current edge.
+                    //
+                    // if 'perspectiveCorrect' is true, the starting and ending values will be
+                    // divided by the corresponding W value - you'll then need to divide the
+                    // interpolated values you produce from these by (1 / W) to end up with
+                    // perspective-corrected values.
+                    //
+                    function interpolants(start, end, perspectiveCorrect = true)
+                    {
+                        if (perspectiveCorrect)
+                        {
+                            return [
+                                (start / vert1.w),
+                                (((end  / vert2.w) - (start / vert1.w)) / edgeHeight)
+                            ];
+                        }
+                        else
+                        {
+                            return [
+                                start,
+                                ((end - start) / edgeHeight)
+                            ];
+                        }
+                    }
+                }
             }
 
             // Draw the n-gon. On each horizontal raster line, there will be two edges: left and right.
