@@ -8,10 +8,11 @@
 "use strict";
 
 // NOTE: The returned object is not immutable.
-Rngon.vertex = function(x = 0, y = 0, z = 0, u = 0, v = 0, w = 1)
+Rngon.vertex = function(x = 0, y = 0, z = 0, u = 0, v = 0, w = 1, worldX = x, worldY = y, worldZ = z)
 {
     Rngon.assert && (typeof x === "number" && typeof y === "number" && typeof z === "number" &&
-                     typeof w === "number" && typeof u === "number" && typeof v === "number")
+                     typeof w === "number" && typeof u === "number" && typeof v === "number" &&
+                     typeof worldX === "number" && typeof worldY === "number" && typeof worldZ === "number")
                  || Rngon.throw("Expected numbers as parameters to the vertex factory.");
 
     const returnObject =
@@ -24,9 +25,9 @@ Rngon.vertex = function(x = 0, y = 0, z = 0, u = 0, v = 0, w = 1)
         w,
 
         // The vertex's original coordinates, before any transformations.
-        worldX: x,
-        worldY: y,
-        worldZ: z,
+        worldX,
+        worldY,
+        worldZ,
 
         // Transforms the vertex by the given 4x4 matrix.
         transform: function(m = [])

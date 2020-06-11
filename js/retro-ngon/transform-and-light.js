@@ -67,11 +67,18 @@ Rngon.ngon_transform_and_light = function(ngons = [],
             // Eye space.
             {
                 cachedNgon.transform(objectMatrix);
+                cachedNgon.normal.transform(objectMatrix);
+                cachedNgon.normal.normalize();
+
+                for (let v = 0; v < cachedNgon.vertices.length; v++)
+                {
+                    cachedNgon.vertices[v].worldX = cachedNgon.vertices[v].x;
+                    cachedNgon.vertices[v].worldY = cachedNgon.vertices[v].y;
+                    cachedNgon.vertices[v].worldZ = cachedNgon.vertices[v].z;
+                }
 
                 if (cachedNgon.material.shading !== "none")
                 {
-                    cachedNgon.normal.transform(objectMatrix);
-                    cachedNgon.normal.normalize();
                     Rngon.ngon_transform_and_light.apply_lighting(cachedNgon);
                 }
             }

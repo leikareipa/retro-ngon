@@ -96,7 +96,10 @@ Rngon.ngon = function(vertices = [Rngon.vertex()], material = {}, normal = Rngon
                                                                                 Rngon.lerp(prevVertex.z, this.vertices[i].z, lerpStep),
                                                                                 Rngon.lerp(prevVertex.u, this.vertices[i].u, lerpStep),
                                                                                 Rngon.lerp(prevVertex.v, this.vertices[i].v, lerpStep),
-                                                                                Rngon.lerp(prevVertex.w, this.vertices[i].w, lerpStep))
+                                                                                Rngon.lerp(prevVertex.w, this.vertices[i].w, lerpStep),
+                                                                                Rngon.lerp(prevVertex.worldX, this.vertices[i].worldX, lerpStep),
+                                                                                Rngon.lerp(prevVertex.worldY, this.vertices[i].worldY, lerpStep),
+                                                                                Rngon.lerp(prevVertex.worldZ, this.vertices[i].worldZ, lerpStep))
                     }
                     
                     if (isThisVertexInside)

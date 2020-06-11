@@ -126,12 +126,13 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                     const startDepth = vert1.z;
                     const deltaDepth = ((vert2.z - vert1.z) / edgeHeight);
 
-                    const startWorldX = vert1.worldX;
-                    const deltaWorldX = ((vert2.worldX - vert1.worldX) / edgeHeight);
-                    const startWorldY = vert1.worldY;
-                    const deltaWorldY = ((vert2.worldY - vert1.worldY) / edgeHeight);
-                    const startWorldZ = vert1.worldZ;
-                    const deltaWorldZ = ((vert2.worldZ - vert1.worldZ) / edgeHeight);
+                    // Note: world coordinates are always perspective-corrected (divided by w).
+                    const startWorldX = (vert1.worldX / vert1.w);
+                    const deltaWorldX = (((vert2.worldX  / vert2.w) - (vert1.worldX / vert1.w)) / edgeHeight);
+                    const startWorldY = (vert1.worldY / vert1.w);
+                    const deltaWorldY = (((vert2.worldY / vert2.w) - (vert1.worldY / vert1.w)) / edgeHeight);
+                    const startWorldZ = (vert1.worldZ / vert1.w);
+                    const deltaWorldZ = (((vert2.worldZ / vert2.w) - (vert1.worldZ / vert1.w)) / edgeHeight);
 
                     const u1 = (ngon.material.texture? vert1.u : 1);
                     const v1 = (ngon.material.texture? vert1.v : 1);
@@ -148,10 +149,10 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                     const deltaV = interpolatePerspective? (((v2 / vert2.w) - (v1 / vert1.w)) / edgeHeight)
                                                          : ((v2 - v1) / edgeHeight);
 
-                    const startUVW = interpolatePerspective? (1 / vert1.w)
-                                                           : 1;
-                    const deltaUVW = interpolatePerspective? (((1 / vert2.w) - (1 / vert1.w)) / edgeHeight)
-                                                           : 0;
+                    const startInvW = interpolatePerspective? (1 / vert1.w)
+                                                            : 1;
+                    const deltaInvW = interpolatePerspective? (((1 / vert2.w) - (1 / vert1.w)) / edgeHeight)
+                                                            : 0;
 
                     (isLeftEdge? leftEdges : rightEdges).push({
                         startY, endY,
@@ -159,7 +160,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                         startDepth, deltaDepth,
                         startU, deltaU,
                         startV, deltaV,
-                        startUVW, deltaUVW,
+                        startInvW, deltaInvW,
                         startWorldX, deltaWorldX,
                         startWorldY, deltaWorldY,
                         startWorldZ, deltaWorldZ,
@@ -202,8 +203,8 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                         const deltaV = ((rightEdge.startV - leftEdge.startV) / spanWidth);
                         let iplV = (leftEdge.startV - deltaV);
 
-                        const deltaUVW = ((rightEdge.startUVW - leftEdge.startUVW) / spanWidth);
-                        let iplUVW = (leftEdge.startUVW - deltaUVW);
+                        const deltaInvW = ((rightEdge.startInvW - leftEdge.startInvW) / spanWidth);
+                        let iplUVW = (leftEdge.startInvW - deltaInvW);
 
                         const deltaWorldX = ((rightEdge.startWorldX - leftEdge.startWorldX) / spanWidth);
                         let iplWorldX = (leftEdge.startWorldX - deltaWorldX);
@@ -231,7 +232,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                             iplDepth += deltaDepth;
                             iplU += deltaU;
                             iplV += deltaV;
-                            iplUVW += deltaUVW;
+                            iplUVW += deltaInvW;
                             iplWorldX += deltaWorldX;
                             iplWorldY += deltaWorldY;
                             iplWorldZ += deltaWorldZ;
@@ -431,9 +432,9 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                     fragment.textureU = (iplU / iplUVW);
                                     fragment.textureV = (iplV / iplUVW);
                                     fragment.depth = iplDepth;
-                                    fragment.worldX = iplWorldX;
-                                    fragment.worldY = iplWorldY;
-                                    fragment.worldZ = iplWorldZ;
+                                    fragment.worldX = (iplWorldX / iplUVW);
+                                    fragment.worldY = (iplWorldY / iplUVW);
+                                    fragment.worldZ = (iplWorldZ / iplUVW);
                                     fragment.normalX = ngon.normal.x;
                                     fragment.normalY = ngon.normal.y;
                                     fragment.normalZ = ngon.normal.z;
@@ -449,7 +450,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                         leftEdge.startDepth += leftEdge.deltaDepth;
                         leftEdge.startU += leftEdge.deltaU;
                         leftEdge.startV += leftEdge.deltaV;
-                        leftEdge.startUVW += leftEdge.deltaUVW;
+                        leftEdge.startInvW += leftEdge.deltaInvW;
                         leftEdge.startWorldX += leftEdge.deltaWorldX;
                         leftEdge.startWorldY += leftEdge.deltaWorldY;
                         leftEdge.startWorldZ += leftEdge.deltaWorldZ;
@@ -458,7 +459,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                         rightEdge.startDepth += rightEdge.deltaDepth;
                         rightEdge.startU += rightEdge.deltaU;
                         rightEdge.startV += rightEdge.deltaV;
-                        rightEdge.startUVW += rightEdge.deltaUVW;
+                        rightEdge.startInvW += rightEdge.deltaInvW;
                         rightEdge.startWorldX += rightEdge.deltaWorldX;
                         rightEdge.startWorldY += rightEdge.deltaWorldY;
                         rightEdge.startWorldZ += rightEdge.deltaWorldZ;
