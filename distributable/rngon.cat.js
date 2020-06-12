@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (12 June 2020 02:39:55 UTC)
+// VERSION: beta live (12 June 2020 04:15:53 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -84,6 +84,13 @@ Rngon.internalState =
             // Texture coordinates at this pixel.
             textureU: undefined,
             textureV: undefined,
+
+            // Texture coordinates at this pixel, scaled to the dimensions of the
+            // n-gon's texture and with any clamping/repetition applied. In other
+            // words, these are the exact texture coordinates with which the pixel's
+            // texel was obtained.
+            textureUScaled: undefined,
+            textureVScaled: undefined,
 
             // World coordinates at this pixel.
             worldX: undefined,
@@ -1401,6 +1408,8 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                     const fragment = fragmentBuffer[depthBufferIdx];
                                     fragment.textureU = (iplU / iplInvW);
                                     fragment.textureV = (iplV / iplInvW);
+                                    fragment.textureUScaled = u;
+                                    fragment.textureVScaled = v;
                                     fragment.depth = (iplDepth / iplInvW);
                                     fragment.worldX = (iplWorldX / iplInvW);
                                     fragment.worldY = (iplWorldY / iplInvW);

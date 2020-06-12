@@ -62,6 +62,13 @@ Rngon.internalState =
             textureU: undefined,
             textureV: undefined,
 
+            // Texture coordinates at this pixel, scaled to the dimensions of the
+            // n-gon's texture and with any clamping/repetition applied. In other
+            // words, these are the exact texture coordinates with which the pixel's
+            // texel was obtained.
+            textureUScaled: undefined,
+            textureVScaled: undefined,
+
             // World coordinates at this pixel.
             worldX: undefined,
             worldY: undefined,
