@@ -332,9 +332,9 @@ function shader_wireframe({renderWidth, renderHeight, fragmentBuffer, pixelBuffe
                 (rightFragment  && (rightFragment.polygonIdx  != thisFragment.polygonIdx)) ||
                 (bottomFragment && (bottomFragment.polygonIdx != thisFragment.polygonIdx)))
             {
-                pixelBuffer[(bufferIdx * 4) + 0] = 148;
+                pixelBuffer[(bufferIdx * 4) + 0] = 212;
                 pixelBuffer[(bufferIdx * 4) + 1] = 212;
-                pixelBuffer[(bufferIdx * 4) + 2] = 212;
+                pixelBuffer[(bufferIdx * 4) + 2] = 148;
             }
         }
     }
