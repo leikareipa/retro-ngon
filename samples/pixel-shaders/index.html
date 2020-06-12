@@ -40,15 +40,16 @@
         <script>
             const shaders = [
                 {title:"None",                   function:null},
-                //{title:"Grayscale",              function:"shader_grayscale"},
                 {title:"Depth desaturate",       function:"shader_depth_desaturate"},
                 {title:"Distance fog",           function:"shader_distance_fog"},
                 {title:"Reduced color fidelity", function:"shader_reduce_color_fidelity"},
                 {title:"Selective outline",      function:"shader_selective_outline"},
                 {title:"Selective blur",         function:"shader_selective_blur"},
-                {title:"Selective scanlines",    function:"shader_selective_scanlines"},
+                {title:"Selective grayscale",    function:"shader_selective_grayscale"},
+                //{title:"Selective scanlines",    function:"shader_selective_scanlines"},
                 {title:"Per-pixel lighting",     function:"shader_per_pixel_light"},
                 {title:"Wireframe",              function:"shader_wireframe"},
+                {title:"Texture blend",          function:"shader_texture_blend"},
                 {title:"Normal map",             function:"shader_normal"},
                 {title:"UV map",                 function:"shader_uv"},
                 {title:"Coordinate map",         function:"shader_world_position"},

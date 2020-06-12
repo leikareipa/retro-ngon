@@ -13,6 +13,7 @@
 export const scene =
 {
 	ngons:[],
+	textures:{},
 	initialize: async function()
 	{
 		// Shorthands.
@@ -23,18 +24,18 @@ export const scene =
 		const ct = Rngon.texture_rgba.create_with_data_from_file;
 
 		// Load the textures.
-		const t = {
+		this.textures = Object.freeze({
 			"shrub":await ct("./pixel-shaders/assets/textures/shrub.rngon-texture.json"),
 			"bark":await ct("./pixel-shaders/assets/textures/bark.rngon-texture.json"),
 			"ground":await ct("./pixel-shaders/assets/textures/ground.rngon-texture.json"),
-		};
+		});
 
 		// Set up the materials.
 		const m = {
-			"Floor":{color:c(60,41,20),texture:t["ground"],textureMapping:"affine",},
-			"Object":{color:c(204,204,204),texture:t["bark"],textureMapping:"affine",hasHalo:true,isInFocus:true,hasNoScanlines:true},
-			"Pillar":{color:c(163,126,88),texture:t["bark"],textureMapping:"affine",},
-			"Wall":{color:c(163,72,27),texture:t["shrub"],textureMapping:"affine",},
+			"Floor":{color:c(60,41,20),texture:this.textures ["ground"],textureMapping:"affine",},
+			"Object":{color:c(204,204,204),texture:this.textures ["bark"],textureMapping:"affine",isNeverGrayscale:true,hasHalo:true,isInFocus:true,hasNoScanlines:true},
+			"Pillar":{color:c(163,126,88),texture:this.textures ["bark"],textureMapping:"affine",hasTextureSwitch:true,},
+			"Wall":{color:c(163,72,27),texture:this.textures ["shrub"],textureMapping:"affine",},
 		};
 
 		// Create the n-gons.

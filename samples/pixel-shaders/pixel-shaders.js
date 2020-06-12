@@ -13,6 +13,8 @@
 import {scene} from "./assets/models/scene.rngon-model.js";
 import {first_person_camera} from "./camera.js";
 
+let numFramesRendered = 0;
+
 const lights = [
     Rngon.light(Rngon.translation_vector(11, 45, -35)),
 ];
@@ -28,6 +30,8 @@ scene.initialize();
 
 export const sample_scene = (frameCount = 0)=>
 {
+    numFramesRendered = frameCount;
+
     camera.update();
 
     // Assumes 'renderSettings' is a pre-defined global object from which the
@@ -179,10 +183,18 @@ function shader_selective_outline({renderWidth, renderHeight, fragmentBuffer, pi
 }
 
 // Converts into grayscale every pixel in the pixel buffer.
-function shader_grayscale({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
+function shader_selective_grayscale({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
 {
     for (let i = 0; i < (renderWidth * renderHeight); i++)
     {
+        const thisFragment = fragmentBuffer[i];
+        const thisNgon = (thisFragment? ngonCache[thisFragment.polygonIdx] : null);
+
+        if (!thisNgon || thisNgon.material.isNeverGrayscale)
+        {
+            continue;
+        }
+
         const luminance = ((pixelBuffer[(i * 4) + 0] * 0.3) +
                            (pixelBuffer[(i * 4) + 1] * 0.59) +
                            (pixelBuffer[(i * 4) + 2] * 0.11));
@@ -254,7 +266,7 @@ function shader_depth({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
     }
 }
 
-function shader_reduce_color_fidelity({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
+function shader_reduce_color_fidelity({renderWidth, renderHeight, pixelBuffer})
 {
     for (let i = 0; i < (renderWidth * renderHeight); i++)
     {
@@ -328,7 +340,7 @@ function shader_wireframe({renderWidth, renderHeight, fragmentBuffer, pixelBuffe
     }
 }
 
-function shader_per_pixel_light({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
+function shader_per_pixel_light({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
 {
     const light = Rngon.internalState.lights[0];
     const lightReach = (100 * 100);
@@ -370,7 +382,7 @@ function shader_per_pixel_light({renderWidth, renderHeight, fragmentBuffer, pixe
 // Desatures pixel colors based on their distance to the camera - pixels that
 // are further away are desatured to a greater extent. The desaturation algo
 // is adapted from http://alienryderflex.com/saturation.html.
-function shader_depth_desaturate({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
+function shader_depth_desaturate({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
 {
     const Pr = .299;
     const Pg = .587;
@@ -423,5 +435,32 @@ function shader_distance_fog({renderWidth, renderHeight, fragmentBuffer, pixelBu
         pixelBuffer[(i * 4) + 0] = Rngon.lerp(pixelBuffer[(i * 4) + 0], 127, depth);
         pixelBuffer[(i * 4) + 1] = Rngon.lerp(pixelBuffer[(i * 4) + 1], 127, depth);
         pixelBuffer[(i * 4) + 2] = Rngon.lerp(pixelBuffer[(i * 4) + 2], 127, depth);
+    }
+}
+
+// Blends with a second texture the texture of any n-gon whose material has the
+// 'hasTextureSwitch' property set to true.
+function shader_texture_blend({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
+{
+    const texture = scene.textures["shrub"];
+
+    for (let i = 0; i < (renderWidth * renderHeight); i++)
+    {
+        const thisFragment = fragmentBuffer[i];
+        const thisNgon = (thisFragment? ngonCache[thisFragment.polygonIdx] : null);
+
+        if (!thisNgon || !thisNgon.material.hasTextureSwitch)
+        {
+            continue;
+        }
+
+        const texelIdx = (~~thisFragment.textureUScaled + ~~thisFragment.textureVScaled * texture.width);
+        const texel = texture.pixels[texelIdx];
+
+        // Linearly interpolate a time-animated blending between the two textures.
+        const lerpAmt = ((Math.sin(numFramesRendered / 50) / 2) + 0.5);
+        pixelBuffer[(i * 4) + 0] = Rngon.lerp(pixelBuffer[(i * 4) + 0], (texel.red   * thisNgon.material.color.unitRange.red),   lerpAmt);
+        pixelBuffer[(i * 4) + 1] = Rngon.lerp(pixelBuffer[(i * 4) + 1], (texel.green * thisNgon.material.color.unitRange.green), lerpAmt);
+        pixelBuffer[(i * 4) + 2] = Rngon.lerp(pixelBuffer[(i * 4) + 2], (texel.blue  * thisNgon.material.color.unitRange.blue),  lerpAmt);
     }
 }
