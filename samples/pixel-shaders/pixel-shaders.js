@@ -438,22 +438,21 @@ function shader_distance_fog({renderWidth, renderHeight, fragmentBuffer, pixelBu
     }
 }
 
-// Blends with a second texture the texture of any n-gon whose material has the
-// 'hasTextureSwitch' property set to true.
+// Blends with a second texture the base texture of any n-gon whose material specifies
+// such a second texture via the 'blendTexture' material property.
 function shader_texture_blend({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
 {
-    const texture = scene.textures["shrub"];
-
     for (let i = 0; i < (renderWidth * renderHeight); i++)
     {
         const thisFragment = fragmentBuffer[i];
         const thisNgon = (thisFragment? ngonCache[thisFragment.polygonIdx] : null);
 
-        if (!thisNgon || !thisNgon.material.hasTextureSwitch)
+        if (!thisNgon || !thisNgon.material.blendTexture)
         {
             continue;
         }
 
+        const texture = thisNgon.material.blendTexture;
         const texelIdx = (~~thisFragment.textureUScaled + ~~thisFragment.textureVScaled * texture.width);
         const texel = texture.pixels[texelIdx];
 

@@ -36,7 +36,7 @@ export const scene =
 		m = this.materials = Object.freeze({
 			"Floor":{color:c(60,41,20),texture:t["ground"],textureMapping:"affine",},
 			"Object":{color:c(204,204,204),texture:t["bark"],textureMapping:"affine",isNeverGrayscale:true,hasHalo:true,isInFocus:true,hasNoScanlines:true},
-			"Pillar":{color:c(163,126,88),texture:t["bark"],textureMapping:"affine",hasTextureSwitch:true,},
+			"Pillar":{color:c(163,126,88),texture:t["bark"],textureMapping:"affine",blendTexture:t["shrub"],},
 			"Wall":{color:c(163,72,27),texture:t["shrub"],textureMapping:"affine",},
 		});
 
