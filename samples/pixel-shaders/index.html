@@ -40,7 +40,9 @@
         <script>
             const shaders = [
                 {title:"None",                   function:null},
-                {title:"Grayscale",              function:"shader_grayscale"},
+                //{title:"Grayscale",              function:"shader_grayscale"},
+                {title:"Depth desaturate",       function:"shader_depth_desaturate"},
+                {title:"Distance fog",           function:"shader_distance_fog"},
                 {title:"Reduced color fidelity", function:"shader_reduce_color_fidelity"},
                 {title:"Selective outline",      function:"shader_selective_outline"},
                 {title:"Selective blur",         function:"shader_selective_blur"},

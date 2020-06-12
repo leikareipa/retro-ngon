@@ -366,3 +366,62 @@ function shader_per_pixel_light({renderWidth, renderHeight, fragmentBuffer, pixe
         pixelBuffer[(i * 4) + 2] *= (distanceMul * shadeMul * lightIntensity);
     }
 }
+
+// Desatures pixel colors based on their distance to the camera - pixels that
+// are further away are desatured to a greater extent. The desaturation algo
+// is adapted from http://alienryderflex.com/saturation.html.
+function shader_depth_desaturate({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
+{
+    const Pr = .299;
+    const Pg = .587;
+    const Pb = .114;
+    const maxDepth = 200;
+
+    for (let i = 0; i < (renderWidth * renderHeight); i++)
+    {
+        const thisFragment = fragmentBuffer[i];
+
+        if (!thisFragment)
+        {
+            continue;
+        }
+
+        const depth = Math.max(0, Math.min(1, (thisFragment.w / maxDepth)));
+
+        let red   = pixelBuffer[(i * 4) + 0];
+        let green = pixelBuffer[(i * 4) + 1];
+        let blue  = pixelBuffer[(i * 4) + 2];
+
+        const P = Math.sqrt((red * red * Pr) + (green * green * Pg) + (blue * blue * Pb));
+        const saturationLevel = (1 - depth);
+
+        red   = P + (red   - P) * saturationLevel;
+        green = P + (green - P) * saturationLevel;
+        blue  = P + (blue  - P) * saturationLevel;
+
+        pixelBuffer[(i * 4) + 0] = red;
+        pixelBuffer[(i * 4) + 1] = green;
+        pixelBuffer[(i * 4) + 2] = blue;
+    }
+}
+
+function shader_distance_fog({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
+{
+    const maxDepth = 200;
+
+    for (let i = 0; i < (renderWidth * renderHeight); i++)
+    {
+        const thisFragment = fragmentBuffer[i];
+
+        if (!thisFragment)
+        {
+            continue;
+        }
+
+        const depth = Math.max(0, Math.min(1, (thisFragment.w / maxDepth)));
+
+        pixelBuffer[(i * 4) + 0] = Rngon.lerp(pixelBuffer[(i * 4) + 0], 127, depth);
+        pixelBuffer[(i * 4) + 1] = Rngon.lerp(pixelBuffer[(i * 4) + 1], 127, depth);
+        pixelBuffer[(i * 4) + 2] = Rngon.lerp(pixelBuffer[(i * 4) + 2], 127, depth);
+    }
+}
