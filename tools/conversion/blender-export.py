@@ -30,40 +30,43 @@ modelName = "model"
 materials = bpy.data.materials
 textures = bpy.data.textures
 with open(outFilename, 'w') as f:
-    f.write("/*\n");
-    f.write(" * A 3d model exported from Blender using the retro n-gon renderer's exporter.\n");
-    f.write(" *\n");
-    f.write(" * Usage:\n");
-    f.write(" *    - call .initialize(), which populates the .ngons array\n");
-    f.write(" *    - now you can access the n-gons via .ngons\n");
-    f.write(" *    - if you need .initialize() to finish before you start rendering, call it with await inside an async()=>{} wrapper\n");
-    f.write(" *\n");
-    f.write(" */\n\n");
+    f.write("/*\n")
+    f.write(" * A 3d model exported from Blender using the retro n-gon renderer's exporter.\n")
+    f.write(" *\n")
+    f.write(" * Usage:\n")
+    f.write(" *    - call .initialize(), which populates the .ngons array\n")
+    f.write(" *    - now you can access the n-gons via .ngons\n")
+    f.write(" *    - if you need .initialize() to finish before you start rendering, call it with await inside an async()=>{} wrapper\n")
+    f.write(" *\n")
+    f.write(" */\n\n")
 
-    f.write("\"use strict\";\n\n");
+    f.write("\"use strict\";\n\n")
 
-    f.write("const %s =\n{\n" % modelName);
-    f.write("\tngons:[],\n");
-    f.write("\tinitialize: async function()\n\t{\n");
+    f.write("const %s =\n{\n" % modelName)
+    f.write("\tngons:[],\n")
+    f.write("\ttextures:{},\n")
+    f.write("\tmaterials:{},\n")
+    f.write("\tinitialize: async function()\n\t{\n")
 
     f.write("\t\t// Shorthands.\n")
     f.write("\t\tconst n = Rngon.ngon;\n")
-    f.write("\t\tconst no = Rngon.vector3; // Normal.\n")
+    f.write("\t\tconst no = Rngon.vector3; // Normal vector.\n")
     f.write("\t\tconst v = Rngon.vertex;\n")
     f.write("\t\tconst c = Rngon.color_rgba;\n")
-    f.write("\t\tconst ct = Rngon.texture_rgba.create_with_data_from_file;\n\n");
+    f.write("\t\tconst ct = Rngon.texture_rgba.create_with_data_from_file;\n")
+    f.write("\t\tlet t; // Will point to this.textures.\n")
+    f.write("\t\tlet m; // Will point to this.materials.\n\n")
 
     # Write the textures.
-    f.write("\t\t// Load the textures.\n")
-    f.write("\t\tconst t = {\n");
+    f.write("\t\t// Load texture data.\n")
+    f.write("\t\tt = this.textures = Object.freeze({\n")
     for tex in textures:
         if hasattr(tex, "image"):
             f.write("\t\t\t\"%s\":await ct(\"%s.rngon-texture.json\"),\n" % (tex.image.name, tex.image.name))
-    f.write("\t\t};\n\n")
+    f.write("\t\t});\n\n")
     
     # Write the materials.
-    f.write("\t\t// Set up the materials.\n")
-    f.write("\t\tconst m = {\n");
+    f.write("\t\tm = this.materials = Object.freeze({\n")
     for material in materials:
         color = list(map(lambda x: x*255*material.diffuse_intensity, material.diffuse_color))
         texture = material.texture_slots[0] # The exporter ignores all but the first texture slot.
@@ -76,11 +79,11 @@ with open(outFilename, 'w') as f:
         if "textureMapping" in material: f.write("textureMapping:\"%s\"," % material["textureMapping"])
         if "wireframeColor" in material: f.write("wireframeColor:c(%d,%d,%d)," % material["wireframeColor"][:])
         f.write("},\n")
-    f.write("\t\t};\n\n")
+    f.write("\t\t});\n\n")
     
     # Write the n-gons.
     f.write("\t\t// Create the n-gons.\n")
-    f.write("\t\tthis.ngons = Object.freeze(\n\t\t[\n")
+    f.write("\t\tthis.ngons = Object.freeze([\n")
     visible_meshes = filter(lambda x: x.type == "MESH", context.visible_objects)
     for mesh in visible_meshes:
         f.write("\t\t\t// Mesh: %s.\n" % mesh.name)

@@ -14,33 +14,34 @@ export const scene =
 {
 	ngons:[],
 	textures:{},
+	materials:{},
 	initialize: async function()
 	{
 		// Shorthands.
 		const n = Rngon.ngon;
-		const no = Rngon.vector3; // Normal.
+		const no = Rngon.vector3; // Normal vector.
 		const v = Rngon.vertex;
 		const c = Rngon.color_rgba;
 		const ct = Rngon.texture_rgba.create_with_data_from_file;
+		let t; // Will point to this.textures.
+		let m; // Will point to this.materials.
 
-		// Load the textures.
-		this.textures = Object.freeze({
+		// Load texture data.
+		t = this.textures = Object.freeze({
 			"shrub":await ct("./pixel-shaders/assets/textures/shrub.rngon-texture.json"),
 			"bark":await ct("./pixel-shaders/assets/textures/bark.rngon-texture.json"),
 			"ground":await ct("./pixel-shaders/assets/textures/ground.rngon-texture.json"),
 		});
 
-		// Set up the materials.
-		const m = {
-			"Floor":{color:c(60,41,20),texture:this.textures ["ground"],textureMapping:"affine",},
-			"Object":{color:c(204,204,204),texture:this.textures ["bark"],textureMapping:"affine",isNeverGrayscale:true,hasHalo:true,isInFocus:true,hasNoScanlines:true},
-			"Pillar":{color:c(163,126,88),texture:this.textures ["bark"],textureMapping:"affine",hasTextureSwitch:true,},
-			"Wall":{color:c(163,72,27),texture:this.textures ["shrub"],textureMapping:"affine",},
-		};
+		m = this.materials = Object.freeze({
+			"Floor":{color:c(60,41,20),texture:t["ground"],textureMapping:"affine",},
+			"Object":{color:c(204,204,204),texture:t["bark"],textureMapping:"affine",isNeverGrayscale:true,hasHalo:true,isInFocus:true,hasNoScanlines:true},
+			"Pillar":{color:c(163,126,88),texture:t["bark"],textureMapping:"affine",hasTextureSwitch:true,},
+			"Wall":{color:c(163,72,27),texture:t["shrub"],textureMapping:"affine",},
+		});
 
 		// Create the n-gons.
-		this.ngons = Object.freeze(
-		[
+		this.ngons = Object.freeze([
 			// Mesh: Sphere.
 			n([v(0.4803,0.6770,-0.2664,0.4420,0.6986),v(0.5994,0.7188,-0.3529,0.4361,0.6720),v(0.4349,0.7188,-0.4064,0.4115,0.7054),],m["Object"],no(0.1024,-0.9435,-0.3151)),
 			n([v(0.6829,0.8318,-0.4136,0.4347,0.6738),v(0.5994,0.7188,-0.3529,0.4361,0.6720),v(0.7185,0.8098,-0.2664,0.4589,0.6703),],m["Object"],no(0.7002,-0.6617,-0.2680)),
