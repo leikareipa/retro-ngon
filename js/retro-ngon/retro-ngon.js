@@ -74,6 +74,8 @@ Rngon.internalState =
 
             // The value written into the depth buffer by this fragment.
             depth: undefined,
+
+            w: undefined,
         }
     },
 

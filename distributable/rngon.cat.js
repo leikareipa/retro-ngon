@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (12 June 2020 01:50:43 UTC)
+// VERSION: beta live (12 June 2020 02:39:55 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -97,6 +97,8 @@ Rngon.internalState =
 
             // The value written into the depth buffer by this fragment.
             depth: undefined,
+
+            w: undefined,
         }
     },
 
@@ -1407,6 +1409,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                     fragment.normalY = ngon.normal.y;
                                     fragment.normalZ = ngon.normal.z;
                                     fragment.polygonIdx = n;
+                                    fragment.w = (1 / iplInvW);
                                 }
                             }
                         }

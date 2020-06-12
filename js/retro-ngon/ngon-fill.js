@@ -453,6 +453,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                     fragment.normalY = ngon.normal.y;
                                     fragment.normalZ = ngon.normal.z;
                                     fragment.polygonIdx = n;
+                                    fragment.w = (1 / iplInvW);
                                 }
                             }
                         }
