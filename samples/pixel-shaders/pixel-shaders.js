@@ -72,7 +72,7 @@ function shader_selective_blur({renderWidth, renderHeight, fragmentBuffer, pixel
         {
             const thisIdx = (x + y * renderWidth);
             const thisFragment = fragmentBuffer[thisIdx];
-            const thisNgon = (thisFragment? ngonCache[thisFragment.polygonIdx] : null);
+            const thisNgon = (thisFragment? ngonCache[thisFragment.ngonIdx] : null);
 
             if (!thisNgon || thisNgon.material.isInFocus)
             {
@@ -89,10 +89,10 @@ function shader_selective_blur({renderWidth, renderHeight, fragmentBuffer, pixel
             const rightFragment  = (fragmentBuffer[rightIdx]  || null);
             const bottomFragment = (fragmentBuffer[bottomIdx] || null);
 
-            const leftNgon   = (leftFragment?   ngonCache[leftFragment.polygonIdx]   : null);
-            const topNgon    = (topFragment?    ngonCache[topFragment.polygonIdx]    : null);
-            const rightNgon  = (rightFragment?  ngonCache[rightFragment.polygonIdx]  : null);
-            const bottomNgon = (bottomFragment? ngonCache[bottomFragment.polygonIdx] : null);
+            const leftNgon   = (leftFragment?   ngonCache[leftFragment.ngonIdx]   : null);
+            const topNgon    = (topFragment?    ngonCache[topFragment.ngonIdx]    : null);
+            const rightNgon  = (rightFragment?  ngonCache[rightFragment.ngonIdx]  : null);
+            const bottomNgon = (bottomFragment? ngonCache[bottomFragment.ngonIdx] : null);
 
             let sumR = pixelBuffer[(thisIdx * 4) + 0];
             let sumG = pixelBuffer[(thisIdx * 4) + 1];
@@ -147,7 +147,7 @@ function shader_selective_outline({renderWidth, renderHeight, fragmentBuffer, pi
         {
             const bufferIdx = (x + y * renderWidth);
             const thisFragment = fragmentBuffer[bufferIdx];
-            const ngon = (thisFragment? ngonCache[thisFragment.polygonIdx] : null);
+            const ngon = (thisFragment? ngonCache[thisFragment.ngonIdx] : null);
 
             if (!ngon || !ngon.material.hasHalo)
             {
@@ -164,10 +164,10 @@ function shader_selective_outline({renderWidth, renderHeight, fragmentBuffer, pi
             if (x == (renderWidth - 1)) rightFragment = null;
             if (y == (renderHeight - 1)) bottomFragment = null;
 
-            const leftNgon   = (leftFragment?   ngonCache[leftFragment.polygonIdx]   : null);
-            const topNgon    = (topFragment?    ngonCache[topFragment.polygonIdx]    : null);
-            const rightNgon  = (rightFragment?  ngonCache[rightFragment.polygonIdx]  : null);
-            const bottomNgon = (bottomFragment? ngonCache[bottomFragment.polygonIdx] : null);
+            const leftNgon   = (leftFragment?   ngonCache[leftFragment.ngonIdx]   : null);
+            const topNgon    = (topFragment?    ngonCache[topFragment.ngonIdx]    : null);
+            const rightNgon  = (rightFragment?  ngonCache[rightFragment.ngonIdx]  : null);
+            const bottomNgon = (bottomFragment? ngonCache[bottomFragment.ngonIdx] : null);
 
             if ((leftNgon   && !leftNgon.material.hasHalo   && (leftFragment.depth >= thisFragment.depth))   ||
                 (topNgon    && !topNgon.material.hasHalo    && (topFragment.depth >= thisFragment.depth))    ||
@@ -188,7 +188,7 @@ function shader_selective_grayscale({renderWidth, renderHeight, fragmentBuffer, 
     for (let i = 0; i < (renderWidth * renderHeight); i++)
     {
         const thisFragment = fragmentBuffer[i];
-        const thisNgon = (thisFragment? ngonCache[thisFragment.polygonIdx] : null);
+        const thisNgon = (thisFragment? ngonCache[thisFragment.ngonIdx] : null);
 
         if (!thisNgon || thisNgon.material.isNeverGrayscale)
         {
@@ -285,7 +285,7 @@ function shader_selective_scanlines({renderWidth, renderHeight, fragmentBuffer, 
     for (let i = 0; i < (renderWidth * renderHeight); i++)
     {
         const thisFragment = fragmentBuffer[i];
-        const thisNgon = (thisFragment? ngonCache[thisFragment.polygonIdx] : null);
+        const thisNgon = (thisFragment? ngonCache[thisFragment.ngonIdx] : null);
 
         if (!thisNgon || thisNgon.material.hasNoScanlines)
         {
@@ -310,9 +310,8 @@ function shader_wireframe({renderWidth, renderHeight, fragmentBuffer, pixelBuffe
         {
             const bufferIdx = (x + y * renderWidth);
             const thisFragment = fragmentBuffer[bufferIdx];
-            const thisNgon = (thisFragment? ngonCache[thisFragment.polygonIdx] : null);
 
-            if (!thisNgon)
+            if (!thisFragment)
             {
                 continue;
             }
@@ -327,10 +326,10 @@ function shader_wireframe({renderWidth, renderHeight, fragmentBuffer, pixelBuffe
             if (x == (renderWidth - 1)) rightFragment = null;
             if (y == (renderHeight - 1)) bottomFragment = null;
 
-            if ((leftFragment   && (leftFragment.polygonIdx   != thisFragment.polygonIdx)) ||
-                (topFragment    && (topFragment.polygonIdx    != thisFragment.polygonIdx)) ||
-                (rightFragment  && (rightFragment.polygonIdx  != thisFragment.polygonIdx)) ||
-                (bottomFragment && (bottomFragment.polygonIdx != thisFragment.polygonIdx)))
+            if ((leftFragment   && (leftFragment.ngonIdx   != thisFragment.ngonIdx)) ||
+                (topFragment    && (topFragment.ngonIdx    != thisFragment.ngonIdx)) ||
+                (rightFragment  && (rightFragment.ngonIdx  != thisFragment.ngonIdx)) ||
+                (bottomFragment && (bottomFragment.ngonIdx != thisFragment.ngonIdx)))
             {
                 pixelBuffer[(bufferIdx * 4) + 0] = 212;
                 pixelBuffer[(bufferIdx * 4) + 1] = 212;
@@ -445,7 +444,7 @@ function shader_texture_blend({renderWidth, renderHeight, fragmentBuffer, pixelB
     for (let i = 0; i < (renderWidth * renderHeight); i++)
     {
         const thisFragment = fragmentBuffer[i];
-        const thisNgon = (thisFragment? ngonCache[thisFragment.polygonIdx] : null);
+        const thisNgon = (thisFragment? ngonCache[thisFragment.ngonIdx] : null);
 
         if (!thisNgon || !thisNgon.material.blendTexture)
         {

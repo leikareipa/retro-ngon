@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (12 June 2020 04:15:53 UTC)
+// VERSION: beta live (13 June 2020 17:29:46 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -78,8 +78,9 @@ Rngon.internalState =
     // at that pixel, intended to be used by shaders. The array's size will be set to
     // match the requested render resolution.
     fragmentBuffer: {width:1, height:1, data:new Array(1), clearValue:{
-            // Index of this polygon in the list of transformed polygons.
-            polygonIdx: undefined,
+            // Index to an n-gon in the list of transformed n-gons that this pixel is
+            // part of.
+            ngonIdx: undefined,
 
             // Texture coordinates at this pixel.
             textureU: undefined,
@@ -1417,7 +1418,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                     fragment.normalX = ngon.normal.x;
                                     fragment.normalY = ngon.normal.y;
                                     fragment.normalZ = ngon.normal.z;
-                                    fragment.polygonIdx = n;
+                                    fragment.ngonIdx = n;
                                     fragment.w = (1 / iplInvW);
                                 }
                             }

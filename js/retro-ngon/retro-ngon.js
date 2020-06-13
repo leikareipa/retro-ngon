@@ -55,8 +55,9 @@ Rngon.internalState =
     // at that pixel, intended to be used by shaders. The array's size will be set to
     // match the requested render resolution.
     fragmentBuffer: {width:1, height:1, data:new Array(1), clearValue:{
-            // Index of this polygon in the list of transformed polygons.
-            polygonIdx: undefined,
+            // Index to an n-gon in the list of transformed n-gons that this pixel is
+            // part of.
+            ngonIdx: undefined,
 
             // Texture coordinates at this pixel.
             textureU: undefined,

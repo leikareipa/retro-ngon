@@ -454,7 +454,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                     fragment.normalX = ngon.normal.x;
                                     fragment.normalY = ngon.normal.y;
                                     fragment.normalZ = ngon.normal.z;
-                                    fragment.polygonIdx = n;
+                                    fragment.ngonIdx = n;
                                     fragment.w = (1 / iplInvW);
                                 }
                             }

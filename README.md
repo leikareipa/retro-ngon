@@ -347,7 +347,7 @@ function sample_shader({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, 
         for (let x = 0; x < renderWidth; x++)
         {
             const thisFragment = fragmentBuffer[x + y * renderWidth];
-            const thisNgon = (thisFragment? ngonCache[thisFragment.polygonIdx] : null);
+            const thisNgon = (thisFragment? ngonCache[thisFragment.ngonIdx] : null);
 
             if (!thisNgon)
             {
@@ -372,7 +372,7 @@ function sample_shader({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, 
 ![Before applying the shader](images/tutorials/shader-before-blue-corners.png)
 ![After applying the shader](images/tutorials/shader-after-blue-corners.png)
 
-In the above shader, we use the fragment buffer's 'polygonIdx' property to find which of the n-gon cache's polygons a given pixel is part of. Once we know that, we can directly access that n-gon's public properties.
+In the above shader, we use the fragment buffer's 'ngonIdx' property to find which of the n-gon cache's polygons a given pixel is part of. Once we know that, we can directly access that n-gon's public properties.
 
 The following shader uses the fragment buffer's XYZ world coordinates to apply an alpha fading effect. It exploits the fact that this particular quad's world coordinates are always in the range [-1, 1], using them as an alpha multiplier:
 
