@@ -35,17 +35,11 @@ The retro n-gon renderer encourages low resolutions, very low polycounts, and de
 ![A scene from Tomb Raider, textured](/images/screenshots/alpha/tr-rngon-1.png)\
 **A scene** from Tomb Raider 1 as rendered by the retro n-gon renderer and consisting of textured quads and triangles. (Based on assets produced by Core Design for *Tomb Raider*. Core Design is not associated with the retro n-gon renderer.)
 
-![A scene from Quake, high-res](/images/screenshots/alpha/q1-rngon-5.png)\
-**Level E1M1** from Quake 1 rendered in high resolution. Note that lightmaps are not used. (Based on textures and 3d models produced by id Software for *Quake*; id Software is not associated with the retro n-gon renderer.)
-
-![A scene from Quake, low-res](/images/screenshots/alpha/q1-rngon-4.png)\
-**A door** on level E1M1 of Quake 1 rendered in low resolution. (Based on textures and 3d models produced by id Software for *Quake*; id Software is not associated with the retro n-gon renderer.)
+![A scene from Quake, high-res](/images/screenshots/beta/quake-1.png)\
+**Level E1M1** from Quake 1 rendered with a per-pixel lighting shader. (Based on textures and 3d models produced by id Software for *Quake*; id Software is not associated with the retro n-gon renderer.)
 
 ![A scene from RallySportED-js](/images/screenshots/alpha/rsed-rngon-1.png)\
 **The track** editor view in RallySportED-js, with geometry built from texture-mapped, wireframed quads. (Based on textures and 3d models produced by Jukka Jäkälä for *Rally-Sport*. Jukka Jäkälä is not associated with the retro n-gon renderer.)
-
-![A model from Gothic 1](/images/screenshots/alpha/gothic-rngon-1.png)\
-**A skeleton** model from Gothic 1 rendered as a triangle mesh with partially transparent texturing. (Based on textures and 3d models produced by Piranha Bytes for *Gothic*. Piranha Bytes is not associated with the retro n-gon renderer.)
 
 ![A view from Grand Prix Legends](/images/screenshots/alpha/rngon-gpl-2.png)\
 **A view** of the race track at Rouen in Grand Prix Legends. (Based on textures and 3d models produced by Papyrus Design Group for *Grand Prix Legends*. Papyrus Design Group is not associated with the retro n-gon renderer.)
