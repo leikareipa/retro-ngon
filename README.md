@@ -54,6 +54,7 @@ Contents:
     - [Rendering a textured quad](#rendering-a-textured-quad)
     - [Giving the quad a spin](#giving-the-quad-a-spin)
     - [Adding pixelation](#adding-pixelation)
+    - [Creating pixel shaders for extra visual effects](#creating-pixel-shaders-for-extra-visual-effects)
     - [More examples](#more-examples)
 - [Creating and rendering 3d models](#creating-and-rendering-3d-models)
     - [N-gons](#n-gons)
@@ -165,7 +166,8 @@ The code below modifies the `quad` object given above to add UV texture coordina
                             {
                                 color: Rngon.color_rgba(255, 255, 255),
                                 texture: texture,
-                                textureMapping: "affine"
+                                textureMapping: "affine",
+                                uvWrapping: "clamp"
                             })
 ```
 ![A textured quad with affine mapping](images/tutorials/textured-quad-affine.png)
@@ -188,7 +190,8 @@ With a few simple additions, we can modify the code so far to add a spinning ani
                             {
                                 color: Rngon.color_rgba(255, 255, 255),
                                 texture: texture,
-                                textureMapping: "affine"
+                                textureMapping: "affine",
+                                uvWrapping: "clamp"
                             })
 
     const rotatingQuad = (frameCount)=>
@@ -242,8 +245,164 @@ image-rendering: -o-crisp-edges;      /* For Opera*/
 image-rendering: -webkit-crisp-edges; /* For Safari*/
 ```
 
+### Creating pixel shaders for extra visual effects
+Pixel shaders allow you to add a variety of visual effects to your renderings, from simple 2d pixel manipulation to complex 3d lighting and more.
+
+To enable the renderer's shader functionality, we need to pass a shader function to `render()` via its `shaderFunction` property. Like so:
+
+```
+Rngon.render("...", [...],
+             {
+                 shaderFunction: sample_shader,
+             })
+
+function sample_shader({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
+{
+    ...
+}
+```
+
+The renderer will call the shader function once all n-gons have been rasterized but before the rasterized image is drawn onto the screen &ndash; the idea being that the shader function gets to modify the rasterized pixel data before it is shown to the user.
+
+The shader function receives as parameters the render resolution, the rasterized pixel data, some metadata in the fragment buffer about the state of the renderer at each rasterized pixel, and the n-gons &ndash; transformed into screen space &ndash; that were rasterized.
+
+The following is a simple shader to make every pixel in the rendering blue:
+
+```
+function sample_shader({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
+{
+    for (let i = 0; i < (renderWidth * renderHeight); i++)
+    {
+        pixelBuffer[(i * 4) + 0] = 0;
+        pixelBuffer[(i * 4) + 1] = 150;
+        pixelBuffer[(i * 4) + 2] = 255;
+        pixelBuffer[(i * 4) + 3] = 255;
+    }
+}
+```
+
+The shader iterates over all of the pixels in the rasterized image (RGBA, so four elements per pixel), setting their color to red:0, green:150, blue:255, and alpha:255. Once the function returns, the renderer will draw the modified pixel buffer onto the canvas, which presents as a solid blue image. The two pictures below show the rendering before and after applying the shader.
+
+![Before applying the shader](images/tutorials/shader-before-all-blue.png)
+![After applying the shader](images/tutorials/shader-after-all-blue.png)
+
+Although we've done so above, a shader doesn't normally need to explicitly set the alpha channel of a pixel, since any rasterized pixel will already have its alpha set to 255 by default. However, in the above example, where we render only a quad with nothing in the background, the unrendered background pixels have an alpha of 0 and will thus not be visible unless we manually assign them a more opaque value.
+
+To demonstrate that pixels with a default alpha of 0 are indeed part of the background, the following shader colors blue all pixels whose alpha is 0:
+
+```
+function sample_shader({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
+{
+    for (let i = 0; i < (renderWidth * renderHeight); i++)
+    {
+        if (pixelBuffer[(i * 4) + 3] === 0)
+        {
+            pixelBuffer[(i * 4) + 0] = 0;
+            pixelBuffer[(i * 4) + 1] = 150;
+            pixelBuffer[(i * 4) + 2] = 255;
+            pixelBuffer[(i * 4) + 3] = 255;
+        }
+    }
+}
+```
+
+![Before applying the shader](images/tutorials/shader-before-alpha-blue.png)
+![After applying the shader](images/tutorials/shader-after-alpha-blue.png)
+
+With simple pixel shaders like these, you can create various effects like grayscaling, blurring and sharpening. However, by accessing the extra information passed to our shader &ndash; the fragment buffer and the n-gon cache &ndash; we can write even more powerful shaders!
+
+For example, to color only one corner of our quad blue, we can use the fragment buffer's texture coordinates to identify the desired region on the quad's face, then color in only those pixels whose texture coordinates are within that region:
+
+```
+function sample_shader({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
+{
+    for (let i = 0; i < (renderWidth * renderHeight); i++)
+    {
+        const thisFragment = fragmentBuffer[i];
+
+        if (thisFragment &&
+            thisFragment.textureU < 0.25 &&
+            thisFragment.textureV > 0.75)
+        {
+            pixelBuffer[(i * 4) + 0] = 0;
+            pixelBuffer[(i * 4) + 1] = 150;
+            pixelBuffer[(i * 4) + 2] = 255;
+        }
+    }
+}
+```
+
+![Before applying the shader](images/tutorials/shader-before-corner-blue.png)
+![After applying the shader](images/tutorials/shader-after-corner-blue.png)
+
+Each of the fragment buffer's elements is an object that contains render-related information about a corresponding rasterized pixel; e.g. `fragmentBuffer[x]` provides information about the pixel in `pixelBuffer[x * 4]`. For a list of the properties available in the fragment buffer, see [js/retro-ngon/retro-ngon.js](js/retro-ngon/retro-ngon.js) &ndash; these include interpolated world coordinates, surface normals, texture coordinates, etc.
+
+Shaders can also use the n-gon cache to get information about the rasterized polygons. The following shader colors blue any corner of the quad whose vertex coordinates are within a certain distance of the corresponding screen pixel:
+
+```
+function sample_shader({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
+{
+    for (let y = 0; y < renderHeight; y++)
+    {
+        for (let x = 0; x < renderWidth; x++)
+        {
+            const thisFragment = fragmentBuffer[x + y * renderWidth];
+            const thisNgon = (thisFragment? ngonCache[thisFragment.polygonIdx] : null);
+
+            if (!thisNgon)
+            {
+                continue;
+            }
+
+            for (let v = 0; v < thisNgon.vertices.length; v++)
+            {
+                if ((Math.abs(x - Math.round(thisNgon.vertices[v].x)) < 20) &&
+                    (Math.abs(y - Math.round(thisNgon.vertices[v].y)) < 20))
+                {
+                    pixelBuffer[((x + y * renderWidth) * 4) + 0] = 0;
+                    pixelBuffer[((x + y * renderWidth) * 4) + 1] = 150;
+                    pixelBuffer[((x + y * renderWidth) * 4) + 2] = 255;
+                }
+            }
+        }
+    }
+}
+```
+
+![Before applying the shader](images/tutorials/shader-before-blue-corners.png)
+![After applying the shader](images/tutorials/shader-after-blue-corners.png)
+
+In the above shader, we use the fragment buffer's 'polygonIdx' property to find which of the n-gon cache's polygons a given pixel is part of. Once we know that, we can directly access that n-gon's public properties.
+
+The following shader uses the fragment buffer's XYZ world coordinates to apply an alpha fading effect. It exploits the fact that this particular quad's world coordinates are always in the range [-1, 1], using them as an alpha multiplier:
+
+```
+function sample_shader({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
+{
+    for (let i = 0; i < (renderWidth * renderHeight); i++)
+    {
+        const thisFragment = fragmentBuffer[i];
+
+        if (thisFragment)
+        {
+            const alpha = Math.max(0, Math.min(1, thisFragment.worldX));
+            pixelBuffer[(i * 4) + 3] = (alpha * 255);
+        }
+    }
+}
+```
+
+![Before applying the shader](images/tutorials/shader-before-world-alpha.png)
+![After applying the shader](images/tutorials/shader-after-world-alpha.png)
+
+Unlike the 2d screen-space vertex coordinates of the n-gon cache, the fragment buffer's world coordinates give you the corresponding 3d world position of any given rasterized pixel. This is rather powerful, as it allows you to e.g. compute per-pixel 3d lighting.
+
+Overall, pixel shaders let you create a variety of effects, from simple 2d pixel manipulation to complex 3d per-pixel lighting and more. Get creative and see what effects you can make happen!
+
+That said, a downside of shaders is that you pay a price for them in performance: even a slightly complex shader can readily halve your FPS. A basic trick is to limit yourself to relatively lower resolutions when using shaders.
+
 ### More examples
-The [samples/](samples/) directory contains various examples of using the renderer.
+The [samples/](samples/) directory contains various examples of the renderer in action.
 
 ## Creating and rendering 3d models
 ### N-gons
@@ -468,6 +627,7 @@ Renders one or more n-gon meshes onto an existing canvas element.
 | *translation_vector*  | cameraPosition           | The camera's position. Defaults to *vector3(0, 0, 0)*. |
 | *rotation_vector*     | cameraDirection          | The camera's direction. Defaults to *vector3(0, 0, 0)*. |
 | *array*               | auxiliaryBuffers         | One or more auxiliary render buffers. Each buffer is an object containing the properties *buffer* and *property*; where *buffer* points to an array containing as many elements as there are pixels in the rendering, and *property* names a source property in an n-gon's material. For each pixel rendered, the corresponding element in an auxiliary buffer will be written with the n-gon's material source value. Defaults to *[]*. |
+| *function*            | shaderFunction           | A function that will be called once all of the frame's n-gons have been rasterized but before the rasterized image is drawn on screen. The function takes as its only parameter an object containing the following: {renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache}. The pixel buffer contains the RGBA color values of the rasterized image; the fragment buffer corresponding metadata about each rasterized pixel (like its interpolated texture and world coordinates); and the n-gon cache the transformed n-gons that were rasterized (including e.g. their material properties). With this information, the function can apply shader effects to the RGBA pixel buffer. Setting this property to *null* will fully disable shader functionality. Defaults to *null*.  |
 
 *Returns:*
 
