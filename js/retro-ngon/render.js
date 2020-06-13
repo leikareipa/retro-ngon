@@ -39,7 +39,7 @@ Rngon.render = function(canvasElementId,
     Rngon.internalState.useDepthBuffer = (options.useDepthBuffer == true);
     Rngon.internalState.showGlobalWireframe = (options.globalWireframe == true);
     Rngon.internalState.applyViewportClipping = (options.clipToViewport == true);
-    Rngon.internalState.usePerspectiveCorrectTexturing = (options.perspectiveCorrectTexturing == true);
+    Rngon.internalState.usePerspectiveCorrectInterpolation = (options.perspectiveCorrectInterpolation == true);
     Rngon.internalState.lights = options.lights;
     Rngon.internalState.farPlaneDistance = options.farPlane;
 
@@ -221,7 +221,7 @@ Rngon.render.defaultOptions =
     clipToViewport: true,
     globalWireframe: false,
     hibernateWhenNotOnScreen: true,
-    perspectiveCorrectTexturing: false,
+    perspectiveCorrectInterpolation: false,
     auxiliaryBuffers: [],
     lights: [],
 };

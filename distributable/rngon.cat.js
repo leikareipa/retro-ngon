@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (13 June 2020 17:29:46 UTC)
+// VERSION: beta live (13 June 2020 17:57:09 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -115,7 +115,7 @@ Rngon.internalState =
     // use any shaders.
     useShaders: false,
 
-    usePerspectiveCorrectTexturing: false,
+    usePerspectiveCorrectInterpolation: false,
 
     // If set to true, all n-gons will be rendered with a wireframe.
     showGlobalWireframe: false,
@@ -1076,7 +1076,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
 
                 function add_edge(vert1, vert2, isLeftEdge)
                 {
-                    const interpolatePerspective = Rngon.internalState.usePerspectiveCorrectTexturing;
+                    const interpolatePerspective = Rngon.internalState.usePerspectiveCorrectInterpolation;
                     const startY = Math.min(renderHeight, Math.max(0, Math.round(vert1.y)));
                     const endY = Math.min(renderHeight, Math.max(0, Math.round(vert2.y)));
                     const edgeHeight = (endY - startY);
@@ -1556,7 +1556,7 @@ Rngon.render = function(canvasElementId,
     Rngon.internalState.useDepthBuffer = (options.useDepthBuffer == true);
     Rngon.internalState.showGlobalWireframe = (options.globalWireframe == true);
     Rngon.internalState.applyViewportClipping = (options.clipToViewport == true);
-    Rngon.internalState.usePerspectiveCorrectTexturing = (options.perspectiveCorrectTexturing == true);
+    Rngon.internalState.usePerspectiveCorrectInterpolation = (options.perspectiveCorrectInterpolation == true);
     Rngon.internalState.lights = options.lights;
     Rngon.internalState.farPlaneDistance = options.farPlane;
 
@@ -1738,7 +1738,7 @@ Rngon.render.defaultOptions =
     clipToViewport: true,
     globalWireframe: false,
     hibernateWhenNotOnScreen: true,
-    perspectiveCorrectTexturing: false,
+    perspectiveCorrectInterpolation: false,
     auxiliaryBuffers: [],
     lights: [],
 };

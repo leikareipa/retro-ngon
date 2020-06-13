@@ -112,7 +112,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
 
                 function add_edge(vert1, vert2, isLeftEdge)
                 {
-                    const interpolatePerspective = Rngon.internalState.usePerspectiveCorrectTexturing;
+                    const interpolatePerspective = Rngon.internalState.usePerspectiveCorrectInterpolation;
                     const startY = Math.min(renderHeight, Math.max(0, Math.round(vert1.y)));
                     const endY = Math.min(renderHeight, Math.max(0, Math.round(vert2.y)));
                     const edgeHeight = (endY - startY);
@@ -140,7 +140,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                     const [startV, deltaV] = interpolants(v1, v2, interpolatePerspective);
 
                     // (1 / W), for perspective-correct mapping.
-                    const [startInvW, deltaInvW] = interpolatePerspective? interpolants(1, 1, true) : [1, 0];
+                    const [startInvW, deltaInvW] = (interpolatePerspective? interpolants(1, 1, true) : [1, 0]);
 
                     (isLeftEdge? leftEdges : rightEdges).push({
                         startY, endY,
@@ -171,7 +171,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                         {
                             return [
                                 (start / vert1.w),
-                                (((end  / vert2.w) - (start / vert1.w)) / edgeHeight)
+                                (((end / vert2.w) - (start / vert1.w)) / edgeHeight)
                             ];
                         }
                         else
