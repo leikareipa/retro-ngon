@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (13 June 2020 17:57:09 UTC)
+// VERSION: beta live (13 June 2020 18:54:39 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -1104,7 +1104,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                     const [startV, deltaV] = interpolants(v1, v2, interpolatePerspective);
 
                     // (1 / W), for perspective-correct mapping.
-                    const [startInvW, deltaInvW] = interpolatePerspective? interpolants(1, 1, true) : [1, 0];
+                    const [startInvW, deltaInvW] = (interpolatePerspective? interpolants(1, 1, true) : [1, 0]);
 
                     (isLeftEdge? leftEdges : rightEdges).push({
                         startY, endY,
@@ -1135,7 +1135,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                         {
                             return [
                                 (start / vert1.w),
-                                (((end  / vert2.w) - (start / vert1.w)) / edgeHeight)
+                                (((end / vert2.w) - (start / vert1.w)) / edgeHeight)
                             ];
                         }
                         else
@@ -1556,7 +1556,8 @@ Rngon.render = function(canvasElementId,
     Rngon.internalState.useDepthBuffer = (options.useDepthBuffer == true);
     Rngon.internalState.showGlobalWireframe = (options.globalWireframe == true);
     Rngon.internalState.applyViewportClipping = (options.clipToViewport == true);
-    Rngon.internalState.usePerspectiveCorrectInterpolation = (options.perspectiveCorrectInterpolation == true);
+    Rngon.internalState.usePerspectiveCorrectInterpolation = ((options.perspectiveCorrectTexturing || // <- Name in pre-beta.2.
+                                                               options.perspectiveCorrectInterpolation) == true);
     Rngon.internalState.lights = options.lights;
     Rngon.internalState.farPlaneDistance = options.farPlane;
 
