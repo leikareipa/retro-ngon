@@ -66,72 +66,76 @@ function shader_selective_blur({renderWidth, renderHeight, fragmentBuffer, pixel
 {
     const ngonCache = Rngon.internalState.transformedNgonsCache.ngons;
 
-    for (let y = 0; y < renderHeight; y++)
+    // We'll loop a couple of times to increase the level of blurring.
+    for (let loop = 0; loop < 4; loop++)
     {
-        for (let x = 0; x < renderWidth; x++)
+        for (let y = 0; y < renderHeight; y++)
         {
-            const thisIdx = (x + y * renderWidth);
-            const thisFragment = fragmentBuffer[thisIdx];
-            const thisNgon = (thisFragment? ngonCache[thisFragment.ngonIdx] : null);
-
-            if (!thisNgon || thisNgon.material.isInFocus)
+            for (let x = 0; x < renderWidth; x++)
             {
-                continue;
+                const thisIdx = (x + y * renderWidth);
+                const thisFragment = fragmentBuffer[thisIdx];
+                const thisNgon = (thisFragment? ngonCache[thisFragment.ngonIdx] : null);
+
+                if (!thisNgon || thisNgon.material.isInFocus)
+                {
+                    continue;
+                }
+
+                const leftIdx   = ((x - 1) + (y - 1) * renderWidth);
+                const topIdx    = ((x + 1) + (y - 1) * renderWidth);
+                const rightIdx  = ((x + 1) + (y + 1) * renderWidth);
+                const bottomIdx = ((x - 1) + (y + 1) * renderWidth);
+
+                const leftFragment   = (fragmentBuffer[leftIdx]   || null);
+                const topFragment    = (fragmentBuffer[topIdx]    || null);
+                const rightFragment  = (fragmentBuffer[rightIdx]  || null);
+                const bottomFragment = (fragmentBuffer[bottomIdx] || null);
+
+                const leftNgon   = (leftFragment?   ngonCache[leftFragment.ngonIdx]   : null);
+                const topNgon    = (topFragment?    ngonCache[topFragment.ngonIdx]    : null);
+                const rightNgon  = (rightFragment?  ngonCache[rightFragment.ngonIdx]  : null);
+                const bottomNgon = (bottomFragment? ngonCache[bottomFragment.ngonIdx] : null);
+
+                let sumR = pixelBuffer[(thisIdx * 4) + 0];
+                let sumG = pixelBuffer[(thisIdx * 4) + 1];
+                let sumB = pixelBuffer[(thisIdx * 4) + 2];
+                let numSamples = 1;
+
+                if (leftNgon && !leftNgon.material.isInFocus)
+                {
+                    sumR += pixelBuffer[(leftIdx * 4) + 0];
+                    sumG += pixelBuffer[(leftIdx * 4) + 1];
+                    sumB += pixelBuffer[(leftIdx * 4) + 2];
+                    numSamples++;
+                }
+                if (topNgon && !topNgon.material.isInFocus)
+                {
+                    sumR += pixelBuffer[(topIdx * 4) + 0];
+                    sumG += pixelBuffer[(topIdx * 4) + 1];
+                    sumB += pixelBuffer[(topIdx * 4) + 2];
+                    numSamples++;
+                }
+                if (rightNgon && !rightNgon.material.isInFocus)
+                {
+                    sumR += pixelBuffer[(rightIdx * 4) + 0];
+                    sumG += pixelBuffer[(rightIdx * 4) + 1];
+                    sumB += pixelBuffer[(rightIdx * 4) + 2];
+                    numSamples++;
+                }
+                if (bottomNgon && !bottomNgon.material.isInFocus)
+                {
+                    sumR += pixelBuffer[(bottomIdx * 4) + 0];
+                    sumG += pixelBuffer[(bottomIdx * 4) + 1];
+                    sumB += pixelBuffer[(bottomIdx * 4) + 2];
+                    numSamples++;
+                }
+
+                const brightnessFactor = 1.1;
+                pixelBuffer[(thisIdx * 4) + 0] = ((sumR / numSamples) * brightnessFactor);
+                pixelBuffer[(thisIdx * 4) + 1] = ((sumG / numSamples) * brightnessFactor);
+                pixelBuffer[(thisIdx * 4) + 2] = ((sumB / numSamples) * brightnessFactor);
             }
-
-            const leftIdx   = ((x - 1) + (y - 1) * renderWidth);
-            const topIdx    = ((x + 1) + (y - 1) * renderWidth);
-            const rightIdx  = ((x + 1) + (y + 1) * renderWidth);
-            const bottomIdx = ((x - 1) + (y + 1) * renderWidth);
-
-            const leftFragment   = (fragmentBuffer[leftIdx]   || null);
-            const topFragment    = (fragmentBuffer[topIdx]    || null);
-            const rightFragment  = (fragmentBuffer[rightIdx]  || null);
-            const bottomFragment = (fragmentBuffer[bottomIdx] || null);
-
-            const leftNgon   = (leftFragment?   ngonCache[leftFragment.ngonIdx]   : null);
-            const topNgon    = (topFragment?    ngonCache[topFragment.ngonIdx]    : null);
-            const rightNgon  = (rightFragment?  ngonCache[rightFragment.ngonIdx]  : null);
-            const bottomNgon = (bottomFragment? ngonCache[bottomFragment.ngonIdx] : null);
-
-            let sumR = pixelBuffer[(thisIdx * 4) + 0];
-            let sumG = pixelBuffer[(thisIdx * 4) + 1];
-            let sumB = pixelBuffer[(thisIdx * 4) + 2];
-            let numSamples = 1;
-
-            if (leftNgon && !leftNgon.material.isInFocus)
-            {
-                sumR += pixelBuffer[(leftIdx * 4) + 0];
-                sumG += pixelBuffer[(leftIdx * 4) + 1];
-                sumB += pixelBuffer[(leftIdx * 4) + 2];
-                numSamples++;
-            }
-            if (topNgon && !topNgon.material.isInFocus)
-            {
-                sumR += pixelBuffer[(topIdx * 4) + 0];
-                sumG += pixelBuffer[(topIdx * 4) + 1];
-                sumB += pixelBuffer[(topIdx * 4) + 2];
-                numSamples++;
-            }
-            if (rightNgon && !rightNgon.material.isInFocus)
-            {
-                sumR += pixelBuffer[(rightIdx * 4) + 0];
-                sumG += pixelBuffer[(rightIdx * 4) + 1];
-                sumB += pixelBuffer[(rightIdx * 4) + 2];
-                numSamples++;
-            }
-            if (bottomNgon && !bottomNgon.material.isInFocus)
-            {
-                sumR += pixelBuffer[(bottomIdx * 4) + 0];
-                sumG += pixelBuffer[(bottomIdx * 4) + 1];
-                sumB += pixelBuffer[(bottomIdx * 4) + 2];
-                numSamples++;
-            }
-
-            const brightnessFactor = 1.1;
-            pixelBuffer[(thisIdx * 4) + 0] = ((sumR / numSamples) * brightnessFactor);
-            pixelBuffer[(thisIdx * 4) + 1] = ((sumG / numSamples) * brightnessFactor);
-            pixelBuffer[(thisIdx * 4) + 2] = ((sumB / numSamples) * brightnessFactor);
         }
     }
 }
