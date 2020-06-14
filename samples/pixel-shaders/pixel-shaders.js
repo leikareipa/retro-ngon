@@ -51,21 +51,30 @@ export const sample_scene = (frameCount = 0)=>
 
 export const sampleRenderOptions = {
     lights: lights,
-    shaderFunction: ({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})=>
+    get shaderFunction()
     {
+        // If the user has selected a shader to be used, return a function that calls
+        // the selected shader.
         if (parent.ACTIVE_SHADER.function)
         {
-            eval(`"use strict"; ${parent.ACTIVE_SHADER.function}({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache});`);
+            return ({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})=>
+            {
+                eval(`"use strict"; ${parent.ACTIVE_SHADER.function}({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache});`);
+            }
+        }
+        // Otherwise, no shader is to be used, and we return null to signal to the
+        // renderer that it should disable its shader functionality.
+        else
+        {
+            return null;
         }
     }
 }
 
 // Blurs every pixel whose n-gon doesn't have the material property 'isInFocus'
 // set to true.
-function shader_selective_blur({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
+function shader_selective_blur({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
 {
-    const ngonCache = Rngon.internalState.transformedNgonsCache.ngons;
-
     // We'll loop a couple of times to increase the level of blurring.
     for (let loop = 0; loop < 4; loop++)
     {
