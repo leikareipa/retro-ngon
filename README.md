@@ -44,6 +44,12 @@ The retro n-gon renderer encourages low resolutions, very low polycounts, and de
 ![A view from Grand Prix Legends](/images/screenshots/alpha/rngon-gpl-2.png)\
 **A view** of the race track at Rouen in Grand Prix Legends. (Based on textures and 3d models produced by Papyrus Design Group for *Grand Prix Legends*. Papyrus Design Group is not associated with the retro n-gon renderer.)
 
+![Depth-based blurring with a pixel shader](/images/screenshots/beta/shader-distance-blur.png)
+**Depth-based** blurring applied with a pixel shader. (See [here](samples/pixel-shaders/assets/textures/copying.txt) for texture copyright information.)
+
+![Ray-traced shadows with a pixel shader](/images/screenshots/beta/shader-ray-trace.png)
+**Ray-traced** shadows in a pixel shader. Not suited for real-time rendering. (See [here](samples/pixel-shaders/assets/textures/copying.txt) for texture copyright information.)
+
 # User's manual
 In this section, you'll find both theoretical and practical guidance on using the retro n-gon renderer; including a reference manual for the renderer's API.
 
