@@ -445,8 +445,8 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                     const fragment = fragmentBuffer[depthBufferIdx];
                                     fragment.textureU = (iplU / iplInvW);
                                     fragment.textureV = (iplV / iplInvW);
-                                    fragment.textureUScaled = u;
-                                    fragment.textureVScaled = v;
+                                    fragment.textureUScaled = ~~u;
+                                    fragment.textureVScaled = ~~v;
                                     fragment.depth = (iplDepth / iplInvW);
                                     fragment.worldX = (iplWorldX / iplInvW);
                                     fragment.worldY = (iplWorldY / iplInvW);

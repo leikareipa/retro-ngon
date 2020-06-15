@@ -465,7 +465,7 @@ function shader_texture_blend({renderWidth, renderHeight, fragmentBuffer, pixelB
         }
 
         const texture = thisNgon.material.blendTexture;
-        const texelIdx = (~~thisFragment.textureUScaled + ~~thisFragment.textureVScaled * texture.width);
+        const texelIdx = (thisFragment.textureUScaled + thisFragment.textureVScaled * texture.width);
         const texel = texture.pixels[texelIdx];
 
         // Linearly interpolate a time-animated blending between the two textures.

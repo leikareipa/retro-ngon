@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (13 June 2020 18:54:39 UTC)
+// VERSION: beta live (15 June 2020 00:05:41 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -1409,8 +1409,8 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                     const fragment = fragmentBuffer[depthBufferIdx];
                                     fragment.textureU = (iplU / iplInvW);
                                     fragment.textureV = (iplV / iplInvW);
-                                    fragment.textureUScaled = u;
-                                    fragment.textureVScaled = v;
+                                    fragment.textureUScaled = ~~u;
+                                    fragment.textureVScaled = ~~v;
                                     fragment.depth = (iplDepth / iplInvW);
                                     fragment.worldX = (iplWorldX / iplInvW);
                                     fragment.worldY = (iplWorldY / iplInvW);
