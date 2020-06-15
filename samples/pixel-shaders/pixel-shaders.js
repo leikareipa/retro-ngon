@@ -425,6 +425,32 @@ function shader_depth_desaturate({renderWidth, renderHeight, fragmentBuffer, pix
     }
 }
 
+// Applies a wavy distortion to the pixel buffer.
+function shader_waviness({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
+{
+    const startDepth = 20;
+    const maxDepth = 200;
+
+    for (let y = 0; y < renderHeight; y++)
+    {
+        for (let x = 0; x < renderWidth; x++)
+        {
+            const thisIdx = ((x + y * renderWidth) * 4);
+            const thisFragment = fragmentBuffer[thisIdx / 4];
+
+            const depth = Math.max(0, Math.min(1, ((thisFragment.w - startDepth) / (maxDepth - startDepth))));
+            const horizontalMagnitude = (1 + depth);
+            const verticalMagnitude = (y / 2);
+            const cos = Math.cos((numFramesRendered / 8) + verticalMagnitude);
+
+            const shiftIdx = (((x + 1 + ~~(cos * horizontalMagnitude)) + y * renderWidth) * 4);
+            pixelBuffer[thisIdx + 0] = pixelBuffer[shiftIdx + 0];
+            pixelBuffer[thisIdx + 1] = pixelBuffer[shiftIdx + 1];
+            pixelBuffer[thisIdx + 2] = pixelBuffer[shiftIdx + 2];
+        }
+    }
+}
+
 function shader_distance_fog({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
 {
     const maxDepth = 200;
