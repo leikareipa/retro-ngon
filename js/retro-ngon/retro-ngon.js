@@ -114,4 +114,7 @@ Rngon.internalState =
 
     // All light sources that should currently apply to n-gons passed to render().
     lights: [],
+
+    // The camera's world position, as provided via the corresponding option to render().
+    viewPosition: undefined,
 }

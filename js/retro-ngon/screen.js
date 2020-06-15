@@ -107,6 +107,7 @@ Rngon.screen = function(canvasElementId = "",                      // The DOM id
                     fragmentBuffer: Rngon.internalState.fragmentBuffer.data,
                     pixelBuffer: Rngon.internalState.pixelBuffer.data,
                     ngonCache: Rngon.internalState.transformedNgonsCache.ngons,
+                    cameraPosition: Rngon.internalState.viewPosition,
                 });
             }
 

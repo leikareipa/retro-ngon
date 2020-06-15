@@ -28,8 +28,7 @@ Rngon.render = function(canvasElementId,
     }
 
     // Combine the default render options with the user-supplied ones.
-    options = Object.freeze(
-{
+    options = Object.freeze({
         ...Rngon.render.defaultOptions,
         ...options
     });
@@ -43,6 +42,7 @@ Rngon.render = function(canvasElementId,
                                                                options.perspectiveCorrectInterpolation) == true);
     Rngon.internalState.lights = options.lights;
     Rngon.internalState.farPlaneDistance = options.farPlane;
+    Rngon.internalState.viewPosition = options.cameraPosition;
 
     // Render a single frame onto the render surface.
     if ((!options.hibernateWhenNotOnScreen || is_surface_in_view()))

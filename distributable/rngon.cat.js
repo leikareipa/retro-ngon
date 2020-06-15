@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (15 June 2020 00:05:41 UTC)
+// VERSION: beta live (15 June 2020 23:21:49 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -137,6 +137,9 @@ Rngon.internalState =
 
     // All light sources that should currently apply to n-gons passed to render().
     lights: [],
+
+    // The camera's world position, as provided via the corresponding option to render().
+    viewPosition: undefined,
 }
 /*
  * Tarpeeksi Hyvae Soft 2019 /
@@ -1545,8 +1548,7 @@ Rngon.render = function(canvasElementId,
     }
 
     // Combine the default render options with the user-supplied ones.
-    options = Object.freeze(
-{
+    options = Object.freeze({
         ...Rngon.render.defaultOptions,
         ...options
     });
@@ -1560,6 +1562,7 @@ Rngon.render = function(canvasElementId,
                                                                options.perspectiveCorrectInterpolation) == true);
     Rngon.internalState.lights = options.lights;
     Rngon.internalState.farPlaneDistance = options.farPlane;
+    Rngon.internalState.viewPosition = options.cameraPosition;
 
     // Render a single frame onto the render surface.
     if ((!options.hibernateWhenNotOnScreen || is_surface_in_view()))
@@ -2108,6 +2111,7 @@ Rngon.screen = function(canvasElementId = "",                      // The DOM id
                     fragmentBuffer: Rngon.internalState.fragmentBuffer.data,
                     pixelBuffer: Rngon.internalState.pixelBuffer.data,
                     ngonCache: Rngon.internalState.transformedNgonsCache.ngons,
+                    cameraPosition: Rngon.internalState.viewPosition,
                 });
             }
 
