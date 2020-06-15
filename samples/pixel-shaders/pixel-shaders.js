@@ -439,6 +439,26 @@ function shader_aberration({renderWidth, renderHeight, pixelBuffer})
     }
 }
 
+// Lightens every xth pixel to create a perspective-correct grid pattern.
+function shader_grid_pattern({renderWidth, renderHeight, pixelBuffer, fragmentBuffer})
+{
+    for (let i = 0; i < (renderWidth * renderHeight); i++)
+    {
+        const thisFragment = fragmentBuffer[i];
+
+        // Note: we slightly offset some of the coordinate values to prevent flat
+        // axis-aligned polygons in this particular scene from being entirely lit.
+        if (((~~thisFragment.worldX)     % 4 == 0) ||
+            ((~~thisFragment.worldY + 2) % 4 == 0) ||
+            ((~~thisFragment.worldZ - 3) % 4 == 0))
+        {
+            pixelBuffer[(i * 4) + 0] *= 2;
+            pixelBuffer[(i * 4) + 1] *= 2;
+            pixelBuffer[(i * 4) + 2] *= 2;
+        }
+    }
+}
+
 // Applies a wavy distortion to the pixel buffer.
 function shader_waviness({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
 {
