@@ -425,6 +425,20 @@ function shader_depth_desaturate({renderWidth, renderHeight, fragmentBuffer, pix
     }
 }
 
+function shader_aberration({renderWidth, renderHeight, pixelBuffer})
+{
+    for (let y = 0; y < renderHeight; y++)
+    {
+        for (let x = 0; x < renderWidth; x++)
+        {
+            const thisIdx = ((x + y * renderWidth) * 4);
+            const shiftIdx = ((Math.min((renderWidth - 1), (x + 1)) + y * renderWidth) * 4);
+
+            pixelBuffer[thisIdx + 0] = pixelBuffer[shiftIdx + 0];
+        }
+    }
+}
+
 // Applies a wavy distortion to the pixel buffer.
 function shader_waviness({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
 {
