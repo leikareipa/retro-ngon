@@ -324,11 +324,6 @@ function shader_wireframe({renderWidth, renderHeight, fragmentBuffer, pixelBuffe
             const bufferIdx = (x + y * renderWidth);
             const thisFragment = fragmentBuffer[bufferIdx];
 
-            if (!thisFragment)
-            {
-                continue;
-            }
-
             let leftFragment   = (fragmentBuffer[((x - 1) + (y    ) * renderWidth)] || null);
             let topFragment    = (fragmentBuffer[((x    ) + (y - 1) * renderWidth)] || null);
             let rightFragment  = (fragmentBuffer[((x + 1) + (y    ) * renderWidth)] || null);
@@ -364,14 +359,10 @@ function shader_per_pixel_light({renderWidth, renderHeight, fragmentBuffer, pixe
     {
         const thisFragment = fragmentBuffer[i];
 
-        if (!thisFragment)
-        {
-            continue;
-        }
-
         const distance = (((thisFragment.worldX - light.position.x) * (thisFragment.worldX - light.position.x)) +
                           ((thisFragment.worldY - light.position.y) * (thisFragment.worldY - light.position.y)) +
                           ((thisFragment.worldZ - light.position.z) * (thisFragment.worldZ - light.position.z)));
+
         const distanceMul = Math.max(0, Math.min(1, (1 - (distance / lightReach))));
 
         if (distanceMul > 0)
@@ -386,10 +377,11 @@ function shader_per_pixel_light({renderWidth, renderHeight, fragmentBuffer, pixe
             surfaceNormal.z = thisFragment.normalZ;
 
             const shadeMul = Math.max(0, Math.min(1, surfaceNormal.dot(lightDirection)));
+            const colorMul = (distanceMul * shadeMul * lightIntensity);
 
-            pixelBuffer[(i * 4) + 0] *= (distanceMul * shadeMul * lightIntensity);
-            pixelBuffer[(i * 4) + 1] *= (distanceMul * shadeMul * lightIntensity);
-            pixelBuffer[(i * 4) + 2] *= (distanceMul * shadeMul * lightIntensity);
+            pixelBuffer[(i * 4) + 0] *= colorMul;
+            pixelBuffer[(i * 4) + 1] *= colorMul;
+            pixelBuffer[(i * 4) + 2] *= colorMul;
         }
         else
         {
@@ -414,11 +406,6 @@ function shader_depth_desaturate({renderWidth, renderHeight, fragmentBuffer, pix
     {
         const thisFragment = fragmentBuffer[i];
 
-        if (!thisFragment)
-        {
-            continue;
-        }
-
         const depth = Math.max(0, Math.min(1, (thisFragment.w / maxDepth)));
 
         let red   = pixelBuffer[(i * 4) + 0];
@@ -438,18 +425,13 @@ function shader_depth_desaturate({renderWidth, renderHeight, fragmentBuffer, pix
     }
 }
 
-function shader_distance_fog({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
+function shader_distance_fog({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
 {
     const maxDepth = 200;
 
     for (let i = 0; i < (renderWidth * renderHeight); i++)
     {
         const thisFragment = fragmentBuffer[i];
-
-        if (!thisFragment)
-        {
-            continue;
-        }
 
         const depth = Math.max(0, Math.min(1, (thisFragment.w / maxDepth)));
 
