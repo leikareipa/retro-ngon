@@ -459,6 +459,45 @@ function shader_grid_pattern({renderWidth, renderHeight, pixelBuffer, fragmentBu
     }
 }
 
+// Draws a marker over each visible vertex.
+function shader_vertex_positions({renderWidth, renderHeight, pixelBuffer, fragmentBuffer, ngonCache})
+{
+    for (let y = 0; y < renderHeight; y++)
+    {
+        for (let x = 0; x < renderWidth; x++)
+        {
+            const thisFragment = fragmentBuffer[x + y * renderWidth];
+            const thisNgon = (thisFragment? ngonCache[thisFragment.ngonIdx] : null);
+
+            if (!thisNgon)
+            {
+                continue;
+            }
+
+            for (let v = 0; v < thisNgon.vertices.length; v++)
+            {
+                const vx = Math.round(thisNgon.vertices[v].x);
+                const vy = Math.round(thisNgon.vertices[v].y);
+
+                if ((Math.abs(x - vx) < 2) &&
+                    (Math.abs(y - vy) < 2))
+                {
+                    for (let p = -1; p <= 1; p++)
+                    {
+                        pixelBuffer[(((vx + p) + (vy + p) * renderWidth) * 4) + 0] = 255;
+                        pixelBuffer[(((vx + p) + (vy + p) * renderWidth) * 4) + 1] = 255;
+                        pixelBuffer[(((vx + p) + (vy + p) * renderWidth) * 4) + 2] = 0;
+
+                        pixelBuffer[(((vx + p) + (vy - p) * renderWidth) * 4) + 0] = 255;
+                        pixelBuffer[(((vx + p) + (vy - p) * renderWidth) * 4) + 1] = 255;
+                        pixelBuffer[(((vx + p) + (vy - p) * renderWidth) * 4) + 2] = 0;
+                    }
+                }
+            }
+        }
+    }
+}
+
 // Applies a wavy distortion to the pixel buffer.
 function shader_waviness({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
 {
