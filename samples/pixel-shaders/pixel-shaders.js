@@ -76,7 +76,7 @@ export const sampleRenderOptions = {
 function shader_selective_blur({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
 {
     // We'll loop a couple of times to increase the level of blurring.
-    for (let loop = 0; loop < 4; loop++)
+    for (let loop = 0; loop < 3; loop++)
     {
         for (let y = 0; y < renderHeight; y++)
         {
@@ -428,6 +428,7 @@ function shader_depth_desaturate({renderWidth, renderHeight, fragmentBuffer, pix
 // Applies a wavy distortion to the pixel buffer.
 function shader_waviness({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
 {
+    const timer = (new Date().getTime() / 150);
     const startDepth = 20;
     const maxDepth = 200;
 
@@ -440,10 +441,10 @@ function shader_waviness({renderWidth, renderHeight, fragmentBuffer, pixelBuffer
 
             const depth = Math.max(0, Math.min(1, ((thisFragment.w - startDepth) / (maxDepth - startDepth))));
             const horizontalMagnitude = (1 + depth);
-            const verticalMagnitude = (y / 2);
-            const cos = Math.cos((numFramesRendered / 8) + verticalMagnitude);
+            const verticalMagnitude = ((y / renderWidth) * 190);
+            const cos = Math.cos(timer + verticalMagnitude);
 
-            const shiftIdx = (((x + 1 + ~~(cos * horizontalMagnitude)) + y * renderWidth) * 4);
+            const shiftIdx = ((Math.min((renderWidth - 1), (x + 1 + ~~(cos * horizontalMagnitude))) + y * renderWidth) * 4);
             pixelBuffer[thisIdx + 0] = pixelBuffer[shiftIdx + 0];
             pixelBuffer[thisIdx + 1] = pixelBuffer[shiftIdx + 1];
             pixelBuffer[thisIdx + 2] = pixelBuffer[shiftIdx + 2];
