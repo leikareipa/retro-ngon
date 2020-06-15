@@ -374,20 +374,29 @@ function shader_per_pixel_light({renderWidth, renderHeight, fragmentBuffer, pixe
                           ((thisFragment.worldZ - light.position.z) * (thisFragment.worldZ - light.position.z)));
         const distanceMul = Math.max(0, Math.min(1, (1 - (distance / lightReach))));
 
-        lightDirection.x = (light.position.x - thisFragment.worldX);
-        lightDirection.y = (light.position.y - thisFragment.worldY);
-        lightDirection.z = (light.position.z - thisFragment.worldZ);
-        lightDirection.normalize();
+        if (distanceMul > 0)
+        {
+            lightDirection.x = (light.position.x - thisFragment.worldX);
+            lightDirection.y = (light.position.y - thisFragment.worldY);
+            lightDirection.z = (light.position.z - thisFragment.worldZ);
+            lightDirection.normalize();
 
-        surfaceNormal.x = thisFragment.normalX;
-        surfaceNormal.y = thisFragment.normalY;
-        surfaceNormal.z = thisFragment.normalZ;
+            surfaceNormal.x = thisFragment.normalX;
+            surfaceNormal.y = thisFragment.normalY;
+            surfaceNormal.z = thisFragment.normalZ;
 
-        const shadeMul = Math.max(0, Math.min(1, surfaceNormal.dot(lightDirection)));
+            const shadeMul = Math.max(0, Math.min(1, surfaceNormal.dot(lightDirection)));
 
-        pixelBuffer[(i * 4) + 0] *= (distanceMul * shadeMul * lightIntensity);
-        pixelBuffer[(i * 4) + 1] *= (distanceMul * shadeMul * lightIntensity);
-        pixelBuffer[(i * 4) + 2] *= (distanceMul * shadeMul * lightIntensity);
+            pixelBuffer[(i * 4) + 0] *= (distanceMul * shadeMul * lightIntensity);
+            pixelBuffer[(i * 4) + 1] *= (distanceMul * shadeMul * lightIntensity);
+            pixelBuffer[(i * 4) + 2] *= (distanceMul * shadeMul * lightIntensity);
+        }
+        else
+        {
+            pixelBuffer[(i * 4) + 0] = 0;
+            pixelBuffer[(i * 4) + 1] = 0;
+            pixelBuffer[(i * 4) + 2] = 0;
+        }
     }
 }
 
