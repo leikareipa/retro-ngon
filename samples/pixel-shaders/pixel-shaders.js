@@ -57,9 +57,14 @@ export const sampleRenderOptions = {
         // the selected shader.
         if (parent.ACTIVE_SHADER.function)
         {
-            return ({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})=>
+            return ({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache, cameraPosition})=>
             {
-                eval(`"use strict"; ${parent.ACTIVE_SHADER.function}({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache});`);
+                eval(`"use strict"; ${parent.ACTIVE_SHADER.function}({renderWidth,
+                                                                      renderHeight,
+                                                                      fragmentBuffer,
+                                                                      pixelBuffer,
+                                                                      ngonCache,
+                                                                      cameraPosition});`);
             }
         }
         // Otherwise, no shader is to be used, and we return null to signal to the
@@ -226,8 +231,8 @@ function shader_normal({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
         const y = fragmentBuffer[i].normalY;
         const z = fragmentBuffer[i].normalZ;
 
-        pixelBuffer[(i * 4) + 0] = Math.abs(y * 255);
-        pixelBuffer[(i * 4) + 1] = Math.abs(x * 255);
+        pixelBuffer[(i * 4) + 0] = Math.abs(x * 255);
+        pixelBuffer[(i * 4) + 1] = Math.abs(y * 255);
         pixelBuffer[(i * 4) + 2] = Math.abs(z * 255);
     }
 }
@@ -344,6 +349,40 @@ function shader_wireframe({renderWidth, renderHeight, fragmentBuffer, pixelBuffe
                 pixelBuffer[(bufferIdx * 4) + 2] = 148;
             }
         }
+    }
+}
+
+// Lightens grazing angles wrt. the viewing direction on any n-gons whose material
+// has the 'isBacklit' property set to true.
+function shader_backlight({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, cameraPosition, ngonCache})
+{
+    const surfaceNormal = Rngon.vector3();
+    const viewVector = Rngon.vector3();
+
+    for (let i = 0; i < (renderWidth * renderHeight); i++)
+    {
+        const thisFragment = fragmentBuffer[i];
+        
+        if (!ngonCache[thisFragment.ngonIdx] ||
+            !ngonCache[thisFragment.ngonIdx].material.isBacklit)
+        {
+            continue;
+        }
+
+        surfaceNormal.x = thisFragment.normalX;
+        surfaceNormal.y = thisFragment.normalY;
+        surfaceNormal.z = thisFragment.normalZ;
+
+        viewVector.x = (thisFragment.worldX - cameraPosition.x);
+        viewVector.y = (thisFragment.worldY - cameraPosition.y);
+        viewVector.z = (thisFragment.worldZ - cameraPosition.z);
+        viewVector.normalize();
+
+        const dot = surfaceNormal.dot(viewVector);
+
+        pixelBuffer[(i * 4) + 0] *= (2 + dot);
+        pixelBuffer[(i * 4) + 1] *= (2 + dot);
+        pixelBuffer[(i * 4) + 2] *= (2 + dot);
     }
 }
 
