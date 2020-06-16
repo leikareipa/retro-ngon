@@ -120,6 +120,21 @@ Rngon.ngon_transform_and_light.apply_lighting = function(ngon)
 {
     const lightDirection = Rngon.vector3();
 
+    // Get the average XYZ point on this n-gon's face.
+    let faceX = 0, faceY = 0, faceZ = 0;
+    {
+        for (const vertex of ngon.vertices)
+        {
+            faceX += vertex.x;
+            faceY += vertex.y;
+            faceZ += vertex.z;
+        }
+
+        faceX /= ngon.vertices.length;
+        faceY /= ngon.vertices.length;
+        faceZ /= ngon.vertices.length;
+    }
+
     // Find the brightest shade falling on this n-gon.
     let shade = 0;
     for (const light of Rngon.internalState.lights)
@@ -127,19 +142,29 @@ Rngon.ngon_transform_and_light.apply_lighting = function(ngon)
         // If we've already found the maximum brightness, we don't need to continue.
         if (shade >= 255) break;
 
-        lightDirection.x = (light.position.x - ngon.vertices[0].x);
-        lightDirection.y = (light.position.y - ngon.vertices[0].y);
-        lightDirection.z = (light.position.z - ngon.vertices[0].z);
+        /// TODO: These should be properties of the light object.
+        const lightReach = (100 * 100);
+        const lightIntensity = 2;
+
+        const distance = (((faceX - light.position.x) * (faceX - light.position.x)) +
+                          ((faceY - light.position.y) * (faceY - light.position.y)) +
+                          ((faceZ - light.position.z) * (faceZ - light.position.z)));
+
+        const distanceMul = Math.max(0, Math.min(1, (1 - (distance / lightReach))));
+
+        lightDirection.x = (light.position.x - faceX);
+        lightDirection.y = (light.position.y - faceY);
+        lightDirection.z = (light.position.z - faceZ);
         lightDirection.normalize();
 
         const shadeFromThisLight = Math.max(ngon.material.ambientLightLevel, Math.min(1, ngon.normal.dot(lightDirection)));
 
-        shade = Math.max(shade, shadeFromThisLight);
+        shade = Math.max(shade, (shadeFromThisLight * distanceMul * lightIntensity));
     }
 
-    ngon.material.color = Rngon.color_rgba(ngon.material.color.red   * shade,
-                                           ngon.material.color.green * shade,
-                                           ngon.material.color.blue  * shade,
+    ngon.material.color = Rngon.color_rgba(Math.min(255, ngon.material.color.red   * shade),
+                                           Math.min(255, ngon.material.color.green * shade),
+                                           Math.min(255, ngon.material.color.blue  * shade),
                                            ngon.material.color.alpha);
 
     return;
