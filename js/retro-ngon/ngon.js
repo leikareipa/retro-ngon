@@ -9,7 +9,7 @@
 
 // A single n-sided ngon.
 // NOTE: The return object is not immutable.
-Rngon.ngon = function(vertices = [Rngon.vertex()], material = {}, normal = Rngon.vector3(0, 1, 0))
+Rngon.ngon = function(vertices = [Rngon.vertex()], material = {}, vertexNormals = Rngon.vector3(0, 1, 0))
 {
     Rngon.assert && (vertices instanceof Array) || Rngon.throw("Expected an array of vertices to make an ngon.");
     Rngon.assert && (material instanceof Object) || Rngon.throw("Expected an object containing user-supplied options.");
@@ -19,6 +19,13 @@ Rngon.ngon = function(vertices = [Rngon.vertex()], material = {}, normal = Rngon
                      typeof Rngon.ngon.defaultMaterial.hasWireframe !== "undefined" &&
                      typeof Rngon.ngon.defaultMaterial.wireframeColor !== "undefined")
                  || Rngon.throw("The default material object for ngon() is missing required properties.");
+
+    // Assuming that only a single normal vector was provided, in which case, let's
+    // duplicate that normal for all vertices.
+    if (!Array.isArray(vertexNormals))
+    {
+        vertexNormals = new Array(vertices.length).fill().map(n=>Rngon.vector3(vertexNormals.x, vertexNormals.y, vertexNormals.z));
+    }
 
     // Combine default material options with the user-supplied ones.
     material =
@@ -46,8 +53,8 @@ Rngon.ngon = function(vertices = [Rngon.vertex()], material = {}, normal = Rngon
     const returnObject =
     {
         vertices,
+        vertexNormals,
         material,
-        normal,
 
         // Clips all vertices against the sides of the viewport. Adapted from Benny
         // Bobaganoosh's 3d software renderer, the source for which is available at
@@ -99,7 +106,8 @@ Rngon.ngon = function(vertices = [Rngon.vertex()], material = {}, normal = Rngon
                                                                                 Rngon.lerp(prevVertex.w, this.vertices[i].w, lerpStep),
                                                                                 Rngon.lerp(prevVertex.worldX, this.vertices[i].worldX, lerpStep),
                                                                                 Rngon.lerp(prevVertex.worldY, this.vertices[i].worldY, lerpStep),
-                                                                                Rngon.lerp(prevVertex.worldZ, this.vertices[i].worldZ, lerpStep))
+                                                                                Rngon.lerp(prevVertex.worldZ, this.vertices[i].worldZ, lerpStep),
+                                                                                Rngon.lerp(prevVertex.shade, this.vertices[i].shade, lerpStep))
                     }
                     
                     if (isThisVertexInside)
@@ -145,6 +153,7 @@ Rngon.ngon.defaultMaterial =
     textureMapping: "ortho",
     uvWrapping: "repeat",
     shading: "none",
+    applyVertexShading: true,
     ambientLightLevel: 0,
     hasWireframe: false,
     isTwoSided: true,

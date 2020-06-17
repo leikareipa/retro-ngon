@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (16 June 2020 04:09:37 UTC)
+// VERSION: beta live (17 June 2020 03:10:25 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -487,7 +487,10 @@ Rngon.scaling_vector = Rngon.vector3;
 "use strict";
 
 // NOTE: The returned object is not immutable.
-Rngon.vertex = function(x = 0, y = 0, z = 0, u = 0, v = 0, w = 1, worldX = x, worldY = y, worldZ = z)
+Rngon.vertex = function(x = 0, y = 0, z = 0,
+                        u = 0, v = 0, w = 1,
+                        worldX = x, worldY = y, worldZ = z,
+                        shade = 1)
 {
     Rngon.assert && (typeof x === "number" && typeof y === "number" && typeof z === "number" &&
                      typeof w === "number" && typeof u === "number" && typeof v === "number" &&
@@ -502,6 +505,10 @@ Rngon.vertex = function(x = 0, y = 0, z = 0, u = 0, v = 0, w = 1, worldX = x, wo
         u,
         v,
         w,
+
+        // A value in the range >= 0 that defines how lit this vertex is. A value of
+        // 1 corresponds to fully lit, 0 to fully unlit.
+        shade,
 
         // The vertex's original coordinates, before any transformations.
         worldX,
@@ -607,7 +614,7 @@ Rngon.mesh.defaultTransform =
 
 // A single n-sided ngon.
 // NOTE: The return object is not immutable.
-Rngon.ngon = function(vertices = [Rngon.vertex()], material = {}, normal = Rngon.vector3(0, 1, 0))
+Rngon.ngon = function(vertices = [Rngon.vertex()], material = {}, vertexNormals = Rngon.vector3(0, 1, 0))
 {
     Rngon.assert && (vertices instanceof Array) || Rngon.throw("Expected an array of vertices to make an ngon.");
     Rngon.assert && (material instanceof Object) || Rngon.throw("Expected an object containing user-supplied options.");
@@ -617,6 +624,13 @@ Rngon.ngon = function(vertices = [Rngon.vertex()], material = {}, normal = Rngon
                      typeof Rngon.ngon.defaultMaterial.hasWireframe !== "undefined" &&
                      typeof Rngon.ngon.defaultMaterial.wireframeColor !== "undefined")
                  || Rngon.throw("The default material object for ngon() is missing required properties.");
+
+    // Assuming that only a single normal vector was provided, in which case, let's
+    // duplicate that normal for all vertices.
+    if (!Array.isArray(vertexNormals))
+    {
+        vertexNormals = new Array(vertices.length).fill().map(n=>Rngon.vector3(vertexNormals.x, vertexNormals.y, vertexNormals.z));
+    }
 
     // Combine default material options with the user-supplied ones.
     material =
@@ -644,8 +658,8 @@ Rngon.ngon = function(vertices = [Rngon.vertex()], material = {}, normal = Rngon
     const returnObject =
     {
         vertices,
+        vertexNormals,
         material,
-        normal,
 
         // Clips all vertices against the sides of the viewport. Adapted from Benny
         // Bobaganoosh's 3d software renderer, the source for which is available at
@@ -697,7 +711,8 @@ Rngon.ngon = function(vertices = [Rngon.vertex()], material = {}, normal = Rngon
                                                                                 Rngon.lerp(prevVertex.w, this.vertices[i].w, lerpStep),
                                                                                 Rngon.lerp(prevVertex.worldX, this.vertices[i].worldX, lerpStep),
                                                                                 Rngon.lerp(prevVertex.worldY, this.vertices[i].worldY, lerpStep),
-                                                                                Rngon.lerp(prevVertex.worldZ, this.vertices[i].worldZ, lerpStep))
+                                                                                Rngon.lerp(prevVertex.worldZ, this.vertices[i].worldZ, lerpStep),
+                                                                                Rngon.lerp(prevVertex.shade, this.vertices[i].shade, lerpStep))
                     }
                     
                     if (isThisVertexInside)
@@ -743,6 +758,7 @@ Rngon.ngon.defaultMaterial =
     textureMapping: "ortho",
     uvWrapping: "repeat",
     shading: "none",
+    applyVertexShading: true,
     ambientLightLevel: 0,
     hasWireframe: false,
     isTwoSided: true,
@@ -1095,6 +1111,8 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                                                   (vert2.z / Rngon.internalState.farPlaneDistance),
                                                                   interpolatePerspective);
 
+                    const [startShade, deltaShade] = interpolants(vert1.shade, vert2.shade, interpolatePerspective);
+
                     const [startWorldX, deltaWorldX] = interpolants(vert1.worldX, vert2.worldX, interpolatePerspective);
                     const [startWorldY, deltaWorldY] = interpolants(vert1.worldY, vert2.worldY, interpolatePerspective);
                     const [startWorldZ, deltaWorldZ] = interpolants(vert1.worldZ, vert2.worldZ, interpolatePerspective);
@@ -1113,6 +1131,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                         startY, endY,
                         startX, deltaX,
                         startDepth, deltaDepth,
+                        startShade, deltaShade,
                         startU, deltaU,
                         startV, deltaV,
                         startInvW, deltaInvW,
@@ -1178,6 +1197,9 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                         const deltaDepth = ((rightEdge.startDepth - leftEdge.startDepth) / spanWidth);
                         let iplDepth = (leftEdge.startDepth - deltaDepth);
 
+                        const deltaShade = ((rightEdge.startShade - leftEdge.startShade) / spanWidth);
+                        let iplShade = (leftEdge.startShade - deltaShade);
+
                         const deltaU = ((rightEdge.startU - leftEdge.startU) / spanWidth);
                         let iplU = (leftEdge.startU - deltaU);
 
@@ -1211,6 +1233,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
 
                             // Update values that're interpolated horizontally along the span.
                             iplDepth += deltaDepth;
+                            iplShade += deltaShade;
                             iplU += deltaU;
                             iplV += deltaV;
                             iplInvW += deltaInvW;
@@ -1223,6 +1246,8 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                             // Depth test.
                             if (depthBuffer && (depthBuffer[depthBufferIdx] <= (iplDepth / iplInvW))) continue;
 
+                            const shade = (ngon.material.applyVertexShading? (iplShade / iplInvW) : 1);
+                            
                             // Solid fill.
                             if (!ngon.material.texture)
                             {
@@ -1248,9 +1273,9 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                     }   
                                 }
 
-                                pixelBuffer[pixelBufferIdx + 0] = ngon.material.color.red;
-                                pixelBuffer[pixelBufferIdx + 1] = ngon.material.color.green;
-                                pixelBuffer[pixelBufferIdx + 2] = ngon.material.color.blue;
+                                pixelBuffer[pixelBufferIdx + 0] = (ngon.material.color.red   * shade);
+                                pixelBuffer[pixelBufferIdx + 1] = (ngon.material.color.green * shade);
+                                pixelBuffer[pixelBufferIdx + 2] = (ngon.material.color.blue  * shade);
                                 pixelBuffer[pixelBufferIdx + 3] = 255;
                                 if (depthBuffer) depthBuffer[depthBufferIdx] = (iplDepth / iplInvW);
                             }
@@ -1387,9 +1412,9 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                     }   
                                 }
 
-                                pixelBuffer[pixelBufferIdx + 0] = (texel.red   * ngon.material.color.unitRange.red);
-                                pixelBuffer[pixelBufferIdx + 1] = (texel.green * ngon.material.color.unitRange.green);
-                                pixelBuffer[pixelBufferIdx + 2] = (texel.blue  * ngon.material.color.unitRange.blue);
+                                pixelBuffer[pixelBufferIdx + 0] = (texel.red   * ngon.material.color.unitRange.red   * shade);
+                                pixelBuffer[pixelBufferIdx + 1] = (texel.green * ngon.material.color.unitRange.green * shade);
+                                pixelBuffer[pixelBufferIdx + 2] = (texel.blue  * ngon.material.color.unitRange.blue  * shade);
                                 pixelBuffer[pixelBufferIdx + 3] = 255;
                                 if (depthBuffer) depthBuffer[depthBufferIdx] = (iplDepth / iplInvW);
                             }
@@ -1415,6 +1440,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                     fragment.textureUScaled = ~~u;
                                     fragment.textureVScaled = ~~v;
                                     fragment.depth = (iplDepth / iplInvW);
+                                    fragment.shade = (iplShade / iplInvW);
                                     fragment.worldX = (iplWorldX / iplInvW);
                                     fragment.worldY = (iplWorldY / iplInvW);
                                     fragment.worldZ = (iplWorldZ / iplInvW);
@@ -1432,6 +1458,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                     {
                         leftEdge.startX += leftEdge.deltaX;
                         leftEdge.startDepth += leftEdge.deltaDepth;
+                        leftEdge.startShade += leftEdge.deltaShade;
                         leftEdge.startU += leftEdge.deltaU;
                         leftEdge.startV += leftEdge.deltaV;
                         leftEdge.startInvW += leftEdge.deltaInvW;
@@ -1441,6 +1468,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
 
                         rightEdge.startX += rightEdge.deltaX;
                         rightEdge.startDepth += rightEdge.deltaDepth;
+                        rightEdge.startShade += rightEdge.deltaShade;
                         rightEdge.startU += rightEdge.deltaU;
                         rightEdge.startV += rightEdge.deltaV;
                         rightEdge.startInvW += rightEdge.deltaInvW;
@@ -1803,6 +1831,10 @@ Rngon.ngon_transform_and_light = function(ngons = [],
                                                       ngon.vertices[v].u,
                                                       ngon.vertices[v].v,
                                                       ngon.vertices[v].w);
+
+                cachedNgon.vertexNormals[v] = Rngon.vector3(ngon.vertexNormals[v].x,
+                                                            ngon.vertexNormals[v].y,
+                                                            ngon.vertexNormals[v].z);
             }
 
             cachedNgon.material = {...ngon.material};
@@ -1815,11 +1847,18 @@ Rngon.ngon_transform_and_light = function(ngons = [],
             // Eye space.
             {
                 cachedNgon.transform(objectMatrix);
-                cachedNgon.normal.transform(objectMatrix);
-                cachedNgon.normal.normalize();
 
                 for (let v = 0; v < cachedNgon.vertices.length; v++)
                 {
+                    // For Gouraud shading, we need all vertex normals, so transform them all.
+                    // Otherwiwse, we'll only need at most the first normal.
+                    if ((cachedNgon.material.shading === "gouraud") ||
+                        (v === 0))
+                    {
+                        cachedNgon.vertexNormals[v].transform(objectMatrix);
+                        cachedNgon.vertexNormals[v].normalize();
+                    }
+
                     cachedNgon.vertices[v].worldX = cachedNgon.vertices[v].x;
                     cachedNgon.vertices[v].worldY = cachedNgon.vertices[v].y;
                     cachedNgon.vertices[v].worldZ = cachedNgon.vertices[v].z;
@@ -1869,7 +1908,8 @@ Rngon.ngon_transform_and_light.apply_lighting = function(ngon)
     const lightDirection = Rngon.vector3();
 
     // Get the average XYZ point on this n-gon's face.
-    let faceX = 0, faceY = 0, faceZ = 0;
+    let faceX = 0, faceY = 0, faceZ = 0, faceShade = 0;
+    if (ngon.material.shading === "flat")
     {
         for (const vertex of ngon.vertices)
         {
@@ -1884,36 +1924,69 @@ Rngon.ngon_transform_and_light.apply_lighting = function(ngon)
     }
 
     // Find the brightest shade falling on this n-gon.
-    let shade = 0;
     for (const light of Rngon.internalState.lights)
     {
         // If we've already found the maximum brightness, we don't need to continue.
-        if (shade >= 255) break;
+        //if (shade >= 255) break;
 
         /// TODO: These should be properties of the light object.
-        const lightReach = (100 * 100);
-        const lightIntensity = 2;
+        const lightReach = (1000 * 1000);
+        const lightIntensity = 1;
 
-        const distance = (((faceX - light.position.x) * (faceX - light.position.x)) +
-                          ((faceY - light.position.y) * (faceY - light.position.y)) +
-                          ((faceZ - light.position.z) * (faceZ - light.position.z)));
+        if (ngon.material.shading === "gouraud")
+        {
+            for (let v = 0; v < ngon.vertices.length; v++)
+            {
+                const vertex = ngon.vertices[v];
 
-        const distanceMul = Math.max(0, Math.min(1, (1 - (distance / lightReach))));
+                vertex.shade = 0;
 
-        lightDirection.x = (light.position.x - faceX);
-        lightDirection.y = (light.position.y - faceY);
-        lightDirection.z = (light.position.z - faceZ);
-        lightDirection.normalize();
+                const distance = (((vertex.x - light.position.x) * (vertex.x - light.position.x)) +
+                                  ((vertex.y - light.position.y) * (vertex.y - light.position.y)) +
+                                  ((vertex.z - light.position.z) * (vertex.z - light.position.z)));
 
-        const shadeFromThisLight = Math.max(ngon.material.ambientLightLevel, Math.min(1, ngon.normal.dot(lightDirection)));
+                const distanceMul = Math.max(0, Math.min(1, (1 - (distance / lightReach))));
 
-        shade = Math.max(shade, (shadeFromThisLight * distanceMul * lightIntensity));
+                lightDirection.x = (light.position.x - vertex.x);
+                lightDirection.y = (light.position.y - vertex.y);
+                lightDirection.z = (light.position.z - vertex.z);
+                lightDirection.normalize();
+
+                const shadeFromThisLight = Math.max(ngon.material.ambientLightLevel, Math.min(1, ngon.vertexNormals[v].dot(lightDirection)));
+
+                vertex.shade = Math.max(vertex.shade, Math.min(1, (shadeFromThisLight * distanceMul * lightIntensity)));
+            }
+        }
+        else if (ngon.material.shading === "flat")
+        {
+            const distance = (((faceX - light.position.x) * (faceX - light.position.x)) +
+                              ((faceY - light.position.y) * (faceY - light.position.y)) +
+                              ((faceZ - light.position.z) * (faceZ - light.position.z)));
+
+            const distanceMul = Math.max(0, Math.min(1, (1 - (distance / lightReach))));
+
+            lightDirection.x = (light.position.x - faceX);
+            lightDirection.y = (light.position.y - faceY);
+            lightDirection.z = (light.position.z - faceZ);
+            lightDirection.normalize();
+
+            const shadeFromThisLight = Math.max(ngon.material.ambientLightLevel, Math.min(1, ngon.vertexNormals[0].dot(lightDirection)));
+
+            faceShade = Math.max(faceShade, Math.min(1, (shadeFromThisLight * distanceMul * lightIntensity)));
+        }
+        else
+        {
+            Rngon.throw("Unknown shading mode.");
+        }
     }
 
-    ngon.material.color = Rngon.color_rgba(Math.min(255, ngon.material.color.red   * shade),
-                                           Math.min(255, ngon.material.color.green * shade),
-                                           Math.min(255, ngon.material.color.blue  * shade),
-                                           ngon.material.color.alpha);
+    if (ngon.material.shading === "flat")
+    {
+        for (let v = 0; v < ngon.vertices.length; v++)
+        {
+            ngon.vertices[v].shade = faceShade;
+        }
+    }
 
     return;
 }

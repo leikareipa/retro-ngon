@@ -128,6 +128,8 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                                                   (vert2.z / Rngon.internalState.farPlaneDistance),
                                                                   interpolatePerspective);
 
+                    const [startShade, deltaShade] = interpolants(vert1.shade, vert2.shade, interpolatePerspective);
+
                     const [startWorldX, deltaWorldX] = interpolants(vert1.worldX, vert2.worldX, interpolatePerspective);
                     const [startWorldY, deltaWorldY] = interpolants(vert1.worldY, vert2.worldY, interpolatePerspective);
                     const [startWorldZ, deltaWorldZ] = interpolants(vert1.worldZ, vert2.worldZ, interpolatePerspective);
@@ -146,6 +148,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                         startY, endY,
                         startX, deltaX,
                         startDepth, deltaDepth,
+                        startShade, deltaShade,
                         startU, deltaU,
                         startV, deltaV,
                         startInvW, deltaInvW,
@@ -211,6 +214,9 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                         const deltaDepth = ((rightEdge.startDepth - leftEdge.startDepth) / spanWidth);
                         let iplDepth = (leftEdge.startDepth - deltaDepth);
 
+                        const deltaShade = ((rightEdge.startShade - leftEdge.startShade) / spanWidth);
+                        let iplShade = (leftEdge.startShade - deltaShade);
+
                         const deltaU = ((rightEdge.startU - leftEdge.startU) / spanWidth);
                         let iplU = (leftEdge.startU - deltaU);
 
@@ -244,6 +250,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
 
                             // Update values that're interpolated horizontally along the span.
                             iplDepth += deltaDepth;
+                            iplShade += deltaShade;
                             iplU += deltaU;
                             iplV += deltaV;
                             iplInvW += deltaInvW;
@@ -256,6 +263,8 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                             // Depth test.
                             if (depthBuffer && (depthBuffer[depthBufferIdx] <= (iplDepth / iplInvW))) continue;
 
+                            const shade = (ngon.material.applyVertexShading? (iplShade / iplInvW) : 1);
+                            
                             // Solid fill.
                             if (!ngon.material.texture)
                             {
@@ -281,9 +290,9 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                     }   
                                 }
 
-                                pixelBuffer[pixelBufferIdx + 0] = ngon.material.color.red;
-                                pixelBuffer[pixelBufferIdx + 1] = ngon.material.color.green;
-                                pixelBuffer[pixelBufferIdx + 2] = ngon.material.color.blue;
+                                pixelBuffer[pixelBufferIdx + 0] = (ngon.material.color.red   * shade);
+                                pixelBuffer[pixelBufferIdx + 1] = (ngon.material.color.green * shade);
+                                pixelBuffer[pixelBufferIdx + 2] = (ngon.material.color.blue  * shade);
                                 pixelBuffer[pixelBufferIdx + 3] = 255;
                                 if (depthBuffer) depthBuffer[depthBufferIdx] = (iplDepth / iplInvW);
                             }
@@ -420,9 +429,9 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                     }   
                                 }
 
-                                pixelBuffer[pixelBufferIdx + 0] = (texel.red   * ngon.material.color.unitRange.red);
-                                pixelBuffer[pixelBufferIdx + 1] = (texel.green * ngon.material.color.unitRange.green);
-                                pixelBuffer[pixelBufferIdx + 2] = (texel.blue  * ngon.material.color.unitRange.blue);
+                                pixelBuffer[pixelBufferIdx + 0] = (texel.red   * ngon.material.color.unitRange.red   * shade);
+                                pixelBuffer[pixelBufferIdx + 1] = (texel.green * ngon.material.color.unitRange.green * shade);
+                                pixelBuffer[pixelBufferIdx + 2] = (texel.blue  * ngon.material.color.unitRange.blue  * shade);
                                 pixelBuffer[pixelBufferIdx + 3] = 255;
                                 if (depthBuffer) depthBuffer[depthBufferIdx] = (iplDepth / iplInvW);
                             }
@@ -448,6 +457,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                     fragment.textureUScaled = ~~u;
                                     fragment.textureVScaled = ~~v;
                                     fragment.depth = (iplDepth / iplInvW);
+                                    fragment.shade = (iplShade / iplInvW);
                                     fragment.worldX = (iplWorldX / iplInvW);
                                     fragment.worldY = (iplWorldY / iplInvW);
                                     fragment.worldZ = (iplWorldZ / iplInvW);
@@ -465,6 +475,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                     {
                         leftEdge.startX += leftEdge.deltaX;
                         leftEdge.startDepth += leftEdge.deltaDepth;
+                        leftEdge.startShade += leftEdge.deltaShade;
                         leftEdge.startU += leftEdge.deltaU;
                         leftEdge.startV += leftEdge.deltaV;
                         leftEdge.startInvW += leftEdge.deltaInvW;
@@ -474,6 +485,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
 
                         rightEdge.startX += rightEdge.deltaX;
                         rightEdge.startDepth += rightEdge.deltaDepth;
+                        rightEdge.startShade += rightEdge.deltaShade;
                         rightEdge.startU += rightEdge.deltaU;
                         rightEdge.startV += rightEdge.deltaV;
                         rightEdge.startInvW += rightEdge.deltaInvW;

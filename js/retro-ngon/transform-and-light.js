@@ -55,6 +55,10 @@ Rngon.ngon_transform_and_light = function(ngons = [],
                                                       ngon.vertices[v].u,
                                                       ngon.vertices[v].v,
                                                       ngon.vertices[v].w);
+
+                cachedNgon.vertexNormals[v] = Rngon.vector3(ngon.vertexNormals[v].x,
+                                                            ngon.vertexNormals[v].y,
+                                                            ngon.vertexNormals[v].z);
             }
 
             cachedNgon.material = {...ngon.material};
@@ -67,11 +71,18 @@ Rngon.ngon_transform_and_light = function(ngons = [],
             // Eye space.
             {
                 cachedNgon.transform(objectMatrix);
-                cachedNgon.normal.transform(objectMatrix);
-                cachedNgon.normal.normalize();
 
                 for (let v = 0; v < cachedNgon.vertices.length; v++)
                 {
+                    // For Gouraud shading, we need all vertex normals, so transform them all.
+                    // Otherwiwse, we'll only need at most the first normal.
+                    if ((cachedNgon.material.shading === "gouraud") ||
+                        (v === 0))
+                    {
+                        cachedNgon.vertexNormals[v].transform(objectMatrix);
+                        cachedNgon.vertexNormals[v].normalize();
+                    }
+
                     cachedNgon.vertices[v].worldX = cachedNgon.vertices[v].x;
                     cachedNgon.vertices[v].worldY = cachedNgon.vertices[v].y;
                     cachedNgon.vertices[v].worldZ = cachedNgon.vertices[v].z;
@@ -121,7 +132,8 @@ Rngon.ngon_transform_and_light.apply_lighting = function(ngon)
     const lightDirection = Rngon.vector3();
 
     // Get the average XYZ point on this n-gon's face.
-    let faceX = 0, faceY = 0, faceZ = 0;
+    let faceX = 0, faceY = 0, faceZ = 0, faceShade = 0;
+    if (ngon.material.shading === "flat")
     {
         for (const vertex of ngon.vertices)
         {
@@ -136,36 +148,69 @@ Rngon.ngon_transform_and_light.apply_lighting = function(ngon)
     }
 
     // Find the brightest shade falling on this n-gon.
-    let shade = 0;
     for (const light of Rngon.internalState.lights)
     {
         // If we've already found the maximum brightness, we don't need to continue.
-        if (shade >= 255) break;
+        //if (shade >= 255) break;
 
         /// TODO: These should be properties of the light object.
-        const lightReach = (100 * 100);
-        const lightIntensity = 2;
+        const lightReach = (1000 * 1000);
+        const lightIntensity = 1;
 
-        const distance = (((faceX - light.position.x) * (faceX - light.position.x)) +
-                          ((faceY - light.position.y) * (faceY - light.position.y)) +
-                          ((faceZ - light.position.z) * (faceZ - light.position.z)));
+        if (ngon.material.shading === "gouraud")
+        {
+            for (let v = 0; v < ngon.vertices.length; v++)
+            {
+                const vertex = ngon.vertices[v];
 
-        const distanceMul = Math.max(0, Math.min(1, (1 - (distance / lightReach))));
+                vertex.shade = 0;
 
-        lightDirection.x = (light.position.x - faceX);
-        lightDirection.y = (light.position.y - faceY);
-        lightDirection.z = (light.position.z - faceZ);
-        lightDirection.normalize();
+                const distance = (((vertex.x - light.position.x) * (vertex.x - light.position.x)) +
+                                  ((vertex.y - light.position.y) * (vertex.y - light.position.y)) +
+                                  ((vertex.z - light.position.z) * (vertex.z - light.position.z)));
 
-        const shadeFromThisLight = Math.max(ngon.material.ambientLightLevel, Math.min(1, ngon.normal.dot(lightDirection)));
+                const distanceMul = Math.max(0, Math.min(1, (1 - (distance / lightReach))));
 
-        shade = Math.max(shade, (shadeFromThisLight * distanceMul * lightIntensity));
+                lightDirection.x = (light.position.x - vertex.x);
+                lightDirection.y = (light.position.y - vertex.y);
+                lightDirection.z = (light.position.z - vertex.z);
+                lightDirection.normalize();
+
+                const shadeFromThisLight = Math.max(ngon.material.ambientLightLevel, Math.min(1, ngon.vertexNormals[v].dot(lightDirection)));
+
+                vertex.shade = Math.max(vertex.shade, Math.min(1, (shadeFromThisLight * distanceMul * lightIntensity)));
+            }
+        }
+        else if (ngon.material.shading === "flat")
+        {
+            const distance = (((faceX - light.position.x) * (faceX - light.position.x)) +
+                              ((faceY - light.position.y) * (faceY - light.position.y)) +
+                              ((faceZ - light.position.z) * (faceZ - light.position.z)));
+
+            const distanceMul = Math.max(0, Math.min(1, (1 - (distance / lightReach))));
+
+            lightDirection.x = (light.position.x - faceX);
+            lightDirection.y = (light.position.y - faceY);
+            lightDirection.z = (light.position.z - faceZ);
+            lightDirection.normalize();
+
+            const shadeFromThisLight = Math.max(ngon.material.ambientLightLevel, Math.min(1, ngon.vertexNormals[0].dot(lightDirection)));
+
+            faceShade = Math.max(faceShade, Math.min(1, (shadeFromThisLight * distanceMul * lightIntensity)));
+        }
+        else
+        {
+            Rngon.throw("Unknown shading mode.");
+        }
     }
 
-    ngon.material.color = Rngon.color_rgba(Math.min(255, ngon.material.color.red   * shade),
-                                           Math.min(255, ngon.material.color.green * shade),
-                                           Math.min(255, ngon.material.color.blue  * shade),
-                                           ngon.material.color.alpha);
+    if (ngon.material.shading === "flat")
+    {
+        for (let v = 0; v < ngon.vertices.length; v++)
+        {
+            ngon.vertices[v].shade = faceShade;
+        }
+    }
 
     return;
 }

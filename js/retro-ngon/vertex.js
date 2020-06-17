@@ -8,7 +8,10 @@
 "use strict";
 
 // NOTE: The returned object is not immutable.
-Rngon.vertex = function(x = 0, y = 0, z = 0, u = 0, v = 0, w = 1, worldX = x, worldY = y, worldZ = z)
+Rngon.vertex = function(x = 0, y = 0, z = 0,
+                        u = 0, v = 0, w = 1,
+                        worldX = x, worldY = y, worldZ = z,
+                        shade = 1)
 {
     Rngon.assert && (typeof x === "number" && typeof y === "number" && typeof z === "number" &&
                      typeof w === "number" && typeof u === "number" && typeof v === "number" &&
@@ -23,6 +26,10 @@ Rngon.vertex = function(x = 0, y = 0, z = 0, u = 0, v = 0, w = 1, worldX = x, wo
         u,
         v,
         w,
+
+        // A value in the range >= 0 that defines how lit this vertex is. A value of
+        // 1 corresponds to fully lit, 0 to fully unlit.
+        shade,
 
         // The vertex's original coordinates, before any transformations.
         worldX,
