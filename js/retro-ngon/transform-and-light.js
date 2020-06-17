@@ -71,13 +71,12 @@ Rngon.ngon_transform_and_light = function(ngons = [],
             // Eye space.
             {
                 cachedNgon.transform(objectMatrix);
+                cachedNgon.normal.transform(objectMatrix);
+                cachedNgon.normal.normalize();
 
                 for (let v = 0; v < cachedNgon.vertices.length; v++)
                 {
-                    // For Gouraud shading, we need all vertex normals, so transform them all.
-                    // Otherwiwse, we'll only need at most the first normal.
-                    if ((cachedNgon.material.shading === "gouraud") ||
-                        (v === 0))
+                    if (cachedNgon.material.shading === "gouraud")
                     {
                         cachedNgon.vertexNormals[v].transform(objectMatrix);
                         cachedNgon.vertexNormals[v].normalize();
@@ -194,7 +193,7 @@ Rngon.ngon_transform_and_light.apply_lighting = function(ngon)
             lightDirection.z = (light.position.z - faceZ);
             lightDirection.normalize();
 
-            const shadeFromThisLight = Math.max(ngon.material.ambientLightLevel, Math.min(1, ngon.vertexNormals[0].dot(lightDirection)));
+            const shadeFromThisLight = Math.max(ngon.material.ambientLightLevel, Math.min(1, ngon.normal.dot(lightDirection)));
 
             faceShade = Math.max(faceShade, Math.min(1, (shadeFromThisLight * distanceMul * lightIntensity)));
         }

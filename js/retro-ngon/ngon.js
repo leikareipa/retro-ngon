@@ -27,6 +27,16 @@ Rngon.ngon = function(vertices = [Rngon.vertex()], material = {}, vertexNormals 
         vertexNormals = new Array(vertices.length).fill().map(n=>Rngon.vector3(vertexNormals.x, vertexNormals.y, vertexNormals.z));
     }
 
+    const faceNormal = vertexNormals.reduce((faceNormal, vertexNormal)=>
+    {
+        faceNormal.x += vertexNormal.x;
+        faceNormal.y += vertexNormal.y;
+        faceNormal.z += vertexNormal.z;
+
+        return faceNormal;
+    }, Rngon.vector3(0, 0, 0));
+    faceNormal.normalize();
+
     // Combine default material options with the user-supplied ones.
     material =
     {
@@ -54,6 +64,7 @@ Rngon.ngon = function(vertices = [Rngon.vertex()], material = {}, vertexNormals 
     {
         vertices,
         vertexNormals,
+        normal: faceNormal,
         material,
 
         // Clips all vertices against the sides of the viewport. Adapted from Benny

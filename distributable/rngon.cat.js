@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (17 June 2020 03:10:25 UTC)
+// VERSION: beta live (17 June 2020 13:11:23 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -632,6 +632,16 @@ Rngon.ngon = function(vertices = [Rngon.vertex()], material = {}, vertexNormals 
         vertexNormals = new Array(vertices.length).fill().map(n=>Rngon.vector3(vertexNormals.x, vertexNormals.y, vertexNormals.z));
     }
 
+    const faceNormal = vertexNormals.reduce((faceNormal, vertexNormal)=>
+    {
+        faceNormal.x += vertexNormal.x;
+        faceNormal.y += vertexNormal.y;
+        faceNormal.z += vertexNormal.z;
+
+        return faceNormal;
+    }, Rngon.vector3(0, 0, 0));
+    faceNormal.normalize();
+
     // Combine default material options with the user-supplied ones.
     material =
     {
@@ -659,6 +669,7 @@ Rngon.ngon = function(vertices = [Rngon.vertex()], material = {}, vertexNormals 
     {
         vertices,
         vertexNormals,
+        normal: faceNormal,
         material,
 
         // Clips all vertices against the sides of the viewport. Adapted from Benny
@@ -1847,13 +1858,12 @@ Rngon.ngon_transform_and_light = function(ngons = [],
             // Eye space.
             {
                 cachedNgon.transform(objectMatrix);
+                cachedNgon.normal.transform(objectMatrix);
+                cachedNgon.normal.normalize();
 
                 for (let v = 0; v < cachedNgon.vertices.length; v++)
                 {
-                    // For Gouraud shading, we need all vertex normals, so transform them all.
-                    // Otherwiwse, we'll only need at most the first normal.
-                    if ((cachedNgon.material.shading === "gouraud") ||
-                        (v === 0))
+                    if (cachedNgon.material.shading === "gouraud")
                     {
                         cachedNgon.vertexNormals[v].transform(objectMatrix);
                         cachedNgon.vertexNormals[v].normalize();
@@ -1970,7 +1980,7 @@ Rngon.ngon_transform_and_light.apply_lighting = function(ngon)
             lightDirection.z = (light.position.z - faceZ);
             lightDirection.normalize();
 
-            const shadeFromThisLight = Math.max(ngon.material.ambientLightLevel, Math.min(1, ngon.vertexNormals[0].dot(lightDirection)));
+            const shadeFromThisLight = Math.max(ngon.material.ambientLightLevel, Math.min(1, ngon.normal.dot(lightDirection)));
 
             faceShade = Math.max(faceShade, Math.min(1, (shadeFromThisLight * distanceMul * lightIntensity)));
         }
