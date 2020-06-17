@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (17 June 2020 13:51:31 UTC)
+// VERSION: beta live (17 June 2020 15:21:29 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -105,6 +105,10 @@ Rngon.internalState =
 
             // The value written into the depth buffer by this fragment.
             depth: undefined,
+
+            // The light level (0..1) at this pixel as computed by the renderer's
+            // built-in lighting engine.
+            shade: undefined,
 
             w: undefined,
         }
@@ -769,7 +773,7 @@ Rngon.ngon.defaultMaterial =
     textureMapping: "ortho",
     uvWrapping: "repeat",
     vertexShading: "none",
-    applyVertexShading: true,
+    renderVertexShade: true,
     ambientLightLevel: 0,
     hasWireframe: false,
     isTwoSided: true,
@@ -1257,8 +1261,8 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                             // Depth test.
                             if (depthBuffer && (depthBuffer[depthBufferIdx] <= (iplDepth / iplInvW))) continue;
 
-                            const shade = (ngon.material.applyVertexShading? (iplShade / iplInvW) : 1);
-                            
+                            const shade = (ngon.material.renderVertexShade? (iplShade / iplInvW) : 1);
+
                             // Solid fill.
                             if (!ngon.material.texture)
                             {

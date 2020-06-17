@@ -83,6 +83,10 @@ Rngon.internalState =
             // The value written into the depth buffer by this fragment.
             depth: undefined,
 
+            // The light level (0..1) at this pixel as computed by the renderer's
+            // built-in lighting engine.
+            shade: undefined,
+
             w: undefined,
         }
     },

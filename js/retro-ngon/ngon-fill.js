@@ -263,8 +263,8 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                             // Depth test.
                             if (depthBuffer && (depthBuffer[depthBufferIdx] <= (iplDepth / iplInvW))) continue;
 
-                            const shade = (ngon.material.applyVertexShading? (iplShade / iplInvW) : 1);
-                            
+                            const shade = (ngon.material.renderVertexShade? (iplShade / iplInvW) : 1);
+
                             // Solid fill.
                             if (!ngon.material.texture)
                             {
