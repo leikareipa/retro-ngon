@@ -398,7 +398,7 @@ function shader_backlight({renderWidth, renderHeight, fragmentBuffer, pixelBuffe
     }
 }
 
-function shader_per_pixel_light({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
+function shader_per_pixel_light({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
 {
     const light = Rngon.internalState.lights[0];
     const lightReach = (100 * 100);
@@ -409,6 +409,7 @@ function shader_per_pixel_light({renderWidth, renderHeight, fragmentBuffer, pixe
     for (let i = 0; i < (renderWidth * renderHeight); i++)
     {
         const thisFragment = fragmentBuffer[i];
+        const thisNgon = (ngonCache[thisFragment.ngonIdx] || null);
 
         const distance = (((thisFragment.worldX - light.position.x) * (thisFragment.worldX - light.position.x)) +
                           ((thisFragment.worldY - light.position.y) * (thisFragment.worldY - light.position.y)) +
@@ -418,17 +419,29 @@ function shader_per_pixel_light({renderWidth, renderHeight, fragmentBuffer, pixe
 
         if ((thisFragment.shade > 0) && (distanceMul > 0))
         {
-            lightDirection.x = (light.position.x - thisFragment.worldX);
-            lightDirection.y = (light.position.y - thisFragment.worldY);
-            lightDirection.z = (light.position.z - thisFragment.worldZ);
-            lightDirection.normalize();
+            let shadeMul;
+            {
+                // Use pre-computed shading, if available.
+                if (thisNgon.material.vertexShading !== "none")
+                {
+                    shadeMul = thisFragment.shade;
+                }
+                else
+                {
+                    lightDirection.x = (light.position.x - thisFragment.worldX);
+                    lightDirection.y = (light.position.y - thisFragment.worldY);
+                    lightDirection.z = (light.position.z - thisFragment.worldZ);
+                    lightDirection.normalize();
 
-            surfaceNormal.x = thisFragment.normalX;
-            surfaceNormal.y = thisFragment.normalY;
-            surfaceNormal.z = thisFragment.normalZ;
+                    surfaceNormal.x = thisFragment.normalX;
+                    surfaceNormal.y = thisFragment.normalY;
+                    surfaceNormal.z = thisFragment.normalZ;
 
-            const shadeMul = Math.max(0, Math.min(1, surfaceNormal.dot(lightDirection)));
-            const colorMul = (distanceMul * shadeMul * lightIntensity * thisFragment.shade);
+                    shadeMul = Math.max(0, Math.min(1, surfaceNormal.dot(lightDirection)));
+                }
+            }
+
+            const colorMul = (distanceMul * shadeMul * lightIntensity);
 
             pixelBuffer[(i * 4) + 0] *= colorMul;
             pixelBuffer[(i * 4) + 1] *= colorMul;
