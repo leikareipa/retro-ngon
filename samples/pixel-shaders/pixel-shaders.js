@@ -223,7 +223,19 @@ function shader_selective_grayscale({renderWidth, renderHeight, fragmentBuffer, 
     }
 }
 
-function shader_normal({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
+function shader_shade_map({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
+{
+    for (let i = 0; i < (renderWidth * renderHeight); i++)
+    {
+        const shade = (fragmentBuffer[i].shade * 255);
+
+        pixelBuffer[(i * 4) + 0] = shade;
+        pixelBuffer[(i * 4) + 1] = shade;
+        pixelBuffer[(i * 4) + 2] = shade;
+    }
+}
+
+function shader_normal_map({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
 {
     for (let i = 0; i < (renderWidth * renderHeight); i++)
     {
@@ -237,7 +249,7 @@ function shader_normal({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
     }
 }
 
-function shader_world_position({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
+function shader_world_position_map({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
 {
     for (let i = 0; i < (renderWidth * renderHeight); i++)
     {
@@ -251,7 +263,7 @@ function shader_world_position({renderWidth, renderHeight, fragmentBuffer, pixel
     }
 }
 
-function shader_uv({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
+function shader_uv_map({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
 {
     for (let i = 0; i < (renderWidth * renderHeight); i++)
     {
@@ -264,7 +276,7 @@ function shader_uv({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
     }
 }
 
-function shader_depth({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
+function shader_depth_map({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
 {
     const {minDepth, maxDepth} = fragmentBuffer.reduce((minmax, fragment)=>
     {
@@ -404,7 +416,7 @@ function shader_per_pixel_light({renderWidth, renderHeight, fragmentBuffer, pixe
 
         const distanceMul = Math.max(0, Math.min(1, (1 - (distance / lightReach))));
 
-        if (distanceMul > 0)
+        if ((thisFragment.shade > 0) && (distanceMul > 0))
         {
             lightDirection.x = (light.position.x - thisFragment.worldX);
             lightDirection.y = (light.position.y - thisFragment.worldY);
@@ -416,7 +428,7 @@ function shader_per_pixel_light({renderWidth, renderHeight, fragmentBuffer, pixe
             surfaceNormal.z = thisFragment.normalZ;
 
             const shadeMul = Math.max(0, Math.min(1, surfaceNormal.dot(lightDirection)));
-            const colorMul = (distanceMul * shadeMul * lightIntensity);
+            const colorMul = (distanceMul * shadeMul * lightIntensity * thisFragment.shade);
 
             pixelBuffer[(i * 4) + 0] *= colorMul;
             pixelBuffer[(i * 4) + 1] *= colorMul;
@@ -499,7 +511,7 @@ function shader_grid_pattern({renderWidth, renderHeight, pixelBuffer, fragmentBu
 }
 
 // Draws a marker over each visible vertex.
-function shader_vertex_positions({renderWidth, renderHeight, pixelBuffer, fragmentBuffer, ngonCache})
+function shader_vertex_positions_map({renderWidth, renderHeight, pixelBuffer, fragmentBuffer, ngonCache})
 {
     for (let y = 0; y < renderHeight; y++)
     {
