@@ -104,7 +104,16 @@ with open(outFilename, 'w') as f:
                 if material != None:
                     f.write(",m[\"%s\"]" % material.name)
             # Normals.
-            f.write(",no(%.4f,%.4f,%.4f)" % (poly.normal[0], poly.normal[2], poly.normal[1]))
+            if poly.use_smooth:
+                f.write(",[")
+                for vertexIdx, vertex in enumerate(poly.vertices):
+                    vn = mesh.data.vertices[vertex].normal
+                    if (vertexIdx):
+                        f.write(",")
+                    f.write("no(%.4f,%.4f,%.4f)" % (vn[0], vn[2], vn[1]))
+                f.write("]")
+            else:
+                f.write(",no(%.4f,%.4f,%.4f)" % (poly.normal[0], poly.normal[2], poly.normal[1]))
             f.write("),\n")
             
     # Finalize the file.
