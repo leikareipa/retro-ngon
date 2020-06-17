@@ -23,7 +23,7 @@ export const sample_scene = (frameCount = 0)=>
 {
     for (let i = 0; i < torusModel.ngons.length; i++)
     {
-        torusModel.ngons[i].material.shading = parent.MODEL_SHADING.toLowerCase();
+        torusModel.ngons[i].material.vertexShading = parent.MODEL_SHADING.toLowerCase();
         torusModel.ngons[i].material.ambientLightLevel = parent.MODEL_AMBIENT;
     }
 

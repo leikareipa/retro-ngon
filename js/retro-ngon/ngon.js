@@ -163,7 +163,7 @@ Rngon.ngon.defaultMaterial =
     texture: null,
     textureMapping: "ortho",
     uvWrapping: "repeat",
-    shading: "none",
+    vertexShading: "none",
     applyVertexShading: true,
     ambientLightLevel: 0,
     hasWireframe: false,

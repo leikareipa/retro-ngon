@@ -600,11 +600,12 @@ The renderer's public API consists of the following objects:
 | ----------------------------------------------- | ------------------------------------------- |
 | [render](#rendercanvaselementid-meshes-options) | Renders n-gon meshes into a canvas.         |
 | [mesh](#meshngons-transform)                    | Collection of thematically-related n-gons.  |
-| [ngon](#ngonvertices-material-normal)                  | Polygonal shape defined by *n* vertices.    |
+| [ngon](#ngonvertices-material-normal)           | Polygonal shape defined by *n* vertices.    |
 | [vertex](#vertexx-y-z-u-v-w)                    | Corner of an n-gon.                         |
 | [vector3](#vector3x-y-z)                        | Three-component vector. Aliases: *translation_vector*, *rotation_vector*, *scaling_vector*. |
 | [color_rgba](#color_rgbared-green-blue-alpha)   | RGB color with alpha.                       |
 | [texture_rgba](#texture_rgbadata)               | RGB texture with alpha.                     |
+| light                                           | (A description is coming.)                                   |
 
 ### render(canvasElementId[, meshes[, options]])
 Renders one or more n-gon meshes onto an existing canvas element.
@@ -634,6 +635,7 @@ Renders one or more n-gon meshes onto an existing canvas element.
 | *rotation_vector*     | cameraDirection          | The camera's direction. Defaults to *vector3(0, 0, 0)*. |
 | *array*               | auxiliaryBuffers         | One or more auxiliary render buffers. Each buffer is an object containing the properties *buffer* and *property*; where *buffer* points to an array containing as many elements as there are pixels in the rendering, and *property* names a source property in an n-gon's material. For each pixel rendered, the corresponding element in an auxiliary buffer will be written with the n-gon's material source value. Defaults to *[]*. |
 | *function*            | shaderFunction           | A function that will be called once all of the frame's n-gons have been rasterized but before the rasterized image is drawn on screen. The function takes as its only parameter an object containing the following: {renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache}. The pixel buffer contains the RGBA color values of the rasterized image; the fragment buffer corresponding metadata about each rasterized pixel (like its interpolated texture and world coordinates); and the n-gon cache the transformed n-gons that were rasterized (including e.g. their material properties). With this information, the function can apply shader effects to the RGBA pixel buffer. Setting this property to *null* will fully disable shader functionality. Defaults to *null*.  |
+| *array*              | lights          | An array of **light** objects that defines the scene's light sources. The way in which these lights affect a given n-gon is controlled by the n-gon's 'vertexShading' material property. Defaults to *[]*.  |
 
 *Returns:*
 
@@ -775,7 +777,8 @@ An n-gon &ndash; a shape defined by *n* vertices; typically a triangle or a quad
 | *boolean*            | isTwoSided    | If true, the n-gon can be viewed from both front and back. Otherwise, the n-gon will be culled when viewed from behind, as determined by the direction of its surface normal. Defaults to *true*.<br><br>Note: Should not be set to false for n-gons that are part of a **mesh** object to which you have applied rotation. This is because surface normals ignore rotation, so applying backface culling in these cases would give an incorrect result. |
 | *color_rgba*         | wireframeColor  | If the n-gon has a wireframe, this property gives the wireframe's color as a **color_rgba** object. Defaults to *color_rgba(0, 0, 0)*. |
 | *array*              | auxiliary       | Properties accessible to the auxiliary buffers of **render**. Defaults to *{}*. |
-| *boolean*            | allowTransform  | If true, the n-gon's vertices will be transformed into screen space prior to rasterization. Otherwise, the vertices are assumed to already be in screen space, where X,Y == 0,0 is the top left corner and X,Y == rw-1,rh-1 the bottom right corner, with rw being the render width and rh the render height; and in which case no further transformation will be performed. Defaults to *true*.<br><br>Caution: If set to false, viewport clipping will also not be performed. All vertex XY coordinates of such n-gons must be in the range [0,d-1], where d is the render width for X and render height for Y.  |
+| *boolean*            | allowTransform  | If true, the n-gon's vertices will be transformed into screen space prior to rasterization. Otherwise, the vertices are assumed to already be in screen space, where X,Y == 0,0 is the top left corner and X,Y == rw-1,rh-1 the bottom right corner, with rw being the render width and rh the render height; and in which case no further transformation will be performed. Defaults to *true*.<br><br>Caution: If set to false, viewport clipping will also not be performed. All vertex XY coordinates of such n-gons must be in the range [0,d-1], where d is the render width for X and render height for Y. |
+| *string*             | vertexShading | Sets the type of built-in shading to be used when computing lighting from the scene's light sources (which are given by the 'lights' property). Possible values: "none" (no shading will be applied; all light sources are ignored), "flat" (each n-gon face will receive a solid shade based on the angle between incident light and the n-gon's surface normal), "gouraud" (angle-based shading will be computed separately for each vertex, using vertex normals). Defaults to *"none"*. |
 
 *Returns:*
 

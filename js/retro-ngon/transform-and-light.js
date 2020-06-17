@@ -76,7 +76,7 @@ Rngon.ngon_transform_and_light = function(ngons = [],
 
                 for (let v = 0; v < cachedNgon.vertices.length; v++)
                 {
-                    if (cachedNgon.material.shading === "gouraud")
+                    if (cachedNgon.material.vertexShading === "gouraud")
                     {
                         cachedNgon.vertexNormals[v].transform(objectMatrix);
                         cachedNgon.vertexNormals[v].normalize();
@@ -87,7 +87,7 @@ Rngon.ngon_transform_and_light = function(ngons = [],
                     cachedNgon.vertices[v].worldZ = cachedNgon.vertices[v].z;
                 }
 
-                if (cachedNgon.material.shading !== "none")
+                if (cachedNgon.material.vertexShading !== "none")
                 {
                     Rngon.ngon_transform_and_light.apply_lighting(cachedNgon);
                 }
@@ -132,7 +132,7 @@ Rngon.ngon_transform_and_light.apply_lighting = function(ngon)
 
     // Get the average XYZ point on this n-gon's face.
     let faceX = 0, faceY = 0, faceZ = 0, faceShade = 0;
-    if (ngon.material.shading === "flat")
+    if (ngon.material.vertexShading === "flat")
     {
         for (const vertex of ngon.vertices)
         {
@@ -156,7 +156,7 @@ Rngon.ngon_transform_and_light.apply_lighting = function(ngon)
         const lightReach = (1000 * 1000);
         const lightIntensity = 1;
 
-        if (ngon.material.shading === "gouraud")
+        if (ngon.material.vertexShading === "gouraud")
         {
             for (let v = 0; v < ngon.vertices.length; v++)
             {
@@ -180,7 +180,7 @@ Rngon.ngon_transform_and_light.apply_lighting = function(ngon)
                 vertex.shade = Math.max(vertex.shade, Math.min(1, (shadeFromThisLight * distanceMul * lightIntensity)));
             }
         }
-        else if (ngon.material.shading === "flat")
+        else if (ngon.material.vertexShading === "flat")
         {
             const distance = (((faceX - light.position.x) * (faceX - light.position.x)) +
                               ((faceY - light.position.y) * (faceY - light.position.y)) +
@@ -203,7 +203,7 @@ Rngon.ngon_transform_and_light.apply_lighting = function(ngon)
         }
     }
 
-    if (ngon.material.shading === "flat")
+    if (ngon.material.vertexShading === "flat")
     {
         for (let v = 0; v < ngon.vertices.length; v++)
         {
