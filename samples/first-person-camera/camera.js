@@ -167,15 +167,21 @@ export function first_person_camera(canvasID = "",
                                                   (movementStatus.up?      1 : movementStatus.down?     -1 : 0),
                                                   (movementStatus.forward? 1 : movementStatus.backward? -1 : 0));
 
-        if (accumulatedMovement.normalize && accumulatedMovement.transform)
+        if (Rngon.vector3.normalize)
+        {
+            Rngon.vector3.normalize(accumulatedMovement);
+            Rngon.vector3.transform(accumulatedMovement, cameraRotationMatrix);
+        }
+        else
         {
             accumulatedMovement.normalize();
             accumulatedMovement.transform(cameraRotationMatrix);
-
-            accumulatedMovement.x *= movementSpeed;
-            accumulatedMovement.y *= movementSpeed;
-            accumulatedMovement.z *= movementSpeed;
         }
+
+
+        accumulatedMovement.x *= movementSpeed;
+        accumulatedMovement.y *= movementSpeed;
+        accumulatedMovement.z *= movementSpeed;
 
         return accumulatedMovement;
     }

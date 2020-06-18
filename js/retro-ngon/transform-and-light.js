@@ -35,7 +35,7 @@ Rngon.ngon_transform_and_light = function(ngons = [],
             viewVector.y = (ngon.vertices[0].y - cameraPos.y);
             viewVector.z = (ngon.vertices[0].z - cameraPos.z);
 
-            if (ngon.normal.dot(viewVector) >= 0)
+            if (Rngon.vector3.dot(ngon.normal, viewVector) >= 0)
             {
                 continue;
             }
@@ -73,21 +73,27 @@ Rngon.ngon_transform_and_light = function(ngons = [],
         {
             // Eye space.
             {
-                cachedNgon.transform(objectMatrix);
-                cachedNgon.normal.transform(objectMatrix);
-                cachedNgon.normal.normalize();
+                Rngon.ngon.transform(cachedNgon, objectMatrix);
+                Rngon.vector3.transform(cachedNgon.normal, objectMatrix);
+                Rngon.vector3.normalize(cachedNgon.normal);
 
-                for (let v = 0; v < cachedNgon.vertices.length; v++)
+                if (Rngon.internalState.useShaders)
                 {
-                    if (cachedNgon.material.vertexShading === "gouraud")
+                    for (let v = 0; v < cachedNgon.vertices.length; v++)
                     {
-                        cachedNgon.vertexNormals[v].transform(objectMatrix);
-                        cachedNgon.vertexNormals[v].normalize();
+                        cachedNgon.vertices[v].worldX = cachedNgon.vertices[v].x;
+                        cachedNgon.vertices[v].worldY = cachedNgon.vertices[v].y;
+                        cachedNgon.vertices[v].worldZ = cachedNgon.vertices[v].z;
                     }
+                }
 
-                    cachedNgon.vertices[v].worldX = cachedNgon.vertices[v].x;
-                    cachedNgon.vertices[v].worldY = cachedNgon.vertices[v].y;
-                    cachedNgon.vertices[v].worldZ = cachedNgon.vertices[v].z;
+                if (cachedNgon.material.vertexShading === "gouraud")
+                {
+                    for (let v = 0; v < cachedNgon.vertices.length; v++)
+                    {
+                        Rngon.vector3.transform(cachedNgon.vertexNormals[v], objectMatrix);
+                        Rngon.vector3.normalize(cachedNgon.vertexNormals[v]);
+                    }
                 }
 
                 if (cachedNgon.material.vertexShading !== "none")
@@ -98,11 +104,11 @@ Rngon.ngon_transform_and_light = function(ngons = [],
 
             // Clip space.
             {
-                cachedNgon.transform(clipSpaceMatrix);
+                Rngon.ngon.transform(cachedNgon, clipSpaceMatrix);
 
                 if (Rngon.internalState.applyViewportClipping)
                 {
-                    cachedNgon.clip_to_viewport();
+                    Rngon.ngon.clip_to_viewport(cachedNgon);
                 }
             }
 
@@ -114,8 +120,8 @@ Rngon.ngon_transform_and_light = function(ngons = [],
                 continue;
             }
 
-            cachedNgon.transform(screenSpaceMatrix);
-            cachedNgon.perspective_divide();
+            Rngon.ngon.transform(cachedNgon, screenSpaceMatrix);
+            Rngon.ngon.perspective_divide(cachedNgon);
         }
     };
 
@@ -176,9 +182,9 @@ Rngon.ngon_transform_and_light.apply_lighting = function(ngon)
                 lightDirection.x = (light.position.x - vertex.x);
                 lightDirection.y = (light.position.y - vertex.y);
                 lightDirection.z = (light.position.z - vertex.z);
-                lightDirection.normalize();
+                Rngon.vector3.normalize(lightDirection);
 
-                const shadeFromThisLight = Math.max(ngon.material.ambientLightLevel, Math.min(1, ngon.vertexNormals[v].dot(lightDirection)));
+                const shadeFromThisLight = Math.max(ngon.material.ambientLightLevel, Math.min(1, Rngon.vector3.dot(ngon.vertexNormals[v], lightDirection)));
 
                 vertex.shade = Math.max(vertex.shade, Math.min(1, (shadeFromThisLight * distanceMul * lightIntensity)));
             }
@@ -194,9 +200,9 @@ Rngon.ngon_transform_and_light.apply_lighting = function(ngon)
             lightDirection.x = (light.position.x - faceX);
             lightDirection.y = (light.position.y - faceY);
             lightDirection.z = (light.position.z - faceZ);
-            lightDirection.normalize();
+            Rngon.vector3.normalize(lightDirection);
 
-            const shadeFromThisLight = Math.max(ngon.material.ambientLightLevel, Math.min(1, ngon.normal.dot(lightDirection)));
+            const shadeFromThisLight = Math.max(ngon.material.ambientLightLevel, Math.min(1, Rngon.vector3.dot(ngon.normal, lightDirection)));
 
             faceShade = Math.max(faceShade, Math.min(1, (shadeFromThisLight * distanceMul * lightIntensity)));
         }

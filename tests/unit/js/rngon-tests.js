@@ -151,13 +151,6 @@ const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
                      ()=>(color.blue === 3),
                      ()=>(color.alpha === 4)]);
 
-        expect_true([()=>(color.as_hex() === "#01020304"),
-                     ()=>(color.as_hex(0x1110) === "#010203"),
-                     ()=>(color.as_hex(0x1000) === "#010000"),
-                     ()=>(color.as_hex(0x0100) === "#000200"),
-                     ()=>(color.as_hex(0x0010) === "#000003"),
-                     ()=>(color.as_hex(0x0011) === "#00000304")])
-
         // Immutability.
         expect_fail([()=>{color.red = 1},
                      ()=>{color.green = 1},

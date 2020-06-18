@@ -388,9 +388,9 @@ function shader_backlight({renderWidth, renderHeight, fragmentBuffer, pixelBuffe
         viewVector.x = (thisFragment.worldX - cameraPosition.x);
         viewVector.y = (thisFragment.worldY - cameraPosition.y);
         viewVector.z = (thisFragment.worldZ - cameraPosition.z);
-        viewVector.normalize();
+        Rngon.vector3.normalize(viewVector);
 
-        const dot = surfaceNormal.dot(viewVector);
+        const dot = Rngon.vector3.dot(surfaceNormal, viewVector);
 
         pixelBuffer[(i * 4) + 0] *= (2 + dot);
         pixelBuffer[(i * 4) + 1] *= (2 + dot);
@@ -431,13 +431,13 @@ function shader_per_pixel_light({renderWidth, renderHeight, fragmentBuffer, pixe
                     lightDirection.x = (light.position.x - thisFragment.worldX);
                     lightDirection.y = (light.position.y - thisFragment.worldY);
                     lightDirection.z = (light.position.z - thisFragment.worldZ);
-                    lightDirection.normalize();
+                    Rngon.vector3.normalize(lightDirection);
 
                     surfaceNormal.x = thisFragment.normalX;
                     surfaceNormal.y = thisFragment.normalY;
                     surfaceNormal.z = thisFragment.normalZ;
 
-                    shadeMul = Math.max(0, Math.min(1, surfaceNormal.dot(lightDirection)));
+                    shadeMul = Math.max(0, Math.min(1, Rngon.vector3.dot(surfaceNormal, lightDirection)));
                 }
             }
 

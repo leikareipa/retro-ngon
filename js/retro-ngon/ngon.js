@@ -35,7 +35,7 @@ Rngon.ngon = function(vertices = [Rngon.vertex()], material = {}, vertexNormals 
 
         return faceNormal;
     }, Rngon.vector3(0, 0, 0));
-    faceNormal.normalize();
+    Rngon.vector3.normalize(faceNormal);
 
     // Combine default material options with the user-supplied ones.
     material =
@@ -66,105 +66,6 @@ Rngon.ngon = function(vertices = [Rngon.vertex()], material = {}, vertexNormals 
         vertexNormals,
         normal: faceNormal,
         material,
-
-        // Clips all vertices against the sides of the viewport. Adapted from Benny
-        // Bobaganoosh's 3d software renderer, the source for which is available at
-        // https://github.com/BennyQBD/3DSoftwareRenderer.
-        clip_to_viewport: function()
-        {
-            clip_on_axis.call(this, "x", 1);
-            clip_on_axis.call(this, "x", -1);
-            clip_on_axis.call(this, "y", 1);
-            clip_on_axis.call(this, "y", -1);
-            clip_on_axis.call(this, "z", 1);
-            clip_on_axis.call(this, "z", -1);
-
-            return;
-
-            function clip_on_axis(axis, factor)
-            {
-                if (!this.vertices.length)
-                {
-                    return;
-                }
-
-                let prevVertex = this.vertices[this.vertices.length - 1];
-                let prevComponent = prevVertex[axis] * factor;
-                let isPrevVertexInside = (prevComponent <= prevVertex.w);
-                
-                // The vertices array will be modified in-place by appending the clipped vertices
-                // onto the end of the array, then removing the previous ones.
-                let k = 0;
-                let numOriginalVertices = this.vertices.length;
-                for (let i = 0; i < numOriginalVertices; i++)
-                {
-                    const curComponent = this.vertices[i][axis] * factor;
-                    const isThisVertexInside = (curComponent <= this.vertices[i].w);
-
-                    // If either the current vertex or the previous vertex is inside but the other isn't,
-                    // and they aren't both inside, interpolate a new vertex between them that lies on
-                    // the clipping plane.
-                    if (isThisVertexInside ^ isPrevVertexInside)
-                    {
-                        const lerpStep = (prevVertex.w - prevComponent) /
-                                          ((prevVertex.w - prevComponent) - (this.vertices[i].w - curComponent));
-
-                        if (Rngon.internalState.useShaders)
-                        {
-                            this.vertices[numOriginalVertices + k++] = Rngon.vertex(Rngon.lerp(prevVertex.x, this.vertices[i].x, lerpStep),
-                                                                                    Rngon.lerp(prevVertex.y, this.vertices[i].y, lerpStep),
-                                                                                    Rngon.lerp(prevVertex.z, this.vertices[i].z, lerpStep),
-                                                                                    Rngon.lerp(prevVertex.u, this.vertices[i].u, lerpStep),
-                                                                                    Rngon.lerp(prevVertex.v, this.vertices[i].v, lerpStep),
-                                                                                    Rngon.lerp(prevVertex.w, this.vertices[i].w, lerpStep),
-                                                                                    Rngon.lerp(prevVertex.shade, this.vertices[i].shade, lerpStep),
-                                                                                    Rngon.lerp(prevVertex.worldX, this.vertices[i].worldX, lerpStep),
-                                                                                    Rngon.lerp(prevVertex.worldY, this.vertices[i].worldY, lerpStep),
-                                                                                    Rngon.lerp(prevVertex.worldZ, this.vertices[i].worldZ, lerpStep));
-                        }
-                        else
-                        {
-                            this.vertices[numOriginalVertices + k++] = Rngon.vertex(Rngon.lerp(prevVertex.x, this.vertices[i].x, lerpStep),
-                                                                                    Rngon.lerp(prevVertex.y, this.vertices[i].y, lerpStep),
-                                                                                    Rngon.lerp(prevVertex.z, this.vertices[i].z, lerpStep),
-                                                                                    Rngon.lerp(prevVertex.u, this.vertices[i].u, lerpStep),
-                                                                                    Rngon.lerp(prevVertex.v, this.vertices[i].v, lerpStep),
-                                                                                    Rngon.lerp(prevVertex.w, this.vertices[i].w, lerpStep),
-                                                                                    Rngon.lerp(prevVertex.shade, this.vertices[i].shade, lerpStep));
-                        }
-                    }
-                    
-                    if (isThisVertexInside)
-                    {
-                        this.vertices[numOriginalVertices + k++] = this.vertices[i];
-                    }
-
-                    prevVertex = this.vertices[i];
-                    prevComponent = curComponent;
-                    isPrevVertexInside = isThisVertexInside;
-                }
-
-                this.vertices.splice(0, numOriginalVertices);
-
-                return;
-            }
-        },
-
-        perspective_divide: function()
-        {
-            for (const vert of this.vertices)
-            {
-                vert.perspective_divide();
-            }
-        },
-
-        transform: function(matrix44)
-        {
-            for (const vert of this.vertices)
-            {
-                vert.transform(matrix44);
-            }
-        },
     };
 
     return returnObject;
@@ -185,3 +86,102 @@ Rngon.ngon.defaultMaterial =
     allowTransform: true,
     auxiliary: {},
 };
+
+Rngon.ngon.perspective_divide = function(ngon)
+{
+    for (const vert of ngon.vertices)
+    {
+        Rngon.vertex.perspective_divide(vert);
+    }
+},
+
+Rngon.ngon.transform = function(ngon, matrix44)
+{
+    for (const vert of ngon.vertices)
+    {
+        Rngon.vertex.transform(vert, matrix44);
+    }
+},
+
+// Clips all vertices against the sides of the viewport. Adapted from Benny
+// Bobaganoosh's 3d software renderer, the source for which is available at
+// https://github.com/BennyQBD/3DSoftwareRenderer.
+Rngon.ngon.clip_to_viewport = function(ngon)
+{
+    clip_on_axis("x", 1);
+    clip_on_axis("x", -1);
+    clip_on_axis("y", 1);
+    clip_on_axis("y", -1);
+    clip_on_axis("z", 1);
+    clip_on_axis("z", -1);
+
+    return;
+
+    function clip_on_axis(axis, factor)
+    {
+        if (!ngon.vertices.length)
+        {
+            return;
+        }
+
+        let prevVertex = ngon.vertices[ngon.vertices.length - 1];
+        let prevComponent = prevVertex[axis] * factor;
+        let isPrevVertexInside = (prevComponent <= prevVertex.w);
+        
+        // The vertices array will be modified in-place by appending the clipped vertices
+        // onto the end of the array, then removing the previous ones.
+        let k = 0;
+        let numOriginalVertices = ngon.vertices.length;
+        for (let i = 0; i < numOriginalVertices; i++)
+        {
+            const curComponent = ngon.vertices[i][axis] * factor;
+            const isThisVertexInside = (curComponent <= ngon.vertices[i].w);
+
+            // If either the current vertex or the previous vertex is inside but the other isn't,
+            // and they aren't both inside, interpolate a new vertex between them that lies on
+            // the clipping plane.
+            if (isThisVertexInside ^ isPrevVertexInside)
+            {
+                const lerpStep = (prevVertex.w - prevComponent) /
+                                  ((prevVertex.w - prevComponent) - (ngon.vertices[i].w - curComponent));
+
+                if (Rngon.internalState.useShaders)
+                {
+                    ngon.vertices[numOriginalVertices + k++] = Rngon.vertex(Rngon.lerp(prevVertex.x, ngon.vertices[i].x, lerpStep),
+                                                                            Rngon.lerp(prevVertex.y, ngon.vertices[i].y, lerpStep),
+                                                                            Rngon.lerp(prevVertex.z, ngon.vertices[i].z, lerpStep),
+                                                                            Rngon.lerp(prevVertex.u, ngon.vertices[i].u, lerpStep),
+                                                                            Rngon.lerp(prevVertex.v, ngon.vertices[i].v, lerpStep),
+                                                                            Rngon.lerp(prevVertex.w, ngon.vertices[i].w, lerpStep),
+                                                                            Rngon.lerp(prevVertex.shade, ngon.vertices[i].shade, lerpStep),
+                                                                            Rngon.lerp(prevVertex.worldX, ngon.vertices[i].worldX, lerpStep),
+                                                                            Rngon.lerp(prevVertex.worldY, ngon.vertices[i].worldY, lerpStep),
+                                                                            Rngon.lerp(prevVertex.worldZ, ngon.vertices[i].worldZ, lerpStep));
+                }
+                else
+                {
+                    ngon.vertices[numOriginalVertices + k++] = Rngon.vertex(Rngon.lerp(prevVertex.x, ngon.vertices[i].x, lerpStep),
+                                                                            Rngon.lerp(prevVertex.y, ngon.vertices[i].y, lerpStep),
+                                                                            Rngon.lerp(prevVertex.z, ngon.vertices[i].z, lerpStep),
+                                                                            Rngon.lerp(prevVertex.u, ngon.vertices[i].u, lerpStep),
+                                                                            Rngon.lerp(prevVertex.v, ngon.vertices[i].v, lerpStep),
+                                                                            Rngon.lerp(prevVertex.w, ngon.vertices[i].w, lerpStep),
+                                                                            Rngon.lerp(prevVertex.shade, ngon.vertices[i].shade, lerpStep));
+                }
+            }
+            
+            if (isThisVertexInside)
+            {
+                ngon.vertices[numOriginalVertices + k++] = ngon.vertices[i];
+            }
+
+            prevVertex = ngon.vertices[i];
+            prevComponent = curComponent;
+            isPrevVertexInside = isThisVertexInside;
+        }
+
+        ngon.vertices.splice(0, numOriginalVertices);
+
+        return;
+    }
+}

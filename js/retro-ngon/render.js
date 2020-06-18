@@ -125,7 +125,7 @@ Rngon.render = function(canvasElementId,
 
         for (const mesh of meshes)
         {
-            renderSurface.transform_and_light_ngons(mesh.ngons, mesh.objectSpaceMatrix(), cameraMatrix, cameraPosition);
+            renderSurface.transform_and_light_ngons(mesh.ngons, Rngon.mesh.object_space_matrix(mesh), cameraMatrix, cameraPosition);
         };
 
         return;

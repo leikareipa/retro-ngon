@@ -32,22 +32,6 @@ Rngon.mesh = function(ngons = [Rngon.ngon()], transform = {})
         rotation: transform.rotation,
         translation: transform.translation,
         scale: transform.scaling,
-        objectSpaceMatrix: function()
-        {
-            const translationMatrix = Rngon.matrix44.translate(this.translation.x,
-                                                               this.translation.y,
-                                                               this.translation.z);
-
-            const rotationMatrix = Rngon.matrix44.rotate(this.rotation.x,
-                                                         this.rotation.y,
-                                                         this.rotation.z);
-
-            const scalingMatrix = Rngon.matrix44.scale(this.scale.x,
-                                                       this.scale.y,
-                                                       this.scale.z);
-
-            return Rngon.matrix44.matrices_multiplied(Rngon.matrix44.matrices_multiplied(translationMatrix, rotationMatrix), scalingMatrix);
-        },
     };
     
     return publicInterface;
@@ -59,3 +43,20 @@ Rngon.mesh.defaultTransform =
     rotation: Rngon.rotation_vector(0, 0, 0),
     scaling: Rngon.scaling_vector(1, 1, 1)
 };
+
+Rngon.mesh.object_space_matrix = function(m)
+{
+    const translationMatrix = Rngon.matrix44.translate(m.translation.x,
+                                                       m.translation.y,
+                                                       m.translation.z);
+
+    const rotationMatrix = Rngon.matrix44.rotate(m.rotation.x,
+                                                 m.rotation.y,
+                                                 m.rotation.z);
+
+    const scalingMatrix = Rngon.matrix44.scale(m.scale.x,
+                                               m.scale.y,
+                                               m.scale.z);
+
+    return Rngon.matrix44.matrices_multiplied(Rngon.matrix44.matrices_multiplied(translationMatrix, rotationMatrix), scalingMatrix);
+}

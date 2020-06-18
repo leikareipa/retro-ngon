@@ -36,31 +36,31 @@ Rngon.vertex = function(x = 0, y = 0, z = 0,
         worldX,
         worldY,
         worldZ,
-
-        // Transforms the vertex by the given 4x4 matrix.
-        transform: function(m = [])
-        {
-            Rngon.assert && (m.length === 16)
-                         || Rngon.throw("Expected a 4 x 4 matrix to transform the vertex by.");
-            
-            const x_ = ((m[0] * this.x) + (m[4] * this.y) + (m[ 8] * this.z) + (m[12] * this.w));
-            const y_ = ((m[1] * this.x) + (m[5] * this.y) + (m[ 9] * this.z) + (m[13] * this.w));
-            const z_ = ((m[2] * this.x) + (m[6] * this.y) + (m[10] * this.z) + (m[14] * this.w));
-            const w_ = ((m[3] * this.x) + (m[7] * this.y) + (m[11] * this.z) + (m[15] * this.w));
-
-            this.x = x_;
-            this.y = y_;
-            this.z = z_;
-            this.w = w_;
-        },
-
-        // Applies perspective division to the vertex.
-        perspective_divide: function()
-        {
-            this.x /= this.w;
-            this.y /= this.w;
-        }
     };
 
     return returnObject;
+}
+
+// Transforms the vertex by the given 4x4 matrix.
+Rngon.vertex.transform = function(v, m = [])
+{
+    Rngon.assert && (m.length === 16)
+                    || Rngon.throw("Expected a 4 x 4 matrix to transform the vertex by.");
+    
+    const x_ = ((m[0] * v.x) + (m[4] * v.y) + (m[ 8] * v.z) + (m[12] * v.w));
+    const y_ = ((m[1] * v.x) + (m[5] * v.y) + (m[ 9] * v.z) + (m[13] * v.w));
+    const z_ = ((m[2] * v.x) + (m[6] * v.y) + (m[10] * v.z) + (m[14] * v.w));
+    const w_ = ((m[3] * v.x) + (m[7] * v.y) + (m[11] * v.z) + (m[15] * v.w));
+
+    v.x = x_;
+    v.y = y_;
+    v.z = z_;
+    v.w = w_;
+}
+
+// Applies perspective division to the vertex.
+Rngon.vertex.perspective_divide = function(v)
+{
+    v.x /= v.w;
+    v.y /= v.w;
 }
