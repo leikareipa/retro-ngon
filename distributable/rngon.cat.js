@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (17 June 2020 15:21:29 UTC)
+// VERSION: beta live (18 June 2020 00:28:53 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -67,7 +67,7 @@ Rngon.internalState =
 {
     // Whether to require pixels to pass a depth test before being allowed on screen.
     useDepthBuffer: false,
-    depthBuffer: {width:1, height:1, data:new Array(1), clearValue:Number.MAX_VALUE},
+    depthBuffer: {width:1, height:1, data:new Array(1), clearValue:Infinity},
 
     // Pixel buffer for rasterization. This will be scaled to match the requested
     // render resolution; and the renderer's rasterization pass will populate it
@@ -492,9 +492,10 @@ Rngon.scaling_vector = Rngon.vector3;
 
 // NOTE: The returned object is not immutable.
 Rngon.vertex = function(x = 0, y = 0, z = 0,
-                        u = 0, v = 0, w = 1,
-                        worldX = x, worldY = y, worldZ = z,
-                        shade = 1)
+                        u = 0, v = 0,
+                        w = 1,
+                        shade = 1,
+                        worldX = x, worldY = y, worldZ = z)
 {
     Rngon.assert && (typeof x === "number" && typeof y === "number" && typeof z === "number" &&
                      typeof w === "number" && typeof u === "number" && typeof v === "number" &&
@@ -718,16 +719,29 @@ Rngon.ngon = function(vertices = [Rngon.vertex()], material = {}, vertexNormals 
                         const lerpStep = (prevVertex.w - prevComponent) /
                                           ((prevVertex.w - prevComponent) - (this.vertices[i].w - curComponent));
 
-                        this.vertices[numOriginalVertices + k++] = Rngon.vertex(Rngon.lerp(prevVertex.x, this.vertices[i].x, lerpStep),
-                                                                                Rngon.lerp(prevVertex.y, this.vertices[i].y, lerpStep),
-                                                                                Rngon.lerp(prevVertex.z, this.vertices[i].z, lerpStep),
-                                                                                Rngon.lerp(prevVertex.u, this.vertices[i].u, lerpStep),
-                                                                                Rngon.lerp(prevVertex.v, this.vertices[i].v, lerpStep),
-                                                                                Rngon.lerp(prevVertex.w, this.vertices[i].w, lerpStep),
-                                                                                Rngon.lerp(prevVertex.worldX, this.vertices[i].worldX, lerpStep),
-                                                                                Rngon.lerp(prevVertex.worldY, this.vertices[i].worldY, lerpStep),
-                                                                                Rngon.lerp(prevVertex.worldZ, this.vertices[i].worldZ, lerpStep),
-                                                                                Rngon.lerp(prevVertex.shade, this.vertices[i].shade, lerpStep))
+                        if (Rngon.internalState.useShaders)
+                        {
+                            this.vertices[numOriginalVertices + k++] = Rngon.vertex(Rngon.lerp(prevVertex.x, this.vertices[i].x, lerpStep),
+                                                                                    Rngon.lerp(prevVertex.y, this.vertices[i].y, lerpStep),
+                                                                                    Rngon.lerp(prevVertex.z, this.vertices[i].z, lerpStep),
+                                                                                    Rngon.lerp(prevVertex.u, this.vertices[i].u, lerpStep),
+                                                                                    Rngon.lerp(prevVertex.v, this.vertices[i].v, lerpStep),
+                                                                                    Rngon.lerp(prevVertex.w, this.vertices[i].w, lerpStep),
+                                                                                    Rngon.lerp(prevVertex.shade, this.vertices[i].shade, lerpStep),
+                                                                                    Rngon.lerp(prevVertex.worldX, this.vertices[i].worldX, lerpStep),
+                                                                                    Rngon.lerp(prevVertex.worldY, this.vertices[i].worldY, lerpStep),
+                                                                                    Rngon.lerp(prevVertex.worldZ, this.vertices[i].worldZ, lerpStep));
+                        }
+                        else
+                        {
+                            this.vertices[numOriginalVertices + k++] = Rngon.vertex(Rngon.lerp(prevVertex.x, this.vertices[i].x, lerpStep),
+                                                                                    Rngon.lerp(prevVertex.y, this.vertices[i].y, lerpStep),
+                                                                                    Rngon.lerp(prevVertex.z, this.vertices[i].z, lerpStep),
+                                                                                    Rngon.lerp(prevVertex.u, this.vertices[i].u, lerpStep),
+                                                                                    Rngon.lerp(prevVertex.v, this.vertices[i].v, lerpStep),
+                                                                                    Rngon.lerp(prevVertex.w, this.vertices[i].w, lerpStep),
+                                                                                    Rngon.lerp(prevVertex.shade, this.vertices[i].shade, lerpStep));
+                        }
                     }
                     
                     if (isThisVertexInside)
@@ -1015,6 +1029,8 @@ Rngon.matrix44 = (()=>
 //
 Rngon.ngon_filler = function(auxiliaryBuffers = [])
 {
+    const interpolatePerspective = Rngon.internalState.usePerspectiveCorrectInterpolation;
+    const useShaders = Rngon.internalState.useShaders;
     const fragmentBuffer = Rngon.internalState.fragmentBuffer.data;
     const pixelBuffer = Rngon.internalState.pixelBuffer.data;
     const depthBuffer = (Rngon.internalState.useDepthBuffer? Rngon.internalState.depthBuffer.data : null);
@@ -1031,6 +1047,8 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
     for (let n = 0; n < Rngon.internalState.transformedNgonsCache.count; n++)
     {
         const ngon = Rngon.internalState.transformedNgonsCache.ngons[n];
+        const material = ngon.material;
+        const texture = material.texture;
 
         // In theory, we should never receive n-gons that have no vertices, but let's check
         // to make sure.
@@ -1045,16 +1063,16 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
         {
             const idx = ((Math.round(ngon.vertices[0].x) + Math.round(ngon.vertices[0].y) * renderWidth) * 4);
                 
-            pixelBuffer[idx + 0] = ngon.material.color.red;
-            pixelBuffer[idx + 1] = ngon.material.color.green;
-            pixelBuffer[idx + 2] = ngon.material.color.blue;
-            pixelBuffer[idx + 3] = ngon.material.color.alpha;
+            pixelBuffer[idx + 0] = material.color.red;
+            pixelBuffer[idx + 1] = material.color.green;
+            pixelBuffer[idx + 2] = material.color.blue;
+            pixelBuffer[idx + 3] = material.color.alpha;
 
             continue;
         }
         else if (ngon.vertices.length === 2)
         {
-            Rngon.line_draw.into_pixel_buffer(ngon.vertices[0], ngon.vertices[1], ngon.material.color, Rngon.internalState.useDepthBuffer);
+            Rngon.line_draw.into_pixel_buffer(ngon.vertices[0], ngon.vertices[1], material.color, Rngon.internalState.useDepthBuffer);
 
             continue;
         }
@@ -1110,7 +1128,6 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
 
                 function add_edge(vert1, vert2, isLeftEdge)
                 {
-                    const interpolatePerspective = Rngon.internalState.usePerspectiveCorrectInterpolation;
                     const startY = Math.min(renderHeight, Math.max(0, Math.round(vert1.y)));
                     const endY = Math.min(renderHeight, Math.max(0, Math.round(vert2.y)));
                     const edgeHeight = (endY - startY);
@@ -1118,29 +1135,44 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                     // Ignore horizontal edges.
                     if (edgeHeight === 0) return;
 
-                    const [startX, deltaX] = interpolants(Math.min(renderWidth, Math.max(0, Math.round(vert1.x))),
-                                                          Math.min(renderWidth, Math.max(0, Math.ceil(vert2.x))),
-                                                          false);
-                    
-                    const [startDepth, deltaDepth] = interpolants((vert1.z / Rngon.internalState.farPlaneDistance),
-                                                                  (vert2.z / Rngon.internalState.farPlaneDistance),
-                                                                  interpolatePerspective);
+                    const w1 = interpolatePerspective? vert1.w : 1;
+                    const w2 = interpolatePerspective? vert2.w : 1;
 
-                    const [startShade, deltaShade] = interpolants(vert1.shade, vert2.shade, interpolatePerspective);
+                    const startX = Math.min(renderWidth, Math.max(0, Math.round(vert1.x)));
+                    const endX = Math.min(renderWidth, Math.max(0, Math.ceil(vert2.x)));
+                    const deltaX = ((endX - startX) / edgeHeight);
 
-                    const [startWorldX, deltaWorldX] = interpolants(vert1.worldX, vert2.worldX, interpolatePerspective);
-                    const [startWorldY, deltaWorldY] = interpolants(vert1.worldY, vert2.worldY, interpolatePerspective);
-                    const [startWorldZ, deltaWorldZ] = interpolants(vert1.worldZ, vert2.worldZ, interpolatePerspective);
+                    const depth1 = (vert1.z / Rngon.internalState.farPlaneDistance);
+                    const depth2 = (vert2.z / Rngon.internalState.farPlaneDistance);
+                    const startDepth = depth1/w1;
+                    const deltaDepth = ((depth2/w2 - depth1/w1) / edgeHeight);
 
-                    const u1 = (ngon.material.texture? vert1.u : 1);
-                    const v1 = (ngon.material.texture? vert1.v : 1);
-                    const u2 = (ngon.material.texture? vert2.u : 1);
-                    const v2 = (ngon.material.texture? vert2.v : 1);
-                    const [startU, deltaU] = interpolants(u1, u2, interpolatePerspective);
-                    const [startV, deltaV] = interpolants(v1, v2, interpolatePerspective);
+                    const startShade = vert1.shade/w1;
+                    const deltaShade = ((vert2.shade/w2 - vert1.shade/w1) / edgeHeight);
 
-                    // (1 / W), for perspective-correct mapping.
-                    const [startInvW, deltaInvW] = (interpolatePerspective? interpolants(1, 1, true) : [1, 0]);
+                    if (useShaders)
+                    {
+                        var startWorldX = vert1.worldX/w1;
+                        var deltaWorldX = ((vert2.worldX/w2 - vert1.worldX/w1) / edgeHeight);
+
+                        var startWorldY = vert1.worldY/w1;
+                        var deltaWorldY = ((vert2.worldY/w2 - vert1.worldY/w1) / edgeHeight);
+
+                        var startWorldZ = vert1.worldZ/w1;
+                        var deltaWorldZ = ((vert2.worldZ/w2 - vert1.worldZ/w1) / edgeHeight);
+                    }
+
+                    const u1 = (material.texture? vert1.u : 1);
+                    const v1 = (material.texture? vert1.v : 1);
+                    const u2 = (material.texture? vert2.u : 1);
+                    const v2 = (material.texture? vert2.v : 1);
+                    const startU = u1/w1;
+                    const deltaU = ((u2/w2- u1/w1) / edgeHeight);
+                    const startV = v1/w1;
+                    const deltaV = ((v2/w2 - v1/w1) / edgeHeight);
+
+                    const startInvW = 1/w1;
+                    const deltaInvW = ((1/w2 - 1/w1) / edgeHeight);
 
                     (isLeftEdge? leftEdges : rightEdges).push({
                         startY, endY,
@@ -1154,35 +1186,6 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                         startWorldY, deltaWorldY,
                         startWorldZ, deltaWorldZ,
                     });
-
-                    // For the given starting and ending values (corresponding to the current
-                    // edge's starting and ending vertices), returns as an array (1) the starting
-                    // value, and (2) an increment value; such that when the increment is appended
-                    // to the starting value x times, it will equal the ending value, with x being
-                    // the pixel height of the current edge.
-                    //
-                    // if 'perspectiveCorrect' is true, the starting and ending values will be
-                    // divided by the corresponding W value - you'll then need to divide the
-                    // interpolated values you produce from these by (1 / W) to end up with
-                    // perspective-corrected values.
-                    //
-                    function interpolants(start, end, perspectiveCorrect = true)
-                    {
-                        if (perspectiveCorrect)
-                        {
-                            return [
-                                (start / vert1.w),
-                                (((end / vert2.w) - (start / vert1.w)) / edgeHeight)
-                            ];
-                        }
-                        else
-                        {
-                            return [
-                                start,
-                                ((end - start) / edgeHeight)
-                            ];
-                        }
-                    }
                 }
             }
 
@@ -1224,14 +1227,17 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                         const deltaInvW = ((rightEdge.startInvW - leftEdge.startInvW) / spanWidth);
                         let iplInvW = (leftEdge.startInvW - deltaInvW);
 
-                        const deltaWorldX = ((rightEdge.startWorldX - leftEdge.startWorldX) / spanWidth);
-                        let iplWorldX = (leftEdge.startWorldX - deltaWorldX);
+                        if (useShaders)
+                        {
+                            var deltaWorldX = ((rightEdge.startWorldX - leftEdge.startWorldX) / spanWidth);
+                            var iplWorldX = (leftEdge.startWorldX - deltaWorldX);
 
-                        const deltaWorldY = ((rightEdge.startWorldY - leftEdge.startWorldY) / spanWidth);
-                        let iplWorldY = (leftEdge.startWorldY - deltaWorldY);
+                            var deltaWorldY = ((rightEdge.startWorldY - leftEdge.startWorldY) / spanWidth);
+                            var iplWorldY = (leftEdge.startWorldY - deltaWorldY);
 
-                        const deltaWorldZ = ((rightEdge.startWorldZ - leftEdge.startWorldZ) / spanWidth);
-                        let iplWorldZ = (leftEdge.startWorldZ - deltaWorldZ);
+                            var deltaWorldZ = ((rightEdge.startWorldZ - leftEdge.startWorldZ) / spanWidth);
+                            var iplWorldZ = (leftEdge.startWorldZ - deltaWorldZ);
+                        }
 
                         // Assumes the pixel buffer consists of 4 elements per pixel (e.g. RGBA).
                         let pixelBufferIdx = (((spanStartX + y * renderWidth) * 4) - 4);
@@ -1252,52 +1258,58 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                             iplU += deltaU;
                             iplV += deltaV;
                             iplInvW += deltaInvW;
-                            iplWorldX += deltaWorldX;
-                            iplWorldY += deltaWorldY;
-                            iplWorldZ += deltaWorldZ;
                             pixelBufferIdx += 4;
                             depthBufferIdx++;
 
-                            // Depth test.
-                            if (depthBuffer && (depthBuffer[depthBufferIdx] <= (iplDepth / iplInvW))) continue;
+                            if (useShaders)
+                            {
+                                iplWorldX += deltaWorldX;
+                                iplWorldY += deltaWorldY;
+                                iplWorldZ += deltaWorldZ;
+                            }
 
-                            const shade = (ngon.material.renderVertexShade? (iplShade / iplInvW) : 1);
+                            const depth = (iplDepth / iplInvW);
+
+                            // Depth test.
+                            if (depthBuffer && (depthBuffer[depthBufferIdx] <= depth)) continue;
+
+                            const shade = (material.renderVertexShade? (iplShade / iplInvW) : 1);
 
                             // Solid fill.
-                            if (!ngon.material.texture)
+                            if (!texture)
                             {
                                 // Alpha-test the polygon. For partial transparency, we'll reject
                                 // pixels in a particular pattern to create a see-through stipple
                                 // effect.
-                                if (ngon.material.color.alpha < 255)
+                                if (material.color.alpha < 255)
                                 {
                                     // Full transparency.
-                                    if (ngon.material.color.alpha <= 0)
+                                    if (material.color.alpha <= 0)
                                     {
                                         continue;
                                     }
                                     // Partial transparency.
                                     else
                                     {
-                                        const stipplePatternIdx = Math.floor(ngon.material.color.alpha / (256 / Rngon.ngon_filler.stipple_patterns.length));
-                                        const stipplePattern = Rngon.ngon_filler.stipple_patterns[stipplePatternIdx];
-                                        const stipplePixelIdx = ((x % stipplePattern.width) + (y % stipplePattern.height) * stipplePattern.width);
+                                        const stipplePatternIdx = Math.floor(material.color.alpha / (256 / Rngon.ngon_filler.stipple_patterns.length));
+                                        const stipplePattern    = Rngon.ngon_filler.stipple_patterns[stipplePatternIdx];
+                                        const stipplePixelIdx   = ((x % stipplePattern.width) + (y % stipplePattern.height) * stipplePattern.width);
 
                                         // Reject by stipple pattern.
                                         if (stipplePattern.pixels[stipplePixelIdx]) continue;
                                     }   
                                 }
 
-                                pixelBuffer[pixelBufferIdx + 0] = (ngon.material.color.red   * shade);
-                                pixelBuffer[pixelBufferIdx + 1] = (ngon.material.color.green * shade);
-                                pixelBuffer[pixelBufferIdx + 2] = (ngon.material.color.blue  * shade);
+                                pixelBuffer[pixelBufferIdx + 0] = (material.color.red   * shade);
+                                pixelBuffer[pixelBufferIdx + 1] = (material.color.green * shade);
+                                pixelBuffer[pixelBufferIdx + 2] = (material.color.blue  * shade);
                                 pixelBuffer[pixelBufferIdx + 3] = 255;
-                                if (depthBuffer) depthBuffer[depthBufferIdx] = (iplDepth / iplInvW);
+                                if (depthBuffer) depthBuffer[depthBufferIdx] = depth;
                             }
                             // Textured fill.
                             else
                             {
-                                switch (ngon.material.textureMapping)
+                                switch (material.textureMapping)
                                 {
                                     // Affine mapping for power-of-two textures.
                                     case "affine":
@@ -1305,7 +1317,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                         u = (iplU / iplInvW);
                                         v = (iplV / iplInvW);
 
-                                        switch (ngon.material.uvWrapping)
+                                        switch (material.uvWrapping)
                                         {
                                             case "clamp":
                                             {
@@ -1320,8 +1332,8 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                                 if (signU === -1) u = (upperLimit - u);
                                                 if (signV === -1) v = (upperLimit - v);
 
-                                                u *= ngon.material.texture.width;
-                                                v *= ngon.material.texture.height;
+                                                u *= texture.width;
+                                                v *= texture.height;
 
                                                 break;
                                             }
@@ -1330,13 +1342,13 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                                 u -= Math.floor(u);
                                                 v -= Math.floor(v);
 
-                                                u *= ngon.material.texture.width;
-                                                v *= ngon.material.texture.height;
+                                                u *= texture.width;
+                                                v *= texture.height;
 
                                                 // Modulo for power-of-two. This will also flip the texture for
                                                 // negative UV coordinates.
-                                                u = (u & (ngon.material.texture.width - 1));
-                                                v = (v & (ngon.material.texture.height - 1));
+                                                u = (u & (texture.width - 1));
+                                                v = (v & (texture.height - 1));
 
                                                 break;
                                             }
@@ -1354,25 +1366,25 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                         u = (iplU / iplInvW);
                                         v = (iplV / iplInvW);
 
-                                        u *= ngon.material.texture.width;
-                                        v *= ngon.material.texture.height;
+                                        u *= texture.width;
+                                        v *= texture.height;
                 
                                         // Wrap with repetition.
                                         /// FIXME: Why do we need to test for UV < 0 even when using positive
                                         /// but tiling UV coordinates? Doesn't render properly unless we do.
                                         if ((u < 0) ||
                                             (v < 0) ||
-                                            (u >= ngon.material.texture.width) ||
-                                            (v >= ngon.material.texture.height))
+                                            (u >= texture.width) ||
+                                            (v >= texture.height))
                                         {
                                             const uWasNeg = (u < 0);
                                             const vWasNeg = (v < 0);
                 
-                                            u = (Math.abs(u) % ngon.material.texture.width);
-                                            v = (Math.abs(v) % ngon.material.texture.height);
+                                            u = (Math.abs(u) % texture.width);
+                                            v = (Math.abs(v) % texture.height);
                 
-                                            if (uWasNeg) u = (ngon.material.texture.width - u);
-                                            if (vWasNeg) v = (ngon.material.texture.height - v);
+                                            if (uWasNeg) u = (texture.width - u);
+                                            if (vWasNeg) v = (texture.height - v);
                                         }
                 
                                         break;
@@ -1386,21 +1398,18 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                         const ngonX = (x - spanStartX + 1);
                                         const ngonY = (y - ngonStartY);
 
-                                        u = (ngonX * (ngon.material.texture.width / spanWidth));
-                                        v = (ngonY * (ngon.material.texture.height / ngonHeight));
+                                        u = (ngonX * (texture.width / spanWidth));
+                                        v = (ngonY * (texture.height / ngonHeight));
 
                                         // The texture image is flipped, so we need to flip V as well.
-                                        v = (ngon.material.texture.height - v - 1);
+                                        v = (texture.height - v - 1);
 
                                         break;
                                     }
                                     default: Rngon.throw("Unknown texture-mapping mode."); break;
                                 }
 
-                                const texel = ngon.material.texture.pixels[(~~u) + (~~v) * ngon.material.texture.width];
-
-                                // Verify that the texel isn't out of bounds.
-                                if (!texel) continue;
+                                const texel = texture.pixels[(~~u) + (~~v) * texture.width];
 
                                 // Alpha-test the texture. If the texel isn't fully opaque, skip it.
                                 if (texel.alpha !== 255) continue;
@@ -1408,30 +1417,30 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                 // Alpha-test the polygon. For partial transparency, we'll reject
                                 // pixels in a particular pattern to create a see-through stipple
                                 // effect.
-                                if (ngon.material.color.alpha < 255)
+                                if (material.color.alpha < 255)
                                 {
                                     // Full transparency.
-                                    if (ngon.material.color.alpha <= 0)
+                                    if (material.color.alpha <= 0)
                                     {
                                         continue;
                                     }
                                     // Partial transparency.
                                     else
                                     {
-                                        const stipplePatternIdx = Math.floor(ngon.material.color.alpha / (256 / Rngon.ngon_filler.stipple_patterns.length));
-                                        const stipplePattern = Rngon.ngon_filler.stipple_patterns[stipplePatternIdx];
-                                        const stipplePixelIdx = ((x % stipplePattern.width) + (y % stipplePattern.height) * stipplePattern.width);
+                                        const stipplePatternIdx = Math.floor(material.color.alpha / (256 / Rngon.ngon_filler.stipple_patterns.length));
+                                        const stipplePattern    = Rngon.ngon_filler.stipple_patterns[stipplePatternIdx];
+                                        const stipplePixelIdx   = ((x % stipplePattern.width) + (y % stipplePattern.height) * stipplePattern.width);
 
                                         // Reject by stipple pattern.
                                         if (stipplePattern.pixels[stipplePixelIdx]) continue;
                                     }   
                                 }
 
-                                pixelBuffer[pixelBufferIdx + 0] = (texel.red   * ngon.material.color.unitRange.red   * shade);
-                                pixelBuffer[pixelBufferIdx + 1] = (texel.green * ngon.material.color.unitRange.green * shade);
-                                pixelBuffer[pixelBufferIdx + 2] = (texel.blue  * ngon.material.color.unitRange.blue  * shade);
+                                pixelBuffer[pixelBufferIdx + 0] = (texel.red   * material.color.unitRange.red   * shade);
+                                pixelBuffer[pixelBufferIdx + 1] = (texel.green * material.color.unitRange.green * shade);
+                                pixelBuffer[pixelBufferIdx + 2] = (texel.blue  * material.color.unitRange.blue  * shade);
                                 pixelBuffer[pixelBufferIdx + 3] = 255;
-                                if (depthBuffer) depthBuffer[depthBufferIdx] = (iplDepth / iplInvW);
+                                if (depthBuffer) depthBuffer[depthBufferIdx] = depth;
                             }
 
                             // This part of the loop is reached only if we ended up drawing
@@ -1440,14 +1449,14 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                             {
                                 for (let b = 0; b < auxiliaryBuffers.length; b++)
                                 {
-                                    if (ngon.material.auxiliary[auxiliaryBuffers[b].property] !== null)
+                                    if (material.auxiliary[auxiliaryBuffers[b].property] !== null)
                                     {
                                         // Buffers are expected to consist of one element per pixel.
-                                        auxiliaryBuffers[b].buffer[pixelBufferIdx/4] = ngon.material.auxiliary[auxiliaryBuffers[b].property];
+                                        auxiliaryBuffers[b].buffer[pixelBufferIdx/4] = material.auxiliary[auxiliaryBuffers[b].property];
                                     }
                                 }
 
-                                if (Rngon.internalState.useShaders)
+                                if (useShaders)
                                 {
                                     const fragment = fragmentBuffer[depthBufferIdx];
                                     fragment.textureU = (iplU / iplInvW);
@@ -1471,25 +1480,30 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
 
                     // Update values that're interpolated vertically along the edges.
                     {
-                        leftEdge.startX += leftEdge.deltaX;
-                        leftEdge.startDepth += leftEdge.deltaDepth;
-                        leftEdge.startShade += leftEdge.deltaShade;
-                        leftEdge.startU += leftEdge.deltaU;
-                        leftEdge.startV += leftEdge.deltaV;
-                        leftEdge.startInvW += leftEdge.deltaInvW;
-                        leftEdge.startWorldX += leftEdge.deltaWorldX;
-                        leftEdge.startWorldY += leftEdge.deltaWorldY;
-                        leftEdge.startWorldZ += leftEdge.deltaWorldZ;
+                        leftEdge.startX      += leftEdge.deltaX;
+                        leftEdge.startDepth  += leftEdge.deltaDepth;
+                        leftEdge.startShade  += leftEdge.deltaShade;
+                        leftEdge.startU      += leftEdge.deltaU;
+                        leftEdge.startV      += leftEdge.deltaV;
+                        leftEdge.startInvW   += leftEdge.deltaInvW;
 
-                        rightEdge.startX += rightEdge.deltaX;
+                        rightEdge.startX     += rightEdge.deltaX;
                         rightEdge.startDepth += rightEdge.deltaDepth;
                         rightEdge.startShade += rightEdge.deltaShade;
-                        rightEdge.startU += rightEdge.deltaU;
-                        rightEdge.startV += rightEdge.deltaV;
-                        rightEdge.startInvW += rightEdge.deltaInvW;
-                        rightEdge.startWorldX += rightEdge.deltaWorldX;
-                        rightEdge.startWorldY += rightEdge.deltaWorldY;
-                        rightEdge.startWorldZ += rightEdge.deltaWorldZ;
+                        rightEdge.startU     += rightEdge.deltaU;
+                        rightEdge.startV     += rightEdge.deltaV;
+                        rightEdge.startInvW  += rightEdge.deltaInvW;
+
+                        if (useShaders)
+                        {
+                            leftEdge.startWorldX  += leftEdge.deltaWorldX;
+                            leftEdge.startWorldY  += leftEdge.deltaWorldY;
+                            leftEdge.startWorldZ  += leftEdge.deltaWorldZ;
+
+                            rightEdge.startWorldX += rightEdge.deltaWorldX;
+                            rightEdge.startWorldY += rightEdge.deltaWorldY;
+                            rightEdge.startWorldZ += rightEdge.deltaWorldZ;
+                        }
                     }
 
                     // We can move onto the next edge when we're at the end of the current one.
@@ -1499,16 +1513,16 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
 
                 // Draw a wireframe around any n-gons that wish for one.
                 if (Rngon.internalState.showGlobalWireframe ||
-                    ngon.material.hasWireframe)
+                    material.hasWireframe)
                 {
                     for (let l = 1; l < leftVerts.length; l++)
                     {
-                        Rngon.line_draw.into_pixel_buffer(leftVerts[l-1], leftVerts[l], ngon.material.wireframeColor, Rngon.internalState.useDepthBuffer);
+                        Rngon.line_draw.into_pixel_buffer(leftVerts[l-1], leftVerts[l], material.wireframeColor, Rngon.internalState.useDepthBuffer);
                     }
 
                     for (let r = 1; r < rightVerts.length; r++)
                     {
-                        Rngon.line_draw.into_pixel_buffer(rightVerts[r-1], rightVerts[r], ngon.material.wireframeColor, Rngon.internalState.useDepthBuffer);
+                        Rngon.line_draw.into_pixel_buffer(rightVerts[r-1], rightVerts[r], material.wireframeColor, Rngon.internalState.useDepthBuffer);
                     }
                 }
             }
@@ -1847,9 +1861,12 @@ Rngon.ngon_transform_and_light = function(ngons = [],
                                                       ngon.vertices[v].v,
                                                       ngon.vertices[v].w);
 
-                cachedNgon.vertexNormals[v] = Rngon.vector3(ngon.vertexNormals[v].x,
-                                                            ngon.vertexNormals[v].y,
-                                                            ngon.vertexNormals[v].z);
+                if (ngon.material.vertexShading === "gouraud")
+                {
+                    cachedNgon.vertexNormals[v] = Rngon.vector3(ngon.vertexNormals[v].x,
+                                                                ngon.vertexNormals[v].y,
+                                                                ngon.vertexNormals[v].z);
+                }
             }
 
             cachedNgon.material = {...ngon.material};
@@ -2163,7 +2180,6 @@ Rngon.screen = function(canvasElementId = "",                      // The DOM id
         (Rngon.internalState.fragmentBuffer.width != screenWidth) ||
         (Rngon.internalState.fragmentBuffer.height != screenHeight))
     {
-
         Rngon.internalState.fragmentBuffer.width = screenWidth;
         Rngon.internalState.fragmentBuffer.height = screenHeight;
         Rngon.internalState.fragmentBuffer.data = new Array(screenWidth * screenHeight)

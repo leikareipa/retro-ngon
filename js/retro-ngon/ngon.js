@@ -109,16 +109,29 @@ Rngon.ngon = function(vertices = [Rngon.vertex()], material = {}, vertexNormals 
                         const lerpStep = (prevVertex.w - prevComponent) /
                                           ((prevVertex.w - prevComponent) - (this.vertices[i].w - curComponent));
 
-                        this.vertices[numOriginalVertices + k++] = Rngon.vertex(Rngon.lerp(prevVertex.x, this.vertices[i].x, lerpStep),
-                                                                                Rngon.lerp(prevVertex.y, this.vertices[i].y, lerpStep),
-                                                                                Rngon.lerp(prevVertex.z, this.vertices[i].z, lerpStep),
-                                                                                Rngon.lerp(prevVertex.u, this.vertices[i].u, lerpStep),
-                                                                                Rngon.lerp(prevVertex.v, this.vertices[i].v, lerpStep),
-                                                                                Rngon.lerp(prevVertex.w, this.vertices[i].w, lerpStep),
-                                                                                Rngon.lerp(prevVertex.worldX, this.vertices[i].worldX, lerpStep),
-                                                                                Rngon.lerp(prevVertex.worldY, this.vertices[i].worldY, lerpStep),
-                                                                                Rngon.lerp(prevVertex.worldZ, this.vertices[i].worldZ, lerpStep),
-                                                                                Rngon.lerp(prevVertex.shade, this.vertices[i].shade, lerpStep))
+                        if (Rngon.internalState.useShaders)
+                        {
+                            this.vertices[numOriginalVertices + k++] = Rngon.vertex(Rngon.lerp(prevVertex.x, this.vertices[i].x, lerpStep),
+                                                                                    Rngon.lerp(prevVertex.y, this.vertices[i].y, lerpStep),
+                                                                                    Rngon.lerp(prevVertex.z, this.vertices[i].z, lerpStep),
+                                                                                    Rngon.lerp(prevVertex.u, this.vertices[i].u, lerpStep),
+                                                                                    Rngon.lerp(prevVertex.v, this.vertices[i].v, lerpStep),
+                                                                                    Rngon.lerp(prevVertex.w, this.vertices[i].w, lerpStep),
+                                                                                    Rngon.lerp(prevVertex.shade, this.vertices[i].shade, lerpStep),
+                                                                                    Rngon.lerp(prevVertex.worldX, this.vertices[i].worldX, lerpStep),
+                                                                                    Rngon.lerp(prevVertex.worldY, this.vertices[i].worldY, lerpStep),
+                                                                                    Rngon.lerp(prevVertex.worldZ, this.vertices[i].worldZ, lerpStep));
+                        }
+                        else
+                        {
+                            this.vertices[numOriginalVertices + k++] = Rngon.vertex(Rngon.lerp(prevVertex.x, this.vertices[i].x, lerpStep),
+                                                                                    Rngon.lerp(prevVertex.y, this.vertices[i].y, lerpStep),
+                                                                                    Rngon.lerp(prevVertex.z, this.vertices[i].z, lerpStep),
+                                                                                    Rngon.lerp(prevVertex.u, this.vertices[i].u, lerpStep),
+                                                                                    Rngon.lerp(prevVertex.v, this.vertices[i].v, lerpStep),
+                                                                                    Rngon.lerp(prevVertex.w, this.vertices[i].w, lerpStep),
+                                                                                    Rngon.lerp(prevVertex.shade, this.vertices[i].shade, lerpStep));
+                        }
                     }
                     
                     if (isThisVertexInside)

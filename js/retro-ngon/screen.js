@@ -47,7 +47,6 @@ Rngon.screen = function(canvasElementId = "",                      // The DOM id
         (Rngon.internalState.fragmentBuffer.width != screenWidth) ||
         (Rngon.internalState.fragmentBuffer.height != screenHeight))
     {
-
         Rngon.internalState.fragmentBuffer.width = screenWidth;
         Rngon.internalState.fragmentBuffer.height = screenHeight;
         Rngon.internalState.fragmentBuffer.data = new Array(screenWidth * screenHeight)

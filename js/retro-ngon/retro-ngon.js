@@ -44,7 +44,7 @@ Rngon.internalState =
 {
     // Whether to require pixels to pass a depth test before being allowed on screen.
     useDepthBuffer: false,
-    depthBuffer: {width:1, height:1, data:new Array(1), clearValue:Number.MAX_VALUE},
+    depthBuffer: {width:1, height:1, data:new Array(1), clearValue:Infinity},
 
     // Pixel buffer for rasterization. This will be scaled to match the requested
     // render resolution; and the renderer's rasterization pass will populate it

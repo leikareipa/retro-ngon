@@ -56,9 +56,12 @@ Rngon.ngon_transform_and_light = function(ngons = [],
                                                       ngon.vertices[v].v,
                                                       ngon.vertices[v].w);
 
-                cachedNgon.vertexNormals[v] = Rngon.vector3(ngon.vertexNormals[v].x,
-                                                            ngon.vertexNormals[v].y,
-                                                            ngon.vertexNormals[v].z);
+                if (ngon.material.vertexShading === "gouraud")
+                {
+                    cachedNgon.vertexNormals[v] = Rngon.vector3(ngon.vertexNormals[v].x,
+                                                                ngon.vertexNormals[v].y,
+                                                                ngon.vertexNormals[v].z);
+                }
             }
 
             cachedNgon.material = {...ngon.material};
