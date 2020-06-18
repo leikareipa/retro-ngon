@@ -7,6 +7,22 @@
 
 "use strict";
 
+// We'll sort the n-gon's vertices into those on its left side and those on its
+// right side.
+const leftVerts = new Array(500);
+const rightVerts = new Array(500);
+
+// Then we'll organize the sorted vertices into edges (lines between given two
+// vertices). Once we've got the edges figured out, we can render the n-gon by filling
+// in the spans between its edges.
+const leftEdges = new Array(500).fill().map(e=>({}));
+const rightEdges = new Array(500).fill().map(e=>({}));
+
+let numLeftVerts = 0;
+let numRightVerts = 0;
+let numLeftEdges = 0;
+let numRightEdges = 0;
+
 // Rasterizes into the internal pixel buffer all n-gons currently stored in the
 // internal n-gon cache.
 //
@@ -38,6 +54,14 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
         const material = ngon.material;
         const texture = material.texture;
 
+        Rngon.assert && (ngon.vertices.length < leftVerts.length)
+                     || Rngon.throw("Overflowing the vertex buffer");
+
+        numLeftVerts = 0;
+        numRightVerts = 0;
+        numLeftEdges = 0;
+        numRightEdges = 0;
+
         // In theory, we should never receive n-gons that have no vertices, but let's check
         // to make sure.
         if (ngon.vertices.length <= 0)
@@ -64,20 +88,9 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
 
             continue;
         }
-
+        
         // Handle n-gons with 3 or more vertices.
-        {
-            // We'll sort the n-gon's vertices into those on its left side and those on its
-            // right side.
-            const leftVerts = [];
-            const rightVerts = [];
-
-            // Then we'll organize the sorted vertices into edges (lines between given two
-            // vertices). Once we've got the edges figured out, we can render the n-gon by filling
-            // in the spans between its edges.
-            const leftEdges = [];
-            const rightEdges = [];
-            
+        {         
             // Figure out which of the n-gon's vertices are on its left side and which on the
             // right. The vertices on both sides will be arranged from smallest Y to largest
             // Y, i.e. top-to-bottom in screen space. The top-most vertex and the bottom-most
@@ -91,8 +104,8 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                     const topVert = ngon.vertices[0];
                     const bottomVert = ngon.vertices[ngon.vertices.length-1];
 
-                    leftVerts.push(topVert);
-                    rightVerts.push(topVert);
+                    leftVerts[numLeftVerts++] = topVert;
+                    rightVerts[numRightVerts++] = topVert;
 
                     // Trace a line along XY between the top-most vertex and the bottom-most vertex;
                     // and for the intervening vertices, find whether they're to the left or right of
@@ -101,18 +114,26 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                     for (let i = 1; i < (ngon.vertices.length - 1); i++)
                     {
                         const lr = Rngon.lerp(topVert.x, bottomVert.x, ((ngon.vertices[i].y - topVert.y) / (bottomVert.y - topVert.y)));
-                        ((ngon.vertices[i].x >= lr)? rightVerts : leftVerts).push(ngon.vertices[i]);
+
+                        if (ngon.vertices[i].x >= lr)
+                        {
+                            rightVerts[numRightVerts++] = ngon.vertices[i];
+                        }
+                        else
+                        {
+                            leftVerts[numLeftVerts++] = ngon.vertices[i];
+                        }
                     }
 
-                    leftVerts.push(bottomVert);
-                    rightVerts.push(bottomVert);
+                    leftVerts[numLeftVerts++] = bottomVert;
+                    rightVerts[numRightVerts++] = bottomVert;
                 }
             }
 
             // Create edges out of the vertices.
             {
-                for (let l = 1; l < leftVerts.length; l++) add_edge(leftVerts[l-1], leftVerts[l], true);
-                for (let r = 1; r < rightVerts.length; r++) add_edge(rightVerts[r-1], rightVerts[r], false);
+                for (let l = 1; l < numLeftVerts; l++) add_edge(leftVerts[l-1], leftVerts[l], true);
+                for (let r = 1; r < numRightVerts; r++) add_edge(rightVerts[r-1], rightVerts[r], false);
 
                 function add_edge(vert1, vert2, isLeftEdge)
                 {
@@ -162,18 +183,27 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                     const startInvW = 1/w1;
                     const deltaInvW = ((1/w2 - 1/w1) / edgeHeight);
 
-                    (isLeftEdge? leftEdges : rightEdges).push({
-                        startY, endY,
-                        startX, deltaX,
-                        startDepth, deltaDepth,
-                        startShade, deltaShade,
-                        startU, deltaU,
-                        startV, deltaV,
-                        startInvW, deltaInvW,
-                        startWorldX, deltaWorldX,
-                        startWorldY, deltaWorldY,
-                        startWorldZ, deltaWorldZ,
-                    });
+                    const edge = (isLeftEdge? leftEdges[numLeftEdges++] : rightEdges[numRightEdges++]);
+                    edge.startY = startY;
+                    edge.endY = endY;
+                    edge.startX = startX;
+                    edge.deltaX = deltaX;
+                    edge.startDepth = startDepth;
+                    edge.deltaDepth = deltaDepth;
+                    edge.startShade = startShade;
+                    edge.deltaShade = deltaShade;
+                    edge.startU = startU;
+                    edge.deltaU = deltaU;
+                    edge.startV = startV;
+                    edge.deltaV = deltaV;
+                    edge.startInvW = startInvW;
+                    edge.deltaInvW = deltaInvW;
+                    edge.startWorldX = startWorldX;
+                    edge.deltaWorldX = deltaWorldX;
+                    edge.startWorldY = startWorldY;
+                    edge.deltaWorldY = deltaWorldY;
+                    edge.startWorldZ = startWorldZ;
+                    edge.deltaWorldZ = deltaWorldZ;
                 }
             }
 
@@ -185,11 +215,11 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                 let leftEdge = leftEdges[curLeftEdgeIdx];
                 let rightEdge = rightEdges[curRightEdgeIdx];
                 
-                if (!leftEdges.length || !rightEdges.length) continue;
+                if (!numLeftEdges || !numRightEdges) continue;
 
                 // Note: We assume the n-gon's vertices to be sorted by increasing Y.
                 const ngonStartY = leftEdges[0].startY;
-                const ngonEndY = leftEdges[leftEdges.length-1].endY;
+                const ngonEndY = leftEdges[numLeftEdges-1].endY;
                 
                 // Rasterize the n-gon in horizontal pixel spans over its height.
                 for (let y = ngonStartY; y < ngonEndY; y++)
@@ -503,12 +533,12 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                 if (Rngon.internalState.showGlobalWireframe ||
                     material.hasWireframe)
                 {
-                    for (let l = 1; l < leftVerts.length; l++)
+                    for (let l = 1; l < numLeftVerts; l++)
                     {
                         Rngon.line_draw.into_pixel_buffer(leftVerts[l-1], leftVerts[l], material.wireframeColor, Rngon.internalState.useDepthBuffer);
                     }
 
-                    for (let r = 1; r < rightVerts.length; r++)
+                    for (let r = 1; r < numRightVerts; r++)
                     {
                         Rngon.line_draw.into_pixel_buffer(rightVerts[r-1], rightVerts[r], material.wireframeColor, Rngon.internalState.useDepthBuffer);
                     }

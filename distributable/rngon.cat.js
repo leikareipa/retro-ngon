@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (18 June 2020 00:28:53 UTC)
+// VERSION: beta live (18 June 2020 03:50:06 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -390,22 +390,8 @@ Rngon.color_rgba = function(red = 55, green = 55, blue = 55, alpha = 255)
         alpha,
 
         unitRange,
-
-        // Returns the color as a "#rrggbbaa" string. You can mask out a particular color
-        // channel by providing a bitmask where the corresponding bits are zero. For instance,
-        // to mask out the alpha channel and return "#rrggbb", provide the mask 0x1110. When
-        // masking out any channel but alpha, the corresponding channel(s) will be set to
-        // "00"; e.g. [255,255,255,255](0x1010) -> "#ff00ff".
-        as_hex: (channelMask = 0x1111)=>
-        {
-            const hex_value = (value)=>(((value < 10)? "0" : "") + value.toString(16));
-            return ("#"
-                    + ((channelMask & 0x1000)? hex_value(red)   : "00")
-                    + ((channelMask & 0x0100)? hex_value(green) : "00")
-                    + ((channelMask & 0x0010)? hex_value(blue)  : "00")
-                    + ((channelMask & 0x0001)? hex_value(alpha) : ""));
-        },
     });
+    
     return publicInterface;
 }
 /*
@@ -428,50 +414,6 @@ Rngon.vector3 = function(x = 0, y = 0, z = 0)
         x,
         y,
         z,
-
-        // Transforms the vector by the given 4x4 matrix.
-        transform: function(m = [])
-        {
-            Rngon.assert && (m.length === 16)
-                         || Rngon.throw("Expected a 4 x 4 matrix to transform the vector by.");
-            
-            const x_ = ((m[0] * this.x) + (m[4] * this.y) + (m[ 8] * this.z));
-            const y_ = ((m[1] * this.x) + (m[5] * this.y) + (m[ 9] * this.z));
-            const z_ = ((m[2] * this.x) + (m[6] * this.y) + (m[10] * this.z));
-
-            this.x = x_;
-            this.y = y_;
-            this.z = z_;
-        },
-
-        normalize: function()
-        {
-            const sn = ((this.x * this.x) + (this.y * this.y) + (this.z * this.z));
-
-            if (sn != 0 && sn != 1)
-            {
-                const inv = (1 / Math.sqrt(sn));
-                this.x *= inv;
-                this.y *= inv;
-                this.z *= inv;
-            }
-        },
-
-        dot: function(other)
-        {
-            return ((this.x * other.x) + (this.y * other.y) + (this.z * other.z));
-        },
-
-        cross: function(other)
-        {
-            const c = Rngon.vector3();
-
-            c.x = ((this.y * other.z) - (this.z * other.y));
-            c.y = ((this.z * other.x) - (this.x * other.z));
-            c.z = ((this.x * other.y) - (this.y * other.x));
-
-            return c;
-        },
     };
 
     return returnObject;
@@ -479,8 +421,52 @@ Rngon.vector3 = function(x = 0, y = 0, z = 0)
 
 // Convenience aliases for vector3.
 Rngon.translation_vector = Rngon.vector3;
-Rngon.rotation_vector = (x, y, z)=>Rngon.vector3(Rngon.trig.deg(x), Rngon.trig.deg(y), Rngon.trig.deg(z));
-Rngon.scaling_vector = Rngon.vector3;
+Rngon.rotation_vector    = (x, y, z)=>Rngon.vector3(Rngon.trig.deg(x), Rngon.trig.deg(y), Rngon.trig.deg(z));
+Rngon.scaling_vector     = Rngon.vector3;
+
+// Transforms the vector by the given 4x4 matrix.
+Rngon.vector3.transform = function(v, m = [])
+{
+    Rngon.assert && (m.length === 16)
+                 || Rngon.throw("Expected a 4 x 4 matrix to transform the vector by.");
+    
+    const x_ = ((m[0] * v.x) + (m[4] * v.y) + (m[ 8] * v.z));
+    const y_ = ((m[1] * v.x) + (m[5] * v.y) + (m[ 9] * v.z));
+    const z_ = ((m[2] * v.x) + (m[6] * v.y) + (m[10] * v.z));
+
+    v.x = x_;
+    v.y = y_;
+    v.z = z_;
+}
+
+Rngon.vector3.normalize = function(v)
+{
+    const sn = ((v.x * v.x) + (v.y * v.y) + (v.z * v.z));
+
+    if (sn != 0 && sn != 1)
+    {
+        const inv = (1 / Math.sqrt(sn));
+        v.x *= inv;
+        v.y *= inv;
+        v.z *= inv;
+    }
+}
+
+Rngon.vector3.dot = function(v, other)
+{
+    return ((v.x * other.x) + (v.y * other.y) + (v.z * other.z));
+}
+
+Rngon.vector3.cross = function(v, other)
+{
+    const c = Rngon.vector3();
+
+    c.x = ((v.y * other.z) - (v.z * other.y));
+    c.y = ((v.z * other.x) - (v.x * other.z));
+    c.z = ((v.x * other.y) - (v.y * other.x));
+
+    return c;
+}
 /*
  * 2019 Tarpeeksi Hyvae Soft
  * 
@@ -519,33 +505,33 @@ Rngon.vertex = function(x = 0, y = 0, z = 0,
         worldX,
         worldY,
         worldZ,
-
-        // Transforms the vertex by the given 4x4 matrix.
-        transform: function(m = [])
-        {
-            Rngon.assert && (m.length === 16)
-                         || Rngon.throw("Expected a 4 x 4 matrix to transform the vertex by.");
-            
-            const x_ = ((m[0] * this.x) + (m[4] * this.y) + (m[ 8] * this.z) + (m[12] * this.w));
-            const y_ = ((m[1] * this.x) + (m[5] * this.y) + (m[ 9] * this.z) + (m[13] * this.w));
-            const z_ = ((m[2] * this.x) + (m[6] * this.y) + (m[10] * this.z) + (m[14] * this.w));
-            const w_ = ((m[3] * this.x) + (m[7] * this.y) + (m[11] * this.z) + (m[15] * this.w));
-
-            this.x = x_;
-            this.y = y_;
-            this.z = z_;
-            this.w = w_;
-        },
-
-        // Applies perspective division to the vertex.
-        perspective_divide: function()
-        {
-            this.x /= this.w;
-            this.y /= this.w;
-        }
     };
 
     return returnObject;
+}
+
+// Transforms the vertex by the given 4x4 matrix.
+Rngon.vertex.transform = function(v, m = [])
+{
+    Rngon.assert && (m.length === 16)
+                    || Rngon.throw("Expected a 4 x 4 matrix to transform the vertex by.");
+    
+    const x_ = ((m[0] * v.x) + (m[4] * v.y) + (m[ 8] * v.z) + (m[12] * v.w));
+    const y_ = ((m[1] * v.x) + (m[5] * v.y) + (m[ 9] * v.z) + (m[13] * v.w));
+    const z_ = ((m[2] * v.x) + (m[6] * v.y) + (m[10] * v.z) + (m[14] * v.w));
+    const w_ = ((m[3] * v.x) + (m[7] * v.y) + (m[11] * v.z) + (m[15] * v.w));
+
+    v.x = x_;
+    v.y = y_;
+    v.z = z_;
+    v.w = w_;
+}
+
+// Applies perspective division to the vertex.
+Rngon.vertex.perspective_divide = function(v)
+{
+    v.x /= v.w;
+    v.y /= v.w;
 }
 /*
  * 2019 Tarpeeksi Hyvae Soft
@@ -581,22 +567,6 @@ Rngon.mesh = function(ngons = [Rngon.ngon()], transform = {})
         rotation: transform.rotation,
         translation: transform.translation,
         scale: transform.scaling,
-        objectSpaceMatrix: function()
-        {
-            const translationMatrix = Rngon.matrix44.translate(this.translation.x,
-                                                               this.translation.y,
-                                                               this.translation.z);
-
-            const rotationMatrix = Rngon.matrix44.rotate(this.rotation.x,
-                                                         this.rotation.y,
-                                                         this.rotation.z);
-
-            const scalingMatrix = Rngon.matrix44.scale(this.scale.x,
-                                                       this.scale.y,
-                                                       this.scale.z);
-
-            return Rngon.matrix44.matrices_multiplied(Rngon.matrix44.matrices_multiplied(translationMatrix, rotationMatrix), scalingMatrix);
-        },
     };
     
     return publicInterface;
@@ -608,6 +578,23 @@ Rngon.mesh.defaultTransform =
     rotation: Rngon.rotation_vector(0, 0, 0),
     scaling: Rngon.scaling_vector(1, 1, 1)
 };
+
+Rngon.mesh.object_space_matrix = function(m)
+{
+    const translationMatrix = Rngon.matrix44.translate(m.translation.x,
+                                                       m.translation.y,
+                                                       m.translation.z);
+
+    const rotationMatrix = Rngon.matrix44.rotate(m.rotation.x,
+                                                 m.rotation.y,
+                                                 m.rotation.z);
+
+    const scalingMatrix = Rngon.matrix44.scale(m.scale.x,
+                                               m.scale.y,
+                                               m.scale.z);
+
+    return Rngon.matrix44.matrices_multiplied(Rngon.matrix44.matrices_multiplied(translationMatrix, rotationMatrix), scalingMatrix);
+}
 /*
  * 2019 Tarpeeksi Hyvae Soft
  * 
@@ -645,7 +632,7 @@ Rngon.ngon = function(vertices = [Rngon.vertex()], material = {}, vertexNormals 
 
         return faceNormal;
     }, Rngon.vector3(0, 0, 0));
-    faceNormal.normalize();
+    Rngon.vector3.normalize(faceNormal);
 
     // Combine default material options with the user-supplied ones.
     material =
@@ -676,105 +663,6 @@ Rngon.ngon = function(vertices = [Rngon.vertex()], material = {}, vertexNormals 
         vertexNormals,
         normal: faceNormal,
         material,
-
-        // Clips all vertices against the sides of the viewport. Adapted from Benny
-        // Bobaganoosh's 3d software renderer, the source for which is available at
-        // https://github.com/BennyQBD/3DSoftwareRenderer.
-        clip_to_viewport: function()
-        {
-            clip_on_axis.call(this, "x", 1);
-            clip_on_axis.call(this, "x", -1);
-            clip_on_axis.call(this, "y", 1);
-            clip_on_axis.call(this, "y", -1);
-            clip_on_axis.call(this, "z", 1);
-            clip_on_axis.call(this, "z", -1);
-
-            return;
-
-            function clip_on_axis(axis, factor)
-            {
-                if (!this.vertices.length)
-                {
-                    return;
-                }
-
-                let prevVertex = this.vertices[this.vertices.length - 1];
-                let prevComponent = prevVertex[axis] * factor;
-                let isPrevVertexInside = (prevComponent <= prevVertex.w);
-                
-                // The vertices array will be modified in-place by appending the clipped vertices
-                // onto the end of the array, then removing the previous ones.
-                let k = 0;
-                let numOriginalVertices = this.vertices.length;
-                for (let i = 0; i < numOriginalVertices; i++)
-                {
-                    const curComponent = this.vertices[i][axis] * factor;
-                    const isThisVertexInside = (curComponent <= this.vertices[i].w);
-
-                    // If either the current vertex or the previous vertex is inside but the other isn't,
-                    // and they aren't both inside, interpolate a new vertex between them that lies on
-                    // the clipping plane.
-                    if (isThisVertexInside ^ isPrevVertexInside)
-                    {
-                        const lerpStep = (prevVertex.w - prevComponent) /
-                                          ((prevVertex.w - prevComponent) - (this.vertices[i].w - curComponent));
-
-                        if (Rngon.internalState.useShaders)
-                        {
-                            this.vertices[numOriginalVertices + k++] = Rngon.vertex(Rngon.lerp(prevVertex.x, this.vertices[i].x, lerpStep),
-                                                                                    Rngon.lerp(prevVertex.y, this.vertices[i].y, lerpStep),
-                                                                                    Rngon.lerp(prevVertex.z, this.vertices[i].z, lerpStep),
-                                                                                    Rngon.lerp(prevVertex.u, this.vertices[i].u, lerpStep),
-                                                                                    Rngon.lerp(prevVertex.v, this.vertices[i].v, lerpStep),
-                                                                                    Rngon.lerp(prevVertex.w, this.vertices[i].w, lerpStep),
-                                                                                    Rngon.lerp(prevVertex.shade, this.vertices[i].shade, lerpStep),
-                                                                                    Rngon.lerp(prevVertex.worldX, this.vertices[i].worldX, lerpStep),
-                                                                                    Rngon.lerp(prevVertex.worldY, this.vertices[i].worldY, lerpStep),
-                                                                                    Rngon.lerp(prevVertex.worldZ, this.vertices[i].worldZ, lerpStep));
-                        }
-                        else
-                        {
-                            this.vertices[numOriginalVertices + k++] = Rngon.vertex(Rngon.lerp(prevVertex.x, this.vertices[i].x, lerpStep),
-                                                                                    Rngon.lerp(prevVertex.y, this.vertices[i].y, lerpStep),
-                                                                                    Rngon.lerp(prevVertex.z, this.vertices[i].z, lerpStep),
-                                                                                    Rngon.lerp(prevVertex.u, this.vertices[i].u, lerpStep),
-                                                                                    Rngon.lerp(prevVertex.v, this.vertices[i].v, lerpStep),
-                                                                                    Rngon.lerp(prevVertex.w, this.vertices[i].w, lerpStep),
-                                                                                    Rngon.lerp(prevVertex.shade, this.vertices[i].shade, lerpStep));
-                        }
-                    }
-                    
-                    if (isThisVertexInside)
-                    {
-                        this.vertices[numOriginalVertices + k++] = this.vertices[i];
-                    }
-
-                    prevVertex = this.vertices[i];
-                    prevComponent = curComponent;
-                    isPrevVertexInside = isThisVertexInside;
-                }
-
-                this.vertices.splice(0, numOriginalVertices);
-
-                return;
-            }
-        },
-
-        perspective_divide: function()
-        {
-            for (const vert of this.vertices)
-            {
-                vert.perspective_divide();
-            }
-        },
-
-        transform: function(matrix44)
-        {
-            for (const vert of this.vertices)
-            {
-                vert.transform(matrix44);
-            }
-        },
     };
 
     return returnObject;
@@ -795,6 +683,105 @@ Rngon.ngon.defaultMaterial =
     allowTransform: true,
     auxiliary: {},
 };
+
+Rngon.ngon.perspective_divide = function(ngon)
+{
+    for (const vert of ngon.vertices)
+    {
+        Rngon.vertex.perspective_divide(vert);
+    }
+},
+
+Rngon.ngon.transform = function(ngon, matrix44)
+{
+    for (const vert of ngon.vertices)
+    {
+        Rngon.vertex.transform(vert, matrix44);
+    }
+},
+
+// Clips all vertices against the sides of the viewport. Adapted from Benny
+// Bobaganoosh's 3d software renderer, the source for which is available at
+// https://github.com/BennyQBD/3DSoftwareRenderer.
+Rngon.ngon.clip_to_viewport = function(ngon)
+{
+    clip_on_axis("x", 1);
+    clip_on_axis("x", -1);
+    clip_on_axis("y", 1);
+    clip_on_axis("y", -1);
+    clip_on_axis("z", 1);
+    clip_on_axis("z", -1);
+
+    return;
+
+    function clip_on_axis(axis, factor)
+    {
+        if (!ngon.vertices.length)
+        {
+            return;
+        }
+
+        let prevVertex = ngon.vertices[ngon.vertices.length - 1];
+        let prevComponent = prevVertex[axis] * factor;
+        let isPrevVertexInside = (prevComponent <= prevVertex.w);
+        
+        // The vertices array will be modified in-place by appending the clipped vertices
+        // onto the end of the array, then removing the previous ones.
+        let k = 0;
+        let numOriginalVertices = ngon.vertices.length;
+        for (let i = 0; i < numOriginalVertices; i++)
+        {
+            const curComponent = ngon.vertices[i][axis] * factor;
+            const isThisVertexInside = (curComponent <= ngon.vertices[i].w);
+
+            // If either the current vertex or the previous vertex is inside but the other isn't,
+            // and they aren't both inside, interpolate a new vertex between them that lies on
+            // the clipping plane.
+            if (isThisVertexInside ^ isPrevVertexInside)
+            {
+                const lerpStep = (prevVertex.w - prevComponent) /
+                                  ((prevVertex.w - prevComponent) - (ngon.vertices[i].w - curComponent));
+
+                if (Rngon.internalState.useShaders)
+                {
+                    ngon.vertices[numOriginalVertices + k++] = Rngon.vertex(Rngon.lerp(prevVertex.x, ngon.vertices[i].x, lerpStep),
+                                                                            Rngon.lerp(prevVertex.y, ngon.vertices[i].y, lerpStep),
+                                                                            Rngon.lerp(prevVertex.z, ngon.vertices[i].z, lerpStep),
+                                                                            Rngon.lerp(prevVertex.u, ngon.vertices[i].u, lerpStep),
+                                                                            Rngon.lerp(prevVertex.v, ngon.vertices[i].v, lerpStep),
+                                                                            Rngon.lerp(prevVertex.w, ngon.vertices[i].w, lerpStep),
+                                                                            Rngon.lerp(prevVertex.shade, ngon.vertices[i].shade, lerpStep),
+                                                                            Rngon.lerp(prevVertex.worldX, ngon.vertices[i].worldX, lerpStep),
+                                                                            Rngon.lerp(prevVertex.worldY, ngon.vertices[i].worldY, lerpStep),
+                                                                            Rngon.lerp(prevVertex.worldZ, ngon.vertices[i].worldZ, lerpStep));
+                }
+                else
+                {
+                    ngon.vertices[numOriginalVertices + k++] = Rngon.vertex(Rngon.lerp(prevVertex.x, ngon.vertices[i].x, lerpStep),
+                                                                            Rngon.lerp(prevVertex.y, ngon.vertices[i].y, lerpStep),
+                                                                            Rngon.lerp(prevVertex.z, ngon.vertices[i].z, lerpStep),
+                                                                            Rngon.lerp(prevVertex.u, ngon.vertices[i].u, lerpStep),
+                                                                            Rngon.lerp(prevVertex.v, ngon.vertices[i].v, lerpStep),
+                                                                            Rngon.lerp(prevVertex.w, ngon.vertices[i].w, lerpStep),
+                                                                            Rngon.lerp(prevVertex.shade, ngon.vertices[i].shade, lerpStep));
+                }
+            }
+            
+            if (isThisVertexInside)
+            {
+                ngon.vertices[numOriginalVertices + k++] = ngon.vertices[i];
+            }
+
+            prevVertex = ngon.vertices[i];
+            prevComponent = curComponent;
+            isPrevVertexInside = isThisVertexInside;
+        }
+
+        ngon.vertices.splice(0, numOriginalVertices);
+
+        return;
+    }
+}
 "use strict";
 
 // Provides functions for drawing lines.
@@ -1019,6 +1006,22 @@ Rngon.matrix44 = (()=>
 
 "use strict";
 
+// We'll sort the n-gon's vertices into those on its left side and those on its
+// right side.
+const leftVerts = new Array(500);
+const rightVerts = new Array(500);
+
+// Then we'll organize the sorted vertices into edges (lines between given two
+// vertices). Once we've got the edges figured out, we can render the n-gon by filling
+// in the spans between its edges.
+const leftEdges = new Array(500).fill().map(e=>({}));
+const rightEdges = new Array(500).fill().map(e=>({}));
+
+let numLeftVerts = 0;
+let numRightVerts = 0;
+let numLeftEdges = 0;
+let numRightEdges = 0;
+
 // Rasterizes into the internal pixel buffer all n-gons currently stored in the
 // internal n-gon cache.
 //
@@ -1050,6 +1053,14 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
         const material = ngon.material;
         const texture = material.texture;
 
+        Rngon.assert && (ngon.vertices.length < leftVerts.length)
+                     || Rngon.throw("Overflowing the vertex buffer");
+
+        numLeftVerts = 0;
+        numRightVerts = 0;
+        numLeftEdges = 0;
+        numRightEdges = 0;
+
         // In theory, we should never receive n-gons that have no vertices, but let's check
         // to make sure.
         if (ngon.vertices.length <= 0)
@@ -1076,20 +1087,9 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
 
             continue;
         }
-
+        
         // Handle n-gons with 3 or more vertices.
-        {
-            // We'll sort the n-gon's vertices into those on its left side and those on its
-            // right side.
-            const leftVerts = [];
-            const rightVerts = [];
-
-            // Then we'll organize the sorted vertices into edges (lines between given two
-            // vertices). Once we've got the edges figured out, we can render the n-gon by filling
-            // in the spans between its edges.
-            const leftEdges = [];
-            const rightEdges = [];
-            
+        {         
             // Figure out which of the n-gon's vertices are on its left side and which on the
             // right. The vertices on both sides will be arranged from smallest Y to largest
             // Y, i.e. top-to-bottom in screen space. The top-most vertex and the bottom-most
@@ -1103,8 +1103,8 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                     const topVert = ngon.vertices[0];
                     const bottomVert = ngon.vertices[ngon.vertices.length-1];
 
-                    leftVerts.push(topVert);
-                    rightVerts.push(topVert);
+                    leftVerts[numLeftVerts++] = topVert;
+                    rightVerts[numRightVerts++] = topVert;
 
                     // Trace a line along XY between the top-most vertex and the bottom-most vertex;
                     // and for the intervening vertices, find whether they're to the left or right of
@@ -1113,18 +1113,26 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                     for (let i = 1; i < (ngon.vertices.length - 1); i++)
                     {
                         const lr = Rngon.lerp(topVert.x, bottomVert.x, ((ngon.vertices[i].y - topVert.y) / (bottomVert.y - topVert.y)));
-                        ((ngon.vertices[i].x >= lr)? rightVerts : leftVerts).push(ngon.vertices[i]);
+
+                        if (ngon.vertices[i].x >= lr)
+                        {
+                            rightVerts[numRightVerts++] = ngon.vertices[i];
+                        }
+                        else
+                        {
+                            leftVerts[numLeftVerts++] = ngon.vertices[i];
+                        }
                     }
 
-                    leftVerts.push(bottomVert);
-                    rightVerts.push(bottomVert);
+                    leftVerts[numLeftVerts++] = bottomVert;
+                    rightVerts[numRightVerts++] = bottomVert;
                 }
             }
 
             // Create edges out of the vertices.
             {
-                for (let l = 1; l < leftVerts.length; l++) add_edge(leftVerts[l-1], leftVerts[l], true);
-                for (let r = 1; r < rightVerts.length; r++) add_edge(rightVerts[r-1], rightVerts[r], false);
+                for (let l = 1; l < numLeftVerts; l++) add_edge(leftVerts[l-1], leftVerts[l], true);
+                for (let r = 1; r < numRightVerts; r++) add_edge(rightVerts[r-1], rightVerts[r], false);
 
                 function add_edge(vert1, vert2, isLeftEdge)
                 {
@@ -1174,18 +1182,27 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                     const startInvW = 1/w1;
                     const deltaInvW = ((1/w2 - 1/w1) / edgeHeight);
 
-                    (isLeftEdge? leftEdges : rightEdges).push({
-                        startY, endY,
-                        startX, deltaX,
-                        startDepth, deltaDepth,
-                        startShade, deltaShade,
-                        startU, deltaU,
-                        startV, deltaV,
-                        startInvW, deltaInvW,
-                        startWorldX, deltaWorldX,
-                        startWorldY, deltaWorldY,
-                        startWorldZ, deltaWorldZ,
-                    });
+                    const edge = (isLeftEdge? leftEdges[numLeftEdges++] : rightEdges[numRightEdges++]);
+                    edge.startY = startY;
+                    edge.endY = endY;
+                    edge.startX = startX;
+                    edge.deltaX = deltaX;
+                    edge.startDepth = startDepth;
+                    edge.deltaDepth = deltaDepth;
+                    edge.startShade = startShade;
+                    edge.deltaShade = deltaShade;
+                    edge.startU = startU;
+                    edge.deltaU = deltaU;
+                    edge.startV = startV;
+                    edge.deltaV = deltaV;
+                    edge.startInvW = startInvW;
+                    edge.deltaInvW = deltaInvW;
+                    edge.startWorldX = startWorldX;
+                    edge.deltaWorldX = deltaWorldX;
+                    edge.startWorldY = startWorldY;
+                    edge.deltaWorldY = deltaWorldY;
+                    edge.startWorldZ = startWorldZ;
+                    edge.deltaWorldZ = deltaWorldZ;
                 }
             }
 
@@ -1197,11 +1214,11 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                 let leftEdge = leftEdges[curLeftEdgeIdx];
                 let rightEdge = rightEdges[curRightEdgeIdx];
                 
-                if (!leftEdges.length || !rightEdges.length) continue;
+                if (!numLeftEdges || !numRightEdges) continue;
 
                 // Note: We assume the n-gon's vertices to be sorted by increasing Y.
                 const ngonStartY = leftEdges[0].startY;
-                const ngonEndY = leftEdges[leftEdges.length-1].endY;
+                const ngonEndY = leftEdges[numLeftEdges-1].endY;
                 
                 // Rasterize the n-gon in horizontal pixel spans over its height.
                 for (let y = ngonStartY; y < ngonEndY; y++)
@@ -1515,12 +1532,12 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                 if (Rngon.internalState.showGlobalWireframe ||
                     material.hasWireframe)
                 {
-                    for (let l = 1; l < leftVerts.length; l++)
+                    for (let l = 1; l < numLeftVerts; l++)
                     {
                         Rngon.line_draw.into_pixel_buffer(leftVerts[l-1], leftVerts[l], material.wireframeColor, Rngon.internalState.useDepthBuffer);
                     }
 
-                    for (let r = 1; r < rightVerts.length; r++)
+                    for (let r = 1; r < numRightVerts; r++)
                     {
                         Rngon.line_draw.into_pixel_buffer(rightVerts[r-1], rightVerts[r], material.wireframeColor, Rngon.internalState.useDepthBuffer);
                     }
@@ -1702,7 +1719,7 @@ Rngon.render = function(canvasElementId,
 
         for (const mesh of meshes)
         {
-            renderSurface.transform_and_light_ngons(mesh.ngons, mesh.objectSpaceMatrix(), cameraMatrix, cameraPosition);
+            renderSurface.transform_and_light_ngons(mesh.ngons, Rngon.mesh.object_space_matrix(mesh), cameraMatrix, cameraPosition);
         };
 
         return;
@@ -1840,7 +1857,7 @@ Rngon.ngon_transform_and_light = function(ngons = [],
             viewVector.y = (ngon.vertices[0].y - cameraPos.y);
             viewVector.z = (ngon.vertices[0].z - cameraPos.z);
 
-            if (ngon.normal.dot(viewVector) >= 0)
+            if (Rngon.vector3.dot(ngon.normal, viewVector) >= 0)
             {
                 continue;
             }
@@ -1878,21 +1895,27 @@ Rngon.ngon_transform_and_light = function(ngons = [],
         {
             // Eye space.
             {
-                cachedNgon.transform(objectMatrix);
-                cachedNgon.normal.transform(objectMatrix);
-                cachedNgon.normal.normalize();
+                Rngon.ngon.transform(cachedNgon, objectMatrix);
+                Rngon.vector3.transform(cachedNgon.normal, objectMatrix);
+                Rngon.vector3.normalize(cachedNgon.normal);
 
-                for (let v = 0; v < cachedNgon.vertices.length; v++)
+                if (Rngon.internalState.useShaders)
                 {
-                    if (cachedNgon.material.vertexShading === "gouraud")
+                    for (let v = 0; v < cachedNgon.vertices.length; v++)
                     {
-                        cachedNgon.vertexNormals[v].transform(objectMatrix);
-                        cachedNgon.vertexNormals[v].normalize();
+                        cachedNgon.vertices[v].worldX = cachedNgon.vertices[v].x;
+                        cachedNgon.vertices[v].worldY = cachedNgon.vertices[v].y;
+                        cachedNgon.vertices[v].worldZ = cachedNgon.vertices[v].z;
                     }
+                }
 
-                    cachedNgon.vertices[v].worldX = cachedNgon.vertices[v].x;
-                    cachedNgon.vertices[v].worldY = cachedNgon.vertices[v].y;
-                    cachedNgon.vertices[v].worldZ = cachedNgon.vertices[v].z;
+                if (cachedNgon.material.vertexShading === "gouraud")
+                {
+                    for (let v = 0; v < cachedNgon.vertices.length; v++)
+                    {
+                        Rngon.vector3.transform(cachedNgon.vertexNormals[v], objectMatrix);
+                        Rngon.vector3.normalize(cachedNgon.vertexNormals[v]);
+                    }
                 }
 
                 if (cachedNgon.material.vertexShading !== "none")
@@ -1903,11 +1926,11 @@ Rngon.ngon_transform_and_light = function(ngons = [],
 
             // Clip space.
             {
-                cachedNgon.transform(clipSpaceMatrix);
+                Rngon.ngon.transform(cachedNgon, clipSpaceMatrix);
 
                 if (Rngon.internalState.applyViewportClipping)
                 {
-                    cachedNgon.clip_to_viewport();
+                    Rngon.ngon.clip_to_viewport(cachedNgon);
                 }
             }
 
@@ -1919,8 +1942,8 @@ Rngon.ngon_transform_and_light = function(ngons = [],
                 continue;
             }
 
-            cachedNgon.transform(screenSpaceMatrix);
-            cachedNgon.perspective_divide();
+            Rngon.ngon.transform(cachedNgon, screenSpaceMatrix);
+            Rngon.ngon.perspective_divide(cachedNgon);
         }
     };
 
@@ -1981,9 +2004,9 @@ Rngon.ngon_transform_and_light.apply_lighting = function(ngon)
                 lightDirection.x = (light.position.x - vertex.x);
                 lightDirection.y = (light.position.y - vertex.y);
                 lightDirection.z = (light.position.z - vertex.z);
-                lightDirection.normalize();
+                Rngon.vector3.normalize(lightDirection);
 
-                const shadeFromThisLight = Math.max(ngon.material.ambientLightLevel, Math.min(1, ngon.vertexNormals[v].dot(lightDirection)));
+                const shadeFromThisLight = Math.max(ngon.material.ambientLightLevel, Math.min(1, Rngon.vector3.dot(ngon.vertexNormals[v], lightDirection)));
 
                 vertex.shade = Math.max(vertex.shade, Math.min(1, (shadeFromThisLight * distanceMul * lightIntensity)));
             }
@@ -1999,9 +2022,9 @@ Rngon.ngon_transform_and_light.apply_lighting = function(ngon)
             lightDirection.x = (light.position.x - faceX);
             lightDirection.y = (light.position.y - faceY);
             lightDirection.z = (light.position.z - faceZ);
-            lightDirection.normalize();
+            Rngon.vector3.normalize(lightDirection);
 
-            const shadeFromThisLight = Math.max(ngon.material.ambientLightLevel, Math.min(1, ngon.normal.dot(lightDirection)));
+            const shadeFromThisLight = Math.max(ngon.material.ambientLightLevel, Math.min(1, Rngon.vector3.dot(ngon.normal, lightDirection)));
 
             faceShade = Math.max(faceShade, Math.min(1, (shadeFromThisLight * distanceMul * lightIntensity)));
         }
