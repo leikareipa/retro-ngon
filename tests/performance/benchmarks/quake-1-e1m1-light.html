@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width">
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <title>Benchmark - Quake 1 (E1M1) with lighting - Retro n-gon renderer</title>
+    </head>
+    <body>
+        <script src="../../../distributable/rngon.cat.js"></script>
+        <script type="module">
+            import {benchmark} from "./benchmark.js";
+            import {scene} from "./assets/quake-1/model/e1m1.rngon-model.js";
+
+            (async()=>
+            {
+                await scene.initialize();
+
+                benchmark([Rngon.mesh(scene.ngons)],
+                          {x:500, y:30, z:400},
+                          {x:-20, y:197, z:0},
+                          {
+                              fov: 60,
+                              nearPlane: 2,
+                              farPlane: 5000,
+                              scale: 0.2,
+                              lights:
+                              [
+                                  Rngon.light(Rngon.vector3(488, 177, 299)),
+                                  Rngon.light(Rngon.vector3(409, 115, 758)),
+                                  Rngon.light(Rngon.vector3(481, 182, 113)),
+                              ],
+                              shaderFunction: perpixel_light,
+                          });
+            })();
+
+            function perpixel_light({renderWidth, renderHeight, pixelBuffer, fragmentBuffer, ngonCache})
+            {
+                const lightDirection = Rngon.vector3();
+                const surfaceNormal = Rngon.vector3();
+
+                for (let i = 0; i < (renderWidth * renderHeight); i++)
+                {
+                    const thisFragment = fragmentBuffer[i];
+                    const thisNgon = (ngonCache[thisFragment.ngonIdx] || null);
+
+                    let strongestShade = 0;
+
+                    for (let l = 0; l < Rngon.internalState.lights.length; l++)
+                    {
+                        const light = Rngon.internalState.lights[l];
+                        
+                        /// Temp hack. Light objects don't yet support setting intensity etc.,
+                        /// so we'll just manually assign those parameters based on the light
+                        /// index.
+                        let lightReach = 0;
+                        let lightIntensity = 0;
+                        switch (l)
+                        {
+                            case 0: case 2: lightReach = (300 * 300); lightIntensity = 3; break;
+                            case 1: lightReach = (200 * 200); lightIntensity = 2; break;
+                        }
+
+                        const distance = (((thisFragment.worldX - light.position.x) * (thisFragment.worldX - light.position.x)) +
+                                          ((thisFragment.worldY - light.position.y) * (thisFragment.worldY - light.position.y)) +
+                                          ((thisFragment.worldZ - light.position.z) * (thisFragment.worldZ - light.position.z)));
+
+                        const distanceMul = Math.max(0, Math.min(1, (1 - (distance / lightReach))));
+
+                        if ((thisFragment.shade > 0) && (distanceMul > 0))
+                        {
+                            lightDirection.x = (light.position.x - thisFragment.worldX);
+                            lightDirection.y = (light.position.y - thisFragment.worldY);
+                            lightDirection.z = (light.position.z - thisFragment.worldZ);
+                            Rngon.vector3.normalize(lightDirection);
+
+                            surfaceNormal.x = thisFragment.normalX;
+                            surfaceNormal.y = thisFragment.normalY;
+                            surfaceNormal.z = thisFragment.normalZ;
+
+                            const shadeMul = Math.max(0, Math.min(1, Rngon.vector3.dot(surfaceNormal, lightDirection)));
+
+                            strongestShade = Math.max(strongestShade, (distanceMul * shadeMul * lightIntensity));
+                        }
+                    }
+
+                    pixelBuffer[(i * 4) + 0] *= strongestShade;
+                    pixelBuffer[(i * 4) + 1] *= strongestShade;
+                    pixelBuffer[(i * 4) + 2] *= strongestShade;
+                }
+            }
+        </script>
+    </body>
+</html>

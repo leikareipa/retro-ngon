@@ -8,10 +8,11 @@ A non-interactive render sample is also available [here](https://www.tarpeeksihy
 ![A textured cube](/images/painting-cube.png)
 
 ### Features
-- Easy to use
+- Straightforward API
 - Genuine retro aesthetics
-- Natively renders convex n-sided polygons
-- Written in vanilla JavaScript and has no dependencies
+- Native rendering of convex n-sided polygons
+- Vanilla JavaScript with no dependencies
+- Pixel shaders
 
 ### Projects using the retro n-gon renderer
 - [RallySportED-js](https://github.com/leikareipa/rallysported-js/), a contemporary asset editor for the DOS game Rally-Sport
@@ -922,8 +923,6 @@ RGB color with alpha. The alpha channel is either fully transparent or fully opa
 
     // An object containing as properties the color channel values in the range [0, 1].
     unitRange,
-
-    as_hex: function
 }
 ```
 
