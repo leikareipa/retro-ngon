@@ -135,8 +135,8 @@ function print_results(results)
         }
 
         // Add the benchmark results.
-        add_to_graph("renderFPS", "floralwhite", minimumFPS, maximumFPS);
-        add_to_graph("screenFPS", "lightpink", minimumFPS, maximumFPS);
+        add_to_graph("renderFPS", "lightgray", minimumFPS, maximumFPS);
+        add_to_graph("screenFPS", "navajowhite", minimumFPS, maximumFPS);
     }
 
     document.getElementById("benchmark-progress-bar").textContent = `Benchmark completed. Average performance: ${averageFPS} FPS.`;
