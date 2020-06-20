@@ -23,9 +23,9 @@ export const scene =
 
 		// Load the textures.
 		const t = {
-			"*slime0":await ct("./assets/quake-1/texture/e1m1/_slime0.rngon-texture.json"),
-			"*teleport":await ct("./assets/quake-1/texture/e1m1/_teleport.rngon-texture.json"),
-			"*water0":await ct("./assets/quake-1/texture/e1m1/_water0.rngon-texture.json"),
+			"*slime0":await ct("./assets/quake-1/texture/e1m1/slime0.rngon-texture.json"),
+			"*teleport":await ct("./assets/quake-1/texture/e1m1/teleport.rngon-texture.json"),
+			"*water0":await ct("./assets/quake-1/texture/e1m1/water0.rngon-texture.json"),
 			"+0basebtn":await ct("./assets/quake-1/texture/e1m1/+0basebtn.rngon-texture.json"),
 			"+0planet":await ct("./assets/quake-1/texture/e1m1/+0planet.rngon-texture.json"),
 			"+0slip":await ct("./assets/quake-1/texture/e1m1/+0slip.rngon-texture.json"),
