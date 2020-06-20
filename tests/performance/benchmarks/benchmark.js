@@ -65,8 +65,15 @@ function print_results(results)
 
         graphContainer.onmousemove = (event)=>
         {
-            const timeOffset = (event.offsetX / event.target.clientWidth);
-            const fpsOffset = (event.offsetY / event.target.clientHeight);
+            // The percentage (in the range [0,1]) of the graph's width and height
+            // that constitute the graph's margins, where no data is displayed.
+            const graphMargin = 0.01;
+
+            const timeMargin = ((event.target.clientWidth) * graphMargin);
+            const fpsMargin = ((event.target.clientHeight) * graphMargin);
+
+            const timeOffset = ((event.offsetX - timeMargin) / (event.target.clientWidth * (1 - (graphMargin * 2))));
+            const fpsOffset = ((event.offsetY - fpsMargin) / (event.target.clientHeight * (1 - (graphMargin * 2))));
 
             const hoverFPS = (minimumFPS + (maximumFPS - minimumFPS) * fpsOffset);
             const hoverTimeMs = ((results[results.length-1].time - results[0].time) * timeOffset);
