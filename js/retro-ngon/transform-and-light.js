@@ -41,8 +41,8 @@ Rngon.ngon_transform_and_light = function(ngons = [],
             }
         }
 
-        // Copy the ngon into the internal n-gon caches, so we can operate on it later
-        // along the render pipeline.
+        // Copy the ngon into the internal n-gon cache, so we can operate on it without
+        // mutating the original n-gon's data.
         const cachedNgon = transformedNgonsCache.ngons[transformedNgonsCache.count++];
         {
             cachedNgon.vertices.length = 0;
@@ -64,19 +64,27 @@ Rngon.ngon_transform_and_light = function(ngons = [],
                 }
             }
 
-            cachedNgon.material = {...ngon.material};
-            cachedNgon.normal = {...ngon.normal};
+            cachedNgon.material = ngon.material;
+            
+            // If Gouraud shading is enabled, we won't transform the face normal, only the
+            // vertex normals, so the face normal can be copied by reference in that case.
+            cachedNgon.normal = ((cachedNgon.material.vertexShading === "gouraud")? ngon.normal : {...ngon.normal});
+
             cachedNgon.isActive = true;
         }
 
+        // Transform vertices into screen space and apply clipping. We'll do the transforming
+        // in steps: first into object space, then into clip space, and finally into screen
+        // space.
         if (cachedNgon.material.allowTransform)
         {
-            // Eye space.
+            // Object space. Any built-in lighting is applied, if requested by the n-gon's
+            // material.
             {
                 Rngon.ngon.transform(cachedNgon, objectMatrix);
-                Rngon.vector3.transform(cachedNgon.normal, objectMatrix);
-                Rngon.vector3.normalize(cachedNgon.normal);
 
+                // Interpolated world XYZ coordinates will be made available to shaders,
+                // but aren't needed if shaders are disabled.
                 if (Rngon.internalState.useShaders)
                 {
                     for (let v = 0; v < cachedNgon.vertices.length; v++)
@@ -87,6 +95,8 @@ Rngon.ngon_transform_and_light = function(ngons = [],
                     }
                 }
 
+                // If using Gouraud shading, we need to transform all vertex normals; but
+                // the face normal won't be used and so can be ignored.
                 if (cachedNgon.material.vertexShading === "gouraud")
                 {
                     for (let v = 0; v < cachedNgon.vertices.length; v++)
@@ -95,6 +105,13 @@ Rngon.ngon_transform_and_light = function(ngons = [],
                         Rngon.vector3.normalize(cachedNgon.vertexNormals[v]);
                     }
                 }
+                // With shading other than Gouraud, only the face normal will be used, and
+                // we can ignore the vertex normals.
+                else
+                {
+                    Rngon.vector3.transform(cachedNgon.normal, objectMatrix);
+                    Rngon.vector3.normalize(cachedNgon.normal);
+                }
 
                 if (cachedNgon.material.vertexShading !== "none")
                 {
@@ -102,7 +119,7 @@ Rngon.ngon_transform_and_light = function(ngons = [],
                 }
             }
 
-            // Clip space.
+            // Clip space. Vertices that fall outside of the view frustum will be removed.
             {
                 Rngon.ngon.transform(cachedNgon, clipSpaceMatrix);
 
@@ -110,18 +127,24 @@ Rngon.ngon_transform_and_light = function(ngons = [],
                 {
                     Rngon.ngon.clip_to_viewport(cachedNgon);
                 }
+
+                // If there are no vertices left after clipping, it means this n-gon is
+                // not visible on the screen at all, and so we don't need to consider it
+                // for rendering.
+                if (!cachedNgon.vertices.length)
+                {
+                    transformedNgonsCache.count--;
+                    continue;
+                }
             }
 
-            // If there are no vertices left after clipping, it means this n-gon is not
-            // visible on the screen at all, and we don't need to consider it for rendering.
-            if (!cachedNgon.vertices.length)
+            // Screen space. Vertices will be transformed such that their XY coordinates
+            // map directly into XY pixel coordinates in the rendered image (although
+            // the values may still be in floating-point).
             {
-                transformedNgonsCache.count--;
-                continue;
+                Rngon.ngon.transform(cachedNgon, screenSpaceMatrix);
+                Rngon.ngon.perspective_divide(cachedNgon);
             }
-
-            Rngon.ngon.transform(cachedNgon, screenSpaceMatrix);
-            Rngon.ngon.perspective_divide(cachedNgon);
         }
     };
 
