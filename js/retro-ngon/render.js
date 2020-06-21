@@ -46,7 +46,7 @@ Rngon.render = function(canvasElementId,
 
     // Render a single frame into the target canvas.
     {
-        const renderSurface = Rngon.screen(canvasElementId,
+        const renderSurface = Rngon.canvas(canvasElementId,
                                            Rngon.ngon_filler,
                                            Rngon.ngon_transform_and_light,
                                            options);

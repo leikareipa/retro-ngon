@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (21 June 2020 16:51:09 UTC)
+// VERSION: beta live (21 June 2020 16:53:39 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -18,7 +18,7 @@
 //	./js/retro-ngon/render.js
 //	./js/retro-ngon/transform-and-light.js
 //	./js/retro-ngon/texture.js
-//	./js/retro-ngon/screen.js
+//	./js/retro-ngon/canvas.js
 /////////////////////////////////////////////////
 
 /*
@@ -1637,7 +1637,7 @@ Rngon.render = function(canvasElementId,
 
     // Render a single frame into the target canvas.
     {
-        const renderSurface = Rngon.screen(canvasElementId,
+        const renderSurface = Rngon.canvas(canvasElementId,
                                            Rngon.ngon_filler,
                                            Rngon.ngon_transform_and_light,
                                            options);
@@ -2070,7 +2070,7 @@ Rngon.texture_rgba.create_with_data_from_file = function(filename)
 
 "use strict";
 
-Rngon.screen = function(canvasElementId = "",              // The DOM id of the canvas element.
+Rngon.canvas = function(canvasElementId = "",              // The DOM id of the canvas element.
                         ngon_fill = ()=>{},                // A function that rasterizes the given ngons onto the canvas.
                         ngon_transform_and_light = ()=>{}, // A function applies lighting to the given ngons, and transforms them into screen-space for the canvas.
                         options = {})                      // Options that were passed to render().

@@ -20,7 +20,7 @@ SOURCE_FILES=("./js/retro-ngon/retro-ngon.js"
               "./js/retro-ngon/render.js"
               "./js/retro-ngon/transform-and-light.js"
               "./js/retro-ngon/texture.js"
-              "./js/retro-ngon/screen.js")
+              "./js/retro-ngon/canvas.js")
 
 echo "// WHAT: Concatenated JavaScript source files" > "$DIRECTORY/$FILENAME"
 echo "// PROGRAM: Retro n-gon renderer" >> "$DIRECTORY/$FILENAME"

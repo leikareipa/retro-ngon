@@ -206,7 +206,7 @@ const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
         {
             expect_true([()=>(document.getElementById(testCanvasId) !== null)]);
 
-            const renderSurface = Rngon.screen(testCanvasId,
+            const renderSurface = Rngon.canvas(testCanvasId,
                                                Rngon.ngon_filler,
                                                Rngon.ngon_transform_and_light,
                                                ()=>{},

@@ -8,7 +8,7 @@
 
 "use strict";
 
-Rngon.screen = function(canvasElementId = "",              // The DOM id of the canvas element.
+Rngon.canvas = function(canvasElementId = "",              // The DOM id of the canvas element.
                         ngon_fill = ()=>{},                // A function that rasterizes the given ngons onto the canvas.
                         ngon_transform_and_light = ()=>{}, // A function applies lighting to the given ngons, and transforms them into screen-space for the canvas.
                         options = {})                      // Options that were passed to render().
