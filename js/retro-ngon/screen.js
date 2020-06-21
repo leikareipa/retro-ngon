@@ -75,7 +75,7 @@ Rngon.screen = function(canvasElementId = "",              // The DOM id of the 
         width: screenWidth,
         height: screenHeight,
 
-        rasterize_meshes: function(meshes = [])
+        render_meshes: function(meshes = [])
         {
             prepare_for_rasterization(meshes);
             rasterize_ngon_cache();
@@ -129,9 +129,9 @@ Rngon.screen = function(canvasElementId = "",              // The DOM id of the 
         // Mark any non-power-of-two affine-mapped faces as using the non-power-of-two affine
         // mapper, as the default affine mapper expects textures to be power-of-two.
         {
-            for (let i = 0; i < Rngon.internalState.transformedNgonsCache.count; i++)
+            for (let i = 0; i < Rngon.internalState.ngonCache.count; i++)
             {
-                const ngon = Rngon.internalState.transformedNgonsCache.ngons[i];
+                const ngon = Rngon.internalState.ngonCache.ngons[i];
 
                 if (ngon.material.texture &&
                     ngon.material.textureMapping === "affine")
@@ -152,7 +152,7 @@ Rngon.screen = function(canvasElementId = "",              // The DOM id of the 
 
         // Depth-sort the n-gons.
         {
-            const ngons = Rngon.internalState.transformedNgonsCache.ngons;
+            const ngons = Rngon.internalState.ngonCache.ngons;
 
             switch (options.depthSort)
             {
@@ -211,7 +211,7 @@ Rngon.screen = function(canvasElementId = "",              // The DOM id of the 
                 renderHeight: screenHeight,
                 fragmentBuffer: Rngon.internalState.fragmentBuffer.data,
                 pixelBuffer: Rngon.internalState.pixelBuffer.data,
-                ngonCache: Rngon.internalState.transformedNgonsCache.ngons,
+                ngonCache: Rngon.internalState.ngonCache.ngons,
                 cameraPosition: options.cameraPosition,
             });
         }

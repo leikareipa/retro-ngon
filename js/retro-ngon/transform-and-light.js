@@ -16,7 +16,7 @@ Rngon.ngon_transform_and_light = function(ngons = [],
                                           cameraPos)
 {
     const viewVector = {x:0.0, y:0.0, z:0.0};
-    const transformedNgonsCache = Rngon.internalState.transformedNgonsCache;
+    const ngonCache = Rngon.internalState.ngonCache;
     const clipSpaceMatrix = Rngon.matrix44.matrices_multiplied(projectionMatrix, cameraMatrix);
 
     for (const ngon of ngons)
@@ -43,7 +43,7 @@ Rngon.ngon_transform_and_light = function(ngons = [],
 
         // Copy the ngon into the internal n-gon cache, so we can operate on it without
         // mutating the original n-gon's data.
-        const cachedNgon = transformedNgonsCache.ngons[transformedNgonsCache.count++];
+        const cachedNgon = ngonCache.ngons[ngonCache.count++];
         {
             cachedNgon.vertices.length = 0;
 
@@ -133,7 +133,7 @@ Rngon.ngon_transform_and_light = function(ngons = [],
                 // for rendering.
                 if (!cachedNgon.vertices.length)
                 {
-                    transformedNgonsCache.count--;
+                    ngonCache.count--;
                     continue;
                 }
             }
@@ -150,9 +150,9 @@ Rngon.ngon_transform_and_light = function(ngons = [],
 
     // Mark as inactive any cached n-gons that we didn't touch, so the renderer knows
     // to ignore them for the current frame.
-    for (let i = transformedNgonsCache.count; i < transformedNgonsCache.ngons.length; i++)
+    for (let i = ngonCache.count; i < ngonCache.ngons.length; i++)
     {
-        transformedNgonsCache.ngons[i].isActive = false;
+        ngonCache.ngons[i].isActive = false;
     }
 
     return;

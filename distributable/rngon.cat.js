@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (21 June 2020 16:43:38 UTC)
+// VERSION: beta live (21 June 2020 16:51:09 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -137,13 +137,10 @@ Rngon.internalState =
 
     // All of the n-gons that were most recently passed to render(), transformed into
     // screen space.
-    transformedNgonsCache: {count:0, ngons:[]},
+    ngonCache: {count:0, ngons:[]},
 
     // All light sources that should currently apply to n-gons passed to render().
     lights: [],
-
-    // The camera's world position, as provided via the corresponding option to render().
-    viewPosition: undefined,
 }
 /*
  * Tarpeeksi Hyvae Soft 2019 /
@@ -1047,9 +1044,9 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
     }
 
     // Rasterize the n-gons.
-    for (let n = 0; n < Rngon.internalState.transformedNgonsCache.count; n++)
+    for (let n = 0; n < Rngon.internalState.ngonCache.count; n++)
     {
-        const ngon = Rngon.internalState.transformedNgonsCache.ngons[n];
+        const ngon = Rngon.internalState.ngonCache.ngons[n];
         const material = ngon.material;
         const texture = material.texture;
 
@@ -1652,10 +1649,10 @@ Rngon.render = function(canvasElementId,
             callMetadata.renderWidth = renderSurface.width;
             callMetadata.renderHeight = renderSurface.height;
 
-            prepare_ngon_cache(Rngon.internalState.transformedNgonsCache, meshes);
-            renderSurface.rasterize_meshes(meshes);
+            prepare_ngon_cache(Rngon.internalState.ngonCache, meshes);
+            renderSurface.render_meshes(meshes);
 
-            callMetadata.numNgonsRendered = Rngon.internalState.transformedNgonsCache.count;
+            callMetadata.numNgonsRendered = Rngon.internalState.ngonCache.count;
         }
     }
 
@@ -1724,7 +1721,7 @@ Rngon.ngon_transform_and_light = function(ngons = [],
                                           cameraPos)
 {
     const viewVector = {x:0.0, y:0.0, z:0.0};
-    const transformedNgonsCache = Rngon.internalState.transformedNgonsCache;
+    const ngonCache = Rngon.internalState.ngonCache;
     const clipSpaceMatrix = Rngon.matrix44.matrices_multiplied(projectionMatrix, cameraMatrix);
 
     for (const ngon of ngons)
@@ -1751,7 +1748,7 @@ Rngon.ngon_transform_and_light = function(ngons = [],
 
         // Copy the ngon into the internal n-gon cache, so we can operate on it without
         // mutating the original n-gon's data.
-        const cachedNgon = transformedNgonsCache.ngons[transformedNgonsCache.count++];
+        const cachedNgon = ngonCache.ngons[ngonCache.count++];
         {
             cachedNgon.vertices.length = 0;
 
@@ -1841,7 +1838,7 @@ Rngon.ngon_transform_and_light = function(ngons = [],
                 // for rendering.
                 if (!cachedNgon.vertices.length)
                 {
-                    transformedNgonsCache.count--;
+                    ngonCache.count--;
                     continue;
                 }
             }
@@ -1858,9 +1855,9 @@ Rngon.ngon_transform_and_light = function(ngons = [],
 
     // Mark as inactive any cached n-gons that we didn't touch, so the renderer knows
     // to ignore them for the current frame.
-    for (let i = transformedNgonsCache.count; i < transformedNgonsCache.ngons.length; i++)
+    for (let i = ngonCache.count; i < ngonCache.ngons.length; i++)
     {
-        transformedNgonsCache.ngons[i].isActive = false;
+        ngonCache.ngons[i].isActive = false;
     }
 
     return;
@@ -2140,7 +2137,7 @@ Rngon.screen = function(canvasElementId = "",              // The DOM id of the 
         width: screenWidth,
         height: screenHeight,
 
-        rasterize_meshes: function(meshes = [])
+        render_meshes: function(meshes = [])
         {
             prepare_for_rasterization(meshes);
             rasterize_ngon_cache();
@@ -2194,9 +2191,9 @@ Rngon.screen = function(canvasElementId = "",              // The DOM id of the 
         // Mark any non-power-of-two affine-mapped faces as using the non-power-of-two affine
         // mapper, as the default affine mapper expects textures to be power-of-two.
         {
-            for (let i = 0; i < Rngon.internalState.transformedNgonsCache.count; i++)
+            for (let i = 0; i < Rngon.internalState.ngonCache.count; i++)
             {
-                const ngon = Rngon.internalState.transformedNgonsCache.ngons[i];
+                const ngon = Rngon.internalState.ngonCache.ngons[i];
 
                 if (ngon.material.texture &&
                     ngon.material.textureMapping === "affine")
@@ -2217,7 +2214,7 @@ Rngon.screen = function(canvasElementId = "",              // The DOM id of the 
 
         // Depth-sort the n-gons.
         {
-            const ngons = Rngon.internalState.transformedNgonsCache.ngons;
+            const ngons = Rngon.internalState.ngonCache.ngons;
 
             switch (options.depthSort)
             {
@@ -2276,7 +2273,7 @@ Rngon.screen = function(canvasElementId = "",              // The DOM id of the 
                 renderHeight: screenHeight,
                 fragmentBuffer: Rngon.internalState.fragmentBuffer.data,
                 pixelBuffer: Rngon.internalState.pixelBuffer.data,
-                ngonCache: Rngon.internalState.transformedNgonsCache.ngons,
+                ngonCache: Rngon.internalState.ngonCache.ngons,
                 cameraPosition: options.cameraPosition,
             });
         }

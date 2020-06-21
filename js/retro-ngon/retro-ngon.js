@@ -114,11 +114,8 @@ Rngon.internalState =
 
     // All of the n-gons that were most recently passed to render(), transformed into
     // screen space.
-    transformedNgonsCache: {count:0, ngons:[]},
+    ngonCache: {count:0, ngons:[]},
 
     // All light sources that should currently apply to n-gons passed to render().
     lights: [],
-
-    // The camera's world position, as provided via the corresponding option to render().
-    viewPosition: undefined,
 }

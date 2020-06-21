@@ -58,10 +58,10 @@ Rngon.render = function(canvasElementId,
             callMetadata.renderWidth = renderSurface.width;
             callMetadata.renderHeight = renderSurface.height;
 
-            prepare_ngon_cache(Rngon.internalState.transformedNgonsCache, meshes);
-            renderSurface.rasterize_meshes(meshes);
+            prepare_ngon_cache(Rngon.internalState.ngonCache, meshes);
+            renderSurface.render_meshes(meshes);
 
-            callMetadata.numNgonsRendered = Rngon.internalState.transformedNgonsCache.count;
+            callMetadata.numNgonsRendered = Rngon.internalState.ngonCache.count;
         }
     }
 

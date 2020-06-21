@@ -48,9 +48,9 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
     }
 
     // Rasterize the n-gons.
-    for (let n = 0; n < Rngon.internalState.transformedNgonsCache.count; n++)
+    for (let n = 0; n < Rngon.internalState.ngonCache.count; n++)
     {
-        const ngon = Rngon.internalState.transformedNgonsCache.ngons[n];
+        const ngon = Rngon.internalState.ngonCache.ngons[n];
         const material = ngon.material;
         const texture = material.texture;
 
