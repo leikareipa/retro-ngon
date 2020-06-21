@@ -214,14 +214,18 @@ function run_bencmark(sceneMeshes = [],
         // to this render function.
         (function render_loop(timestamp = 0, timeDeltaMs = 0, frameCount = 0)
         {
-            const queue_new_frame = ()=>
+            const queue_new_frame = (additionalTimeDelta = 0)=>
             {
                 window.requestAnimationFrame((newTimestamp)=>
                 {
-                    render_loop(newTimestamp, (newTimestamp - timestamp), (frameCount + 1));
+                    render_loop(newTimestamp,
+                                (additionalTimeDelta + (newTimestamp - timestamp)),
+                                (frameCount + 1));
                 });
             };
 
+            // We want the frame timer (timeDeltaMs) to measure time between frames,
+            // so skip the first frames where it's not doing so reliably.
             if (Math.abs(timeDeltaMs - timestamp) <= 0.0001)
             {
                 if (frameCount > 10)
@@ -234,20 +238,37 @@ function run_bencmark(sceneMeshes = [],
                 return;
             }
 
+            // Update the UI.
+            {
+                let percentDone = Math.floor(((cameraDirection.y - initialCameraDir.y) / 360) * 100);
+
+                // Move the progress bar in smooth increments of 1.
+                document.getElementById("benchmark-progress-bar").style.width = `${percentDone}%`;
+
+                // Dispay the precentage value in increments of 10.
+                {
+                    percentDone = (Math.floor((percentDone) / 10) * 10);
+                    
+                    if (percentDone)
+                    {
+                        document.getElementById("benchmark-progress-bar").style.opacity = "1";
+                        document.getElementById("benchmark-progress-bar").textContent = `${percentDone}%`;
+                    }
+                }
+            }
+
+            // Attempt to limit the renderer's refresh rate, if so requested by the user.
+            if (extraRenderOptions.targetRefreshRate &&
+                (timeDeltaMs < Math.floor(1000 / extraRenderOptions.targetRefreshRate)))
+            {
+                queue_new_frame(timeDeltaMs);
+                return;
+            }
+
             // Rotate the camera 360 degrees in small increments per frame, then exit
             // the benchmark when done.
             if ((cameraDirection.y - initialCameraDir.y) < 360)
             {
-                const percentDone = Math.floor(((cameraDirection.y - initialCameraDir.y) / 360) * 100);
-
-                document.getElementById("benchmark-progress-bar").style.width = `${percentDone}%`;
-                
-                if (percentDone && ((percentDone % 10) == 0))
-                {
-                    document.getElementById("benchmark-progress-bar").style.opacity = "1";
-                    document.getElementById("benchmark-progress-bar").textContent = `${percentDone}%`;
-                }
-
                 cameraDirection.y += (0.02 * timeDeltaMs);
             }
             else
