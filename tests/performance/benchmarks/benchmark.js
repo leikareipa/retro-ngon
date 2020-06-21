@@ -146,7 +146,7 @@ function print_results(results)
         add_to_graph("screenFPS", "navajowhite", minimumFPS, maximumFPS);
     }
 
-    document.getElementById("benchmark-progress-bar").textContent = `Benchmarking finished. Average performance: ${averageFPS} FPS.`;
+    document.getElementById("benchmark-progress-bar").textContent = `Benchmarking finished. Performance average: ${averageFPS} FPS.`;
     graphContainer.appendChild(graph);
     document.getElementById("benchmark-container").insertBefore(graphContainer, document.getElementById("benchmark-progress-bar"));
     document.getElementById("benchmark-canvas").remove();

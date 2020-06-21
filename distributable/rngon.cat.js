@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (20 June 2020 12:49:19 UTC)
+// VERSION: beta live (21 June 2020 01:43:22 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -1736,8 +1736,8 @@ Rngon.render = function(canvasElementId,
             if (ngon.material.texture &&
                 ngon.material.textureMapping === "affine")
             {
-                const widthIsPOT = ((ngon.material.texture.width & (ngon.material.texture.width - 1)) === 0);
-                const heightIsPOT = ((ngon.material.texture.height & (ngon.material.texture.height - 1)) === 0);
+                let widthIsPOT = ((ngon.material.texture.width & (ngon.material.texture.width - 1)) === 0);
+                let heightIsPOT = ((ngon.material.texture.height & (ngon.material.texture.height - 1)) === 0);
 
                 if (ngon.material.texture.width === 0) widthIsPOT = false;
                 if (ngon.material.texture.height === 0) heightIsPOT = false;

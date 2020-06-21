@@ -142,8 +142,8 @@ Rngon.render = function(canvasElementId,
             if (ngon.material.texture &&
                 ngon.material.textureMapping === "affine")
             {
-                const widthIsPOT = ((ngon.material.texture.width & (ngon.material.texture.width - 1)) === 0);
-                const heightIsPOT = ((ngon.material.texture.height & (ngon.material.texture.height - 1)) === 0);
+                let widthIsPOT = ((ngon.material.texture.width & (ngon.material.texture.width - 1)) === 0);
+                let heightIsPOT = ((ngon.material.texture.height & (ngon.material.texture.height - 1)) === 0);
 
                 if (ngon.material.texture.width === 0) widthIsPOT = false;
                 if (ngon.material.texture.height === 0) heightIsPOT = false;
