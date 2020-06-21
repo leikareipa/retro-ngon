@@ -146,9 +146,9 @@ function print_results(results)
         add_to_graph("screenFPS", "navajowhite", minimumFPS, maximumFPS);
     }
 
-    document.getElementById("benchmark-progress-bar").textContent = `Benchmark completed. Average performance: ${averageFPS} FPS.`;
+    document.getElementById("benchmark-progress-bar").textContent = `Benchmarking finished. Average performance: ${averageFPS} FPS.`;
     graphContainer.appendChild(graph);
-    document.getElementById("benchmark-container").appendChild(graphContainer);
+    document.getElementById("benchmark-container").insertBefore(graphContainer, document.getElementById("benchmark-progress-bar"));
     document.getElementById("benchmark-canvas").remove();
 
     function add_to_graph(resultProperty, color, minimum, maximum)
@@ -325,33 +325,6 @@ function create_dom_elements()
         mainContainer.appendChild(canvas);
     }
 
-    // Create an informational label that will hover next to the cursor when the cursor
-    // is over the graph.
-    const infoLabel = document.createElement("div");
-    {
-        infoLabel.setAttribute("id", "benchmark-graph-info-label");
-
-        infoLabel.style.cssText = `
-            background-color: white;
-            color: black;
-            position: absolute;
-            z-index: 10;
-            left: 0:
-            top: 0;
-            text-align: left;
-            padding: 10px;
-            transform: translateX(25px) translateY(-25px);
-            border-radius: 6px;
-            box-shadow: -5px 5px 5px rgba(0, 0, 0, 0.2);
-            pointer-events: none;
-            user-select: none;
-            white-space: nowrap;
-            display: none;
-        `;
-
-        mainContainer.appendChild(infoLabel);
-    }
-
     // Create the progress bar.
     const progressBar = document.createElement("div");
     {
@@ -370,12 +343,38 @@ function create_dom_elements()
             margin-top: 10px;
             margin-bottom: 10px;
             border-radius: 20px;
-            border: 20px solid dimgray;
+            border: 25px solid rgb(95, 95, 95);
             opacity: 0;
-            transition: width .2s linear, opacity .5s linear;
+            transition: width .2s linear, opacity .75s linear;
         `;
 
         mainContainer.appendChild(progressBar);
+    }
+
+    // Create an informational label that will hover next to the cursor when the cursor
+    // is over the graph.
+    const infoLabel = document.createElement("div");
+    {
+        infoLabel.setAttribute("id", "benchmark-graph-info-label");
+
+        infoLabel.style.cssText = `
+            background-color: white;
+            color: black;
+            position: absolute;
+            z-index: 10;
+            left: 0:
+            top: 0;
+            text-align: left;
+            padding: 9px;
+            border-radius: 3px;
+            box-shadow: 0 6px 2px -4px rgba(0, 0, 0, 0.2);
+            pointer-events: none;
+            user-select: none;
+            white-space: nowrap;
+            display: none;
+        `;
+
+        mainContainer.appendChild(infoLabel);
     }
 
     document.body.style.cssText = `
@@ -383,8 +382,7 @@ function create_dom_elements()
         background-color: gray;
         color: white;
         padding: 0;
-        margin: 0;
-        margin-top: 20px;
+        margin: 20px;
         font-family: sans-serif;
     `;
 
