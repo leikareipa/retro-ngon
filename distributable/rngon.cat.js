@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (21 June 2020 16:53:39 UTC)
+// VERSION: beta live (21 June 2020 17:54:33 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -1289,6 +1289,12 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
 
                             const shade = (material.renderVertexShade? (iplShade / iplInvW) : 1);
 
+                            // The color we'll write into the pixel buffer for this pixel; assuming
+                            // it passes the alpha test, the depth test, etc.
+                            let red = 0;
+                            let green = 0;
+                            let blue = 0;
+
                             // Solid fill.
                             if (!texture)
                             {
@@ -1314,11 +1320,9 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                     }   
                                 }
 
-                                pixelBuffer[pixelBufferIdx + 0] = (material.color.red   * shade);
-                                pixelBuffer[pixelBufferIdx + 1] = (material.color.green * shade);
-                                pixelBuffer[pixelBufferIdx + 2] = (material.color.blue  * shade);
-                                pixelBuffer[pixelBufferIdx + 3] = 255;
-                                if (depthBuffer) depthBuffer[depthBufferIdx] = depth;
+                                red   = (material.color.red   * shade);
+                                green = (material.color.green * shade);
+                                blue  = (material.color.blue  * shade);
                             }
                             // Textured fill.
                             else
@@ -1450,17 +1454,24 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                     }   
                                 }
 
-                                pixelBuffer[pixelBufferIdx + 0] = (texel.red   * material.color.unitRange.red   * shade);
-                                pixelBuffer[pixelBufferIdx + 1] = (texel.green * material.color.unitRange.green * shade);
-                                pixelBuffer[pixelBufferIdx + 2] = (texel.blue  * material.color.unitRange.blue  * shade);
-                                pixelBuffer[pixelBufferIdx + 3] = 255;
-                                if (depthBuffer) depthBuffer[depthBufferIdx] = depth;
+                                red   = (texel.red   * material.color.unitRange.red   * shade);
+                                green = (texel.green * material.color.unitRange.green * shade);
+                                blue  = (texel.blue  * material.color.unitRange.blue  * shade);
                             }
 
-                            // This part of the loop is reached only if we ended up drawing
-                            // into the pixel at the current x,y screen location (i.e. if the
-                            // pixel passed the depth test, the alpha test, and so on).
+                            // The pixel passed its alpha test, depth test, etc., and should be drawn
+                            // on screen.
                             {
+                                pixelBuffer[pixelBufferIdx + 0] = red;
+                                pixelBuffer[pixelBufferIdx + 1] = green;
+                                pixelBuffer[pixelBufferIdx + 2] = blue;
+                                pixelBuffer[pixelBufferIdx + 3] = 255;
+
+                                if (depthBuffer)
+                                {
+                                    depthBuffer[depthBufferIdx] = depth;
+                                }
+
                                 for (let b = 0; b < auxiliaryBuffers.length; b++)
                                 {
                                     if (material.auxiliary[auxiliaryBuffers[b].property] !== null)
