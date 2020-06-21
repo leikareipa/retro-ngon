@@ -10,6 +10,8 @@
 
 "use strict";
 
+import {textures as textureAtlas} from "./scene.rngon-texture-atlas.js";
+
 export const scene =
 {
 	ngons:[],
@@ -24,9 +26,9 @@ export const scene =
 
 		// Load the textures.
 		const t = {
-			"shrub":await ct("./first-person-camera/assets/textures/shrub.rngon-texture.json"),
-			"bark":await ct("./first-person-camera/assets/textures/bark.rngon-texture.json"),
-			"ground":await ct("./first-person-camera/assets/textures/ground.rngon-texture.json"),
+			"shrub":Rngon.texture_rgba(textureAtlas["shrub"]),
+			"bark":Rngon.texture_rgba(textureAtlas["bark"]),
+			"ground":Rngon.texture_rgba(textureAtlas["ground"]),
 		};
 
 		// Set up the materials.

@@ -10,6 +10,8 @@
 
 "use strict";
 
+import {textures as textureAtlas} from "./transparency.rngon-texture-atlas.js";
+
 export const transparencyModel =
 {
 	ngons:[],
@@ -20,12 +22,11 @@ export const transparencyModel =
 		const no = Rngon.vector3; // Normal.
 		const v = Rngon.vertex;
 		const c = Rngon.color_rgba;
-		const ct = Rngon.texture_rgba.create_with_data_from_file;
 
 		// Load the textures.
 		const t = {
-			"painting.png":await ct("./transparency/assets/textures/painting.rngon-texture.json"),
-			"wood.png":await ct("./transparency/assets/textures/wood.rngon-texture.json"),
+			"wood.png":Rngon.texture_rgba(textureAtlas["wood"]),
+			"painting.png":Rngon.texture_rgba(textureAtlas["painting"]),
 		}; 
 
 		// Set up the materials.

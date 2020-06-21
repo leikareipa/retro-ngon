@@ -1,5 +1,7 @@
 "use strict";
 
+import {textures as textureAtlas} from "./textured-cube.rngon-texture-atlas.js";
+
 // A 3d model exported from Blender via the retro n-gon renderer's exporter.
 //
 // Usage:
@@ -15,12 +17,11 @@ export const texturedCubeModel =
 		const n = Rngon.ngon;
 		const v = Rngon.vertex;
 		const c = Rngon.color_rgba;
-		const ct = Rngon.texture_rgba.create_with_data_from_file;
 
 		// Load the textures.
 		const t = {
-			"wood":await ct("./textured-cube-model/assets/textures/wood.rngon-texture.json"),
-			"painting":await ct("./textured-cube-model/assets/textures/painting.rngon-texture.json"),
+			"wood":Rngon.texture_rgba(textureAtlas["wood"]),
+			"painting":Rngon.texture_rgba(textureAtlas["painting"]),
 		};
 
 		// Set up the materials.

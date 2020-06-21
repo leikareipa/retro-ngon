@@ -7,7 +7,7 @@
 
 "use strict";
 
-import {texturedCubeModel} from "./assets/models/textured-cube.rngon-model.js";
+import {texturedCubeModel} from "./assets/textured-cube.rngon-model.js";
 
 // Initialize the model's n-gons. This will also load into memory any textures
 // etc. associated with the model. We can then call the .ngons property to access

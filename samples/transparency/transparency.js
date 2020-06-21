@@ -7,7 +7,7 @@
 
 "use strict";
 
-import {transparencyModel} from "./assets/models/transparency.rngon-model.js";
+import {transparencyModel} from "./assets/transparency.rngon-model.js";
 
 // Initialize the model's n-gons. This will also load into memory any textures
 // etc. associated with the model. We can then call the .ngons property to access

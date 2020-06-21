@@ -10,6 +10,8 @@
 
 "use strict";
 
+import {textures as textureAtlas} from "./scene.rngon-texture-atlas.js";
+
 export const scene =
 {
 	ngons:[],
@@ -22,15 +24,14 @@ export const scene =
 		const no = Rngon.vector3; // Normal vector.
 		const v = Rngon.vertex;
 		const c = Rngon.color_rgba;
-		const ct = Rngon.texture_rgba.create_with_data_from_file;
 		let t; // Will point to this.textures.
 		let m; // Will point to this.materials.
 
 		// Load texture data.
 		t = this.textures = Object.freeze({
-			"shrub":await ct("./pixel-shaders/assets/textures/shrub.rngon-texture.json"),
-			"bark":await ct("./pixel-shaders/assets/textures/bark.rngon-texture.json"),
-			"ground":await ct("./pixel-shaders/assets/textures/ground.rngon-texture.json"),
+			"shrub":Rngon.texture_rgba(textureAtlas["shrub"]),
+			"bark":Rngon.texture_rgba(textureAtlas["bark"]),
+			"ground":Rngon.texture_rgba(textureAtlas["ground"]),
 		});
 
 		m = this.materials = Object.freeze({

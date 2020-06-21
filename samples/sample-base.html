@@ -11,7 +11,6 @@
         <div id="loading-bar">
             <i class="fas fa-wheelchair fa-fw spin"></i>
             Loading render sample...
-            <span id="loading-bar-percentage">0%</span>
         </div>
 
         <canvas id="canvas"
@@ -57,27 +56,15 @@
             {
                 const sampleId = (new URLSearchParams(window.location.search).get("sample") || "rotating-triangle");
                 const sampleModule = await import(`./${sampleId}/${sampleId}.js`);
-                const loadingBar = document.getElementById("loading-bar");
-                const loadingBarPercentage = (typeof sampleModule.sample_scene.percent_assets_loaded == "undefined")
-                                             ? undefined
-                                             : document.getElementById("loading-bar-percentage");
+
+                // The renderable assets will have finished loading when we reach this,
+                // so it's safe to remove the loading indicator.
+                document.getElementById("loading-bar").remove();
 
                 // Runs the renderer continuously, in sync with the device's refresh rate.
                 (function render_loop(frameCount = 0)
                 {
                     const scene = sampleModule.sample_scene(frameCount);
-
-                    // Scenes load async (first textures, then ngons), so we assume
-                    // that once the scene's ngon array is non-empty, the scene is
-                    // close enough to having finished loading.
-                    if (!scene.ngons.length && loadingBarPercentage)
-                    {
-                        loadingBarPercentage.innerHTML = `${Math.round(sampleModule.sample_scene.percent_assets_loaded())}%`;
-                    }
-                    else if (scene.ngons.length && loadingBar)
-                    {
-                        loadingBar.remove();
-                    }
 
                     const renderInfo = Rngon.render("canvas", [scene],
                     {

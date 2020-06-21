@@ -10,7 +10,7 @@
 
 "use strict";
 
-import {scene} from "./assets/models/scene.rngon-model.js";
+import {scene} from "./assets/scene.rngon-model.js";
 import {first_person_camera} from "./camera.js";
 
 let numFramesRendered = 0;
