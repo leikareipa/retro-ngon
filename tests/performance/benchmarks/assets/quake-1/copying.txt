@@ -1,3 +1,0 @@
-All models and textures are from Quake 1 (1996, id Software). Their partial
-reproduction here does not constitute licensed distribution and is assumed
-to be under fair use. Please contact id Software for licensing information.
