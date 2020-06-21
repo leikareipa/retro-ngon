@@ -145,7 +145,7 @@ Rngon.ngon.clip_to_viewport = function(ngon)
                 const lerpStep = (prevVertex.w - prevComponent) /
                                   ((prevVertex.w - prevComponent) - (ngon.vertices[i].w - curComponent));
 
-                if (Rngon.internalState.useShaders)
+                if (Rngon.internalState.usePixelShaders)
                 {
                     ngon.vertices[numOriginalVertices + k++] = Rngon.vertex(Rngon.lerp(prevVertex.x, ngon.vertices[i].x, lerpStep),
                                                                             Rngon.lerp(prevVertex.y, ngon.vertices[i].y, lerpStep),

@@ -91,10 +91,10 @@ Rngon.internalState =
         }
     },
 
-    // If true, enables the fragment buffer and allows the use of shaders. Note that
-    // enabling shaders carries a performance penalty even if you don't actually make
-    // use any shaders.
-    useShaders: false,
+    // If true, enables the fragment buffer and allows the use of pixel shaders. Note
+    // that enabling shaders carries a performance penalty even if you don't actually
+    // make use of any pixel shaders.
+    usePixelShaders: false,
 
     usePerspectiveCorrectInterpolation: false,
 

@@ -51,7 +51,7 @@ export const sample_scene = (frameCount = 0)=>
 
 export const sampleRenderOptions = {
     lights: lights,
-    get shaderFunction()
+    get pixelShaderFunction()
     {
         // If the user has selected a shader to be used, return a function that calls
         // the selected shader.

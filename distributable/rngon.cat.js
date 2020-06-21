@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (21 June 2020 21:59:05 UTC)
+// VERSION: beta live (21 June 2020 22:22:44 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -114,10 +114,10 @@ Rngon.internalState =
         }
     },
 
-    // If true, enables the fragment buffer and allows the use of shaders. Note that
-    // enabling shaders carries a performance penalty even if you don't actually make
-    // use any shaders.
-    useShaders: false,
+    // If true, enables the fragment buffer and allows the use of pixel shaders. Note
+    // that enabling shaders carries a performance penalty even if you don't actually
+    // make use of any pixel shaders.
+    usePixelShaders: false,
 
     usePerspectiveCorrectInterpolation: false,
 
@@ -739,7 +739,7 @@ Rngon.ngon.clip_to_viewport = function(ngon)
                 const lerpStep = (prevVertex.w - prevComponent) /
                                   ((prevVertex.w - prevComponent) - (ngon.vertices[i].w - curComponent));
 
-                if (Rngon.internalState.useShaders)
+                if (Rngon.internalState.usePixelShaders)
                 {
                     ngon.vertices[numOriginalVertices + k++] = Rngon.vertex(Rngon.lerp(prevVertex.x, ngon.vertices[i].x, lerpStep),
                                                                             Rngon.lerp(prevVertex.y, ngon.vertices[i].y, lerpStep),
@@ -1030,7 +1030,7 @@ let numRightEdges = 0;
 Rngon.ngon_filler = function(auxiliaryBuffers = [])
 {
     const interpolatePerspective = Rngon.internalState.usePerspectiveCorrectInterpolation;
-    const useShaders = Rngon.internalState.useShaders;
+    const usePixelShaders = Rngon.internalState.usePixelShaders;
     const fragmentBuffer = Rngon.internalState.fragmentBuffer.data;
     const pixelBuffer = Rngon.internalState.pixelBuffer.data;
     const depthBuffer = (Rngon.internalState.useDepthBuffer? Rngon.internalState.depthBuffer.data : null);
@@ -1155,7 +1155,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                     const startShade = vert1.shade/w1;
                     const deltaShade = ((vert2.shade/w2 - vert1.shade/w1) / edgeHeight);
 
-                    if (useShaders)
+                    if (usePixelShaders)
                     {
                         var startWorldX = vert1.worldX/w1;
                         var deltaWorldX = ((vert2.worldX/w2 - vert1.worldX/w1) / edgeHeight);
@@ -1241,7 +1241,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                         const deltaInvW = ((rightEdge.startInvW - leftEdge.startInvW) / spanWidth);
                         let iplInvW = (leftEdge.startInvW - deltaInvW);
 
-                        if (useShaders)
+                        if (usePixelShaders)
                         {
                             var deltaWorldX = ((rightEdge.startWorldX - leftEdge.startWorldX) / spanWidth);
                             var iplWorldX = (leftEdge.startWorldX - deltaWorldX);
@@ -1275,7 +1275,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                             pixelBufferIdx += 4;
                             depthBufferIdx++;
 
-                            if (useShaders)
+                            if (usePixelShaders)
                             {
                                 iplWorldX += deltaWorldX;
                                 iplWorldY += deltaWorldY;
@@ -1481,7 +1481,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                     }
                                 }
 
-                                if (useShaders)
+                                if (usePixelShaders)
                                 {
                                     const fragment = fragmentBuffer[depthBufferIdx];
                                     fragment.textureU = (iplU / iplInvW);
@@ -1519,7 +1519,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                         rightEdge.startV     += rightEdge.deltaV;
                         rightEdge.startInvW  += rightEdge.deltaInvW;
 
-                        if (useShaders)
+                        if (usePixelShaders)
                         {
                             leftEdge.startWorldX  += leftEdge.deltaWorldX;
                             leftEdge.startWorldY  += leftEdge.deltaWorldY;
@@ -1636,16 +1636,23 @@ Rngon.render = function(canvasElementId,
     });
 
     // Modify any internal render parameters based on the user's options.
-    Rngon.internalState.useShaders = (typeof options.shaderFunction === "function");
-    Rngon.internalState.shader_function = options.shaderFunction;
-    Rngon.internalState.vertex_shader_function = options.vertexShaderFunction;
-    Rngon.internalState.useDepthBuffer = (options.useDepthBuffer == true);
-    Rngon.internalState.showGlobalWireframe = (options.globalWireframe == true);
-    Rngon.internalState.applyViewportClipping = (options.clipToViewport == true);
-    Rngon.internalState.lights = options.lights;
-    Rngon.internalState.farPlaneDistance = options.farPlane;
-    Rngon.internalState.usePerspectiveCorrectInterpolation = ((options.perspectiveCorrectTexturing || // <- Name in pre-beta.2.
-                                                               options.perspectiveCorrectInterpolation) == true);
+    {
+        Rngon.internalState.vertex_shader_function = options.vertexShaderFunction;
+        Rngon.internalState.useDepthBuffer = (options.useDepthBuffer == true);
+        Rngon.internalState.showGlobalWireframe = (options.globalWireframe == true);
+        Rngon.internalState.applyViewportClipping = (options.clipToViewport == true);
+        Rngon.internalState.lights = options.lights;
+        Rngon.internalState.farPlaneDistance = options.farPlane;
+
+        Rngon.internalState.usePerspectiveCorrectInterpolation = ((options.perspectiveCorrectTexturing || // <- Name in pre-beta.2.
+                                                                options.perspectiveCorrectInterpolation) == true);
+
+        Rngon.internalState.usePixelShaders = (typeof (options.shaderFunction || // <- Name in pre-beta.3.
+                                                    options.pixelShaderFunction) === "function");
+
+        Rngon.internalState.pixel_shader_function = (options.shaderFunction || // <- Name in pre-beta.3.
+                                                    options.pixelShaderFunction);
+    }
 
     // Render a single frame into the target canvas.
     {
@@ -1701,7 +1708,7 @@ Rngon.render.defaultOptions =
 {
     cameraPosition: Rngon.vector3(0, 0, 0),
     cameraDirection: Rngon.vector3(0, 0, 0),
-    shaderFunction: null, // If null, all pixel shader functionality will be disabled.
+    pixelShaderFunction: null, // If null, all pixel shader functionality will be disabled.
     vertexShaderFunction: null, // If null, all vertex shader functionality will be disabled.
     scale: 1,
     fov: 43,
@@ -1803,7 +1810,7 @@ Rngon.ngon_transform_and_light = function(ngons = [],
 
                 // Interpolated world XYZ coordinates will be made available to shaders,
                 // but aren't needed if shaders are disabled.
-                if (Rngon.internalState.useShaders)
+                if (Rngon.internalState.usePixelShaders)
                 {
                     for (let v = 0; v < cachedNgon.vertices.length; v++)
                     {
@@ -2129,7 +2136,7 @@ Rngon.canvas = function(canvasElementId = "",              // The DOM id of the 
             Rngon.internalState.pixelBuffer = new ImageData(screenWidth, screenHeight);
         }
 
-        if (Rngon.internalState.useShaders &&
+        if (Rngon.internalState.usePixelShaders &&
             (Rngon.internalState.fragmentBuffer.width != screenWidth) ||
             (Rngon.internalState.fragmentBuffer.height != screenHeight))
         {
@@ -2285,9 +2292,9 @@ Rngon.canvas = function(canvasElementId = "",              // The DOM id of the 
 
         ngon_fill(options.auxiliaryBuffers);
 
-        if (Rngon.internalState.useShaders)
+        if (Rngon.internalState.usePixelShaders)
         {
-            Rngon.internalState.shader_function({
+            Rngon.internalState.pixel_shader_function({
                 renderWidth: screenWidth,
                 renderHeight: screenHeight,
                 fragmentBuffer: Rngon.internalState.fragmentBuffer.data,

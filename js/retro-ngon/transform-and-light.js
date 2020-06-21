@@ -85,7 +85,7 @@ Rngon.ngon_transform_and_light = function(ngons = [],
 
                 // Interpolated world XYZ coordinates will be made available to shaders,
                 // but aren't needed if shaders are disabled.
-                if (Rngon.internalState.useShaders)
+                if (Rngon.internalState.usePixelShaders)
                 {
                     for (let v = 0; v < cachedNgon.vertices.length; v++)
                     {

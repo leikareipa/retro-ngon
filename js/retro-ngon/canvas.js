@@ -48,7 +48,7 @@ Rngon.canvas = function(canvasElementId = "",              // The DOM id of the 
             Rngon.internalState.pixelBuffer = new ImageData(screenWidth, screenHeight);
         }
 
-        if (Rngon.internalState.useShaders &&
+        if (Rngon.internalState.usePixelShaders &&
             (Rngon.internalState.fragmentBuffer.width != screenWidth) ||
             (Rngon.internalState.fragmentBuffer.height != screenHeight))
         {
@@ -204,9 +204,9 @@ Rngon.canvas = function(canvasElementId = "",              // The DOM id of the 
 
         ngon_fill(options.auxiliaryBuffers);
 
-        if (Rngon.internalState.useShaders)
+        if (Rngon.internalState.usePixelShaders)
         {
-            Rngon.internalState.shader_function({
+            Rngon.internalState.pixel_shader_function({
                 renderWidth: screenWidth,
                 renderHeight: screenHeight,
                 fragmentBuffer: Rngon.internalState.fragmentBuffer.data,

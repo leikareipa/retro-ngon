@@ -34,16 +34,23 @@ Rngon.render = function(canvasElementId,
     });
 
     // Modify any internal render parameters based on the user's options.
-    Rngon.internalState.useShaders = (typeof options.shaderFunction === "function");
-    Rngon.internalState.shader_function = options.shaderFunction;
-    Rngon.internalState.vertex_shader_function = options.vertexShaderFunction;
-    Rngon.internalState.useDepthBuffer = (options.useDepthBuffer == true);
-    Rngon.internalState.showGlobalWireframe = (options.globalWireframe == true);
-    Rngon.internalState.applyViewportClipping = (options.clipToViewport == true);
-    Rngon.internalState.lights = options.lights;
-    Rngon.internalState.farPlaneDistance = options.farPlane;
-    Rngon.internalState.usePerspectiveCorrectInterpolation = ((options.perspectiveCorrectTexturing || // <- Name in pre-beta.2.
-                                                               options.perspectiveCorrectInterpolation) == true);
+    {
+        Rngon.internalState.vertex_shader_function = options.vertexShaderFunction;
+        Rngon.internalState.useDepthBuffer = (options.useDepthBuffer == true);
+        Rngon.internalState.showGlobalWireframe = (options.globalWireframe == true);
+        Rngon.internalState.applyViewportClipping = (options.clipToViewport == true);
+        Rngon.internalState.lights = options.lights;
+        Rngon.internalState.farPlaneDistance = options.farPlane;
+
+        Rngon.internalState.usePerspectiveCorrectInterpolation = ((options.perspectiveCorrectTexturing || // <- Name in pre-beta.2.
+                                                                options.perspectiveCorrectInterpolation) == true);
+
+        Rngon.internalState.usePixelShaders = (typeof (options.shaderFunction || // <- Name in pre-beta.3.
+                                                    options.pixelShaderFunction) === "function");
+
+        Rngon.internalState.pixel_shader_function = (options.shaderFunction || // <- Name in pre-beta.3.
+                                                    options.pixelShaderFunction);
+    }
 
     // Render a single frame into the target canvas.
     {
@@ -99,7 +106,7 @@ Rngon.render.defaultOptions =
 {
     cameraPosition: Rngon.vector3(0, 0, 0),
     cameraDirection: Rngon.vector3(0, 0, 0),
-    shaderFunction: null, // If null, all pixel shader functionality will be disabled.
+    pixelShaderFunction: null, // If null, all pixel shader functionality will be disabled.
     vertexShaderFunction: null, // If null, all vertex shader functionality will be disabled.
     scale: 1,
     fov: 43,
