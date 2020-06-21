@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (21 June 2020 20:36:16 UTC)
+// VERSION: beta live (21 June 2020 21:59:05 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -1638,6 +1638,7 @@ Rngon.render = function(canvasElementId,
     // Modify any internal render parameters based on the user's options.
     Rngon.internalState.useShaders = (typeof options.shaderFunction === "function");
     Rngon.internalState.shader_function = options.shaderFunction;
+    Rngon.internalState.vertex_shader_function = options.vertexShaderFunction;
     Rngon.internalState.useDepthBuffer = (options.useDepthBuffer == true);
     Rngon.internalState.showGlobalWireframe = (options.globalWireframe == true);
     Rngon.internalState.applyViewportClipping = (options.clipToViewport == true);
@@ -1700,7 +1701,8 @@ Rngon.render.defaultOptions =
 {
     cameraPosition: Rngon.vector3(0, 0, 0),
     cameraDirection: Rngon.vector3(0, 0, 0),
-    shaderFunction: null, // If null, all shader functionality will be disabled.
+    shaderFunction: null, // If null, all pixel shader functionality will be disabled.
+    vertexShaderFunction: null, // If null, all vertex shader functionality will be disabled.
     scale: 1,
     fov: 43,
     nearPlane: 1,
@@ -1852,6 +1854,12 @@ Rngon.ngon_transform_and_light = function(ngons = [],
                     ngonCache.count--;
                     continue;
                 }
+            }
+
+            // Apply an optional, user-defined vertex shader.
+            if (Rngon.internalState.vertex_shader_function)
+            {
+                Rngon.internalState.vertex_shader_function(cachedNgon);
             }
 
             // Screen space. Vertices will be transformed such that their XY coordinates

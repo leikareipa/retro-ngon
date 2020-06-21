@@ -36,6 +36,7 @@ Rngon.render = function(canvasElementId,
     // Modify any internal render parameters based on the user's options.
     Rngon.internalState.useShaders = (typeof options.shaderFunction === "function");
     Rngon.internalState.shader_function = options.shaderFunction;
+    Rngon.internalState.vertex_shader_function = options.vertexShaderFunction;
     Rngon.internalState.useDepthBuffer = (options.useDepthBuffer == true);
     Rngon.internalState.showGlobalWireframe = (options.globalWireframe == true);
     Rngon.internalState.applyViewportClipping = (options.clipToViewport == true);
@@ -98,7 +99,8 @@ Rngon.render.defaultOptions =
 {
     cameraPosition: Rngon.vector3(0, 0, 0),
     cameraDirection: Rngon.vector3(0, 0, 0),
-    shaderFunction: null, // If null, all shader functionality will be disabled.
+    shaderFunction: null, // If null, all pixel shader functionality will be disabled.
+    vertexShaderFunction: null, // If null, all vertex shader functionality will be disabled.
     scale: 1,
     fov: 43,
     nearPlane: 1,

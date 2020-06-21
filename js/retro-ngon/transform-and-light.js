@@ -138,6 +138,12 @@ Rngon.ngon_transform_and_light = function(ngons = [],
                 }
             }
 
+            // Apply an optional, user-defined vertex shader.
+            if (Rngon.internalState.vertex_shader_function)
+            {
+                Rngon.internalState.vertex_shader_function(cachedNgon);
+            }
+
             // Screen space. Vertices will be transformed such that their XY coordinates
             // map directly into XY pixel coordinates in the rendered image (although
             // the values may still be in floating-point).
