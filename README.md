@@ -735,9 +735,6 @@ A collection of thematically-related n-gons, rendered as a unit with shared tran
 
     // The array of n-gons passed as an argument into the function.
     ngons,
-
-    // A 4x4 matrix by which the n-gons of this mesh should be transformed to bring the n-gons into the mesh's object space.
-    objectSpaceMatrix,
 })
 ```
 
@@ -788,11 +785,8 @@ An n-gon &ndash; a shape defined by *n* vertices; typically a triangle or a quad
 {
     vertices,
     material,
-
-    clipped_to_viewport: function,
-    clipped_to_near_plane: function,
-    perspective_divided: function,
-    transformed: function,
+    normal,        // The face normal.
+    vertexNormals, // The corresponding normal for each vertex.
 }
 ```
 
@@ -843,8 +837,13 @@ One corner of an n-gon.
 {
     x, y, z, w, u, v,
 
-    transformed: function,
-    perspective_divided: function,
+    // A value in the range >= 0 that defines how lit this vertex is.
+    // Will be modified by built-in lighting, if enabled.
+    shade,
+
+    // The vertex's object-space coordinates. Will be set automatically
+    // by the vertex transformer and made accessible to pixel shaders.
+    worldX, worldY, worldZ,
 }
 ```
 
@@ -887,9 +886,6 @@ A three-component vector.
 ```
 {
     x, y, z,
-
-    cross: function,
-    normalized: function,
 }
 ```
 
