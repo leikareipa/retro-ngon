@@ -8,60 +8,66 @@
 
 "use strict";
 
-Rngon.screen = function(canvasElementId = "",                      // The DOM id of the canvas element.
-                        ngon_fill_f = function(){},                // A function that rasterizes the given ngons onto the canvas.
-                        ngon_transform_and_light_f = function(){}, // A function applies lighting to the given ngons, and transforms them into screen-space for the canvas.
-                        shader_f = function(){},                   // A function that applies shaders to the rendered image. 
-                        scaleFactor = 1,
-                        fov = 43,
-                        nearPlane = 1,
-                        farPlane = 1000,
-                        auxiliaryBuffers = [])
+Rngon.screen = function(canvasElementId = "",              // The DOM id of the canvas element.
+                        ngon_fill = ()=>{},                // A function that rasterizes the given ngons onto the canvas.
+                        ngon_transform_and_light = ()=>{}, // A function applies lighting to the given ngons, and transforms them into screen-space for the canvas.
+                        options = {})                      // Options that were passed to render().
 {
-    Rngon.assert && (typeof scaleFactor === "number") || Rngon.throw("Expected the scale factor to be a numeric value.");
-    Rngon.assert && (typeof ngon_fill_f === "function" && typeof ngon_transform_and_light_f === "function")
-                 || Rngon.throw("Expected ngon-manipulation functions to be provided.");
-
+    // Connect the render surface to the given canvas.
     const canvasElement = document.getElementById(canvasElementId);
-    Rngon.assert && (canvasElement !== null) || Rngon.throw("Can't find the given canvas element.");
-
-    // The pixel dimensions of the render surface.
-    const screenWidth = Math.floor(parseInt(window.getComputedStyle(canvasElement).getPropertyValue("width")) * scaleFactor);
-    const screenHeight = Math.floor(parseInt(window.getComputedStyle(canvasElement).getPropertyValue("height")) * scaleFactor);
-    Rngon.assert && (!isNaN(screenWidth) && !isNaN(screenHeight)) || Rngon.throw("Failed to extract the canvas size.");
-    canvasElement.setAttribute("width", screenWidth);
-    canvasElement.setAttribute("height", screenHeight);
-
-    const perspectiveMatrix = Rngon.matrix44.perspective((fov * Math.PI/180), (screenWidth / screenHeight), nearPlane, farPlane);
-    const screenSpaceMatrix = Rngon.matrix44.ortho((screenWidth + 1), (screenHeight + 1));
-
+    Rngon.assert && (canvasElement instanceof Element)
+                 || Rngon.throw("Can't find the given canvas element.");
     const renderContext = canvasElement.getContext("2d");
 
-    if ((Rngon.internalState.pixelBuffer.width != screenWidth) ||
-        (Rngon.internalState.pixelBuffer.height != screenHeight))
+    // Size the canvas as per the requested render scale.
+    const screenWidth = Math.floor(parseInt(window.getComputedStyle(canvasElement).getPropertyValue("width")) * options.scale);
+    const screenHeight = Math.floor(parseInt(window.getComputedStyle(canvasElement).getPropertyValue("height")) * options.scale);
     {
-        Rngon.internalState.pixelBuffer = new ImageData(screenWidth, screenHeight);
+        Rngon.assert && (!isNaN(screenWidth) &&
+                         !isNaN(screenHeight))
+                     || Rngon.throw("Failed to extract the canvas size.");
+
+        canvasElement.setAttribute("width", screenWidth);
+        canvasElement.setAttribute("height", screenHeight);
     }
 
-    if (Rngon.internalState.useShaders &&
-        (Rngon.internalState.fragmentBuffer.width != screenWidth) ||
-        (Rngon.internalState.fragmentBuffer.height != screenHeight))
-    {
-        Rngon.internalState.fragmentBuffer.width = screenWidth;
-        Rngon.internalState.fragmentBuffer.height = screenHeight;
-        Rngon.internalState.fragmentBuffer.data = new Array(screenWidth * screenHeight)
-                                                  .fill()
-                                                  .map(e=>({}));
-    }
+    const perspectiveMatrix = Rngon.matrix44.perspective((options.fov * Math.PI/180), (screenWidth / screenHeight), options.nearPlane, options.farPlane);
+    const screenSpaceMatrix = Rngon.matrix44.ortho((screenWidth + 1), (screenHeight + 1));
+    const cameraMatrix = Rngon.matrix44.matrices_multiplied(Rngon.matrix44.rotate(options.cameraDirection.x,
+                                                                                  options.cameraDirection.y,
+                                                                                  options.cameraDirection.z),
+                                                            Rngon.matrix44.translate(-options.cameraPosition.x,
+                                                                                     -options.cameraPosition.y,
+                                                                                     -options.cameraPosition.z));
 
-    if (Rngon.internalState.useDepthBuffer &&
-        (Rngon.internalState.depthBuffer.width != screenWidth) ||
-        (Rngon.internalState.depthBuffer.height != screenHeight) ||
-        !Rngon.internalState.depthBuffer.data.length)
+    // Set up the internal render buffers.
     {
-        Rngon.internalState.depthBuffer.width = screenWidth;
-        Rngon.internalState.depthBuffer.height = screenHeight;
-        Rngon.internalState.depthBuffer.data = new Array(Rngon.internalState.depthBuffer.width * Rngon.internalState.depthBuffer.height); 
+        if ((Rngon.internalState.pixelBuffer.width != screenWidth) ||
+            (Rngon.internalState.pixelBuffer.height != screenHeight))
+        {
+            Rngon.internalState.pixelBuffer = new ImageData(screenWidth, screenHeight);
+        }
+
+        if (Rngon.internalState.useShaders &&
+            (Rngon.internalState.fragmentBuffer.width != screenWidth) ||
+            (Rngon.internalState.fragmentBuffer.height != screenHeight))
+        {
+            Rngon.internalState.fragmentBuffer.width = screenWidth;
+            Rngon.internalState.fragmentBuffer.height = screenHeight;
+            Rngon.internalState.fragmentBuffer.data = new Array(screenWidth * screenHeight)
+                                                    .fill()
+                                                    .map(e=>({}));
+        }
+
+        if (Rngon.internalState.useDepthBuffer &&
+            (Rngon.internalState.depthBuffer.width != screenWidth) ||
+            (Rngon.internalState.depthBuffer.height != screenHeight) ||
+            !Rngon.internalState.depthBuffer.data.length)
+        {
+            Rngon.internalState.depthBuffer.width = screenWidth;
+            Rngon.internalState.depthBuffer.height = screenHeight;
+            Rngon.internalState.depthBuffer.data = new Array(Rngon.internalState.depthBuffer.width * Rngon.internalState.depthBuffer.height); 
+        }
     }
 
     const publicInterface = Object.freeze(
@@ -69,50 +75,147 @@ Rngon.screen = function(canvasElementId = "",                      // The DOM id
         width: screenWidth,
         height: screenHeight,
 
-        wipe_clean: function()
+        rasterize_meshes: function(meshes = [])
         {
-            Rngon.internalState.pixelBuffer.data.fill(0);
-
-            /// TODO: Wipe the raster fragment buffer.
-
-            if (Rngon.internalState.useDepthBuffer)
-            {
-                Rngon.internalState.depthBuffer.data.fill(Rngon.internalState.depthBuffer.clearValue);
-            }
+            prepare_for_rasterization(meshes);
+            rasterize_ngon_cache();
         },
 
-        // Returns a copy of the ngons transformed into screen-space for this render surface.
-        // The n-gons will also have any of the scene's light(s) applied to them.
-        //
-        // Takes as input the ngons to be transformed, an object matrix which contains the object's
-        // transforms, a camera matrix, which contains the camera's translation and rotation, and
-        // a vector containing the camera's raw world position.
-        //
-        transform_and_light_ngons: function(ngons = [], objectMatrix = [], cameraMatrix = [], cameraPos)
+        // Returns true if any horizontal part of the surface's DOM canvas is within
+        // the page's visible region.
+        is_in_view: function()
         {
-            ngon_transform_and_light_f(ngons, objectMatrix, cameraMatrix, perspectiveMatrix, screenSpaceMatrix, cameraPos);
-        },
+            const viewHeight = window.innerHeight;
+            const containerRect = canvasElement.getBoundingClientRect();
 
-        // Draw all n-gons currently stored in the internal n-gon cache onto the render surface.
-        rasterize_ngon_cache: function()
-        {
-            ngon_fill_f(auxiliaryBuffers);
-
-            if (Rngon.internalState.useShaders)
-            {
-                shader_f({
-                    renderWidth: screenWidth,
-                    renderHeight: screenHeight,
-                    fragmentBuffer: Rngon.internalState.fragmentBuffer.data,
-                    pixelBuffer: Rngon.internalState.pixelBuffer.data,
-                    ngonCache: Rngon.internalState.transformedNgonsCache.ngons,
-                    cameraPosition: Rngon.internalState.viewPosition,
-                });
-            }
-
-            renderContext.putImageData(Rngon.internalState.pixelBuffer, 0, 0);
+            return Boolean((containerRect.top > -containerRect.height) &&
+                           (containerRect.top < viewHeight));
         },
     });
 
     return publicInterface;
+
+    function wipe_clean()
+    {
+        Rngon.internalState.pixelBuffer.data.fill(0);
+
+        /// TODO: Wipe the fragment buffer.
+
+        if (Rngon.internalState.useDepthBuffer)
+        {
+            Rngon.internalState.depthBuffer.data.fill(Rngon.internalState.depthBuffer.clearValue);
+        }
+    }
+
+    function copy_render_pixel_buffer()
+    {
+        renderContext.putImageData(Rngon.internalState.pixelBuffer, 0, 0);
+    }
+
+    /// TODO: Break this down into multiple functions.
+    function prepare_for_rasterization(meshes = [])
+    {
+        // Transform into screen space.
+        for (const mesh of meshes)
+        {
+            ngon_transform_and_light(mesh.ngons,
+                                     Rngon.mesh.object_space_matrix(mesh),
+                                     cameraMatrix,
+                                     perspectiveMatrix,
+                                     screenSpaceMatrix,
+                                     options.cameraPosition);
+        };
+
+        // Mark any non-power-of-two affine-mapped faces as using the non-power-of-two affine
+        // mapper, as the default affine mapper expects textures to be power-of-two.
+        {
+            for (let i = 0; i < Rngon.internalState.transformedNgonsCache.count; i++)
+            {
+                const ngon = Rngon.internalState.transformedNgonsCache.ngons[i];
+
+                if (ngon.material.texture &&
+                    ngon.material.textureMapping === "affine")
+                {
+                    let widthIsPOT = ((ngon.material.texture.width & (ngon.material.texture.width - 1)) === 0);
+                    let heightIsPOT = ((ngon.material.texture.height & (ngon.material.texture.height - 1)) === 0);
+
+                    if (ngon.material.texture.width === 0) widthIsPOT = false;
+                    if (ngon.material.texture.height === 0) heightIsPOT = false;
+
+                    if (!widthIsPOT || !heightIsPOT)
+                    {
+                        ngon.material.textureMapping = "affine-npot";
+                    }
+                }
+            }
+        }
+
+        // Depth-sort the n-gons.
+        {
+            const ngons = Rngon.internalState.transformedNgonsCache.ngons;
+
+            switch (options.depthSort)
+            {
+                case "none": break;
+    
+                // Painter's algorithm. Sort back-to-front; i.e. so that n-gons furthest from the camera
+                // will be first in the list.
+                case "painter":
+                {
+                    ngons.sort((ngonA, ngonB)=>
+                    {
+                        // Separate inactive n-gons (which are to be ignored when rendering the current
+                        // frame) from the n-gons we're intended to render.
+                        const a = (ngonA.isActive? (ngonA.vertices.reduce((acc, v)=>(acc + v.z), 0) / ngonA.vertices.length) : -Number.MAX_VALUE);
+                        const b = (ngonB.isActive? (ngonB.vertices.reduce((acc, v)=>(acc + v.z), 0) / ngonB.vertices.length) : -Number.MAX_VALUE);
+    
+                        return ((a === b)? 0 : ((a < b)? 1 : -1));
+                    });
+    
+                    break;
+                }
+                
+                // Sort front-to-back; i.e. so that n-gons closest to the camera will be first in the
+                // list. When used together with depth buffering, allows for early rejection of occluded
+                // pixels during rasterization.
+                case "painter-reverse":
+                default:
+                {
+                    ngons.sort((ngonA, ngonB)=>
+                    {
+                        // Separate inactive n-gons (which are to be ignored when rendering the current
+                        // frame) from the n-gons we're intended to render.
+                        const a = (ngonA.isActive? (ngonA.vertices.reduce((acc, v)=>(acc + v.z), 0) / ngonA.vertices.length) : Number.MAX_VALUE);
+                        const b = (ngonB.isActive? (ngonB.vertices.reduce((acc, v)=>(acc + v.z), 0) / ngonB.vertices.length) : Number.MAX_VALUE);
+    
+                        return ((a === b)? 0 : ((a > b)? 1 : -1));
+                    });
+    
+                    break;
+                }
+            }
+        }
+    }
+
+    // Draw all n-gons currently stored in the internal n-gon cache onto the render surface.
+    function rasterize_ngon_cache()
+    {
+        wipe_clean();
+
+        ngon_fill(options.auxiliaryBuffers);
+
+        if (Rngon.internalState.useShaders)
+        {
+            Rngon.internalState.shader_function({
+                renderWidth: screenWidth,
+                renderHeight: screenHeight,
+                fragmentBuffer: Rngon.internalState.fragmentBuffer.data,
+                pixelBuffer: Rngon.internalState.pixelBuffer.data,
+                ngonCache: Rngon.internalState.transformedNgonsCache.ngons,
+                cameraPosition: options.cameraPosition,
+            });
+        }
+
+        copy_render_pixel_buffer();
+    }
 }
