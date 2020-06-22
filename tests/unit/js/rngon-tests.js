@@ -228,11 +228,11 @@ const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
             expect_true([()=>(document.getElementById(testCanvasId) !== null)]);
 
             // Create a colored rectangle that fills the entire canvas when rendered.
-            const colorShade = 222;
+            const colorShade = 255;
             const ngon = Rngon.ngon([Rngon.vertex(-1, -1, 1),
-                                     Rngon.vertex(1, -1, 1),
-                                     Rngon.vertex(1, 1, 1),
-                                     Rngon.vertex(-1, 1, 1)],
+                                     Rngon.vertex( 1, -1, 1),
+                                     Rngon.vertex( 1,  1, 1),
+                                     Rngon.vertex(-1,  1, 1)],
                                     {
                                         color: Rngon.color_rgba(colorShade, colorShade, colorShade, colorShade),
                                         texture: null,
@@ -240,7 +240,7 @@ const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
                                     });
             const mesh = Rngon.mesh([ngon],
                                     {
-                                        translation: Rngon.translation_vector(0, 0, 0),
+                                        translation: Rngon.translation_vector(0, 0, 1),
                                         rotation: Rngon.rotation_vector(0, 0, 0),
                                         scaling: Rngon.scaling_vector(1, 1, 1)
                                     });
