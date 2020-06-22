@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (22 June 2020 02:10:03 UTC)
+// VERSION: beta live (22 June 2020 21:30:56 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -1067,19 +1067,57 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
             continue;
         }
 
-        // Handle n-gons that constitute points and lines.
-        /// TODO: Add the fragment buffer, depth testing, and alpha testing for points and lines.
+        // Rasterize a point.
+        /// TODO: Add the fragment buffer, depth testing, and alpha testing for points and/or lines.
         if (ngon.vertices.length === 1)
         {
             const idx = ((Math.round(ngon.vertices[0].x) + Math.round(ngon.vertices[0].y) * renderWidth) * 4);
-                
-            pixelBuffer[idx + 0] = material.color.red;
-            pixelBuffer[idx + 1] = material.color.green;
-            pixelBuffer[idx + 2] = material.color.blue;
-            pixelBuffer[idx + 3] = material.color.alpha;
+            const depthBufferIdx = (idx / 4);
+            
+            const depth = (ngon.vertices[0].z / Rngon.internalState.farPlaneDistance);
+            const shade = (material.renderVertexShade? ngon.vertices[0].shade : 1);
+
+            // Alpha test.
+            if (material.color.alpha !== 255) continue;
+
+            // Depth test.
+            if (depthBuffer && (depthBuffer[depthBufferIdx] <= depth)) continue;
+            
+            // Write the pixel.
+            {
+                pixelBuffer[idx + 0] = (shade * material.color.red);
+                pixelBuffer[idx + 1] = (shade * material.color.green);
+                pixelBuffer[idx + 2] = (shade * material.color.blue);
+                pixelBuffer[idx + 3] = 255;
+
+                if (depthBuffer)
+                {
+                    depthBuffer[depthBufferIdx] = depth;
+                }
+
+                if (usePixelShaders)
+                {
+                    const fragment = fragmentBuffer[depthBufferIdx];
+                    fragment.textureU = 0;
+                    fragment.textureV = 0;
+                    fragment.textureUScaled = 0;
+                    fragment.textureVScaled = 0;
+                    fragment.depth = depth;
+                    fragment.shade = shade;
+                    fragment.worldX = ngon.vertices[0].worldX;
+                    fragment.worldY = ngon.vertices[0].worldY;
+                    fragment.worldZ = ngon.vertices[0].worldZ;
+                    fragment.normalX = ngon.normal.x;
+                    fragment.normalY = ngon.normal.y;
+                    fragment.normalZ = ngon.normal.z;
+                    fragment.ngonIdx = n;
+                    fragment.w = (interpolatePerspective? ngon.vertices[0].w : 1);
+                }
+            }
 
             continue;
         }
+        // Rasterize a line.
         else if (ngon.vertices.length === 2)
         {
             Rngon.line_draw.into_pixel_buffer(ngon.vertices[0], ngon.vertices[1], material.color, Rngon.internalState.useDepthBuffer);
@@ -1087,7 +1125,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
             continue;
         }
         
-        // Handle n-gons with 3 or more vertices.
+        // Rasterize a polygon with 3 or more vertices.
         {         
             // Figure out which of the n-gon's vertices are on its left side and which on the
             // right. The vertices on both sides will be arranged from smallest Y to largest
