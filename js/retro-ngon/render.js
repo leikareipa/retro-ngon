@@ -41,6 +41,7 @@ Rngon.render = function(canvasElementId,
         Rngon.internalState.applyViewportClipping = (options.clipToViewport == true);
         Rngon.internalState.lights = options.lights;
         Rngon.internalState.farPlaneDistance = options.farPlane;
+        Rngon.internalState.useVertexShaders = (typeof options.vertexShaderFunction === "function");
 
         Rngon.internalState.usePerspectiveCorrectInterpolation = ((options.perspectiveCorrectTexturing || // <- Name in pre-beta.2.
                                                                 options.perspectiveCorrectInterpolation) == true);

@@ -10,9 +10,8 @@ A non-interactive render sample is also available [here](https://www.tarpeeksihy
 ### Features
 - Straightforward API
 - Genuine retro aesthetics
-- Native rendering of convex n-sided polygons
+- Pixel and vertex shaders
 - Vanilla JavaScript with no dependencies
-- Pixel shaders
 
 ### Projects using the retro n-gon renderer
 - [RallySportED-js](https://github.com/leikareipa/rallysported-js/), a contemporary asset editor for the DOS game Rally-Sport

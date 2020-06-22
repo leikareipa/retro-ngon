@@ -96,6 +96,8 @@ Rngon.internalState =
     // make use of any pixel shaders.
     usePixelShaders: false,
 
+    useVertexShaders: false,
+
     usePerspectiveCorrectInterpolation: false,
 
     // If set to true, all n-gons will be rendered with a wireframe.

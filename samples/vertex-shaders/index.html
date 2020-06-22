@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width">
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <title>Vertex shaders - Render sample - Retro n-gon renderer</title>
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" integrity="sha384-gfdkjb5BdAXd+lj+gudLWI+BXq4IuLW5IT+brZEZsLFm++aCMlF1V92rMkPaX4PP" crossorigin="anonymous">
+        <link rel="stylesheet" type="text/css" href="../sample-base.css">
+    </head>
+    <body id="sample-container">
+        <iframe id="render-target"
+                src="../sample-base.html?sample=vertex-shaders"
+                style="width: 100vw; height: 100vh; border: none;">
+        </iframe>
+
+        <div class="infoboxes-container additional">
+            <div class="infobox shader" style="width: 260px;">
+                <div class="title">Vertex shader</div>
+                <div class="value">None</div>
+                <div class="adjust left" onclick="change_shader(-1);"></div>
+                <div class="adjust right" onclick="change_shader(1);"></div>
+            </div>
+        </div>
+
+        <div id="copyright-notice"
+             style="position: absolute;
+                    z-index: 1000;
+                    color: white;
+                    background-color: black;
+                    bottom: 5px;
+                    left: 5px;
+                    padding: 7px;
+                    font-family: sans-serif;">
+            &#9888;
+            <a href="./assets/textures/copying.txt" style="text-decoration: none; color: white;">
+                Texture copyright info
+            </a>
+        </div>
+
+        <script>
+            const shaders = [
+                {title:"None",                   function:null},
+                {title:"Distance fog",           function:"shader_depth_fog"},
+                {title:"Grow",                   function:"shader_grow"},
+                {title:"Wave",                   function:"shader_wavy"},
+            ];
+
+            let activeShaderIdx = 0;
+            var ACTIVE_SHADER = shaders[activeShaderIdx];
+
+            function change_shader(direction = 1)
+            {
+                activeShaderIdx = (activeShaderIdx + direction);
+                
+                if (activeShaderIdx < 0)
+                {
+                    activeShaderIdx = (shaders.length - 1);
+                }
+                else if (activeShaderIdx >= shaders.length)
+                {
+                    activeShaderIdx = 0;
+                }
+
+                ACTIVE_SHADER = shaders[activeShaderIdx];
+
+                document.querySelector(".infobox.shader .value").innerHTML = ACTIVE_SHADER.title;
+
+                return;
+            }
+        </script>
+    </body>
+</html>

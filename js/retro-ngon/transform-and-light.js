@@ -56,7 +56,8 @@ Rngon.ngon_transform_and_light = function(ngons = [],
                                                       ngon.vertices[v].v,
                                                       ngon.vertices[v].w);
 
-                if (ngon.material.vertexShading === "gouraud")
+                if (Rngon.internalState.useVertexShaders ||
+                    (ngon.material.vertexShading === "gouraud"))
                 {
                     cachedNgon.vertexNormals[v] = Rngon.vector3(ngon.vertexNormals[v].x,
                                                                 ngon.vertexNormals[v].y,
@@ -97,7 +98,8 @@ Rngon.ngon_transform_and_light = function(ngons = [],
 
                 // If using Gouraud shading, we need to transform all vertex normals; but
                 // the face normal won't be used and so can be ignored.
-                if (cachedNgon.material.vertexShading === "gouraud")
+                if (Rngon.internalState.useVertexShaders ||
+                    (cachedNgon.material.vertexShading === "gouraud"))
                 {
                     for (let v = 0; v < cachedNgon.vertices.length; v++)
                     {
@@ -116,6 +118,12 @@ Rngon.ngon_transform_and_light = function(ngons = [],
                 if (cachedNgon.material.vertexShading !== "none")
                 {
                     Rngon.ngon_transform_and_light.apply_lighting(cachedNgon);
+                }
+
+                // Apply an optional, user-defined vertex shader.
+                if (Rngon.internalState.vertex_shader_function)
+                {
+                    Rngon.internalState.vertex_shader_function(cachedNgon, cameraPos);
                 }
             }
 
@@ -136,12 +144,6 @@ Rngon.ngon_transform_and_light = function(ngons = [],
                     ngonCache.count--;
                     continue;
                 }
-            }
-
-            // Apply an optional, user-defined vertex shader.
-            if (Rngon.internalState.vertex_shader_function)
-            {
-                Rngon.internalState.vertex_shader_function(cachedNgon);
             }
 
             // Screen space. Vertices will be transformed such that their XY coordinates
