@@ -209,8 +209,11 @@ const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
             const renderSurface = Rngon.canvas(testCanvasId,
                                                Rngon.ngon_filler,
                                                Rngon.ngon_transform_and_light,
-                                               ()=>{},
-                                               1);
+                                               {
+                                                   scale: 1,
+                                                   cameraDirection: Rngon.vector3(),
+                                                   cameraPosition: Rngon.vector3(),
+                                               });
 
             expect_true([()=>(renderSurface.width === testCanvasWidth),
                          ()=>(renderSurface.height === testCanvasHeight)]);
