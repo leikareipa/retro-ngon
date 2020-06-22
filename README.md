@@ -1088,14 +1088,6 @@ Enabling texturing halves the number of polygons that can be rendered at 60 FPS 
 # Project status
 The project is currently in beta - its core functionality is in place, but notable bugs, API-breaking changes, etc. are to be expected.
 
-## Roadmap
-
-The following is a partial list of features scheduled for implementation:
-- Gouraud shading (or the like)
-- Distance fog
-- Mipmapping
-- Improved asset workflow
-
 ## Browser compatibility
 Below are rough estimates of the required browser versions for a given version of the retro n-gon renderer. Browsers marked with "No" are not compatible at all.
 
