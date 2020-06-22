@@ -398,21 +398,5 @@ function create_dom_elements()
         mainContainer.appendChild(infoLabel);
     }
 
-    document.body.style.cssText = `
-        text-align: center;
-        background-color: gray;
-        color: white;
-        padding: 0;
-        margin: 20px;
-        font-family: sans-serif;
-    `;
-
-    return;
-}
-
-function remove_canvas()
-{
-    document.getElementById(canvasId).remove();
-
     return;
 }
