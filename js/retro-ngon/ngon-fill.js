@@ -123,7 +123,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
         else if (ngon.vertices.length === 2)
         {
             Rngon.line_draw(ngon.vertices[0], ngon.vertices[1], material.color);
-            
+
             continue;
         }
         
@@ -462,7 +462,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                         v = (ngonY * (texture.height / ngonHeight));
 
                                         // The texture image is flipped, so we need to flip V as well.
-                                        v = (texture.height - v - 1);
+                                        v = (texture.height - v);
 
                                         break;
                                     }
@@ -470,6 +470,9 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                 }
 
                                 const texel = texture.pixels[(~~u) + (~~v) * texture.width];
+
+                                // Make sure we gracefully exit if accessing the texture out of bounds.
+                                if (!texel) continue;
 
                                 // Alpha-test the texture. If the texel isn't fully opaque, skip it.
                                 if (texel.alpha !== 255) continue;
