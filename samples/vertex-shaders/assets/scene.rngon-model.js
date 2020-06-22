@@ -38,7 +38,8 @@ export const scene =
 			"Floor":{color:c(60,41,20),texture:t["ground"],textureMapping:"affine",},
 			"Object":{color:c(230,230,230),texture:t["bark"],textureMapping:"affine",isFlat:true,
 																					 isGrowing:true,
-																					 isWavy:true,},
+																					 isWavy:true,
+																					 isPointCloud:true},
 			"Pillar":{color:c(163,126,88),texture:t["bark"],textureMapping:"affine",},
 			"Wall":{color:c(163,72,27),texture:t["shrub"],textureMapping:"affine",},
 		});

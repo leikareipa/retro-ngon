@@ -104,3 +104,34 @@ function shader_wavy(ngon)
         }
     }
 }
+
+function shader_vertex_points(ngon)
+{
+    if (ngon.material.isPointCloud)
+    {
+        let [midX, midY, midZ] = ngon.vertices.reduce((values, vertex)=>
+        {
+            values[0] += vertex.x;
+            values[1] += vertex.y;
+            values[2] += vertex.z;
+            return values;
+        }, [0, 0, 0]);
+
+        midX /= ngon.vertices.length;
+        midY /= ngon.vertices.length;
+        midZ /= ngon.vertices.length;
+
+        ngon.vertices.length = 1;
+        ngon.vertices[0].x = midX;
+        ngon.vertices[0].y = midY;
+        ngon.vertices[0].z = midZ;
+    }
+}
+
+function shader_fade_in_out(ngon)
+{
+    for (let v = 0; v < ngon.vertices.length; v++)
+    {
+        ngon.vertices[v].shade = (Math.sin(numFramesRendered / 64) + 1);
+    }
+}
