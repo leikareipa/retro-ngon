@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (22 June 2020 21:30:56 UTC)
+// VERSION: beta live (22 June 2020 23:09:43 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -783,93 +783,64 @@ Rngon.ngon.clip_to_viewport = function(ngon)
 }
 "use strict";
 
-// Provides functions for drawing lines.
-Rngon.line_draw = (()=>
+// Draws a line between the two given vertices into the render's pixel buffer.
+// Note that the line will ignore the depth and fragment buffers.
+Rngon.line_draw = function(vert1 = Rngon.vertex(),
+                           vert2 = Rngon.vertex(),
+                           lineColor = Rngon.color_rgba(127, 127, 127, 255))
 {
-    return Object.freeze(
+    const pixelBuffer = Rngon.internalState.pixelBuffer.data;
+    const bufferWidth = Rngon.internalState.pixelBuffer.width;
+    const bufferHeight = Rngon.internalState.pixelBuffer.height;
+
+    let x0 = Math.round(vert1.x);
+    let y0 = Math.round(vert1.y);
+    const x1 = Math.round(vert2.x);
+    const y1 = Math.round(vert2.y);
+
+    // Bresenham line algo. Adapted from https://stackoverflow.com/a/4672319.
     {
-        // Draws a line between the two given vertices into the render's pixel buffer. It's
-        // expected that the pixel array packs the pixels as consecutive RGBA values, each
-        // in the range 0..255. If the 'respectDepth' option is set to true, the line's pixels
-        // will be tested against the depth buffer before rendering.
-        into_pixel_buffer: function(vert1 = Rngon.vertex(),
-                                    vert2 = Rngon.vertex(),
-                                    lineColor = Rngon.color_rgba(127, 127, 127, 255),
-                                    respectDepth = false)
+        let dx = Math.abs(x1 - x0);
+        let dy = Math.abs(y1 - y0);
+        const sx = ((x0 < x1)? 1 : -1);
+        const sy = ((y0 < y1)? 1 : -1); 
+        let err = (((dx > dy)? dx : -dy) / 2);
+        
+        while (1)
         {
-            const pixelBuffer = Rngon.internalState.pixelBuffer.data;
-            const depthBuffer = (Rngon.internalState.useDepthBuffer? Rngon.internalState.depthBuffer.data : null);
-            const bufferWidth = Rngon.internalState.pixelBuffer.width;
-            const bufferHeight = Rngon.internalState.pixelBuffer.height;
+            put_pixel(x0, y0);
 
-            /// TODO: Depth-aware drawing is disabled until a better implementation of it is in place.
-            respectDepth = false;
+            if ((x0 === x1) && (y0 === y1)) break;
 
-            let x0 = Math.round(vert1.x);
-            let y0 = Math.round(vert1.y);
-            const x1 = Math.round(vert2.x);
-            const y1 = Math.round(vert2.y);
-            const lineLength = (respectDepth? this.distanceBetween(x0, y0, x1, y1) : 1);
-
-            // Bresenham line algo. Adapted from https://stackoverflow.com/a/4672319.
+            const e2 = err;
+            if (e2 > -dx)
             {
-                let dx = Math.abs(x1 - x0);
-                let dy = Math.abs(y1 - y0);
-                const sx = ((x0 < x1)? 1 : -1);
-                const sy = ((y0 < y1)? 1 : -1); 
-                let err = (((dx > dy)? dx : -dy) / 2);
-                
-                while (1)
-                {
-                    const l = (respectDepth? (this.distanceBetween(x1, y1, x0, y0) / (lineLength || 1)) : 1);
-
-                    put_pixel(x0, y0, (respectDepth? Rngon.lerp((vert2.w - 5), (vert1.w - 5), l) : 0));
-
-                    if ((x0 === x1) && (y0 === y1)) break;
-
-                    const e2 = err;
-                    if (e2 > -dx)
-                    {
-                        err -= dy;
-                        x0 += sx;
-                    }
-                    if (e2 < dy)
-                    {
-                        err += dx;
-                        y0 += sy;
-                    }
-                }
+                err -= dy;
+                x0 += sx;
             }
-
-            function put_pixel(x = 0, y = 0, depth = 0)
+            if (e2 < dy)
             {
-                if (x < 0 || x >= bufferWidth ||
-                   (y < 0 || y >= bufferHeight))
-                {
-                    return;
-                }
-
-                const idx = ((x + y * bufferWidth) * 4);
-
-                if (respectDepth && (depthBuffer[idx/4] <= depth))
-                {
-                    return;
-                }
-
-                pixelBuffer[idx + 0] = lineColor.red;
-                pixelBuffer[idx + 1] = lineColor.green;
-                pixelBuffer[idx + 2] = lineColor.blue;
-                pixelBuffer[idx + 3] = lineColor.alpha;
-                if (depthBuffer) depthBuffer[idx/4] = depth;
+                err += dx;
+                y0 += sy;
             }
-        },
-
-        distanceBetween: function(x1, y1, x2, y2)
-        {
-            return Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
         }
-    });
-})();
+    }
+
+    function put_pixel(x = 0, y = 0)
+    {
+        if ((x < 0 || x >= bufferWidth) ||
+            (y < 0 || y >= bufferHeight))
+        {
+            return;
+        }
+
+        const idx = ((x + y * bufferWidth) * 4);
+        pixelBuffer[idx + 0] = lineColor.red;
+        pixelBuffer[idx + 1] = lineColor.green;
+        pixelBuffer[idx + 2] = lineColor.blue;
+        pixelBuffer[idx + 3] = lineColor.alpha;
+    }
+};
 /*
  * Tarpeeksi Hyvae Soft 2019 /
  * Retro n-gon renderer
@@ -1120,8 +1091,8 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
         // Rasterize a line.
         else if (ngon.vertices.length === 2)
         {
-            Rngon.line_draw.into_pixel_buffer(ngon.vertices[0], ngon.vertices[1], material.color, Rngon.internalState.useDepthBuffer);
-
+            Rngon.line_draw(ngon.vertices[0], ngon.vertices[1], material.color);
+            
             continue;
         }
         
@@ -1582,12 +1553,12 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                 {
                     for (let l = 1; l < numLeftVerts; l++)
                     {
-                        Rngon.line_draw.into_pixel_buffer(leftVerts[l-1], leftVerts[l], material.wireframeColor, Rngon.internalState.useDepthBuffer);
+                        Rngon.line_draw(leftVerts[l-1], leftVerts[l], material.wireframeColor);
                     }
 
                     for (let r = 1; r < numRightVerts; r++)
                     {
-                        Rngon.line_draw.into_pixel_buffer(rightVerts[r-1], rightVerts[r], material.wireframeColor, Rngon.internalState.useDepthBuffer);
+                        Rngon.line_draw(rightVerts[r-1], rightVerts[r], material.wireframeColor);
                     }
                 }
             }

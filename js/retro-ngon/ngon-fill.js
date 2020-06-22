@@ -122,8 +122,8 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
         // Rasterize a line.
         else if (ngon.vertices.length === 2)
         {
-            Rngon.line_draw.into_pixel_buffer(ngon.vertices[0], ngon.vertices[1], material.color, Rngon.internalState.useDepthBuffer);
-
+            Rngon.line_draw(ngon.vertices[0], ngon.vertices[1], material.color);
+            
             continue;
         }
         
@@ -584,12 +584,12 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                 {
                     for (let l = 1; l < numLeftVerts; l++)
                     {
-                        Rngon.line_draw.into_pixel_buffer(leftVerts[l-1], leftVerts[l], material.wireframeColor, Rngon.internalState.useDepthBuffer);
+                        Rngon.line_draw(leftVerts[l-1], leftVerts[l], material.wireframeColor);
                     }
 
                     for (let r = 1; r < numRightVerts; r++)
                     {
-                        Rngon.line_draw.into_pixel_buffer(rightVerts[r-1], rightVerts[r], material.wireframeColor, Rngon.internalState.useDepthBuffer);
+                        Rngon.line_draw(rightVerts[r-1], rightVerts[r], material.wireframeColor);
                     }
                 }
             }
