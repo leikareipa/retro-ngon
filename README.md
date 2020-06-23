@@ -262,7 +262,7 @@ Rngon.render("...", [...],
                  pixelShaderFunction: sample_shader,
              })
 
-function sample_shader({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
+function sample_shader({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache, cameraPosition})
 {
     ...
 }
@@ -270,7 +270,7 @@ function sample_shader({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, 
 
 The renderer will call the shader function once all n-gons have been rasterized but before the rasterized image is drawn onto the screen &ndash; the idea being that the shader function gets to modify the rasterized pixel data before it is shown to the user.
 
-The shader function receives as parameters the render resolution, the rasterized pixel data, some metadata in the fragment buffer about the state of the renderer at each rasterized pixel, and the n-gons &ndash; transformed into screen space &ndash; that were rasterized.
+The shader function receives as parameters the render resolution, the rasterized pixel data, some metadata in the fragment buffer about the state of the renderer at each rasterized pixel, the n-gons &ndash; transformed into screen space &ndash; that were rasterized, and the position &ndash; in world XYZ coordinates &ndash; of the camera.
 
 The following is a simple shader to make every pixel in the rendering blue:
 
