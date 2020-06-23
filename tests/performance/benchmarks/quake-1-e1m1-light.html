@@ -10,31 +10,25 @@
         <script src="../../../distributable/rngon.cat.js"></script>
         <script type="module">
             import {benchmark} from "./benchmark.js";
-            import {scene} from "./assets/quake-1/e1m1.rngon-model.js";
 
-            (async()=>
-            {
-                await scene.initialize();
+            benchmark("./assets/quake-1/e1m1.rngon-model.js",
+                      {x:500, y:30, z:400},
+                      {x:-20, y:197, z:0},
+                      {
+                          fov: 60,
+                          nearPlane: 2,
+                          farPlane: 5000,
+                          scale: 0.2,
+                          lights:
+                          [
+                              Rngon.light(Rngon.vector3(488, 177, 299)),
+                              Rngon.light(Rngon.vector3(409, 115, 758)),
+                              Rngon.light(Rngon.vector3(481, 182, 113)),
+                          ],
+                          pixelShaderFunction: perpixel_light_shader,
+                      });
 
-                benchmark([Rngon.mesh(scene.ngons)],
-                          {x:500, y:30, z:400},
-                          {x:-20, y:197, z:0},
-                          {
-                              fov: 60,
-                              nearPlane: 2,
-                              farPlane: 5000,
-                              scale: 0.2,
-                              lights:
-                              [
-                                  Rngon.light(Rngon.vector3(488, 177, 299)),
-                                  Rngon.light(Rngon.vector3(409, 115, 758)),
-                                  Rngon.light(Rngon.vector3(481, 182, 113)),
-                              ],
-                              pixelShaderFunction: perpixel_light,
-                          });
-            })();
-
-            function perpixel_light({renderWidth, renderHeight, pixelBuffer, fragmentBuffer, ngonCache})
+            function perpixel_light_shader({renderWidth, renderHeight, pixelBuffer, fragmentBuffer, ngonCache})
             {
                 const lightDirection = Rngon.vector3();
                 const surfaceNormal = Rngon.vector3();

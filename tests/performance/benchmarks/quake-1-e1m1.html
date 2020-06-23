@@ -10,22 +10,16 @@
         <script src="../../../distributable/rngon.cat.js"></script>
         <script type="module">
             import {benchmark} from "./benchmark.js";
-            import {scene} from "./assets/quake-1/e1m1.rngon-model.js";
 
-            (async()=>
-            {
-                await scene.initialize();
-
-                benchmark([Rngon.mesh(scene.ngons)],
-                          {x:500, y:30, z:400},
-                          {x:-20, y:197, z:0},
-                          {
-                              fov: 60,
-                              nearPlane: 2,
-                              farPlane: 5000,
-                              scale: 0.2,
-                          });
-            })();
+            benchmark("./assets/quake-1/e1m1.rngon-model.js",
+                      {x:500, y:30, z:400},
+                      {x:-20, y:197, z:0},
+                      {
+                          fov: 60,
+                          nearPlane: 2,
+                          farPlane: 5000,
+                          scale: 0.2,
+                      });
         </script>
     </body>
 </html>

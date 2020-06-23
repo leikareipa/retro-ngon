@@ -13,18 +13,38 @@ const canvasId = "benchmark-canvas";
 const renderWidth = 1280;
 const renderHeight = 720;
 
-export async function benchmark(sceneMeshes = [],
+export async function benchmark(sceneFileName = "",
                                 initialCameraPos = {x:0, y:0, z:0},
                                 initialCameraDir = {x:0, y:0, z:0},
                                 extraRenderOptions = {})
 {
+    const sceneMesh = await load_scene_mesh(sceneFileName);
+
     create_dom_elements();
 
-    const results = await run_bencmark(sceneMeshes, initialCameraPos, initialCameraDir, extraRenderOptions);
+    const results = await run_bencmark([sceneMesh], initialCameraPos, initialCameraDir, extraRenderOptions);
 
     print_results(results);
 
     return;
+}
+
+// Note: we expect the mesh file to export an object called 'benchmarkScene'
+// whose property 'ngons' provides the scene's n-gons.
+async function load_scene_mesh(filename)
+{
+    // Give the user a visual indication that we're loading data.
+    const loadSpinner = document.createElement("div");
+    loadSpinner.innerHTML = "&#8987; Initializing...";
+    document.body.appendChild(loadSpinner);
+
+    // Load the data.
+    const sceneModule = await import(filename);
+    await sceneModule.benchmarkScene.initialize();
+
+    loadSpinner.remove();
+
+    return Rngon.mesh(sceneModule.benchmarkScene.ngons);
 }
 
 function print_results(results)
@@ -332,7 +352,7 @@ function create_dom_elements()
         canvas.style.cssText = `
             width: 100%;
             height: ${renderHeight}px;
-            background-color: black;
+            background-color: rgba(0, 0, 0, 0.1);
             padding: 0;
             margin: 0;
             border-radius: 20px;

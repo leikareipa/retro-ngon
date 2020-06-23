@@ -14,7 +14,7 @@ import {textures as textureAtlas} from "./e1m1.rngon-texture-atlas.js";
 //    - now you can access the n-gons via .ngons
 //    - if you need .initialize() to finish before you start rendering, call it with await inside an async()=>{} wrapper
 //
-export const scene =
+export const benchmarkScene =
 {
 	ngons:[],
 	initialize: async function()
