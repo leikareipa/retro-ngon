@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (22 June 2020 23:43:46 UTC)
+// VERSION: beta live (23 June 2020 02:12:48 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -1053,12 +1053,14 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
 
             // Depth test.
             if (depthBuffer && (depthBuffer[depthBufferIdx] <= depth)) continue;
+
+            const color = (texture? texture.pixels[0] : material.color);
             
             // Write the pixel.
             {
-                pixelBuffer[idx + 0] = (shade * material.color.red);
-                pixelBuffer[idx + 1] = (shade * material.color.green);
-                pixelBuffer[idx + 2] = (shade * material.color.blue);
+                pixelBuffer[idx + 0] = (shade * color.red);
+                pixelBuffer[idx + 1] = (shade * color.green);
+                pixelBuffer[idx + 2] = (shade * color.blue);
                 pixelBuffer[idx + 3] = 255;
 
                 if (depthBuffer)

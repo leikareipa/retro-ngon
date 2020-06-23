@@ -84,12 +84,14 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
 
             // Depth test.
             if (depthBuffer && (depthBuffer[depthBufferIdx] <= depth)) continue;
+
+            const color = (texture? texture.pixels[0] : material.color);
             
             // Write the pixel.
             {
-                pixelBuffer[idx + 0] = (shade * material.color.red);
-                pixelBuffer[idx + 1] = (shade * material.color.green);
-                pixelBuffer[idx + 2] = (shade * material.color.blue);
+                pixelBuffer[idx + 0] = (shade * color.red);
+                pixelBuffer[idx + 1] = (shade * color.green);
+                pixelBuffer[idx + 2] = (shade * color.blue);
                 pixelBuffer[idx + 3] = 255;
 
                 if (depthBuffer)
