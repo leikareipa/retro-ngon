@@ -275,7 +275,7 @@ The shader function receives as parameters the render resolution, the rasterized
 The following is a simple shader to make every pixel in the rendering blue:
 
 ```
-function sample_shader({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
+function sample_shader({renderWidth, renderHeight, pixelBuffer})
 {
     for (let i = 0; i < (renderWidth * renderHeight); i++)
     {
@@ -297,7 +297,7 @@ Although we've done so above, a shader doesn't normally need to explicitly set t
 To demonstrate that pixels with a default alpha of 0 are indeed part of the background, the following shader colors blue all pixels whose alpha is 0:
 
 ```
-function sample_shader({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
+function sample_shader({renderWidth, renderHeight, pixelBuffer})
 {
     for (let i = 0; i < (renderWidth * renderHeight); i++)
     {
@@ -320,7 +320,7 @@ With simple pixel shaders like these, you can create various effects like graysc
 For example, to color only one corner of our quad blue, we can use the fragment buffer's texture coordinates to identify the desired region on the quad's face, then color in only those pixels whose texture coordinates are within that region:
 
 ```
-function sample_shader({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
+function sample_shader({renderWidth, renderHeight, pixelBuffer, fragmentBuffer})
 {
     for (let i = 0; i < (renderWidth * renderHeight); i++)
     {
@@ -383,7 +383,7 @@ In the above shader, we use the fragment buffer's 'ngonIdx' property to find whi
 The following shader uses the fragment buffer's XYZ world coordinates to apply an alpha fading effect. It exploits the fact that this particular quad's world coordinates are always in the range [-1, 1], using them as an alpha multiplier:
 
 ```
-function sample_shader({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
+function sample_shader({renderWidth, renderHeight, pixelBuffer, fragmentBuffer})
 {
     for (let i = 0; i < (renderWidth * renderHeight); i++)
     {
