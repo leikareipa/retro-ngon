@@ -70,6 +70,11 @@ Rngon.internalState =
             textureUScaled: undefined,
             textureVScaled: undefined,
 
+            // Which of the texture's mip levels was used. This is a value from 0
+            // to n-1, where n is the total number of mip levels available in the
+            // texture.
+            textureMipLevelIdx: undefined,
+
             // World coordinates at this pixel.
             worldX: undefined,
             worldY: undefined,

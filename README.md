@@ -786,6 +786,12 @@ An n-gon &ndash; a shape defined by *n* vertices; typically a triangle or a quad
     material,
     normal,        // The face normal.
     vertexNormals, // The corresponding normal for each vertex.
+
+    // A value in the range [0,1] that defines which mip level of this
+    // n-gon's texture (if it has a texture) should be used when rendering.
+    // A value of 0 is the maximum-resolution (base) mip level, 1 is the
+    // lowest-resolution (1 x 1) mip level.
+    mipLevel,
 }
 ```
 

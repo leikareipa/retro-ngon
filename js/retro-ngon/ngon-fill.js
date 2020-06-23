@@ -52,7 +52,18 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
     {
         const ngon = Rngon.internalState.ngonCache.ngons[n];
         const material = ngon.material;
-        const texture = material.texture;
+
+        let texture = null;
+        let textureMipLevel = null;
+        let textureMipLevelIdx = 3;
+        if (material.texture)
+        {
+            texture = material.texture;
+
+            const numMipLevels = texture.mipLevels.length;
+            textureMipLevelIdx = Math.max(0, Math.min((numMipLevels - 1), Math.round((numMipLevels - 1) * ngon.mipLevel)));
+            textureMipLevel = texture.mipLevels[textureMipLevelIdx];
+        }
 
         Rngon.assert && (ngon.vertices.length < leftVerts.length)
                      || Rngon.throw("Overflowing the vertex buffer");
@@ -85,7 +96,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
             // Depth test.
             if (depthBuffer && (depthBuffer[depthBufferIdx] <= depth)) continue;
 
-            const color = (texture? texture.pixels[0] : material.color);
+            const color = (texture? textureMipLevel.pixels[0] : material.color);
             
             // Write the pixel.
             {
@@ -106,6 +117,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                     fragment.textureV = 0;
                     fragment.textureUScaled = 0;
                     fragment.textureVScaled = 0;
+                    fragment.textureMipLevelIdx = textureMipLevelIdx;
                     fragment.depth = depth;
                     fragment.shade = shade;
                     fragment.worldX = ngon.vertices[0].worldX;
@@ -394,8 +406,8 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                                 if (signU === -1) u = (upperLimit - u);
                                                 if (signV === -1) v = (upperLimit - v);
 
-                                                u *= texture.width;
-                                                v *= texture.height;
+                                                u *= textureMipLevel.width;
+                                                v *= textureMipLevel.height;
 
                                                 break;
                                             }
@@ -404,13 +416,13 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                                 u -= Math.floor(u);
                                                 v -= Math.floor(v);
 
-                                                u *= texture.width;
-                                                v *= texture.height;
+                                                u *= textureMipLevel.width;
+                                                v *= textureMipLevel.height;
 
                                                 // Modulo for power-of-two. This will also flip the texture for
                                                 // negative UV coordinates.
-                                                u = (u & (texture.width - 1));
-                                                v = (v & (texture.height - 1));
+                                                u = (u & (textureMipLevel.width - 1));
+                                                v = (v & (textureMipLevel.height - 1));
 
                                                 break;
                                             }
@@ -428,25 +440,25 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                         u = (iplU / iplInvW);
                                         v = (iplV / iplInvW);
 
-                                        u *= texture.width;
-                                        v *= texture.height;
+                                        u *= textureMipLevel.width;
+                                        v *= textureMipLevel.height;
                 
                                         // Wrap with repetition.
                                         /// FIXME: Why do we need to test for UV < 0 even when using positive
                                         /// but tiling UV coordinates? Doesn't render properly unless we do.
                                         if ((u < 0) ||
                                             (v < 0) ||
-                                            (u >= texture.width) ||
-                                            (v >= texture.height))
+                                            (u >= textureMipLevel.width) ||
+                                            (v >= textureMipLevel.height))
                                         {
                                             const uWasNeg = (u < 0);
                                             const vWasNeg = (v < 0);
                 
-                                            u = (Math.abs(u) % texture.width);
-                                            v = (Math.abs(v) % texture.height);
+                                            u = (Math.abs(u) % textureMipLevel.width);
+                                            v = (Math.abs(v) % textureMipLevel.height);
                 
-                                            if (uWasNeg) u = (texture.width - u);
-                                            if (vWasNeg) v = (texture.height - v);
+                                            if (uWasNeg) u = (textureMipLevel.width - u);
+                                            if (vWasNeg) v = (textureMipLevel.height - v);
                                         }
                 
                                         break;
@@ -460,18 +472,18 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                         const ngonX = (x - spanStartX + 1);
                                         const ngonY = (y - ngonStartY);
 
-                                        u = (ngonX * (texture.width / spanWidth));
-                                        v = (ngonY * (texture.height / ngonHeight));
+                                        u = (ngonX * (textureMipLevel.width / spanWidth));
+                                        v = (ngonY * (textureMipLevel.height / ngonHeight));
 
                                         // The texture image is flipped, so we need to flip V as well.
-                                        v = (texture.height - v);
+                                        v = (textureMipLevel.height - v);
 
                                         break;
                                     }
                                     default: Rngon.throw("Unknown texture-mapping mode."); break;
                                 }
 
-                                const texel = texture.pixels[(~~u) + (~~v) * texture.width];
+                                const texel = textureMipLevel.pixels[(~~u) + (~~v) * textureMipLevel.width];
 
                                 // Make sure we gracefully exit if accessing the texture out of bounds.
                                 if (!texel) continue;
@@ -535,6 +547,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                     fragment.textureV = (iplV / iplInvW);
                                     fragment.textureUScaled = ~~u;
                                     fragment.textureVScaled = ~~v;
+                                    fragment.textureMipLevelIdx = textureMipLevelIdx;
                                     fragment.depth = (iplDepth / iplInvW);
                                     fragment.shade = (iplShade / iplInvW);
                                     fragment.worldX = (iplWorldX / iplInvW);

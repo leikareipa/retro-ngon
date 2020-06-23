@@ -72,6 +72,8 @@ Rngon.ngon_transform_and_light = function(ngons = [],
             cachedNgon.normal = ((cachedNgon.material.vertexShading === "gouraud")? ngon.normal : {...ngon.normal});
 
             cachedNgon.isActive = true;
+
+            cachedNgon.mipLevel = ngon.mipLevel;
         }
 
         // Transform vertices into screen space and apply clipping. We'll do the transforming

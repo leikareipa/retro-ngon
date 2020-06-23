@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (23 June 2020 02:12:48 UTC)
+// VERSION: beta live (23 June 2020 16:45:08 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -92,6 +92,11 @@ Rngon.internalState =
             // texel was obtained.
             textureUScaled: undefined,
             textureVScaled: undefined,
+
+            // Which of the texture's mip levels was used. This is a value from 0
+            // to n-1, where n is the total number of mip levels available in the
+            // texture.
+            textureMipLevelIdx: undefined,
 
             // World coordinates at this pixel.
             worldX: undefined,
@@ -662,6 +667,12 @@ Rngon.ngon = function(vertices = [Rngon.vertex()], material = {}, vertexNormals 
         vertexNormals,
         normal: faceNormal,
         material,
+
+        // A value in the range [0,1] that defines which mip level of this
+        // n-gon's texture (if it has a texture) should be used when rendering.
+        // A value of 0 is the maximum-resolution (base) mip level, 1 is the
+        // lowest-resolution (1 x 1) mip level.
+        mipLevel: 0,
     };
 
     return returnObject;
@@ -1021,7 +1032,18 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
     {
         const ngon = Rngon.internalState.ngonCache.ngons[n];
         const material = ngon.material;
-        const texture = material.texture;
+
+        let texture = null;
+        let textureMipLevel = null;
+        let textureMipLevelIdx = 3;
+        if (material.texture)
+        {
+            texture = material.texture;
+
+            const numMipLevels = texture.mipLevels.length;
+            textureMipLevelIdx = Math.max(0, Math.min((numMipLevels - 1), Math.round((numMipLevels - 1) * ngon.mipLevel)));
+            textureMipLevel = texture.mipLevels[textureMipLevelIdx];
+        }
 
         Rngon.assert && (ngon.vertices.length < leftVerts.length)
                      || Rngon.throw("Overflowing the vertex buffer");
@@ -1054,7 +1076,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
             // Depth test.
             if (depthBuffer && (depthBuffer[depthBufferIdx] <= depth)) continue;
 
-            const color = (texture? texture.pixels[0] : material.color);
+            const color = (texture? textureMipLevel.pixels[0] : material.color);
             
             // Write the pixel.
             {
@@ -1075,6 +1097,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                     fragment.textureV = 0;
                     fragment.textureUScaled = 0;
                     fragment.textureVScaled = 0;
+                    fragment.textureMipLevelIdx = textureMipLevelIdx;
                     fragment.depth = depth;
                     fragment.shade = shade;
                     fragment.worldX = ngon.vertices[0].worldX;
@@ -1363,8 +1386,8 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                                 if (signU === -1) u = (upperLimit - u);
                                                 if (signV === -1) v = (upperLimit - v);
 
-                                                u *= texture.width;
-                                                v *= texture.height;
+                                                u *= textureMipLevel.width;
+                                                v *= textureMipLevel.height;
 
                                                 break;
                                             }
@@ -1373,13 +1396,13 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                                 u -= Math.floor(u);
                                                 v -= Math.floor(v);
 
-                                                u *= texture.width;
-                                                v *= texture.height;
+                                                u *= textureMipLevel.width;
+                                                v *= textureMipLevel.height;
 
                                                 // Modulo for power-of-two. This will also flip the texture for
                                                 // negative UV coordinates.
-                                                u = (u & (texture.width - 1));
-                                                v = (v & (texture.height - 1));
+                                                u = (u & (textureMipLevel.width - 1));
+                                                v = (v & (textureMipLevel.height - 1));
 
                                                 break;
                                             }
@@ -1397,25 +1420,25 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                         u = (iplU / iplInvW);
                                         v = (iplV / iplInvW);
 
-                                        u *= texture.width;
-                                        v *= texture.height;
+                                        u *= textureMipLevel.width;
+                                        v *= textureMipLevel.height;
                 
                                         // Wrap with repetition.
                                         /// FIXME: Why do we need to test for UV < 0 even when using positive
                                         /// but tiling UV coordinates? Doesn't render properly unless we do.
                                         if ((u < 0) ||
                                             (v < 0) ||
-                                            (u >= texture.width) ||
-                                            (v >= texture.height))
+                                            (u >= textureMipLevel.width) ||
+                                            (v >= textureMipLevel.height))
                                         {
                                             const uWasNeg = (u < 0);
                                             const vWasNeg = (v < 0);
                 
-                                            u = (Math.abs(u) % texture.width);
-                                            v = (Math.abs(v) % texture.height);
+                                            u = (Math.abs(u) % textureMipLevel.width);
+                                            v = (Math.abs(v) % textureMipLevel.height);
                 
-                                            if (uWasNeg) u = (texture.width - u);
-                                            if (vWasNeg) v = (texture.height - v);
+                                            if (uWasNeg) u = (textureMipLevel.width - u);
+                                            if (vWasNeg) v = (textureMipLevel.height - v);
                                         }
                 
                                         break;
@@ -1429,18 +1452,18 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                         const ngonX = (x - spanStartX + 1);
                                         const ngonY = (y - ngonStartY);
 
-                                        u = (ngonX * (texture.width / spanWidth));
-                                        v = (ngonY * (texture.height / ngonHeight));
+                                        u = (ngonX * (textureMipLevel.width / spanWidth));
+                                        v = (ngonY * (textureMipLevel.height / ngonHeight));
 
                                         // The texture image is flipped, so we need to flip V as well.
-                                        v = (texture.height - v);
+                                        v = (textureMipLevel.height - v);
 
                                         break;
                                     }
                                     default: Rngon.throw("Unknown texture-mapping mode."); break;
                                 }
 
-                                const texel = texture.pixels[(~~u) + (~~v) * texture.width];
+                                const texel = textureMipLevel.pixels[(~~u) + (~~v) * textureMipLevel.width];
 
                                 // Make sure we gracefully exit if accessing the texture out of bounds.
                                 if (!texel) continue;
@@ -1504,6 +1527,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                     fragment.textureV = (iplV / iplInvW);
                                     fragment.textureUScaled = ~~u;
                                     fragment.textureVScaled = ~~v;
+                                    fragment.textureMipLevelIdx = textureMipLevelIdx;
                                     fragment.depth = (iplDepth / iplInvW);
                                     fragment.shade = (iplShade / iplInvW);
                                     fragment.worldX = (iplWorldX / iplInvW);
@@ -1662,13 +1686,13 @@ Rngon.render = function(canvasElementId,
         Rngon.internalState.useVertexShaders = (typeof options.vertexShaderFunction === "function");
 
         Rngon.internalState.usePerspectiveCorrectInterpolation = ((options.perspectiveCorrectTexturing || // <- Name in pre-beta.2.
-                                                                options.perspectiveCorrectInterpolation) == true);
+                                                                   options.perspectiveCorrectInterpolation) == true);
 
         Rngon.internalState.usePixelShaders = (typeof (options.shaderFunction || // <- Name in pre-beta.3.
-                                                    options.pixelShaderFunction) === "function");
+                                                       options.pixelShaderFunction) === "function");
 
         Rngon.internalState.pixel_shader_function = (options.shaderFunction || // <- Name in pre-beta.3.
-                                                    options.pixelShaderFunction);
+                                                     options.pixelShaderFunction);
     }
 
     // Render a single frame into the target canvas.
@@ -1814,6 +1838,8 @@ Rngon.ngon_transform_and_light = function(ngons = [],
             cachedNgon.normal = ((cachedNgon.material.vertexShading === "gouraud")? ngon.normal : {...ngon.normal});
 
             cachedNgon.isActive = true;
+
+            cachedNgon.mipLevel = ngon.mipLevel;
         }
 
         // Transform vertices into screen space and apply clipping. We'll do the transforming
@@ -2077,12 +2103,57 @@ Rngon.texture_rgba = function(data = {width: 0, height: 0, pixels: []})
                              alpha: data.pixels[idx + 3]});
         }
     }
+
+    // Generate mipmaps. Each successive mipmap is one half of the previous
+    // mipmap's width and height, starting from the full resolution and working
+    // down to 1 x 1. So mipmaps[0] is the original, full-resolution texture,
+    // and mipmaps[mipmaps.length-1] is the smallest, 1 x 1 texture.
+    const mipmaps = [];
+    for (let m = 0; ; m++)
+    {
+        const mipWidth = Math.floor(data.width / Math.pow(2, m));
+        const mipHeight = Math.floor(data.height / Math.pow(2, m));
+
+        // When we're done generating mip levels down to 1 x 1.
+        if ((mipWidth < 1) || (mipHeight < 1))
+        {
+            Rngon.assert && (mipmaps.length > 0)
+                         || Rngon.throw("Failed to generate mip levels for a texture.");
+                         
+            break;
+        }
+
+        // Downscale the texture image to the next mip level.
+        const mipPixelData = [];
+        {
+            const deltaW = (data.width / mipWidth);
+            const deltaH = (data.height / mipHeight);
+    
+            for (let y = 0; y < mipHeight; y++)
+            {
+                for (let x = 0; x < mipWidth; x++)
+                {
+                    const dstIdx = (x + y * mipWidth);
+                    const srcIdx = (Math.floor(x * deltaW) + Math.floor(y * deltaH) * data.width);
+
+                    mipPixelData[dstIdx] = pixelArray[srcIdx];
+                }
+            }
+        }
+
+        mipmaps.push({
+            width: mipWidth,
+            height: mipHeight,
+            pixels: mipPixelData,
+        });
+    }
         
     const publicInterface = Object.freeze(
     {
         width: data.width,
         height: data.height,
         pixels: pixelArray,
+        mipLevels: mipmaps,
     });
     
     return publicInterface;

@@ -44,13 +44,13 @@ Rngon.render = function(canvasElementId,
         Rngon.internalState.useVertexShaders = (typeof options.vertexShaderFunction === "function");
 
         Rngon.internalState.usePerspectiveCorrectInterpolation = ((options.perspectiveCorrectTexturing || // <- Name in pre-beta.2.
-                                                                options.perspectiveCorrectInterpolation) == true);
+                                                                   options.perspectiveCorrectInterpolation) == true);
 
         Rngon.internalState.usePixelShaders = (typeof (options.shaderFunction || // <- Name in pre-beta.3.
-                                                    options.pixelShaderFunction) === "function");
+                                                       options.pixelShaderFunction) === "function");
 
         Rngon.internalState.pixel_shader_function = (options.shaderFunction || // <- Name in pre-beta.3.
-                                                    options.pixelShaderFunction);
+                                                     options.pixelShaderFunction);
     }
 
     // Render a single frame into the target canvas.

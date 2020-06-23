@@ -80,12 +80,57 @@ Rngon.texture_rgba = function(data = {width: 0, height: 0, pixels: []})
                              alpha: data.pixels[idx + 3]});
         }
     }
+
+    // Generate mipmaps. Each successive mipmap is one half of the previous
+    // mipmap's width and height, starting from the full resolution and working
+    // down to 1 x 1. So mipmaps[0] is the original, full-resolution texture,
+    // and mipmaps[mipmaps.length-1] is the smallest, 1 x 1 texture.
+    const mipmaps = [];
+    for (let m = 0; ; m++)
+    {
+        const mipWidth = Math.floor(data.width / Math.pow(2, m));
+        const mipHeight = Math.floor(data.height / Math.pow(2, m));
+
+        // When we're done generating mip levels down to 1 x 1.
+        if ((mipWidth < 1) || (mipHeight < 1))
+        {
+            Rngon.assert && (mipmaps.length > 0)
+                         || Rngon.throw("Failed to generate mip levels for a texture.");
+                         
+            break;
+        }
+
+        // Downscale the texture image to the next mip level.
+        const mipPixelData = [];
+        {
+            const deltaW = (data.width / mipWidth);
+            const deltaH = (data.height / mipHeight);
+    
+            for (let y = 0; y < mipHeight; y++)
+            {
+                for (let x = 0; x < mipWidth; x++)
+                {
+                    const dstIdx = (x + y * mipWidth);
+                    const srcIdx = (Math.floor(x * deltaW) + Math.floor(y * deltaH) * data.width);
+
+                    mipPixelData[dstIdx] = pixelArray[srcIdx];
+                }
+            }
+        }
+
+        mipmaps.push({
+            width: mipWidth,
+            height: mipHeight,
+            pixels: mipPixelData,
+        });
+    }
         
     const publicInterface = Object.freeze(
     {
         width: data.width,
         height: data.height,
         pixels: pixelArray,
+        mipLevels: mipmaps,
     });
     
     return publicInterface;
