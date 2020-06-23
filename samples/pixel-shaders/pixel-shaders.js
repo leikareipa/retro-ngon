@@ -73,7 +73,30 @@ export const sampleRenderOptions = {
         {
             return null;
         }
-    }
+    },
+    get vertexShaderFunction()
+    {
+        // For the mip level map shader to work, we need to enable mipmapping.
+        // So when that shader is in use, let's set n-gon's mipmap level based
+        // on its distance to the camera.
+        if (parent.ACTIVE_SHADER.title === "Mip level map")
+        {
+            return (ngon, cameraPosition)=>
+            {
+                const maxDistance = (300 * 300);
+
+                const distance = (((ngon.vertices[0].x - cameraPosition.x) * (ngon.vertices[0].x  - cameraPosition.x)) +
+                                  ((ngon.vertices[0].y - cameraPosition.y) * (ngon.vertices[0].y  - cameraPosition.y)) +
+                                  ((ngon.vertices[0].z - cameraPosition.z) * (ngon.vertices[0].z  - cameraPosition.z)));
+
+                ngon.mipLevel = Math.max(0, Math.min(0.25, (distance / maxDistance)));
+            }
+        }
+        else
+        {
+            return null;
+        }
+    },
 }
 
 // Blurs every pixel whose n-gon doesn't have the material property 'isInFocus'
@@ -586,6 +609,24 @@ function shader_waviness({renderWidth, renderHeight, fragmentBuffer, pixelBuffer
             pixelBuffer[thisIdx + 1] = pixelBuffer[shiftIdx + 1];
             pixelBuffer[thisIdx + 2] = pixelBuffer[shiftIdx + 2];
         }
+    }
+}
+
+function shader_mip_level_map({renderWidth, renderHeight, fragmentBuffer, ngonCache, pixelBuffer})
+{
+    for (let i = 0; i < (renderWidth * renderHeight); i++)
+    {
+        const thisFragment = fragmentBuffer[i];
+        const thisNgon = (thisFragment? ngonCache[thisFragment.ngonIdx] : null);
+
+        if (!thisNgon)
+        {
+            continue;
+        }
+
+        pixelBuffer[(i * 4) + 0] = Rngon.lerp(0, 255, (1 - thisNgon.mipLevel));
+        pixelBuffer[(i * 4) + 1] = Rngon.lerp(0, 255, (1 - thisNgon.mipLevel));
+        pixelBuffer[(i * 4) + 2] = Rngon.lerp(0, 255, (1 - thisNgon.mipLevel));
     }
 }
 
