@@ -41,7 +41,7 @@ The retro n-gon renderer encourages low resolutions, very low polycounts, and de
 ![A scene from RallySportED-js](/images/screenshots/alpha/rsed-rngon-1.png)\
 **The track** editor view in RallySportED-js, with geometry built from texture-mapped, wireframed quads. (Based on textures and 3d models produced by Jukka Jäkälä for *Rally-Sport*. Jukka Jäkälä is not associated with the retro n-gon renderer.)
 
-![A view from Grand Prix Legends](/images/screenshots/alpha/rngon-gpl-2.png)\
+![A view from Grand Prix Legends](/images/screenshots/beta/grand-prix-legends-rouen.png)\
 **A view** of the race track at Rouen in Grand Prix Legends. (Based on textures and 3d models produced by Papyrus Design Group for *Grand Prix Legends*. Papyrus Design Group is not associated with the retro n-gon renderer.)
 
 ![A scene from Tomb Raider, vertex-lit](/images/screenshots/beta/tomb-raider-1-vertex-shade.png)\
