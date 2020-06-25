@@ -17,7 +17,7 @@ Rngon.ngon_transform_and_light = function(ngons = [],
 {
     const viewVector = {x:0.0, y:0.0, z:0.0};
     const ngonCache = Rngon.internalState.ngonCache;
-    const clipSpaceMatrix = Rngon.matrix44.matrices_multiplied(projectionMatrix, cameraMatrix);
+    const clipSpaceMatrix = Rngon.matrix44.multiply(projectionMatrix, cameraMatrix);
 
     for (const ngon of ngons)
     {

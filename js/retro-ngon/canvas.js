@@ -33,12 +33,12 @@ Rngon.canvas = function(canvasElementId = "",              // The DOM id of the 
 
     const perspectiveMatrix = Rngon.matrix44.perspective((options.fov * Math.PI/180), (screenWidth / screenHeight), options.nearPlane, options.farPlane);
     const screenSpaceMatrix = Rngon.matrix44.ortho((screenWidth + 1), (screenHeight + 1));
-    const cameraMatrix = Rngon.matrix44.matrices_multiplied(Rngon.matrix44.rotate(options.cameraDirection.x,
-                                                                                  options.cameraDirection.y,
-                                                                                  options.cameraDirection.z),
-                                                            Rngon.matrix44.translate(-options.cameraPosition.x,
-                                                                                     -options.cameraPosition.y,
-                                                                                     -options.cameraPosition.z));
+    const cameraMatrix = Rngon.matrix44.multiply(Rngon.matrix44.rotation(options.cameraDirection.x,
+                                                                         options.cameraDirection.y,
+                                                                         options.cameraDirection.z),
+                                                 Rngon.matrix44.translation(-options.cameraPosition.x,
+                                                                            -options.cameraPosition.y,
+                                                                            -options.cameraPosition.z));
 
     // Set up the internal render buffers.
     {

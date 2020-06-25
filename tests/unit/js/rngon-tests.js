@@ -12,7 +12,7 @@ const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
     unit("4x4 matrix", ()=>
     {
         {
-            const m = Rngon.matrix44.rotate(Rngon.trig.deg(10), Rngon.trig.deg(18), Rngon.trig.deg(380));
+            const m = Rngon.matrix44.rotation(Rngon.trig.deg(10), Rngon.trig.deg(18), Rngon.trig.deg(380));
             expect_true([()=>(m.length === 16 && (trunc4(m[0])===0.8958  && trunc4(m[4])===0.3205  && trunc4(m[ 8])===-0.3078 && trunc4(m[12])===0.0000 && 
                                                   trunc4(m[1])===-0.2824 && trunc4(m[5])===0.9454  && trunc4(m[ 9])===0.1627 && trunc4(m[13])===0.0000 && 
                                                   trunc4(m[2])===0.3432  && trunc4(m[6])===-0.0588 && trunc4(m[10])===0.9374 && trunc4(m[14])===0.0000 && 
@@ -21,7 +21,7 @@ const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
         }
 
         {
-            const m = Rngon.matrix44.translate(452.8541, 2.5412, 8745.1645);
+            const m = Rngon.matrix44.translation(452.8541, 2.5412, 8745.1645);
             expect_true([()=>(m.length === 16 && (trunc4(m[0])===1.0000 && trunc4(m[4])===0.0000 && trunc4(m[ 8])===0.0000 && trunc4(m[12])===452.8541  && 
                                                   trunc4(m[1])===0.0000 && trunc4(m[5])===1.0000 && trunc4(m[ 9])===0.0000 && trunc4(m[13])===2.5412    && 
                                                   trunc4(m[2])===0.0000 && trunc4(m[6])===0.0000 && trunc4(m[10])===1.0000 && trunc4(m[14])===8745.1645 && 
@@ -48,8 +48,8 @@ const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
         }
 
         {
-            const m = Rngon.matrix44.matrices_multiplied(Rngon.matrix44.translate(452.8541, 2.5412, 8745.1645),
-                                                         Rngon.matrix44.perspective(0.7545, 1.7155, 0.9138, 97852.8647));
+            const m = Rngon.matrix44.multiply(Rngon.matrix44.translation(452.8541, 2.5412, 8745.1645),
+                                              Rngon.matrix44.perspective(0.7545, 1.7155, 0.9138, 97852.8647));
             expect_true([()=>(m.length === 16 && (trunc4(m[0])===1.4712 && trunc4(m[4])===0.0000 && trunc4(m[ 8])===452.8541  && trunc4(m[12])===0.0000  && 
                                                   trunc4(m[1])===0.0000 && trunc4(m[5])===2.5238 && trunc4(m[ 9])===2.5412    && trunc4(m[13])===0.0000  && 
                                                   trunc4(m[2])===0.0000 && trunc4(m[6])===0.0000 && trunc4(m[10])===8746.1645 && trunc4(m[14])===-1.8276 && 

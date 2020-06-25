@@ -40,7 +40,7 @@ Rngon.matrix44 = (()=>
 {
     return Object.freeze(
     {
-        scale: function(x = 0, y = 0, z = 0)
+        scaling: function(x = 0, y = 0, z = 0)
         {
             return Object.freeze([x, 0, 0, 0,
                                   0, y, 0, 0,
@@ -48,7 +48,7 @@ Rngon.matrix44 = (()=>
                                   0, 0, 0, 1]);
         },
 
-        translate: function(x = 0, y = 0, z = 0)
+        translation: function(x = 0, y = 0, z = 0)
         {
             return Object.freeze([1, 0, 0, 0,
                                   0, 1, 0, 0,
@@ -56,7 +56,7 @@ Rngon.matrix44 = (()=>
                                   x, y, z, 1]);
         },
 
-        rotate: function(x = 0, y = 0, z = 0)
+        rotation: function(x = 0, y = 0, z = 0)
         {
             const cos = Rngon.trig.cos;
             const sin = Rngon.trig.sin;
@@ -76,8 +76,8 @@ Rngon.matrix44 = (()=>
                         0,       0,       1,       0,
                         0,       0,       0,       1];
 
-            const temp = Rngon.matrix44.matrices_multiplied(my, mz);
-            const mResult = Rngon.matrix44.matrices_multiplied(mx, temp);
+            const temp = Rngon.matrix44.multiply(my, mz);
+            const mResult = Rngon.matrix44.multiply(mx, temp);
 
             Rngon.assert && (mResult.length === 16) || Rngon.throw("Expected a 4 x 4 matrix.");
             return Object.freeze(mResult);
@@ -102,7 +102,7 @@ Rngon.matrix44 = (()=>
                                   (width/2)-0.5, (height/2)-0.5, 0, 1]);
         },
         
-        matrices_multiplied: function(m1 = [], m2 = [])
+        multiply: function(m1 = [], m2 = [])
         {
             Rngon.assert && ((m1.length === 16) && (m2.length === 16))
                          || Rngon.throw("Expected 4 x 4 matrices.");

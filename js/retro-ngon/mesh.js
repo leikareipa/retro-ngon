@@ -46,17 +46,17 @@ Rngon.mesh.defaultTransform =
 
 Rngon.mesh.object_space_matrix = function(m)
 {
-    const translationMatrix = Rngon.matrix44.translate(m.translation.x,
-                                                       m.translation.y,
-                                                       m.translation.z);
+    const translationMatrix = Rngon.matrix44.translation(m.translation.x,
+                                                         m.translation.y,
+                                                         m.translation.z);
 
-    const rotationMatrix = Rngon.matrix44.rotate(m.rotation.x,
-                                                 m.rotation.y,
-                                                 m.rotation.z);
+    const rotationMatrix = Rngon.matrix44.rotation(m.rotation.x,
+                                                   m.rotation.y,
+                                                   m.rotation.z);
 
-    const scalingMatrix = Rngon.matrix44.scale(m.scale.x,
-                                               m.scale.y,
-                                               m.scale.z);
+    const scalingMatrix = Rngon.matrix44.scaling(m.scale.x,
+                                                 m.scale.y,
+                                                 m.scale.z);
 
-    return Rngon.matrix44.matrices_multiplied(Rngon.matrix44.matrices_multiplied(translationMatrix, rotationMatrix), scalingMatrix);
+    return Rngon.matrix44.multiply(Rngon.matrix44.multiply(translationMatrix, rotationMatrix), scalingMatrix);
 }

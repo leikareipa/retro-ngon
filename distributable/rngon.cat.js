@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (25 June 2020 00:58:51 UTC)
+// VERSION: beta live (25 June 2020 15:37:56 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -585,19 +585,19 @@ Rngon.mesh.defaultTransform =
 
 Rngon.mesh.object_space_matrix = function(m)
 {
-    const translationMatrix = Rngon.matrix44.translate(m.translation.x,
-                                                       m.translation.y,
-                                                       m.translation.z);
+    const translationMatrix = Rngon.matrix44.translation(m.translation.x,
+                                                         m.translation.y,
+                                                         m.translation.z);
 
-    const rotationMatrix = Rngon.matrix44.rotate(m.rotation.x,
-                                                 m.rotation.y,
-                                                 m.rotation.z);
+    const rotationMatrix = Rngon.matrix44.rotation(m.rotation.x,
+                                                   m.rotation.y,
+                                                   m.rotation.z);
 
-    const scalingMatrix = Rngon.matrix44.scale(m.scale.x,
-                                               m.scale.y,
-                                               m.scale.z);
+    const scalingMatrix = Rngon.matrix44.scaling(m.scale.x,
+                                                 m.scale.y,
+                                                 m.scale.z);
 
-    return Rngon.matrix44.matrices_multiplied(Rngon.matrix44.matrices_multiplied(translationMatrix, rotationMatrix), scalingMatrix);
+    return Rngon.matrix44.multiply(Rngon.matrix44.multiply(translationMatrix, rotationMatrix), scalingMatrix);
 }
 /*
  * 2019 Tarpeeksi Hyvae Soft
@@ -894,7 +894,7 @@ Rngon.matrix44 = (()=>
 {
     return Object.freeze(
     {
-        scale: function(x = 0, y = 0, z = 0)
+        scaling: function(x = 0, y = 0, z = 0)
         {
             return Object.freeze([x, 0, 0, 0,
                                   0, y, 0, 0,
@@ -902,7 +902,7 @@ Rngon.matrix44 = (()=>
                                   0, 0, 0, 1]);
         },
 
-        translate: function(x = 0, y = 0, z = 0)
+        translation: function(x = 0, y = 0, z = 0)
         {
             return Object.freeze([1, 0, 0, 0,
                                   0, 1, 0, 0,
@@ -910,7 +910,7 @@ Rngon.matrix44 = (()=>
                                   x, y, z, 1]);
         },
 
-        rotate: function(x = 0, y = 0, z = 0)
+        rotation: function(x = 0, y = 0, z = 0)
         {
             const cos = Rngon.trig.cos;
             const sin = Rngon.trig.sin;
@@ -930,8 +930,8 @@ Rngon.matrix44 = (()=>
                         0,       0,       1,       0,
                         0,       0,       0,       1];
 
-            const temp = Rngon.matrix44.matrices_multiplied(my, mz);
-            const mResult = Rngon.matrix44.matrices_multiplied(mx, temp);
+            const temp = Rngon.matrix44.multiply(my, mz);
+            const mResult = Rngon.matrix44.multiply(mx, temp);
 
             Rngon.assert && (mResult.length === 16) || Rngon.throw("Expected a 4 x 4 matrix.");
             return Object.freeze(mResult);
@@ -956,7 +956,7 @@ Rngon.matrix44 = (()=>
                                   (width/2)-0.5, (height/2)-0.5, 0, 1]);
         },
         
-        matrices_multiplied: function(m1 = [], m2 = [])
+        multiply: function(m1 = [], m2 = [])
         {
             Rngon.assert && ((m1.length === 16) && (m2.length === 16))
                          || Rngon.throw("Expected 4 x 4 matrices.");
@@ -1783,7 +1783,7 @@ Rngon.ngon_transform_and_light = function(ngons = [],
 {
     const viewVector = {x:0.0, y:0.0, z:0.0};
     const ngonCache = Rngon.internalState.ngonCache;
-    const clipSpaceMatrix = Rngon.matrix44.matrices_multiplied(projectionMatrix, cameraMatrix);
+    const clipSpaceMatrix = Rngon.matrix44.multiply(projectionMatrix, cameraMatrix);
 
     for (const ngon of ngons)
     {
@@ -2211,12 +2211,12 @@ Rngon.canvas = function(canvasElementId = "",              // The DOM id of the 
 
     const perspectiveMatrix = Rngon.matrix44.perspective((options.fov * Math.PI/180), (screenWidth / screenHeight), options.nearPlane, options.farPlane);
     const screenSpaceMatrix = Rngon.matrix44.ortho((screenWidth + 1), (screenHeight + 1));
-    const cameraMatrix = Rngon.matrix44.matrices_multiplied(Rngon.matrix44.rotate(options.cameraDirection.x,
-                                                                                  options.cameraDirection.y,
-                                                                                  options.cameraDirection.z),
-                                                            Rngon.matrix44.translate(-options.cameraPosition.x,
-                                                                                     -options.cameraPosition.y,
-                                                                                     -options.cameraPosition.z));
+    const cameraMatrix = Rngon.matrix44.multiply(Rngon.matrix44.rotation(options.cameraDirection.x,
+                                                                         options.cameraDirection.y,
+                                                                         options.cameraDirection.z),
+                                                 Rngon.matrix44.translation(-options.cameraPosition.x,
+                                                                            -options.cameraPosition.y,
+                                                                            -options.cameraPosition.z));
 
     // Set up the internal render buffers.
     {
