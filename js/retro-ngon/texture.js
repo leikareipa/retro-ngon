@@ -88,17 +88,8 @@ Rngon.texture_rgba = function(data = {width: 0, height: 0, pixels: []})
     const mipmaps = [];
     for (let m = 0; ; m++)
     {
-        const mipWidth = Math.floor(data.width / Math.pow(2, m));
-        const mipHeight = Math.floor(data.height / Math.pow(2, m));
-
-        // When we're done generating mip levels down to 1 x 1.
-        if ((mipWidth < 1) || (mipHeight < 1))
-        {
-            Rngon.assert && (mipmaps.length > 0)
-                         || Rngon.throw("Failed to generate mip levels for a texture.");
-                         
-            break;
-        }
+        const mipWidth = Math.max(1, Math.floor(data.width / Math.pow(2, m)));
+        const mipHeight = Math.max(1, Math.floor(data.height / Math.pow(2, m)));
 
         // Downscale the texture image to the next mip level.
         const mipPixelData = [];
@@ -123,8 +114,17 @@ Rngon.texture_rgba = function(data = {width: 0, height: 0, pixels: []})
             height: mipHeight,
             pixels: mipPixelData,
         });
+
+        // We're finished generating mip levels once we've done them down to 1 x 1.
+        if ((mipWidth === 1) && (mipHeight === 1))
+        {
+            Rngon.assert && (mipmaps.length > 0)
+                         || Rngon.throw("Failed to generate mip levels for a texture.");
+                         
+            break;
+        }
     }
-        
+
     const publicInterface = Object.freeze(
     {
         width: data.width,

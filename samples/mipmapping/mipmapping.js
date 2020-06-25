@@ -27,7 +27,7 @@ export const sampleRenderOptions = {
         if (ngon.material.hasMipmapping)
         {
             const minLevel = ((parent.MIPMAP_LEVEL === "Auto")? 0.0 : parent.MIPMAP_LEVEL);
-            const maxLevel = ((parent.MIPMAP_LEVEL === "Auto")? 0.4 : parent.MIPMAP_LEVEL);
+            const maxLevel = ((parent.MIPMAP_LEVEL === "Auto")? 0.3 : parent.MIPMAP_LEVEL);
 
             const maxDistance = (700 * 700)
 

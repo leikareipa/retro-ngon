@@ -142,7 +142,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
         }
         
         // Rasterize a polygon with 3 or more vertices.
-        {         
+        {
             // Figure out which of the n-gon's vertices are on its left side and which on the
             // right. The vertices on both sides will be arranged from smallest Y to largest
             // Y, i.e. top-to-bottom in screen space. The top-most vertex and the bottom-most
@@ -536,7 +536,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                     if (material.auxiliary[auxiliaryBuffers[b].property] !== null)
                                     {
                                         // Buffers are expected to consist of one element per pixel.
-                                        auxiliaryBuffers[b].buffer[pixelBufferIdx/4] = material.auxiliary[auxiliaryBuffers[b].property];
+                                        auxiliaryBuffers[b].buffer[depthBufferIdx] = material.auxiliary[auxiliaryBuffers[b].property];
                                     }
                                 }
 

@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (23 June 2020 16:45:08 UTC)
+// VERSION: beta live (25 June 2020 00:58:51 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -1122,7 +1122,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
         }
         
         // Rasterize a polygon with 3 or more vertices.
-        {         
+        {
             // Figure out which of the n-gon's vertices are on its left side and which on the
             // right. The vertices on both sides will be arranged from smallest Y to largest
             // Y, i.e. top-to-bottom in screen space. The top-most vertex and the bottom-most
@@ -1516,7 +1516,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                     if (material.auxiliary[auxiliaryBuffers[b].property] !== null)
                                     {
                                         // Buffers are expected to consist of one element per pixel.
-                                        auxiliaryBuffers[b].buffer[pixelBufferIdx/4] = material.auxiliary[auxiliaryBuffers[b].property];
+                                        auxiliaryBuffers[b].buffer[depthBufferIdx] = material.auxiliary[auxiliaryBuffers[b].property];
                                     }
                                 }
 
@@ -2111,17 +2111,8 @@ Rngon.texture_rgba = function(data = {width: 0, height: 0, pixels: []})
     const mipmaps = [];
     for (let m = 0; ; m++)
     {
-        const mipWidth = Math.floor(data.width / Math.pow(2, m));
-        const mipHeight = Math.floor(data.height / Math.pow(2, m));
-
-        // When we're done generating mip levels down to 1 x 1.
-        if ((mipWidth < 1) || (mipHeight < 1))
-        {
-            Rngon.assert && (mipmaps.length > 0)
-                         || Rngon.throw("Failed to generate mip levels for a texture.");
-                         
-            break;
-        }
+        const mipWidth = Math.max(1, Math.floor(data.width / Math.pow(2, m)));
+        const mipHeight = Math.max(1, Math.floor(data.height / Math.pow(2, m)));
 
         // Downscale the texture image to the next mip level.
         const mipPixelData = [];
@@ -2146,8 +2137,17 @@ Rngon.texture_rgba = function(data = {width: 0, height: 0, pixels: []})
             height: mipHeight,
             pixels: mipPixelData,
         });
+
+        // We're finished generating mip levels once we've done them down to 1 x 1.
+        if ((mipWidth === 1) && (mipHeight === 1))
+        {
+            Rngon.assert && (mipmaps.length > 0)
+                         || Rngon.throw("Failed to generate mip levels for a texture.");
+                         
+            break;
+        }
     }
-        
+
     const publicInterface = Object.freeze(
     {
         width: data.width,
