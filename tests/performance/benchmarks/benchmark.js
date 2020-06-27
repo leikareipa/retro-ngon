@@ -98,24 +98,14 @@ function print_results(results)
             const hoverFPS = (minimumFPS + (maximumFPS - minimumFPS) * fpsOffset);
             const hoverTimeMs = ((results[results.length-1].time - results[0].time) * timeOffset);
 
-            {
-                const infoLabel = document.getElementById("benchmark-graph-info-label");
-
-                infoLabel.style.left = `${event.offsetX}px`;
-                infoLabel.style.bottom = `${event.offsetY}px`;
-                infoLabel.innerHTML = `${Math.floor(hoverFPS)} FPS; ${Math.floor(hoverTimeMs)} ms`;
-            }
+            const infoLabel = document.getElementById("benchmark-graph-info-label");
+            infoLabel.style.left = `${event.clientX}px`;
+            infoLabel.style.top = `${event.clientY}px`;
+            infoLabel.innerHTML = `${Math.floor(hoverFPS)} FPS; ${Math.floor(hoverTimeMs)} ms`;
         }
 
-        graphContainer.style.cssText = `
-            display: inline-block;
-            width: ${renderWidth}px;
-            height: ${renderHeight}px;
-            transform: scaleY(-1);
-            background-color: rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            cursor: crosshair;
-        `;
+        graphContainer.style.width = `${renderWidth + 2}px`; // +2 to account for border.
+        graphContainer.style.height = `${renderHeight + 2}px`; // +2 to account for border.
     }
 
     const graph = document.createElementNS("http://www.w3.org/2000/svg", "svg");
@@ -124,13 +114,6 @@ function print_results(results)
         graph.setAttribute("viewBox", `-1 -1 102 102`);
         graph.setAttribute("preserveAspectRatio", "none");
         graph.setAttribute("mouseover", "");
-
-        graph.style.cssText = `
-            width: 100%;
-            height: 100%;
-            border-radius: 20px;
-            pointer-events: none;
-        `;
     }
 
     // Populate the graph.
@@ -166,7 +149,7 @@ function print_results(results)
         add_to_graph("screenFPS", "navajowhite", minimumFPS, maximumFPS);
     }
 
-    document.getElementById("benchmark-progress-bar").textContent = `Benchmarking finished. Performance average: ${averageFPS} FPS.`;
+    document.getElementById("benchmark-progress-bar").textContent = `Benchmark completed. Performance average: ${averageFPS} FPS.`;
     graphContainer.appendChild(graph);
     document.getElementById("benchmark-container").insertBefore(graphContainer, document.getElementById("benchmark-progress-bar"));
     document.getElementById("benchmark-canvas").remove();
@@ -330,16 +313,7 @@ function create_dom_elements()
     {
         mainContainer.setAttribute("id", "benchmark-container");
 
-        mainContainer.style.cssText = `
-            width: ${renderWidth}px;
-            background-color: transparent;
-            display: flex;
-            flex-direction: column;
-            border: 0;
-            position: relative;
-            left: 50%;
-            transform: translateX(-50%);
-        `;
+        mainContainer.style.width = `${renderWidth + 2}px`; // +2 to account for border.
 
         document.body.appendChild(mainContainer);
     }
@@ -349,19 +323,7 @@ function create_dom_elements()
     {
         canvas.setAttribute("id", canvasId);
 
-        canvas.style.cssText = `
-            width: 100%;
-            height: ${renderHeight}px;
-            background-color: rgba(0, 0, 0, 0.1);
-            padding: 0;
-            margin: 0;
-            border-radius: 20px;
-            border: 1px solid black;
-            image-rendering: pixelated;
-            image-rendering: -moz-crisp-edges;
-            image-rendering: -o-crisp-edges;
-            image-rendering: -webkit-crisp-edges;
-        `;
+        canvas.style.height = `${renderHeight + 2}px`; // +2 to account for border.
 
         mainContainer.appendChild(canvas);
     }
@@ -370,24 +332,6 @@ function create_dom_elements()
     const progressBar = document.createElement("div");
     {
         progressBar.setAttribute("id", "benchmark-progress-bar");
-
-        progressBar.style.cssText = `
-            width: 0%;
-            height: 0px;
-            box-sizing: border-box;
-            background-color: transparent;
-            color: lightgray;
-            text-align: right;
-            line-height: 0;
-            font-size: 95%;
-            padding: 0;
-            margin-top: 10px;
-            margin-bottom: 10px;
-            border-radius: 20px;
-            border: 25px solid rgb(95, 95, 95);
-            opacity: 0;
-            transition: width .2s linear, opacity .75s linear;
-        `;
 
         mainContainer.appendChild(progressBar);
     }
@@ -398,24 +342,7 @@ function create_dom_elements()
     {
         infoLabel.setAttribute("id", "benchmark-graph-info-label");
 
-        infoLabel.style.cssText = `
-            background-color: white;
-            color: black;
-            position: absolute;
-            z-index: 10;
-            left: 0:
-            top: 0;
-            text-align: left;
-            padding: 9px;
-            border-radius: 3px;
-            box-shadow: 0 6px 2px -4px rgba(0, 0, 0, 0.2);
-            pointer-events: none;
-            user-select: none;
-            white-space: nowrap;
-            display: none;
-        `;
-
-        mainContainer.appendChild(infoLabel);
+        document.body.appendChild(infoLabel);
     }
 
     return;
