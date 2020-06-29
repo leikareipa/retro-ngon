@@ -75,9 +75,19 @@ with open(outFilename, 'w') as f:
         if texture and hasattr(texture.texture, "image"):
             f.write("texture:t[\"%s\"]," % texture.texture.image.name)
         # Custom material properties. These match the properties available in Rngon.ngon()'s material.
-        if "hasWireframe" in material: f.write("hasWireframe:%s," % material["hasWireframe"])
-        if "textureMapping" in material: f.write("textureMapping:\"%s\"," % material["textureMapping"])
-        if "wireframeColor" in material: f.write("wireframeColor:c(%d,%d,%d)," % material["wireframeColor"][:])
+        availableCustomProperties = [
+            "textureMapping",
+            "uvWrapping",
+            "vertexShading",
+            "renderVertexShade",
+            "ambientLightLevel",
+            "hasWireframe",
+            "isTwoSided",
+            "allowTransform",
+        ]
+        for customProperty in availableCustomProperties:
+            if customProperty in material:
+                f.write("%s:%s," % (customProperty, material[customProperty]))
         f.write("},\n")
     f.write("\t\t});\n\n")
     
