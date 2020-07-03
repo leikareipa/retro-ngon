@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (29 June 2020 13:48:52 UTC)
+// VERSION: beta live (03 July 2020 11:33:09 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -987,6 +987,8 @@ Rngon.matrix44 = (()=>
 
 "use strict";
 
+{ // A block to limit the scope of the unit-global variables we set up, below.
+
 // We'll sort the n-gon's vertices into those on its left side and those on its
 // right side.
 const leftVerts = new Array(500);
@@ -1639,6 +1641,8 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                 pixels: Rngon.ngon_filler.stipple_patterns[i].pixels.map(p=>Number(!p)),
             });
     }
+}
+
 }
 /*
  * Tarpeeksi Hyvae Soft 2019 /

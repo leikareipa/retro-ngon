@@ -7,6 +7,8 @@
 
 "use strict";
 
+{ // A block to limit the scope of the unit-global variables we set up, below.
+
 // We'll sort the n-gon's vertices into those on its left side and those on its
 // right side.
 const leftVerts = new Array(500);
@@ -659,4 +661,6 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                 pixels: Rngon.ngon_filler.stipple_patterns[i].pixels.map(p=>Number(!p)),
             });
     }
+}
+
 }
