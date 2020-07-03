@@ -67,9 +67,9 @@ Rngon.ngon_transform_and_light = function(ngons = [],
 
             cachedNgon.material = ngon.material;
             
-            // If Gouraud shading is enabled, we won't transform the face normal, only the
-            // vertex normals, so the face normal can be copied by reference in that case.
-            cachedNgon.normal = ((cachedNgon.material.vertexShading === "gouraud")? ngon.normal : {...ngon.normal});
+            cachedNgon.normal.x = ngon.normal.x;
+            cachedNgon.normal.y = ngon.normal.y;
+            cachedNgon.normal.z = ngon.normal.z;
 
             cachedNgon.isActive = true;
 

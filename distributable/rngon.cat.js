@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (25 June 2020 15:37:56 UTC)
+// VERSION: beta live (29 June 2020 13:48:52 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -1833,9 +1833,9 @@ Rngon.ngon_transform_and_light = function(ngons = [],
 
             cachedNgon.material = ngon.material;
             
-            // If Gouraud shading is enabled, we won't transform the face normal, only the
-            // vertex normals, so the face normal can be copied by reference in that case.
-            cachedNgon.normal = ((cachedNgon.material.vertexShading === "gouraud")? ngon.normal : {...ngon.normal});
+            cachedNgon.normal.x = ngon.normal.x;
+            cachedNgon.normal.y = ngon.normal.y;
+            cachedNgon.normal.z = ngon.normal.z;
 
             cachedNgon.isActive = true;
 
