@@ -472,7 +472,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
 
                                         // Pixel coordinates relative to the polygon.
                                         const ngonX = (x - spanStartX + 1);
-                                        const ngonY = (y - ngonStartY);
+                                        const ngonY = (y - ngonStartY + 1);
 
                                         u = (ngonX * (textureMipLevel.width / spanWidth));
                                         v = (ngonY * (textureMipLevel.height / ngonHeight));

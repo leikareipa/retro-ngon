@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (03 July 2020 11:33:09 UTC)
+// VERSION: beta live (07 July 2020 23:44:08 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -1452,7 +1452,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
 
                                         // Pixel coordinates relative to the polygon.
                                         const ngonX = (x - spanStartX + 1);
-                                        const ngonY = (y - ngonStartY);
+                                        const ngonY = (y - ngonStartY + 1);
 
                                         u = (ngonX * (textureMipLevel.width / spanWidth));
                                         v = (ngonY * (textureMipLevel.height / ngonHeight));
