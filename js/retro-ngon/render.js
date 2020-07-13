@@ -62,7 +62,8 @@ Rngon.render = function(canvasElementId,
 
         // We'll render either always or only when the render canvas is in view,
         // depending on whether the user asked us for the latter option.
-        if (!options.hibernateWhenNotOnScreen || renderSurface.is_in_view())
+        if (renderSurface &&
+            (!options.hibernateWhenNotOnScreen || renderSurface.is_in_view()))
         {
             callMetadata.renderWidth = renderSurface.width;
             callMetadata.renderHeight = renderSurface.height;

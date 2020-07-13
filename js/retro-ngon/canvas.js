@@ -8,6 +8,8 @@
 
 "use strict";
 
+// Note: throws on unrecoverable errors; returns null if the canvas size
+// would be 0 or negative in width and/or height.
 Rngon.canvas = function(canvasElementId = "",              // The DOM id of the canvas element.
                         ngon_fill = ()=>{},                // A function that rasterizes the given ngons onto the canvas.
                         ngon_transform_and_light = ()=>{}, // A function applies lighting to the given ngons, and transforms them into screen-space for the canvas.
@@ -26,6 +28,12 @@ Rngon.canvas = function(canvasElementId = "",              // The DOM id of the 
         Rngon.assert && (!isNaN(screenWidth) &&
                          !isNaN(screenHeight))
                      || Rngon.throw("Failed to extract the canvas size.");
+
+        if ((screenWidth <= 0) ||
+            (screenHeight <= 0))
+        {
+            return null;
+        }
 
         canvasElement.setAttribute("width", screenWidth);
         canvasElement.setAttribute("height", screenHeight);

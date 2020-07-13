@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (07 July 2020 23:44:08 UTC)
+// VERSION: beta live (13 July 2020 11:46:57 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -1708,7 +1708,8 @@ Rngon.render = function(canvasElementId,
 
         // We'll render either always or only when the render canvas is in view,
         // depending on whether the user asked us for the latter option.
-        if (!options.hibernateWhenNotOnScreen || renderSurface.is_in_view())
+        if (renderSurface &&
+            (!options.hibernateWhenNotOnScreen || renderSurface.is_in_view()))
         {
             callMetadata.renderWidth = renderSurface.width;
             callMetadata.renderHeight = renderSurface.height;
@@ -2190,6 +2191,8 @@ Rngon.texture_rgba.create_with_data_from_file = function(filename)
 
 "use strict";
 
+// Note: throws on unrecoverable errors; returns null if the canvas size
+// would be 0 or negative in width and/or height.
 Rngon.canvas = function(canvasElementId = "",              // The DOM id of the canvas element.
                         ngon_fill = ()=>{},                // A function that rasterizes the given ngons onto the canvas.
                         ngon_transform_and_light = ()=>{}, // A function applies lighting to the given ngons, and transforms them into screen-space for the canvas.
@@ -2208,6 +2211,12 @@ Rngon.canvas = function(canvasElementId = "",              // The DOM id of the 
         Rngon.assert && (!isNaN(screenWidth) &&
                          !isNaN(screenHeight))
                      || Rngon.throw("Failed to extract the canvas size.");
+
+        if ((screenWidth <= 0) ||
+            (screenHeight <= 0))
+        {
+            return null;
+        }
 
         canvasElement.setAttribute("width", screenWidth);
         canvasElement.setAttribute("height", screenHeight);
