@@ -135,7 +135,7 @@ Rngon.renderShared = {
         return;
     },
 
-    defaultRenderOptions:
+    defaultRenderOptions: Object.freeze(
     {
         cameraPosition: Rngon.vector3(0, 0, 0),
         cameraDirection: Rngon.vector3(0, 0, 0),
@@ -154,5 +154,23 @@ Rngon.renderShared = {
         auxiliaryBuffers: [],
         lights: [],
         finishedCallback: null, // A function called by the renderer when rendering finishes. Only used by the async renderer.
+    }),
+
+    // Returns an object containing the properties - and their defualt starting values -
+    // that a call to render() should return.
+    setup_render_call_info: function()
+    {
+        return {
+            renderWidth: 0,
+            renderHeight: 0,
+
+            // The total count of n-gons rendered. May be smaller than the number of n-gons
+            // originally submitted for rendering, due to visibility culling etc. performed
+            // during the rendering process.
+            numNgonsRendered: 0,
+
+            // The total time this call to render() took, in milliseconds.
+            totalRenderTimeMs: performance.now(),
+        };
     },
 }
