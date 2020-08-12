@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (12 August 2020 11:44:33 UTC)
+// VERSION: beta live (12 August 2020 11:49:16 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -2319,7 +2319,7 @@ Rngon.surface = function(canvasElementId = "",  // The DOM id of the target <can
                                                          options.farPlane);
     const screenSpaceMatrix = Rngon.matrix44.ortho((surfaceWidth + 1), (surfaceHeight + 1));
 
-    const publicInterface =
+    const publicInterface = Object.freeze(
     {
         width: surfaceWidth,
         height: surfaceHeight,
@@ -2412,7 +2412,7 @@ Rngon.surface = function(canvasElementId = "",  // The DOM id of the target <can
 
             return;
         },
-    };
+    });
 
     return publicInterface;
 

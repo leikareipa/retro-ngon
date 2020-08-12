@@ -45,7 +45,7 @@ Rngon.surface = function(canvasElementId = "",  // The DOM id of the target <can
                                                          options.farPlane);
     const screenSpaceMatrix = Rngon.matrix44.ortho((surfaceWidth + 1), (surfaceHeight + 1));
 
-    const publicInterface =
+    const publicInterface = Object.freeze(
     {
         width: surfaceWidth,
         height: surfaceHeight,
@@ -138,7 +138,7 @@ Rngon.surface = function(canvasElementId = "",  // The DOM id of the target <can
 
             return;
         },
-    };
+    });
 
     return publicInterface;
 
