@@ -15,9 +15,9 @@
 // Returns a Promise that resolves with the following object:
 //
 //     {
-//         pixels: <a Uint8ClampedArray containing the rendered pixels (RGBA)>,
-//         renderWidth: <width of the pixels array>,
-//         renderHeight: <height of the pixels array>,
+//         image: <the rendered image as an ImageData object>,
+//         renderWidth: <width of the rendered image>,
+//         renderHeight: <height of the rendered image>,
 //         totalRenderTimeMs: <number of milliseconds taken by the rendering>,
 //     }
 //
@@ -98,9 +98,9 @@ Rngon.render_async = function(meshes = [Rngon.mesh()],
     //
     //     {
     //         type: "rendering-finished",
-    //         pixels: <a Uint8ClampedArray containing the rendered pixels (RGBA)>,
-    //         renderWidth: <width of the pixels array>,
-    //         renderHeight: <height of the pixels array>,
+    //         image: <the rendered image as an ImageData object>,
+    //         renderWidth: <width of the rendered image>,
+    //         renderHeight: <height of the rendered image>,
     //         totalRenderTimeMs: <number of milliseconds taken by the rendering>,
     //     }
     //
@@ -193,7 +193,7 @@ Rngon.render_async = function(meshes = [Rngon.mesh()],
                     renderCallInfo.renderWidth = options.width;
                     renderCallInfo.renderHeight = options.height;
                     renderCallInfo.numNgonsRendered = Rngon.internalState.ngonCache.count;
-                    renderCallInfo.pixels = Rngon.internalState.pixelBuffer.data;
+                    renderCallInfo.image = Rngon.internalState.pixelBuffer;
                 }
                 else
                 {
