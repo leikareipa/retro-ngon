@@ -12,20 +12,7 @@ Rngon.render = function(canvasElementId,
                         meshes = [Rngon.mesh()],
                         options = {})
 {
-    // Initialize the object containing the data we'll return from this function.
-    const callMetadata =
-    {
-        renderWidth: 0,
-        renderHeight: 0,
-
-        // The total count of n-gons rendered. May be smaller than the number of n-gons
-        // originally submitted for rendering, due to visibility culling etc. performed
-        // during the rendering process.
-        numNgonsRendered: 0,
-
-        // The total time this call to render() took, in milliseconds.
-        totalRenderTimeMs: performance.now(),
-    }
+    const renderCallInfo = Rngon.renderShared.setup_render_call_info();
 
     options = Object.freeze({
         ...Rngon.renderShared.defaultRenderOptions,
@@ -45,13 +32,13 @@ Rngon.render = function(canvasElementId,
         {
             renderSurface.display_meshes(meshes);
 
-            callMetadata.renderWidth = renderSurface.width;
-            callMetadata.renderHeight = renderSurface.height;
-            callMetadata.numNgonsRendered = Rngon.internalState.ngonCache.count;
+            renderCallInfo.renderWidth = renderSurface.width;
+            renderCallInfo.renderHeight = renderSurface.height;
+            renderCallInfo.numNgonsRendered = Rngon.internalState.ngonCache.count;
         }
     }
 
-    callMetadata.totalRenderTimeMs = (performance.now() - callMetadata.totalRenderTimeMs);
+    renderCallInfo.totalRenderTimeMs = (performance.now() - renderCallInfo.totalRenderTimeMs);
 
-    return callMetadata;
+    return renderCallInfo;
 };
