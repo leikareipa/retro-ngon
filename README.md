@@ -8,10 +8,11 @@ A non-interactive render sample is also available [here](https://www.tarpeeksihy
 ![A textured cube](/images/painting-cube.png)
 
 ### Features
-- Straightforward API
+- Easy-to-use API
 - Genuine retro aesthetics
-- Optional pixel and vertex shaders
-- Vanilla JavaScript with no dependencies
+- Custom pixel and vertex shaders
+- Optional async rendering with Web Workers
+- Vanilla JavaScript with no extra dependencies
 
 ### Projects using the retro n-gon renderer
 - [RallySportED-js](https://github.com/leikareipa/rallysported-js/), a contemporary asset editor for the DOS game Rally-Sport
