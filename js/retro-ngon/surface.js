@@ -13,9 +13,7 @@
 //
 // Note: Throws on unrecoverable errors; returns null if the surface size would be
 // <= 0 in width and/or height.
-Rngon.surface = function(canvasElementId = "",              // The DOM id of the canvas element.
-                         ngon_fill = ()=>{},                // A function that rasterizes the given ngons onto the surface.
-                         ngon_transform_and_light = ()=>{}, // A function applies lighting to the given ngons, and transforms them into screen-space for the surface.
+Rngon.surface = function(canvasElementId = "",              // The DOM id of the target <canvas> element.
                          options = {})                      // A reference to or copy of the options passed to render().
 {
     const renderOffscreen = Boolean(canvasElementId === null);
@@ -86,29 +84,30 @@ Rngon.surface = function(canvasElementId = "",              // The DOM id of the
         // Rasterizes the given meshes' n-gons onto this surface.
         render_meshes: function(meshes = [])
         {
-            // Prepare the meshes' n-gons for rendering. This will place the
-            // transformed n-gons into the n-gon cache.
+            // Prepare the meshes' n-gons for rendering. This will place the transformed
+            // n-gons into the internal n-gon cache, Rngon.internalState.ngonCache.
             {
                 // Transform the n-gons into screen space.
                 for (const mesh of meshes)
                 {
-                    ngon_transform_and_light(mesh.ngons,
-                                             Rngon.mesh.object_space_matrix(mesh),
-                                             cameraMatrix,
-                                             perspectiveMatrix,
-                                             screenSpaceMatrix,
-                                             options.cameraPosition);
+                    Rngon.ngon_transform_and_light(mesh.ngons,
+                                                   Rngon.mesh.object_space_matrix(mesh),
+                                                   cameraMatrix,
+                                                   perspectiveMatrix,
+                                                   screenSpaceMatrix,
+                                                   options.cameraPosition);
                 };
 
                 mark_npot_textures_in_ngon_cache();
                 depth_sort_ngon_cache(options.depthSort);
             }
 
-            // Render the n-gons from the n-gon cache.
+            // Render the n-gons from the n-gon cache. The rendering will go into the
+            // renderer's internal pixel buffer, Rngon.internalState.pixelBuffer.
             {
                 this.wipe();
 
-                ngon_fill(options.auxiliaryBuffers);
+                Rngon.ngon_filler(options.auxiliaryBuffers);
 
                 if (Rngon.internalState.usePixelShaders)
                 {

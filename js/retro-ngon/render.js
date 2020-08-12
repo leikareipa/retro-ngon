@@ -36,10 +36,7 @@ Rngon.render = function(canvasElementId,
     
     // Render a single frame into the target canvas.
     {
-        const renderSurface = Rngon.surface(canvasElementId,
-                                            Rngon.ngon_filler,
-                                            Rngon.ngon_transform_and_light,
-                                            options);
+        const renderSurface = Rngon.surface(canvasElementId, options);
 
         // We'll render either always or only when the render canvas is in view,
         // depending on whether the user asked us for the latter option.
