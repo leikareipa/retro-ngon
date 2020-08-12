@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (12 August 2020 13:17:16 UTC)
+// VERSION: beta live (12 August 2020 11:49:16 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -1659,7 +1659,20 @@ Rngon.render = function(canvasElementId,
                         meshes = [Rngon.mesh()],
                         options = {})
 {
-    const renderCallInfo = Rngon.renderShared.default_render_call_info();
+    // Initialize the object containing the data we'll return from this function.
+    const callMetadata =
+    {
+        renderWidth: 0,
+        renderHeight: 0,
+
+        // The total count of n-gons rendered. May be smaller than the number of n-gons
+        // originally submitted for rendering, due to visibility culling etc. performed
+        // during the rendering process.
+        numNgonsRendered: 0,
+
+        // The total time this call to render() took, in milliseconds.
+        totalRenderTimeMs: performance.now(),
+    }
 
     options = Object.freeze({
         ...Rngon.renderShared.defaultRenderOptions,
@@ -1679,15 +1692,15 @@ Rngon.render = function(canvasElementId,
         {
             renderSurface.display_meshes(meshes);
 
-            renderCallInfo.renderWidth = renderSurface.width;
-            renderCallInfo.renderHeight = renderSurface.height;
-            renderCallInfo.numNgonsRendered = Rngon.internalState.ngonCache.count;
+            callMetadata.renderWidth = renderSurface.width;
+            callMetadata.renderHeight = renderSurface.height;
+            callMetadata.numNgonsRendered = Rngon.internalState.ngonCache.count;
         }
     }
 
-    renderCallInfo.totalRenderTimeMs = (performance.now() - renderCallInfo.totalRenderTimeMs);
+    callMetadata.totalRenderTimeMs = (performance.now() - callMetadata.totalRenderTimeMs);
 
-    return renderCallInfo;
+    return callMetadata;
 };
 /*
  * Tarpeeksi Hyvae Soft 2019 /
@@ -1826,7 +1839,7 @@ Rngon.renderShared = {
         return;
     },
 
-    defaultRenderOptions: Object.freeze(
+    defaultRenderOptions:
     {
         cameraPosition: Rngon.vector3(0, 0, 0),
         cameraDirection: Rngon.vector3(0, 0, 0),
@@ -1845,24 +1858,6 @@ Rngon.renderShared = {
         auxiliaryBuffers: [],
         lights: [],
         finishedCallback: null, // A function called by the renderer when rendering finishes. Only used by the async renderer.
-    }),
-
-    // Returns an object containing the properties - and their defualt starting values -
-    // that a call to render() should return.
-    default_render_call_info: function()
-    {
-        return {
-            renderWidth: 0,
-            renderHeight: 0,
-
-            // The total count of n-gons rendered. May be smaller than the number of n-gons
-            // originally submitted for rendering, due to visibility culling etc. performed
-            // during the rendering process.
-            numNgonsRendered: 0,
-
-            // The total time this call to render() took, in milliseconds.
-            totalRenderTimeMs: performance.now(),
-        };
     },
 }
 /*
@@ -2324,7 +2319,7 @@ Rngon.surface = function(canvasElementId = "",  // The DOM id of the target <can
                                                          options.farPlane);
     const screenSpaceMatrix = Rngon.matrix44.ortho((surfaceWidth + 1), (surfaceHeight + 1));
 
-    const publicInterface =
+    const publicInterface = Object.freeze(
     {
         width: surfaceWidth,
         height: surfaceHeight,
@@ -2417,7 +2412,7 @@ Rngon.surface = function(canvasElementId = "",  // The DOM id of the target <can
 
             return;
         },
-    };
+    });
 
     return publicInterface;
 
