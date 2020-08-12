@@ -7,7 +7,7 @@
 "use strict";
 
 Rngon.renderShared = {
-    set_internal_render_state: function(options = {})
+    initialize_internal_render_state: function(options = {})
     {
         const state = Rngon.internalState;
         

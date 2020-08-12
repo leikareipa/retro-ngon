@@ -31,37 +31,7 @@ Rngon.surface = function(canvasElementId = "",              // The DOM id of the
              renderContext} = setup_onscreen(canvasElementId, options.scale);
     }
     
-    // Initialize the internal render buffers if they're not already in a suitable
-    // state.
-    {
-        if ((Rngon.internalState.pixelBuffer.width != surfaceWidth) ||
-            (Rngon.internalState.pixelBuffer.height != surfaceHeight))
-        {
-            Rngon.internalState.pixelBuffer = new ImageData(surfaceWidth, surfaceHeight);
-        }
-
-        if ( Rngon.internalState.usePixelShaders &&
-            (Rngon.internalState.fragmentBuffer.width != surfaceWidth) ||
-            (Rngon.internalState.fragmentBuffer.height != surfaceHeight))
-        {
-            Rngon.internalState.fragmentBuffer.width = surfaceWidth;
-            Rngon.internalState.fragmentBuffer.height = surfaceHeight;
-            Rngon.internalState.fragmentBuffer.data = new Array(surfaceWidth * surfaceHeight)
-                                                      .fill()
-                                                      .map(e=>({}));
-        }
-
-        if ( Rngon.internalState.useDepthBuffer &&
-            (Rngon.internalState.depthBuffer.width != surfaceWidth) ||
-            (Rngon.internalState.depthBuffer.height != surfaceHeight) ||
-            !Rngon.internalState.depthBuffer.data.length)
-        {
-            Rngon.internalState.depthBuffer.width = surfaceWidth;
-            Rngon.internalState.depthBuffer.height = surfaceHeight;
-            Rngon.internalState.depthBuffer.data = new Array(Rngon.internalState.depthBuffer.width *
-                                                             Rngon.internalState.depthBuffer.height); 
-        }
-    }
+    initialize_internal_surface_state(surfaceWidth, surfaceHeight);
 
     const cameraRotationMatrix = Rngon.matrix44.rotation(options.cameraDirection.x,
                                                          options.cameraDirection.y,
@@ -81,12 +51,20 @@ Rngon.surface = function(canvasElementId = "",              // The DOM id of the
         width: surfaceWidth,
         height: surfaceHeight,
 
-        // Rasterizes the given meshes' n-gons onto this surface.
-        render_meshes: function(meshes = [])
+        // Rasterizes the given meshes' n-gons onto this surface. Following this call,
+        // the rasterized pixels will be in Rngon.internalState.pixelBuffer, and the
+        // meshes' n-gons - with their vertices transformed to screen space - in
+        // Rngon.internalState.ngonCache. If a <canvas> element id was specified for
+        // this surface, the rasterized pixels will also be painted onto that canvas.
+        display_meshes: function(meshes = [])
         {
+            this.wipe();
+
             // Prepare the meshes' n-gons for rendering. This will place the transformed
             // n-gons into the internal n-gon cache, Rngon.internalState.ngonCache.
             {
+                Rngon.renderShared.prepare_ngon_cache(meshes);
+
                 // Transform the n-gons into screen space.
                 for (const mesh of meshes)
                 {
@@ -105,8 +83,6 @@ Rngon.surface = function(canvasElementId = "",              // The DOM id of the
             // Render the n-gons from the n-gon cache. The rendering will go into the
             // renderer's internal pixel buffer, Rngon.internalState.pixelBuffer.
             {
-                this.wipe();
-
                 Rngon.ngon_filler(options.auxiliaryBuffers);
 
                 if (Rngon.internalState.usePixelShaders)
@@ -166,6 +142,41 @@ Rngon.surface = function(canvasElementId = "",              // The DOM id of the
     };
 
     return publicInterface;
+
+    // Initializes the internal render buffers if they're not already in a
+    // suitable state.
+    function initialize_internal_surface_state(surfaceWidth, surfaceHeight)
+    {
+        if ((Rngon.internalState.pixelBuffer.width != surfaceWidth) ||
+            (Rngon.internalState.pixelBuffer.height != surfaceHeight))
+        {
+            Rngon.internalState.pixelBuffer = new ImageData(surfaceWidth, surfaceHeight);
+        }
+
+        if ( Rngon.internalState.usePixelShaders &&
+            (Rngon.internalState.fragmentBuffer.width != surfaceWidth) ||
+            (Rngon.internalState.fragmentBuffer.height != surfaceHeight))
+        {
+            Rngon.internalState.fragmentBuffer.width = surfaceWidth;
+            Rngon.internalState.fragmentBuffer.height = surfaceHeight;
+            Rngon.internalState.fragmentBuffer.data = new Array(surfaceWidth * surfaceHeight)
+                                                      .fill()
+                                                      .map(e=>({}));
+        }
+
+        if ( Rngon.internalState.useDepthBuffer &&
+            (Rngon.internalState.depthBuffer.width != surfaceWidth) ||
+            (Rngon.internalState.depthBuffer.height != surfaceHeight) ||
+            !Rngon.internalState.depthBuffer.data.length)
+        {
+            Rngon.internalState.depthBuffer.width = surfaceWidth;
+            Rngon.internalState.depthBuffer.height = surfaceHeight;
+            Rngon.internalState.depthBuffer.data = new Array(Rngon.internalState.depthBuffer.width *
+                                                             Rngon.internalState.depthBuffer.height); 
+        }
+
+        return;
+    }
 
     /// TODO: This should maybe be moved to a more suitable source file.
     function depth_sort_ngon_cache(depthSortinMode = "")

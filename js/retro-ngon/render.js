@@ -6,8 +6,8 @@
 
 "use strict";
 
-// Will create a HTML5 canvas element inside the given container, and render into it
-// the given ngon meshes.
+// Renders the given meshes onto a DOM <canvas> element by the given id. The
+// <canvas> element must already exist.
 Rngon.render = function(canvasElementId,
                         meshes = [Rngon.mesh()],
                         options = {})
@@ -27,14 +27,14 @@ Rngon.render = function(canvasElementId,
         totalRenderTimeMs: performance.now(),
     }
 
-    options = {
+    options = Object.freeze({
         ...Rngon.renderShared.defaultRenderOptions,
         ...options
-    };
+    });
     
-    Rngon.renderShared.set_internal_render_state(options);
+    Rngon.renderShared.initialize_internal_render_state(options);
     
-    // Render a single frame into the target canvas.
+    // Render a single frame onto the target <canvas> element.
     {
         const renderSurface = Rngon.surface(canvasElementId, options);
 
@@ -43,8 +43,7 @@ Rngon.render = function(canvasElementId,
         if (renderSurface &&
             (!options.hibernateWhenNotOnScreen || renderSurface.is_in_view()))
         {
-            Rngon.renderShared.prepare_ngon_cache(meshes);
-            renderSurface.render_meshes(meshes);
+            renderSurface.display_meshes(meshes);
 
             callMetadata.renderWidth = renderSurface.width;
             callMetadata.renderHeight = renderSurface.height;
