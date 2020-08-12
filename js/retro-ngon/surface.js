@@ -7,14 +7,14 @@
 
 "use strict";
 
-// A surface for rendering onto. Will map onto a HTML5 <canvas> element unless the
-// 'canvasElementId' parameter is null, in which case rendering will be to an
-// off-screen buffer only.
+// A surface for rendering onto. Will also paint the rendered image onto a HTML5 <canvas>
+// element unless the 'canvasElementId' parameter is null, in which case rendering will be
+// to an off-screen buffer only.
 //
 // Note: Throws on unrecoverable errors; returns null if the surface size would be
 // <= 0 in width and/or height.
-Rngon.surface = function(canvasElementId = "",              // The DOM id of the target <canvas> element.
-                         options = {})                      // A reference to or copy of the options passed to render().
+Rngon.surface = function(canvasElementId = "",  // The DOM id of the target <canvas> element.
+                         options = {})          // A reference to or copy of the options passed to render().
 {
     const renderOffscreen = Boolean(canvasElementId === null);
 
@@ -33,18 +33,17 @@ Rngon.surface = function(canvasElementId = "",              // The DOM id of the
     
     initialize_internal_surface_state(surfaceWidth, surfaceHeight);
 
-    const cameraRotationMatrix = Rngon.matrix44.rotation(options.cameraDirection.x,
-                                                         options.cameraDirection.y,
-                                                         options.cameraDirection.z);
-    const cameraPositionMatrix = Rngon.matrix44.translation(-options.cameraPosition.x,
-                                                            -options.cameraPosition.y,
-                                                            -options.cameraPosition.z);
+    const cameraMatrix = Rngon.matrix44.multiply(Rngon.matrix44.rotation(options.cameraDirection.x,
+                                                                         options.cameraDirection.y,
+                                                                         options.cameraDirection.z),
+                                                 Rngon.matrix44.translation(-options.cameraPosition.x,
+                                                                            -options.cameraPosition.y,
+                                                                            -options.cameraPosition.z));
     const perspectiveMatrix = Rngon.matrix44.perspective((options.fov * Math.PI/180),
                                                          (surfaceWidth / surfaceHeight),
                                                          options.nearPlane,
                                                          options.farPlane);
     const screenSpaceMatrix = Rngon.matrix44.ortho((surfaceWidth + 1), (surfaceHeight + 1));
-    const cameraMatrix = Rngon.matrix44.multiply(cameraRotationMatrix, cameraPositionMatrix);
 
     const publicInterface =
     {
@@ -76,8 +75,8 @@ Rngon.surface = function(canvasElementId = "",              // The DOM id of the
                                                    options.cameraPosition);
                 };
 
-                mark_npot_textures_in_ngon_cache();
-                depth_sort_ngon_cache(options.depthSort);
+                Rngon.renderShared.mark_npot_textures_in_ngon_cache();
+                Rngon.renderShared.depth_sort_ngon_cache(options.depthSort);
             }
 
             // Render the n-gons from the n-gon cache. The rendering will go into the
@@ -176,81 +175,6 @@ Rngon.surface = function(canvasElementId = "",              // The DOM id of the
         }
 
         return;
-    }
-
-    /// TODO: This should maybe be moved to a more suitable source file.
-    function depth_sort_ngon_cache(depthSortinMode = "")
-    {
-        const ngons = Rngon.internalState.ngonCache.ngons;
-
-        switch (depthSortinMode)
-        {
-            case "none": break;
-
-            // Painter's algorithm. Sort back-to-front; i.e. so that n-gons furthest from the camera
-            // will be first in the list.
-            case "painter":
-            {
-                ngons.sort((ngonA, ngonB)=>
-                {
-                    // Separate inactive n-gons (which are to be ignored when rendering the current
-                    // frame) from the n-gons we're intended to render.
-                    const a = (ngonA.isActive? (ngonA.vertices.reduce((acc, v)=>(acc + v.z), 0) / ngonA.vertices.length) : -Number.MAX_VALUE);
-                    const b = (ngonB.isActive? (ngonB.vertices.reduce((acc, v)=>(acc + v.z), 0) / ngonB.vertices.length) : -Number.MAX_VALUE);
-
-                    return ((a === b)? 0 : ((a < b)? 1 : -1));
-                });
-
-                break;
-            }
-            
-            // Sort front-to-back; i.e. so that n-gons closest to the camera will be first in the
-            // list. When used together with depth buffering, allows for early rejection of occluded
-            // pixels during rasterization.
-            case "painter-reverse":
-            default:
-            {
-                ngons.sort((ngonA, ngonB)=>
-                {
-                    // Separate inactive n-gons (which are to be ignored when rendering the current
-                    // frame) from the n-gons we're intended to render.
-                    const a = (ngonA.isActive? (ngonA.vertices.reduce((acc, v)=>(acc + v.z), 0) / ngonA.vertices.length) : Number.MAX_VALUE);
-                    const b = (ngonB.isActive? (ngonB.vertices.reduce((acc, v)=>(acc + v.z), 0) / ngonB.vertices.length) : Number.MAX_VALUE);
-
-                    return ((a === b)? 0 : ((a > b)? 1 : -1));
-                });
-
-                break;
-            }
-        }
-
-        return;
-    }
-
-    // Mark any non-power-of-two affine-mapped faces as using the non-power-of-two affine
-    // mapper, as the default affine mapper expects textures to be power-of-two.
-    /// TODO: This should maybe be moved to a more suitable source file.
-    function mark_npot_textures_in_ngon_cache()
-    {
-        for (let i = 0; i < Rngon.internalState.ngonCache.count; i++)
-        {
-            const ngon = Rngon.internalState.ngonCache.ngons[i];
-
-            if (ngon.material.texture &&
-                ngon.material.textureMapping === "affine")
-            {
-                let widthIsPOT = ((ngon.material.texture.width & (ngon.material.texture.width - 1)) === 0);
-                let heightIsPOT = ((ngon.material.texture.height & (ngon.material.texture.height - 1)) === 0);
-
-                if (ngon.material.texture.width === 0) widthIsPOT = false;
-                if (ngon.material.texture.height === 0) heightIsPOT = false;
-
-                if (!widthIsPOT || !heightIsPOT)
-                {
-                    ngon.material.textureMapping = "affine-npot";
-                }
-            }
-        }
     }
 
     // Initializes the target DOM <canvas> element for rendering into.
