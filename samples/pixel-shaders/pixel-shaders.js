@@ -85,9 +85,9 @@ export const sampleRenderOptions = {
             {
                 const maxDistance = (300 * 300);
 
-                const distance = (((ngon.vertices[0].x - cameraPosition.x) * (ngon.vertices[0].x  - cameraPosition.x)) +
-                                  ((ngon.vertices[0].y - cameraPosition.y) * (ngon.vertices[0].y  - cameraPosition.y)) +
-                                  ((ngon.vertices[0].z - cameraPosition.z) * (ngon.vertices[0].z  - cameraPosition.z)));
+                const distance = (((ngon.vertices[0].x - cameraPosition.x) * (ngon.vertices[0].x - cameraPosition.x)) +
+                                  ((ngon.vertices[0].y - cameraPosition.y) * (ngon.vertices[0].y - cameraPosition.y)) +
+                                  ((ngon.vertices[0].z - cameraPosition.z) * (ngon.vertices[0].z - cameraPosition.z)));
 
                 ngon.mipLevel = Math.max(0, Math.min(0.25, (distance / maxDistance)));
             }

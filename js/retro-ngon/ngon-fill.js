@@ -230,7 +230,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                     const u2 = (material.texture? vert2.u : 1);
                     const v2 = (material.texture? vert2.v : 1);
                     const startU = u1/w1;
-                    const deltaU = ((u2/w2- u1/w1) / edgeHeight);
+                    const deltaU = ((u2/w2 - u1/w1) / edgeHeight);
                     const startV = v1/w1;
                     const deltaV = ((v2/w2 - v1/w1) / edgeHeight);
 

@@ -1,29 +1,34 @@
 /*
- * Tarpeeksi Hyvae Soft 2019 /
- * Retro n-gon renderer
- * 
- * A surface for rendering onto. Maps onto a HTML5 canvas.
+ * 2019, 2020 Tarpeeksi Hyvae Soft
+ *
+ * Software: Retro n-gon renderer
  *
  */
 
 "use strict";
 
-// Note: throws on unrecoverable errors; returns null if the canvas size
-// would be 0 or negative in width and/or height.
-Rngon.canvas = function(canvasElementId = "",              // The DOM id of the canvas element.
-                        ngon_fill = ()=>{},                // A function that rasterizes the given ngons onto the canvas.
-                        ngon_transform_and_light = ()=>{}, // A function applies lighting to the given ngons, and transforms them into screen-space for the canvas.
-                        options = {})                      // Options that were passed to render().
+// A surface for rendering onto. Will map onto a HTML5 <canvas> element unless the
+// 'canvasElementId' parameter is null, in which case rendering will be to an
+// off-screen buffer only.
+//
+// Note: Throws on unrecoverable errors; returns null if the surface size would be
+// <= 0 in width and/or height.
+Rngon.surface = function(canvasElementId = "",              // The DOM id of the canvas element.
+                         ngon_fill = ()=>{},                // A function that rasterizes the given ngons onto the surface.
+                         ngon_transform_and_light = ()=>{}, // A function applies lighting to the given ngons, and transforms them into screen-space for the surface.
+                         options = {})                      // A reference to or copy of the options passed to render().
 {
-    if (options.offscreen)
+    const renderOffscreen = Boolean(canvasElementId === null);
+
+    if (renderOffscreen)
     {
-        var {screenWidth,
-             screenHeight} = setup_offscreen(options.width, options.height);
+        var {surfaceWidth,
+             surfaceHeight} = setup_offscreen(options.width, options.height);
     }
     else
     {
-        var {screenWidth,
-             screenHeight,
+        var {surfaceWidth,
+             surfaceHeight,
              canvasElement,
              renderContext} = setup_onscreen(canvasElementId, options.scale);
     }
@@ -31,30 +36,30 @@ Rngon.canvas = function(canvasElementId = "",              // The DOM id of the 
     // Initialize the internal render buffers if they're not already in a suitable
     // state.
     {
-        if ((Rngon.internalState.pixelBuffer.width != screenWidth) ||
-            (Rngon.internalState.pixelBuffer.height != screenHeight))
+        if ((Rngon.internalState.pixelBuffer.width != surfaceWidth) ||
+            (Rngon.internalState.pixelBuffer.height != surfaceHeight))
         {
-            Rngon.internalState.pixelBuffer = new ImageData(screenWidth, screenHeight);
+            Rngon.internalState.pixelBuffer = new ImageData(surfaceWidth, surfaceHeight);
         }
 
         if ( Rngon.internalState.usePixelShaders &&
-            (Rngon.internalState.fragmentBuffer.width != screenWidth) ||
-            (Rngon.internalState.fragmentBuffer.height != screenHeight))
+            (Rngon.internalState.fragmentBuffer.width != surfaceWidth) ||
+            (Rngon.internalState.fragmentBuffer.height != surfaceHeight))
         {
-            Rngon.internalState.fragmentBuffer.width = screenWidth;
-            Rngon.internalState.fragmentBuffer.height = screenHeight;
-            Rngon.internalState.fragmentBuffer.data = new Array(screenWidth * screenHeight)
+            Rngon.internalState.fragmentBuffer.width = surfaceWidth;
+            Rngon.internalState.fragmentBuffer.height = surfaceHeight;
+            Rngon.internalState.fragmentBuffer.data = new Array(surfaceWidth * surfaceHeight)
                                                       .fill()
                                                       .map(e=>({}));
         }
 
         if ( Rngon.internalState.useDepthBuffer &&
-            (Rngon.internalState.depthBuffer.width != screenWidth) ||
-            (Rngon.internalState.depthBuffer.height != screenHeight) ||
+            (Rngon.internalState.depthBuffer.width != surfaceWidth) ||
+            (Rngon.internalState.depthBuffer.height != surfaceHeight) ||
             !Rngon.internalState.depthBuffer.data.length)
         {
-            Rngon.internalState.depthBuffer.width = screenWidth;
-            Rngon.internalState.depthBuffer.height = screenHeight;
+            Rngon.internalState.depthBuffer.width = surfaceWidth;
+            Rngon.internalState.depthBuffer.height = surfaceHeight;
             Rngon.internalState.depthBuffer.data = new Array(Rngon.internalState.depthBuffer.width *
                                                              Rngon.internalState.depthBuffer.height); 
         }
@@ -67,16 +72,16 @@ Rngon.canvas = function(canvasElementId = "",              // The DOM id of the 
                                                             -options.cameraPosition.y,
                                                             -options.cameraPosition.z);
     const perspectiveMatrix = Rngon.matrix44.perspective((options.fov * Math.PI/180),
-                                                         (screenWidth / screenHeight),
+                                                         (surfaceWidth / surfaceHeight),
                                                          options.nearPlane,
                                                          options.farPlane);
-    const screenSpaceMatrix = Rngon.matrix44.ortho((screenWidth + 1), (screenHeight + 1));
+    const screenSpaceMatrix = Rngon.matrix44.ortho((surfaceWidth + 1), (surfaceHeight + 1));
     const cameraMatrix = Rngon.matrix44.multiply(cameraRotationMatrix, cameraPositionMatrix);
 
     const publicInterface =
     {
-        width: screenWidth,
-        height: screenHeight,
+        width: surfaceWidth,
+        height: surfaceHeight,
 
         // Rasterizes the given meshes' n-gons onto this surface.
         render_meshes: function(meshes = [])
@@ -108,8 +113,8 @@ Rngon.canvas = function(canvasElementId = "",              // The DOM id of the 
                 if (Rngon.internalState.usePixelShaders)
                 {
                     Rngon.internalState.pixel_shader_function({
-                        renderWidth: screenWidth,
-                        renderHeight: screenHeight,
+                        renderWidth: surfaceWidth,
+                        renderHeight: surfaceHeight,
                         fragmentBuffer: Rngon.internalState.fragmentBuffer.data,
                         pixelBuffer: Rngon.internalState.pixelBuffer.data,
                         ngonCache: Rngon.internalState.ngonCache.ngons,
@@ -117,7 +122,7 @@ Rngon.canvas = function(canvasElementId = "",              // The DOM id of the 
                     });
                 }
 
-                if (!options.offscreen)
+                if (!renderOffscreen)
                 {
                     renderContext.putImageData(Rngon.internalState.pixelBuffer, 0, 0);
                 }
@@ -128,12 +133,12 @@ Rngon.canvas = function(canvasElementId = "",              // The DOM id of the 
         // the page's visible region.
         is_in_view: function()
         {
-            // The offscreen buffer is always 'in view' in the sense that it doesn't
+            // Offscreen rendering is always 'in view' in the sense that it doesn't
             // have a physical manifestation in the DOM that could go out of view to
             // begin with. Technically this could maybe be made to return false to
-            // indicate that the buffer is for some reason uinavailable for reading
-            // and/or writing, but for now we don't do that.
-            if (options.offscreen)
+            // indicate that the offscreen buffer is for some reason uinavailable,
+            // but for now we don't do that.
+            if (renderOffscreen)
             {
                 return true;
             }
@@ -145,7 +150,7 @@ Rngon.canvas = function(canvasElementId = "",              // The DOM id of the 
                            (containerRect.top < viewHeight));
         },
 
-        // Resets the canvas's buffers to their initial contents.
+        // Resets the surface's render buffers to their initial contents.
         wipe: function()
         {
             Rngon.internalState.pixelBuffer.data.fill(0);
@@ -238,7 +243,7 @@ Rngon.canvas = function(canvasElementId = "",              // The DOM id of the 
         }
     }
 
-    // Initializes the target Canvas element for rendering into.
+    // Initializes the target DOM <canvas> element for rendering into.
     function setup_onscreen(canvasElementId, scale)
     {
         const canvasElement = document.getElementById(canvasElementId);
@@ -248,39 +253,39 @@ Rngon.canvas = function(canvasElementId = "",              // The DOM id of the 
         const renderContext = canvasElement.getContext("2d");
 
         // Size the canvas as per the requested render scale.
-        const screenWidth = Math.floor(parseInt(window.getComputedStyle(canvasElement).getPropertyValue("width")) * scale);
-        const screenHeight = Math.floor(parseInt(window.getComputedStyle(canvasElement).getPropertyValue("height")) * scale);
+        const surfaceWidth = Math.floor(parseInt(window.getComputedStyle(canvasElement).getPropertyValue("width")) * scale);
+        const surfaceHeight = Math.floor(parseInt(window.getComputedStyle(canvasElement).getPropertyValue("height")) * scale);
         {
-            Rngon.assert && (!isNaN(screenWidth) &&
-                            !isNaN(screenHeight))
+            Rngon.assert && (!isNaN(surfaceWidth) &&
+                            !isNaN(surfaceHeight))
                         || Rngon.throw("Failed to extract the canvas size.");
 
-            if ((screenWidth <= 0) ||
-                (screenHeight <= 0))
+            if ((surfaceWidth <= 0) ||
+                (surfaceHeight <= 0))
             {
                 return null;
             }
 
-            canvasElement.setAttribute("width", screenWidth);
-            canvasElement.setAttribute("height", screenHeight);
+            canvasElement.setAttribute("width", surfaceWidth);
+            canvasElement.setAttribute("height", surfaceHeight);
         }
 
         return {
-            screenWidth,
-            screenHeight,
+            surfaceWidth,
+            surfaceHeight,
             canvasElement,
             renderContext};
     }
 
-    // Sets up rendering into an off-screen buffer, i.e. without using a DOM Canvas
+    // Sets up rendering into an off-screen buffer, i.e. without using a DOM <canvas>
     // element. Right now, since the renderer by default renders into an off-screen
-    // buffer first and then transfers the pixels onto a Canvas element, this function
-    // is more about just skipping initialization of the Canvas element.
+    // buffer first and then transfers the pixels onto a <canvas>, this function
+    // is more about just skipping initialization of the <canvas> element.
     function setup_offscreen(width, height)
     {
         return {
-            screenWidth: width,
-            screenHeight: height,
+            surfaceWidth: width,
+            surfaceHeight: height,
         };
     }
 }
