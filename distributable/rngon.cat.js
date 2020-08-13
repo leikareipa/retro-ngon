@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (13 August 2020 00:58:33 UTC)
+// VERSION: beta live (13 August 2020 01:46:51 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -1716,7 +1716,8 @@ Rngon.render = function(canvasElementId,
 // On error, the Promise rejects with a string describing the error in plain language.
 //
 Rngon.render_async = function(meshes = [Rngon.mesh()],
-                              options = {})
+                              options = {},
+                              rngonUrl = null)
 {
     return new Promise((resolve, reject)=>
     {
@@ -1764,12 +1765,17 @@ Rngon.render_async = function(meshes = [Rngon.mesh()],
             }
         }
 
+        if (rngonUrl === null)
+        {
+            rngonUrl = Array.from(document.getElementsByTagName("script")).filter(e=>e.src.endsWith("rngon.cat.js"))[0].src;
+        }
+
         // Tell the worker to render the given meshes.
         workerThread.postMessage({
             type: "render",
             meshes,
             options,
-            rngonUrl: `${window.location.origin}/distributable/rngon.cat.js`,
+            rngonUrl,
         });
     });
 

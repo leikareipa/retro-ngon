@@ -153,6 +153,8 @@ Rngon.renderShared = {
         perspectiveCorrectInterpolation: false,
         auxiliaryBuffers: [],
         lights: [],
+        width: 640, // Used by render_async() only.
+        height: 480, // Used by render_async() only.
     }),
 
     // Returns an object containing the properties - and their defualt starting values -
