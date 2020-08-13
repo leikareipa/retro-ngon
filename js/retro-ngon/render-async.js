@@ -24,7 +24,8 @@
 // On error, the Promise rejects with a string describing the error in plain language.
 //
 Rngon.render_async = function(meshes = [Rngon.mesh()],
-                              options = {})
+                              options = {},
+                              rngonUrl = null)
 {
     return new Promise((resolve, reject)=>
     {
@@ -72,12 +73,17 @@ Rngon.render_async = function(meshes = [Rngon.mesh()],
             }
         }
 
+        if (rngonUrl === null)
+        {
+            rngonUrl = Array.from(document.getElementsByTagName("script")).filter(e=>e.src.endsWith("rngon.cat.js"))[0].src;
+        }
+
         // Tell the worker to render the given meshes.
         workerThread.postMessage({
             type: "render",
             meshes,
             options,
-            rngonUrl: `${window.location.origin}/distributable/rngon.cat.js`,
+            rngonUrl,
         });
     });
 
