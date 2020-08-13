@@ -599,14 +599,15 @@ The renderer's public API consists of the following objects:
 
 | Object                                          | Brief description                           |
 | ----------------------------------------------- | ------------------------------------------- |
-| [render](#rendercanvaselementid-meshes-options) | Renders n-gon meshes into a canvas.         |
+| [render](#rendercanvaselementid-meshes-options) | Renders n-gon meshes onto a canvas.         |
+| [render_async](#render_asyncmeshes-options)     | Renders n-gon meshes into a pixel buffer. Runs in a Web Worker.  |
 | [mesh](#meshngons-transform)                    | Collection of thematically-related n-gons.  |
 | [ngon](#ngonvertices-material-normal)           | Polygonal shape defined by *n* vertices.    |
 | [vertex](#vertexx-y-z-u-v-w)                    | Corner of an n-gon.                         |
 | [vector3](#vector3x-y-z)                        | Three-component vector. Aliases: *translation_vector*, *rotation_vector*, *scaling_vector*. |
 | [color_rgba](#color_rgbared-green-blue-alpha)   | RGB color with alpha.                       |
 | [texture_rgba](#texture_rgbadata)               | RGB texture with alpha.                     |
-| light                                           | (A description is coming.)                                   |
+| light                                           | (A description is coming.)                  |
 
 ### render(canvasElementId[, meshes[, options]])
 Renders one or more n-gon meshes onto an existing canvas element.
@@ -616,7 +617,7 @@ Renders one or more n-gon meshes onto an existing canvas element.
 | Type      | Name            | Description |
 | --------- | --------------- | ----------- |
 | *string*  | canvasElementId | A string matching the *id* attribute of the DOM canvas element to render into. |
-| *array*   | meshes          | An array of one or more **mesh** objects to be rendered. Defaults to *[Rngon.mesh()]* (an empty mesh). |
+| *array*   | meshes          | An array of one or more **mesh** objects to be rendered. Defaults to *[Rngon.mesh()]* (one empty mesh). |
 | *object*  | options         | An object providing optional directives. |
 
 *The **options** parameter object recognizes the following properties:*
@@ -658,9 +659,9 @@ Renders one or more n-gon meshes onto an existing canvas element.
 *Sample usage:*
 
 ```
-// Create a mesh out of a single-vertex n-gon, and render it into a canvas.
+// Create a mesh out of a single-vertex n-gon, and render it onto a canvas.
 
-const ngon = Rngon.ngon([Rngon.vertex(0, 0, 0)]
+const ngon = Rngon.ngon([Rngon.vertex(0, 0, 0)],
                         {
                             color: Rngon.color_rgba(255, 255, 0),
                         });
@@ -672,18 +673,19 @@ const mesh = Rngon.mesh([ngon],
 
 Rngon.render("canvas", [mesh],
              {
-                 cameraPosition: Rngon.translation_vector(0, 0, 0),
+                 cameraPosition: Rngon.translation_vector(0, 0, -5),
              });
 ```
 
 ```
 // Employ an auxiliary render buffer for mouse picking.
 
-const ngon = Rngon.ngon([Rngon.vertex(0, 0, 0)]
+const ngon = Rngon.ngon([Rngon.vertex(0, 0, 0)],
                         {
                             color: Rngon.color_rgba(255, 255, 0),
 
-                            // The 'auxiliary' property holds sub-properties that are available to auxiliary buffers.
+                            // The 'auxiliary' property holds sub-properties that
+                            // are available to auxiliary buffers.
                             auxiliary:
                             {
                                 // A value that uniquely identifies this n-gon.
@@ -695,14 +697,95 @@ const mousePickingBuffer = [];
 
 Rngon.render("canvas", [Rngon.mesh([ngon])],
              {
-                 cameraPosition: Rngon.translation_vector(0, 0, 0),
+                 cameraPosition: Rngon.translation_vector(0, 0, -5),
                  auxiliaryBuffers:
                  [
                      {buffer: mousePickingBuffer, property: "mousePickingId"},
                  ],
              });
 
-// The 'mousePickingBuffer' array now holds the rendered n-gon's 'mousePickingId' value wherever the n-gon is visibile in the rendered image.
+// The 'mousePickingBuffer' array now holds the rendered n-gon's
+// 'mousePickingId' value wherever the n-gon is visibile in the rendered
+// image.
+```
+
+### render_async([, meshes[, options[, rngonUrl]]])
+Renders one or more n-gon meshes into a pixel buffer (an ImageData object). Runs in a Web Worker so is non-blocking, provided that the host hardware supports concurrent threads.
+
+*Parameters:*
+
+| Type      | Name            | Description |
+| --------- | --------------- | ----------- |
+| *array*   | meshes          | An array of one or more **mesh** objects to be rendered. Defaults to *[Rngon.mesh()]* (one empty mesh). |
+| *object*  | options         | An object providing optional directives. |
+| *string*  | rngonUrl        | A string providing the complete source URL of the renderer's script file &ndash; for example, `"http://localhost:8000/distributable/rngon.cat.js"`. This information is needed by the renderer's Web Worker, which runs from a Blob environment and thus can't use relative file paths. If this argument is not given, or if *null*, the URL will be determined automatically by inspecting the Document's \<script\> tags' `src` properties and selecting the first one that ends in `"rngon.cat.js"`.  Defaults to *null*. |
+
+*The **options** parameter object recognizes the same properties as the one for **render()** but with the following additions and exceptions:*
+
+| Type                  | Name                     | Description |
+| --------------------- | ------------------------ | ----------- |
+| *number*              | width                    | The width (in pixels) of the image to be rendered. Defaults to *640*. |
+| *number*              | height                   | The height (in pixels) of the image to be rendered. Defaults to *480*. |
+| *number*              | scale                    | Unlike for **render()**, this property is ignored. Use the 'width' and 'height' properties instead. |
+| *string*              | pixelShaderFunction      | Same as for **render()**, but the function must now be provided as a string (e.g. of the form `"(a)=>{console.log(a)}"`) so that it can be passed to a Web Worker. If *null*, pixel shader functionality will be disabled. Defaults to *null*. |
+| *string*              | vertexShaderFunction      | Same as for **render()**, but the function must now be provided as a string (e.g. of the form `"(a)=>{console.log(a)}"`) so that it can be passed to a Web Worker. If *null*, vertex shader functionality will be disabled. Defaults to *null*. |
+
+*Returns:*
+
+```
+{
+    // An ImageData object containing the rendered pixels.
+    image,
+
+    renderWidth,
+    renderHeight,
+
+    // The total count of n-gons rendered. May be smaller than the number of n-gons
+    // originally submitted for rendering, due to visibility culling etc. performed
+    // during the rendering process.
+    numNgonsRendered,
+
+    // The total time this call to render() took, in milliseconds.
+    totalRenderTimeMs,
+}
+```
+
+*Sample usage:*
+
+```
+// Create a mesh out of a single-vertex n-gon, render it asynchronously in a
+// Web Worker thread, and paint the rendered image onto an existing <canvas>
+// element whose DOM id is "target-canvas".
+
+const ngon = Rngon.ngon([Rngon.vertex(0, 0, 5)],
+                        {
+                            color: Rngon.color_rgba(255, 255, 0),
+                        });
+
+const mesh = Rngon.mesh([ngon]);
+
+Rngon.render_async([mesh], {width: 640, height: 480})
+     .then((result)=>
+     {
+         if (result.image instanceof ImageData)
+         {
+             const canvas = document.getElementById("target-canvas");
+
+             canvas.width = result.renderWidth;
+             canvas.height = result.renderHeight;
+             canvas.getContext("2d").putImageData(result.image, 0, 0);
+         }
+         else
+         {
+             throw `Rendering failed. ${result}`;
+         }
+     });
+```
+
+```
+// Use async/await instead of .then().
+
+const result = await Rngon.render_async([mesh], {width: 640, height: 480});
 ```
 
 ### mesh([ngons[, transform]])
