@@ -600,7 +600,7 @@ The renderer's public API consists of the following objects:
 | Object                                          | Brief description                           |
 | ----------------------------------------------- | ------------------------------------------- |
 | [render](#rendercanvaselementid-meshes-options) | Renders n-gon meshes onto a canvas.         |
-| [render_async](#render_asyncmeshes-options)     | Renders n-gon meshes into a pixel buffer. Runs in a Web Worker.  |
+| [render_async](#render_async-meshes-options-rngonurl) | Renders n-gon meshes into a pixel buffer. Runs in a Web Worker.  |
 | [mesh](#meshngons-transform)                    | Collection of thematically-related n-gons.  |
 | [ngon](#ngonvertices-material-normal)           | Polygonal shape defined by *n* vertices.    |
 | [vertex](#vertexx-y-z-u-v-w)                    | Corner of an n-gon.                         |
@@ -618,7 +618,7 @@ Renders one or more n-gon meshes onto an existing canvas element.
 | --------- | --------------- | ----------- |
 | *string*  | canvasElementId | A string matching the *id* attribute of the DOM canvas element to render into. |
 | *array*   | meshes          | An array of one or more **mesh** objects to be rendered. Defaults to *[Rngon.mesh()]* (one empty mesh). |
-| *object*  | options         | An object providing optional directives. |
+| *object*  | options         | An object providing optional directives (see below). |
 
 *The **options** parameter object recognizes the following properties:*
 
@@ -717,7 +717,7 @@ Renders one or more n-gon meshes into a pixel buffer (an ImageData object). Runs
 | Type      | Name            | Description |
 | --------- | --------------- | ----------- |
 | *array*   | meshes          | An array of one or more **mesh** objects to be rendered. Defaults to *[Rngon.mesh()]* (one empty mesh). |
-| *object*  | options         | An object providing optional directives. |
+| *object*  | options         | An object providing optional directives (see below). |
 | *string*  | rngonUrl        | A string providing the complete source URL of the renderer's script file &ndash; for example, `"http://localhost:8000/distributable/rngon.cat.js"`. This information is needed by the renderer's Web Worker, which runs from a Blob environment and thus can't use relative file paths. If this argument is not given, or if *null*, the URL will be determined automatically by inspecting the Document's \<script\> tags' `src` properties and selecting the first one that ends in `"rngon.cat.js"`.  Defaults to *null*. |
 
 *The **options** parameter object recognizes the same properties as the one for **render()** but with the following additions and exceptions:*
