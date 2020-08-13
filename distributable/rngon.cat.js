@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (12 August 2020 17:51:02 UTC)
+// VERSION: beta live (13 August 2020 00:58:33 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -1930,13 +1930,13 @@ Rngon.renderShared = {
         state.applyViewportClipping = (options.clipToViewport == true);
         state.lights = options.lights;
         state.farPlaneDistance = options.farPlane;
-        state.useVertexShaders = (typeof options.vertexShaderFunction === "function");
+        state.useVertexShaders = (options.vertexShaderFunction !== null);
 
         state.usePerspectiveCorrectInterpolation = ((options.perspectiveCorrectTexturing || // <- Name in pre-beta.2.
                                                      options.perspectiveCorrectInterpolation) == true);
 
-        state.usePixelShaders = (typeof (options.shaderFunction || // <- Name in pre-beta.3.
-                                         options.pixelShaderFunction) === "function");
+        state.usePixelShaders = ((options.shaderFunction || // <- Name in pre-beta.3.
+                                  options.pixelShaderFunction) !== null);
 
         state.pixel_shader_function = (options.shaderFunction || // <- Name in pre-beta.3.
                                        options.pixelShaderFunction);
@@ -2063,7 +2063,6 @@ Rngon.renderShared = {
         perspectiveCorrectInterpolation: false,
         auxiliaryBuffers: [],
         lights: [],
-        finishedCallback: null, // A function called by the renderer when rendering finishes. Only used by the async renderer.
     }),
 
     // Returns an object containing the properties - and their defualt starting values -
@@ -2211,7 +2210,16 @@ Rngon.ngon_transform_and_light = function(ngons = [],
                 // Apply an optional, user-defined vertex shader.
                 if (Rngon.internalState.vertex_shader_function)
                 {
-                    Rngon.internalState.vertex_shader_function(cachedNgon, cameraPos);
+                    // Shader functions as strings are supported to allow shaders to be
+                    // used in Web Workers.
+                    if (typeof Rngon.internalState.vertex_shader_function == "string")
+                    {
+                        eval(`"use strict"; ${Rngon.internalState.vertex_shader_function}`)(cachedNgon, cameraPos);
+                    }
+                    else
+                    {
+                        Rngon.internalState.vertex_shader_function(cachedNgon, cameraPos);
+                    }
                 }
             }
 
@@ -2584,14 +2592,25 @@ Rngon.surface = function(canvasElementId = "",  // The DOM id of the target <can
 
                 if (Rngon.internalState.usePixelShaders)
                 {
-                    Rngon.internalState.pixel_shader_function({
+                    const args = {
                         renderWidth: surfaceWidth,
                         renderHeight: surfaceHeight,
                         fragmentBuffer: Rngon.internalState.fragmentBuffer.data,
                         pixelBuffer: Rngon.internalState.pixelBuffer.data,
                         ngonCache: Rngon.internalState.ngonCache.ngons,
                         cameraPosition: options.cameraPosition,
-                    });
+                    };
+
+                    // Shader functions as strings are supported to allow shaders to be
+                    // used in Web Workers.
+                    if (typeof Rngon.internalState.pixel_shader_function == "string")
+                    {
+                        eval(`"use strict"; ${Rngon.internalState.pixel_shader_function}`)(args);
+                    }
+                    else
+                    {
+                        Rngon.internalState.pixel_shader_function(args);
+                    }
                 }
 
                 if (!renderOffscreen)

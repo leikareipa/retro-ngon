@@ -125,7 +125,16 @@ Rngon.ngon_transform_and_light = function(ngons = [],
                 // Apply an optional, user-defined vertex shader.
                 if (Rngon.internalState.vertex_shader_function)
                 {
-                    Rngon.internalState.vertex_shader_function(cachedNgon, cameraPos);
+                    // Shader functions as strings are supported to allow shaders to be
+                    // used in Web Workers.
+                    if (typeof Rngon.internalState.vertex_shader_function == "string")
+                    {
+                        eval(`"use strict"; ${Rngon.internalState.vertex_shader_function}`)(cachedNgon, cameraPos);
+                    }
+                    else
+                    {
+                        Rngon.internalState.vertex_shader_function(cachedNgon, cameraPos);
+                    }
                 }
             }
 

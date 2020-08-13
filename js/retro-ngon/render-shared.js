@@ -20,13 +20,13 @@ Rngon.renderShared = {
         state.applyViewportClipping = (options.clipToViewport == true);
         state.lights = options.lights;
         state.farPlaneDistance = options.farPlane;
-        state.useVertexShaders = (typeof options.vertexShaderFunction === "function");
+        state.useVertexShaders = (options.vertexShaderFunction !== null);
 
         state.usePerspectiveCorrectInterpolation = ((options.perspectiveCorrectTexturing || // <- Name in pre-beta.2.
                                                      options.perspectiveCorrectInterpolation) == true);
 
-        state.usePixelShaders = (typeof (options.shaderFunction || // <- Name in pre-beta.3.
-                                         options.pixelShaderFunction) === "function");
+        state.usePixelShaders = ((options.shaderFunction || // <- Name in pre-beta.3.
+                                  options.pixelShaderFunction) !== null);
 
         state.pixel_shader_function = (options.shaderFunction || // <- Name in pre-beta.3.
                                        options.pixelShaderFunction);
@@ -153,7 +153,6 @@ Rngon.renderShared = {
         perspectiveCorrectInterpolation: false,
         auxiliaryBuffers: [],
         lights: [],
-        finishedCallback: null, // A function called by the renderer when rendering finishes. Only used by the async renderer.
     }),
 
     // Returns an object containing the properties - and their defualt starting values -

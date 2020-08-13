@@ -86,14 +86,25 @@ Rngon.surface = function(canvasElementId = "",  // The DOM id of the target <can
 
                 if (Rngon.internalState.usePixelShaders)
                 {
-                    Rngon.internalState.pixel_shader_function({
+                    const args = {
                         renderWidth: surfaceWidth,
                         renderHeight: surfaceHeight,
                         fragmentBuffer: Rngon.internalState.fragmentBuffer.data,
                         pixelBuffer: Rngon.internalState.pixelBuffer.data,
                         ngonCache: Rngon.internalState.ngonCache.ngons,
                         cameraPosition: options.cameraPosition,
-                    });
+                    };
+
+                    // Shader functions as strings are supported to allow shaders to be
+                    // used in Web Workers.
+                    if (typeof Rngon.internalState.pixel_shader_function == "string")
+                    {
+                        eval(`"use strict"; ${Rngon.internalState.pixel_shader_function}`)(args);
+                    }
+                    else
+                    {
+                        Rngon.internalState.pixel_shader_function(args);
+                    }
                 }
 
                 if (!renderOffscreen)
