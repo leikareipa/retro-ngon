@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width">
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <link rel="stylesheet"
+              href="https://use.fontawesome.com/releases/v5.6.1/css/all.css"
+              integrity="sha384-gfdkjb5BdAXd+lj+gudLWI+BXq4IuLW5IT+brZEZsLFm++aCMlF1V92rMkPaX4PP"
+              crossorigin="anonymous">
+        <title>Async rendering in a Web Worker - Render sample - Retro n-gon renderer</title>
+    </head>
+    <body style="text-align: center;">
+        <div style="margin: 10px 0 10px 0;">
+            <span id="rendering-text">Rendering in a Web Worker...</span>
+            <div id="rendering-spinner" style="font-size: 300%; color: orange; margin: 20px;">
+                <i class="fas fa-fw fa-spin fa-cat"></i>
+            </div>
+        </div>
+
+        <canvas id="canvas"
+                style="visibility: hidden;
+                       background-color: black;
+                       border: 1px solid black;">
+        </canvas>
+        
+        <script src="../../distributable/rngon.cat.js"></script>
+        <script defer>
+            // Set up a bunch of random rectangles for us to render.
+            const rectangles = [];
+            for (let i = 0; i < 3000; i++)
+            {
+                const offsetX = ((Math.random() * 10) - (Math.random() * 10));
+                const offsetY = ((Math.random() * 10) - (Math.random() * 10));
+                const offsetZ = (Math.random() * 5);
+
+                const x1 = (offsetX - Math.random() * 2);
+                const x2 = (offsetX + Math.random() * 2);
+                const x3 = (offsetX + Math.random() * 2);
+                const x4 = (offsetX - Math.random() * 2);
+
+                const y1 = (offsetY - Math.random() * 2);
+                const y2 = (offsetY - Math.random() * 2);
+                const y3 = (offsetY + Math.random() * 2);
+                const y4 = (offsetY + Math.random() * 2);
+
+                const r = Math.max(100, (Math.random() * 255));
+                const g = Math.max(100, (Math.random() * 255));
+                const b = Math.max(100, (Math.random() * 255));
+        
+                rectangles.push(Rngon.ngon([Rngon.vertex(x1, y1, (10 + offsetZ)),
+                                            Rngon.vertex(x2, y2, (10 + offsetZ)),
+                                            Rngon.vertex(x3, y3, (10 + offsetZ))],
+                           {
+                               color: Rngon.color_rgba(r, g, b),
+                           })
+                );
+
+                rectangles.push(Rngon.ngon([Rngon.vertex(x1+.03, y1-.03, (10 + offsetZ)),
+                                            Rngon.vertex(x2+.03, y2-.03, (10 + offsetZ)),
+                                            Rngon.vertex(x3+.03, y3-.03, (10 + offsetZ)),
+                                            Rngon.vertex(x4+.03, y4-.03, (10 + offsetZ))],
+                           {
+                               color: Rngon.color_rgba(r*.9, g*.9, b*.9),
+                           })
+                );
+            }
+        
+            // A pixel shader that applies a wavy distortion to the rendered image.
+            const pixelShaderFunction = `
+            ({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})=>
+            {
+                for (let y = 0; y < renderHeight; y++)
+                {
+                    for (let x = 0; x < renderWidth; x++)
+                    {
+                        const thisIdx = ((x + y * renderWidth) * 4);
+                        const thisFragment = fragmentBuffer[thisIdx / 4];
+        
+                        const horizontalMagnitude = 4;
+                        const verticalMagnitude = ((y / renderWidth) * 150);
+                        const cos = Math.cos(1000 + verticalMagnitude);
+        
+                        const shiftIdx = ((Math.min((renderWidth - (horizontalMagnitude - 1)), (x + (horizontalMagnitude - 1) + ~~(cos * horizontalMagnitude))) + y * renderWidth) * 4);
+                        pixelBuffer[thisIdx + 0] = pixelBuffer[shiftIdx + 0] - thisFragment.worldY * 20;
+                        pixelBuffer[thisIdx + 1] = pixelBuffer[shiftIdx + 1];
+                        pixelBuffer[thisIdx + 2] = pixelBuffer[shiftIdx + 2];
+                    }
+                }
+            }`;
+        
+            // Render the image. Once rendering finishes, we'll copy the pixedl data
+            // into the target canvas element.
+            Rngon.render_async([Rngon.mesh(rectangles)],
+            {
+                width: 1280,
+                height: 720,
+                pixelShaderFunction,
+                lights: [Rngon.light(Rngon.translation_vector(11, 45, -35))],
+            })
+            .then((result)=>
+            {
+                let message = "";
+        
+                if (result.image instanceof ImageData)
+                {
+                    const canvas = document.getElementById("canvas");
+
+                    canvas.width = result.renderWidth;
+                    canvas.height = result.renderHeight;
+                    canvas.style.visibility = "visible";
+                    canvas.getContext("2d").putImageData(result.image, 0, 0);
+        
+                    message = "Rendering finished";
+                }
+                else
+                {
+                    message = `Rendering failed: ${result}`;
+                }
+        
+                document.getElementById("rendering-spinner").remove();
+                document.getElementById("rendering-text").textContent = message;
+            });
+        </script>        
+    </body>
+</html>
