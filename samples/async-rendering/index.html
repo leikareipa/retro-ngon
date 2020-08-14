@@ -12,22 +12,21 @@
     <body style="text-align: center;">
         <div style="margin: 10px 0 10px 0;">
             <span id="rendering-text">Rendering in a Web Worker...</span>
-            <div id="rendering-spinner" style="font-size: 300%; color: orange; margin: 20px;">
-                <i class="fas fa-fw fa-spin fa-cat"></i>
-            </div>
+            <span id="rendering-spinner">
+                <i class="fas fa-fw fa-spin fa-spinner"></i>
+            </span>
         </div>
 
         <canvas id="canvas"
                 style="visibility: hidden;
-                       background-color: black;
-                       border: 1px solid black;">
+                       background-color: black;">
         </canvas>
         
         <script src="../../distributable/rngon.cat.js"></script>
         <script defer>
             // Set up a bunch of random rectangles for us to render.
             const rectangles = [];
-            for (let i = 0; i < 3000; i++)
+            for (let i = 0; i < 6000; i++)
             {
                 const offsetX = ((Math.random() * 10) - (Math.random() * 10));
                 const offsetY = ((Math.random() * 10) - (Math.random() * 10));
@@ -43,18 +42,20 @@
                 const y3 = (offsetY + Math.random() * 2);
                 const y4 = (offsetY + Math.random() * 2);
 
-                const r = Math.max(100, (Math.random() * 255));
-                const g = Math.max(100, (Math.random() * 255));
-                const b = Math.max(100, (Math.random() * 255));
+                const r = Math.min(200, Math.max(60, (Math.random() * 255)));
+                const g = Math.min(200, Math.max(60, (Math.random() * 255)));
+                const b = Math.min(200, Math.max(60, (Math.random() * 255)));
         
                 rectangles.push(Rngon.ngon([Rngon.vertex(x1, y1, (10 + offsetZ)),
                                             Rngon.vertex(x2, y2, (10 + offsetZ)),
                                             Rngon.vertex(x3, y3, (10 + offsetZ))],
                            {
                                color: Rngon.color_rgba(r, g, b),
+                               hasHalo: Math.random() < 0.9,
                            })
                 );
 
+                /*
                 rectangles.push(Rngon.ngon([Rngon.vertex(x1+.03, y1-.03, (10 + offsetZ)),
                                             Rngon.vertex(x2+.03, y2-.03, (10 + offsetZ)),
                                             Rngon.vertex(x3+.03, y3-.03, (10 + offsetZ)),
@@ -62,13 +63,55 @@
                            {
                                color: Rngon.color_rgba(r*.9, g*.9, b*.9),
                            })
-                );
+                );*/
             }
-        
-            // A pixel shader that applies a wavy distortion to the rendered image.
+
             const pixelShaderFunction = `
             ({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})=>
             {
+                // A shader that draws a wireframe around groups of overlapping n-gons
+                // whose material has the 'hasHalo' property set to true.
+                for (let y = 0; y < renderHeight; y++)
+                {
+                    for (let x = 0; x < renderWidth; x++)
+                    {
+                        const bufferIdx = (x + y * renderWidth);
+                        const thisFragment = fragmentBuffer[bufferIdx];
+                        const ngon = (thisFragment? ngonCache[thisFragment.ngonIdx] : null);
+
+                        if (!ngon || !ngon.material.hasHalo)
+                        {
+                            continue;
+                        }
+
+                        let leftFragment   = (fragmentBuffer[((x - 1) + (y    ) * renderWidth)] || null);
+                        let topFragment    = (fragmentBuffer[((x    ) + (y - 1) * renderWidth)] || null);
+                        let rightFragment  = (fragmentBuffer[((x + 1) + (y    ) * renderWidth)] || null);
+                        let bottomFragment = (fragmentBuffer[((x    ) + (y + 1) * renderWidth)] || null);
+
+                        if (x == 0) leftFragment = null;
+                        if (y == 0) topFragment = null;
+                        if (x == (renderWidth - 1)) rightFragment = null;
+                        if (y == (renderHeight - 1)) bottomFragment = null;
+
+                        const leftNgon   = (leftFragment?   ngonCache[leftFragment.ngonIdx]   : null);
+                        const topNgon    = (topFragment?    ngonCache[topFragment.ngonIdx]    : null);
+                        const rightNgon  = (rightFragment?  ngonCache[rightFragment.ngonIdx]  : null);
+                        const bottomNgon = (bottomFragment? ngonCache[bottomFragment.ngonIdx] : null);
+
+                        if ((leftNgon   && !leftNgon.material.hasHalo   && (leftFragment.depth >= thisFragment.depth))   ||
+                            (topNgon    && !topNgon.material.hasHalo    && (topFragment.depth >= thisFragment.depth))    ||
+                            (rightNgon  && !rightNgon.material.hasHalo  && (rightFragment.depth >= thisFragment.depth))  ||
+                            (bottomNgon && !bottomNgon.material.hasHalo && (bottomFragment.depth >= thisFragment.depth)))
+                        {
+                            pixelBuffer[(bufferIdx * 4) + 0] = 255;
+                            pixelBuffer[(bufferIdx * 4) + 1] = 200;
+                            pixelBuffer[(bufferIdx * 4) + 2] = 0;
+                        }
+                    }
+                }
+
+                // A shader that applies a wavy distortion to the rendered image.
                 for (let y = 0; y < renderHeight; y++)
                 {
                     for (let x = 0; x < renderWidth; x++)
@@ -80,10 +123,28 @@
                         const verticalMagnitude = ((y / renderWidth) * 150);
                         const cos = Math.cos(1000 + verticalMagnitude);
         
-                        const shiftIdx = ((Math.min((renderWidth - (horizontalMagnitude - 1)), (x + (horizontalMagnitude - 1) + ~~(cos * horizontalMagnitude))) + y * renderWidth) * 4);
-                        pixelBuffer[thisIdx + 0] = pixelBuffer[shiftIdx + 0] - thisFragment.worldY * 20;
+                        const x_ = Math.min((renderWidth - (horizontalMagnitude - 1)),
+                                            (x + (horizontalMagnitude - 1) + ~~(cos * horizontalMagnitude)))
+                        const shiftIdx = ((x_ + y * renderWidth) * 4);
+                        pixelBuffer[thisIdx + 0] = pixelBuffer[shiftIdx + 0];
                         pixelBuffer[thisIdx + 1] = pixelBuffer[shiftIdx + 1];
                         pixelBuffer[thisIdx + 2] = pixelBuffer[shiftIdx + 2];
+                    }
+                }
+
+                // A shader that applies a world X coordinate-based shading to the rendered
+                // image. Pixels higher up in the image get a progressively lighter, redder
+                // tint.
+                for (let y = 0; y < renderHeight; y++)
+                {
+                    for (let x = 0; x < renderWidth; x++)
+                    {
+                        const thisIdx = ((x + y * renderWidth) * 4);
+                        const thisFragment = fragmentBuffer[thisIdx / 4];
+        
+                        pixelBuffer[thisIdx + 0] += (thisFragment.worldY * 20);
+                        pixelBuffer[thisIdx + 1] += (thisFragment.worldY * 5);
+                        pixelBuffer[thisIdx + 2] += (thisFragment.worldY * 5);
                     }
                 }
             }`;
@@ -95,7 +156,6 @@
                 width: 1280,
                 height: 720,
                 pixelShaderFunction,
-                lights: [Rngon.light(Rngon.translation_vector(11, 45, -35))],
             })
             .then((result)=>
             {
