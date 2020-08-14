@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (13 August 2020 01:46:51 UTC)
+// VERSION: beta live (14 August 2020 23:17:11 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -355,17 +355,29 @@ Rngon.trig = (function()
 "use strict";
 
 // A light source.
-Rngon.light = function(position = Rngon.translation_vector(0, 0, 0))
+Rngon.light = function(position = Rngon.translation_vector(0, 0, 0),
+                       settings = {})
 {
     Rngon.assert && (typeof position === "object")
                  || Rngon.throw("Expected numbers as parameters to the light factory.");
 
+    settings = {
+        ...Rngon.light.defaultSettings,
+        ...settings,
+    };
+
     const returnObject =
     {
         position,
+        ...settings,
     };
 
     return returnObject;
+}
+
+Rngon.light.defaultSettings = {
+    intensity: 3,
+    reach: 150, // The distance, in world units, from the light's position to where the light's intensity has fallen to 0.
 }
 /*
  * Tarpeeksi Hyvae Soft 2019 /
@@ -2069,6 +2081,8 @@ Rngon.renderShared = {
         perspectiveCorrectInterpolation: false,
         auxiliaryBuffers: [],
         lights: [],
+        width: 640, // Used by render_async() only.
+        height: 480, // Used by render_async() only.
     }),
 
     // Returns an object containing the properties - and their defualt starting values -
@@ -2295,8 +2309,7 @@ Rngon.ngon_transform_and_light.apply_lighting = function(ngon)
         //if (shade >= 255) break;
 
         /// TODO: These should be properties of the light object.
-        const lightReach = (1000 * 1000);
-        const lightIntensity = 1;
+        const lightReach = (light.reach * light.reach);
 
         if (ngon.material.vertexShading === "gouraud")
         {
@@ -2319,7 +2332,7 @@ Rngon.ngon_transform_and_light.apply_lighting = function(ngon)
 
                 const shadeFromThisLight = Math.max(ngon.material.ambientLightLevel, Math.min(1, Rngon.vector3.dot(ngon.vertexNormals[v], lightDirection)));
 
-                vertex.shade = Math.max(vertex.shade, Math.min(1, (shadeFromThisLight * distanceMul * lightIntensity)));
+                vertex.shade = Math.max(vertex.shade, (shadeFromThisLight * distanceMul * light.intensity));
             }
         }
         else if (ngon.material.vertexShading === "flat")
@@ -2337,7 +2350,7 @@ Rngon.ngon_transform_and_light.apply_lighting = function(ngon)
 
             const shadeFromThisLight = Math.max(ngon.material.ambientLightLevel, Math.min(1, Rngon.vector3.dot(ngon.normal, lightDirection)));
 
-            faceShade = Math.max(faceShade, Math.min(1, (shadeFromThisLight * distanceMul * lightIntensity)));
+            faceShade = Math.max(faceShade, (shadeFromThisLight * distanceMul * light.intensity));
         }
         else
         {

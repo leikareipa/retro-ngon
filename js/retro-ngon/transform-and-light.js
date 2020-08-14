@@ -204,8 +204,7 @@ Rngon.ngon_transform_and_light.apply_lighting = function(ngon)
         //if (shade >= 255) break;
 
         /// TODO: These should be properties of the light object.
-        const lightReach = (1000 * 1000);
-        const lightIntensity = 1;
+        const lightReach = (light.reach * light.reach);
 
         if (ngon.material.vertexShading === "gouraud")
         {
@@ -228,7 +227,7 @@ Rngon.ngon_transform_and_light.apply_lighting = function(ngon)
 
                 const shadeFromThisLight = Math.max(ngon.material.ambientLightLevel, Math.min(1, Rngon.vector3.dot(ngon.vertexNormals[v], lightDirection)));
 
-                vertex.shade = Math.max(vertex.shade, Math.min(1, (shadeFromThisLight * distanceMul * lightIntensity)));
+                vertex.shade = Math.max(vertex.shade, (shadeFromThisLight * distanceMul * light.intensity));
             }
         }
         else if (ngon.material.vertexShading === "flat")
@@ -246,7 +245,7 @@ Rngon.ngon_transform_and_light.apply_lighting = function(ngon)
 
             const shadeFromThisLight = Math.max(ngon.material.ambientLightLevel, Math.min(1, Rngon.vector3.dot(ngon.normal, lightDirection)));
 
-            faceShade = Math.max(faceShade, Math.min(1, (shadeFromThisLight * distanceMul * lightIntensity)));
+            faceShade = Math.max(faceShade, (shadeFromThisLight * distanceMul * light.intensity));
         }
         else
         {
