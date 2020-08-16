@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (14 August 2020 23:17:11 UTC)
+// VERSION: beta live (16 August 2020 17:05:27 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -2228,17 +2228,35 @@ Rngon.ngon_transform_and_light = function(ngons = [],
                 }
 
                 // Apply an optional, user-defined vertex shader.
-                if (Rngon.internalState.vertex_shader_function)
+                if (Rngon.internalState.useVertexShaders)
                 {
-                    // Shader functions as strings are supported to allow shaders to be
-                    // used in Web Workers.
-                    if (typeof Rngon.internalState.vertex_shader_function == "string")
+                    const args = [
+                        cachedNgon,
+                        cameraPos,
+                    ];
+
+                    const paramNamesString = "ngon, cameraPos";
+
+                    switch (typeof Rngon.internalState.vertex_shader_function)
                     {
-                        eval(`"use strict"; ${Rngon.internalState.vertex_shader_function}`)(cachedNgon, cameraPos);
-                    }
-                    else
-                    {
-                        Rngon.internalState.vertex_shader_function(cachedNgon, cameraPos);
+                        case "function":
+                        {
+                            Rngon.internalState.vertex_shader_function(...args);
+                            break;
+                        }
+                        // Shader functions as strings are supported to allow shaders to be
+                        // used in Web Workers. These strings are expected to be of - or
+                        // equivalent to - the form "(a)=>{console.log(a)}".
+                        case "string":
+                        {
+                            Function(paramNamesString, `(${Rngon.internalState.vertex_shader_function})(${paramNamesString})`)(...args);
+                            break;
+                        }
+                        default:
+                        {
+                            Rngon.throw("Unrecognized type of vertex shader function.");
+                            break;
+                        }
                     }
                 }
             }
@@ -2620,15 +2638,28 @@ Rngon.surface = function(canvasElementId = "",  // The DOM id of the target <can
                         cameraPosition: options.cameraPosition,
                     };
 
-                    // Shader functions as strings are supported to allow shaders to be
-                    // used in Web Workers.
-                    if (typeof Rngon.internalState.pixel_shader_function == "string")
+                    const paramNamesString = `{${Object.keys(args).join(",")}}`;
+
+                    switch (typeof Rngon.internalState.pixel_shader_function)
                     {
-                        eval(`"use strict"; ${Rngon.internalState.pixel_shader_function}`)(args);
-                    }
-                    else
-                    {
-                        Rngon.internalState.pixel_shader_function(args);
+                        case "function":
+                        {
+                            Rngon.internalState.pixel_shader_function(args);
+                            break;
+                        }
+                        // Shader functions as strings are supported to allow shaders to be
+                        // used in Web Workers. These strings are expected to be of - or
+                        // equivalent to - the form "(a)=>{console.log(a)}".
+                        case "string":
+                        {
+                            Function(paramNamesString, `(${Rngon.internalState.pixel_shader_function})(${paramNamesString})`)(args);
+                            break;
+                        }
+                        default:
+                        {
+                            Rngon.throw("Unrecognized type of pixel shader function.");
+                            break;
+                        }
                     }
                 }
 

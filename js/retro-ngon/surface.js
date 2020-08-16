@@ -95,15 +95,28 @@ Rngon.surface = function(canvasElementId = "",  // The DOM id of the target <can
                         cameraPosition: options.cameraPosition,
                     };
 
-                    // Shader functions as strings are supported to allow shaders to be
-                    // used in Web Workers.
-                    if (typeof Rngon.internalState.pixel_shader_function == "string")
+                    const paramNamesString = `{${Object.keys(args).join(",")}}`;
+
+                    switch (typeof Rngon.internalState.pixel_shader_function)
                     {
-                        eval(`"use strict"; ${Rngon.internalState.pixel_shader_function}`)(args);
-                    }
-                    else
-                    {
-                        Rngon.internalState.pixel_shader_function(args);
+                        case "function":
+                        {
+                            Rngon.internalState.pixel_shader_function(args);
+                            break;
+                        }
+                        // Shader functions as strings are supported to allow shaders to be
+                        // used in Web Workers. These strings are expected to be of - or
+                        // equivalent to - the form "(a)=>{console.log(a)}".
+                        case "string":
+                        {
+                            Function(paramNamesString, `(${Rngon.internalState.pixel_shader_function})(${paramNamesString})`)(args);
+                            break;
+                        }
+                        default:
+                        {
+                            Rngon.throw("Unrecognized type of pixel shader function.");
+                            break;
+                        }
                     }
                 }
 
