@@ -26,11 +26,11 @@
             </div>
             <div class="infobox polycount">
                 <div class="title">Polys</div>
-                <div class="value">0</div>
+                <div class="value"><i  class="fas fa-sm fa-spin fa-spinner"></i></div>
             </div>
             <div class="infobox fps">
                 <div class="title">FPS</div>
-                <div class="value">0</div>
+                <div class="value"><i class="fas fa-sm fa-spin fa-spinner"></i></div>
             </div>
         </div>
         
@@ -61,8 +61,9 @@
                 // so it's safe to remove the loading indicator.
                 document.getElementById("loading-bar").remove();
 
-                // Used to keep track of when to update the UI's FPS display.
-                let uiFPSUpdateTimer = 0;
+                // Used to keep track of when to update the UI's FPS and polycount displays
+                // (and whatever other real-time-updated info the UI might be showing).
+                let uiUpdateTimer = 0;
 
                 // Runs the renderer continuously, in sync with the device's refresh rate.
                 (function render_loop(timestamp = 0, frameTimeMs = 0, frameCount = 0)
@@ -99,12 +100,12 @@
                         ...sampleModule.sampleRenderOptions,
                     });
 
-                    if ((uiFPSUpdateTimer += frameTimeMs) >= 1000)
+                    if ((uiUpdateTimer += frameTimeMs) >= 1000)
                     {
                         document.querySelector(".infobox.fps .value").innerHTML = Math.floor(1000 / (renderInfo.totalRenderTimeMs || 1));
                         document.querySelector(".infobox.polycount .value").innerHTML = renderInfo.numNgonsRendered;
 
-                        uiFPSUpdateTimer = 0;
+                        uiUpdateTimer = 0;
                     }
 
                     queue_new_frame();
