@@ -13,7 +13,7 @@
 import {scene} from "./assets/scene.rngon-model.js";
 import {first_person_camera} from "./camera.js";
 
-let numFramesRendered = 0;
+const shaderFunctions = {};
 
 const lights = [
     Rngon.light(Rngon.translation_vector(11, 45, -35), {intensity: 1, reach: 100}),
@@ -27,6 +27,8 @@ const camera = first_person_camera("canvas",
                                    });
 
 scene.initialize();
+
+let numFramesRendered = 0;
 
 export const sample_scene = (frameCount = 0)=>
 {
@@ -53,26 +55,10 @@ export const sampleRenderOptions = {
     lights: lights,
     get pixelShaderFunction()
     {
-        // If the user has selected a shader to be used, return a function that calls
-        // the selected shader.
-        if (parent.ACTIVE_SHADER.function)
-        {
-            return ({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache, cameraPosition})=>
-            {
-                eval(`"use strict"; ${parent.ACTIVE_SHADER.function}({renderWidth,
-                                                                      renderHeight,
-                                                                      fragmentBuffer,
-                                                                      pixelBuffer,
-                                                                      ngonCache,
-                                                                      cameraPosition});`);
-            }
-        }
-        // Otherwise, no shader is to be used, and we return null to signal to the
-        // renderer that it should disable its shader functionality.
-        else
-        {
-            return null;
-        }
+        // If the user has selected a shader to be used, return the selected shader.
+        // Otherwise, return null to indicate that shader functionality in the
+        // renderer should be disabled.
+        return (shaderFunctions[parent.ACTIVE_SHADER.functionName] || null);
     },
     get vertexShaderFunction()
     {
@@ -101,7 +87,7 @@ export const sampleRenderOptions = {
 
 // Blurs every pixel whose n-gon doesn't have the material property 'isInFocus'
 // set to true.
-function shader_selective_blur({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
+shaderFunctions["shader_selective_blur"] = function({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
 {
     // We'll loop a couple of times to increase the level of blurring.
     for (let loop = 0; loop < 3; loop++)
@@ -180,7 +166,7 @@ function shader_selective_blur({renderWidth, renderHeight, fragmentBuffer, pixel
 // Draws a 1-pixel-thin outline over any pixel that lies on the edge of
 // an n-gon whose material has the 'hasHalo' property set to true and
 // which does not border another n-gon that has that property set.
-function shader_selective_outline({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
+shaderFunctions["shader_selective_outline"] = function({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
 {
     for (let y = 0; y < renderHeight; y++)
     {
@@ -224,7 +210,7 @@ function shader_selective_outline({renderWidth, renderHeight, fragmentBuffer, pi
 }
 
 // Converts into grayscale every pixel in the pixel buffer.
-function shader_selective_grayscale({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
+shaderFunctions["shader_selective_grayscale"] = function({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
 {
     for (let i = 0; i < (renderWidth * renderHeight); i++)
     {
@@ -246,7 +232,7 @@ function shader_selective_grayscale({renderWidth, renderHeight, fragmentBuffer, 
     }
 }
 
-function shader_shade_map({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
+shaderFunctions["shader_shade_map"] = function({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
 {
     for (let i = 0; i < (renderWidth * renderHeight); i++)
     {
@@ -258,7 +244,7 @@ function shader_shade_map({renderWidth, renderHeight, fragmentBuffer, pixelBuffe
     }
 }
 
-function shader_normal_map({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
+shaderFunctions["shader_normal_map"] = function({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
 {
     for (let i = 0; i < (renderWidth * renderHeight); i++)
     {
@@ -272,7 +258,7 @@ function shader_normal_map({renderWidth, renderHeight, fragmentBuffer, pixelBuff
     }
 }
 
-function shader_world_position_map({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
+shaderFunctions["shader_world_position_map"] = function({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
 {
     for (let i = 0; i < (renderWidth * renderHeight); i++)
     {
@@ -286,7 +272,7 @@ function shader_world_position_map({renderWidth, renderHeight, fragmentBuffer, p
     }
 }
 
-function shader_uv_map({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
+shaderFunctions["shader_uv_map"] = function({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
 {
     for (let i = 0; i < (renderWidth * renderHeight); i++)
     {
@@ -299,7 +285,7 @@ function shader_uv_map({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
     }
 }
 
-function shader_depth_map({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
+shaderFunctions["shader_depth_map"] = function({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
 {
     const {minDepth, maxDepth} = fragmentBuffer.reduce((minmax, fragment)=>
     {
@@ -319,7 +305,7 @@ function shader_depth_map({renderWidth, renderHeight, fragmentBuffer, pixelBuffe
     }
 }
 
-function shader_reduce_color_fidelity({renderWidth, renderHeight, pixelBuffer})
+shaderFunctions["shader_reduce_color_fidelity"] = function({renderWidth, renderHeight, pixelBuffer})
 {
     for (let i = 0; i < (renderWidth * renderHeight); i++)
     {
@@ -333,7 +319,7 @@ function shader_reduce_color_fidelity({renderWidth, renderHeight, pixelBuffer})
 
 // Draws black all pixels on scanlines divisible by 2; except for pixels whose
 // ngon has the material property 'hasNoScanlines' set to true.
-function shader_selective_scanlines({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
+shaderFunctions["shader_selective_scanlines"] = function({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
 {
     for (let i = 0; i < (renderWidth * renderHeight); i++)
     {
@@ -355,7 +341,7 @@ function shader_selective_scanlines({renderWidth, renderHeight, fragmentBuffer, 
 }
 
 // Draws a wireframe (outline) around each visible n-gon.
-function shader_wireframe({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
+shaderFunctions["shader_wireframe"] = function({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
 {
     for (let y = 0; y < renderHeight; y++)
     {
@@ -389,7 +375,7 @@ function shader_wireframe({renderWidth, renderHeight, fragmentBuffer, pixelBuffe
 
 // Lightens grazing angles wrt. the viewing direction on any n-gons whose material
 // has the 'isBacklit' property set to true.
-function shader_backlight({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, cameraPosition, ngonCache})
+shaderFunctions["shader_backlight"] = function({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, cameraPosition, ngonCache})
 {
     const surfaceNormal = Rngon.vector3();
     const viewVector = Rngon.vector3();
@@ -421,7 +407,7 @@ function shader_backlight({renderWidth, renderHeight, fragmentBuffer, pixelBuffe
     }
 }
 
-function shader_per_pixel_light({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
+shaderFunctions["shader_per_pixel_light"] = function({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
 {
     const light = Rngon.internalState.lights[0];
     const lightReach = (100 * 100);
@@ -482,7 +468,7 @@ function shader_per_pixel_light({renderWidth, renderHeight, fragmentBuffer, pixe
 // Desatures pixel colors based on their distance to the camera - pixels that
 // are further away are desatured to a greater extent. The desaturation algo
 // is adapted from http://alienryderflex.com/saturation.html.
-function shader_depth_desaturate({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
+shaderFunctions["shader_depth_desaturate"] = function({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
 {
     const Pr = .299;
     const Pg = .587;
@@ -512,7 +498,7 @@ function shader_depth_desaturate({renderWidth, renderHeight, fragmentBuffer, pix
     }
 }
 
-function shader_aberration({renderWidth, renderHeight, pixelBuffer})
+shaderFunctions["shader_aberration"] = function({renderWidth, renderHeight, pixelBuffer})
 {
     for (let y = 0; y < renderHeight; y++)
     {
@@ -527,7 +513,7 @@ function shader_aberration({renderWidth, renderHeight, pixelBuffer})
 }
 
 // Lightens every xth pixel to create a perspective-correct grid pattern.
-function shader_grid_pattern({renderWidth, renderHeight, pixelBuffer, fragmentBuffer})
+shaderFunctions["shader_grid_pattern"] = function({renderWidth, renderHeight, pixelBuffer, fragmentBuffer})
 {
     for (let i = 0; i < (renderWidth * renderHeight); i++)
     {
@@ -547,7 +533,7 @@ function shader_grid_pattern({renderWidth, renderHeight, pixelBuffer, fragmentBu
 }
 
 // Draws a marker over each visible vertex.
-function shader_vertex_positions_map({renderWidth, renderHeight, pixelBuffer, fragmentBuffer, ngonCache})
+shaderFunctions["shader_vertex_positions_map"] = function({renderWidth, renderHeight, pixelBuffer, fragmentBuffer, ngonCache})
 {
     for (let y = 0; y < renderHeight; y++)
     {
@@ -586,7 +572,7 @@ function shader_vertex_positions_map({renderWidth, renderHeight, pixelBuffer, fr
 }
 
 // Applies a wavy distortion to the pixel buffer.
-function shader_waviness({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
+shaderFunctions["shader_waviness"] = function({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
 {
     const timer = (new Date().getTime() / 150);
     const startDepth = 20;
@@ -612,7 +598,7 @@ function shader_waviness({renderWidth, renderHeight, fragmentBuffer, pixelBuffer
     }
 }
 
-function shader_mip_level_map({renderWidth, renderHeight, fragmentBuffer, ngonCache, pixelBuffer})
+shaderFunctions["shader_mip_level_map"] = function({renderWidth, renderHeight, fragmentBuffer, ngonCache, pixelBuffer})
 {
     for (let i = 0; i < (renderWidth * renderHeight); i++)
     {
@@ -630,7 +616,7 @@ function shader_mip_level_map({renderWidth, renderHeight, fragmentBuffer, ngonCa
     }
 }
 
-function shader_distance_fog({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
+shaderFunctions["shader_distance_fog"] = function({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
 {
     const maxDepth = 200;
 
@@ -648,7 +634,7 @@ function shader_distance_fog({renderWidth, renderHeight, fragmentBuffer, pixelBu
 
 // Blends with a second texture the base texture of any n-gon whose material specifies
 // such a second texture via the 'blendTexture' material property.
-function shader_texture_blend({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
+shaderFunctions["shader_texture_blend"] = function({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
 {
     for (let i = 0; i < (renderWidth * renderHeight); i++)
     {

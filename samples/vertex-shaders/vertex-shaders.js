@@ -13,7 +13,7 @@
 import {scene} from "./assets/scene.rngon-model.js";
 import {first_person_camera} from "./camera.js";
 
-let numFramesRendered = 0;
+const shaderFunctions = {};
 
 const camera = first_person_camera("canvas",
                                    {
@@ -23,6 +23,8 @@ const camera = first_person_camera("canvas",
                                    });
 
 scene.initialize();
+
+let numFramesRendered = 0;
 
 export const sample_scene = (frameCount = 0)=>
 {
@@ -44,26 +46,15 @@ export const sample_scene = (frameCount = 0)=>
 export const sampleRenderOptions = {
     get vertexShaderFunction()
     {
-        // If the user has selected a shader to be used, return a function that calls
-        // the selected shader.
-        if (parent.ACTIVE_SHADER.function)
-        {
-            return (ngon, cameraPosition)=>
-            {
-                eval(`"use strict"; ${parent.ACTIVE_SHADER.function}(ngon, cameraPosition);`);
-            }
-        }
-        // Otherwise, no shader is to be used, and we return null to signal to the
-        // renderer that it should disable its shader functionality.
-        else
-        {
-            return null;
-        }
+        // If the user has selected a shader to be used, return the selected shader.
+        // Otherwise, return null to indicate that shader functionality in the
+        // renderer should be disabled.
+        return (shaderFunctions[parent.ACTIVE_SHADER.functionName] || null);
     }
 }
 
 // Darkens the shade of vertices based on their distance to the camera.
-function shader_depth_fog(ngon, cameraPosition)
+shaderFunctions["shader_depth_fog"] = function(ngon, cameraPosition)
 {
     const maxDistance = (200 * 200);
 
@@ -78,7 +69,7 @@ function shader_depth_fog(ngon, cameraPosition)
 }
 
 // Moves each vertex in the direction of its normal, causing the mesh to grow.
-function shader_grow(ngon)
+shaderFunctions["shader_grow"] = function(ngon)
 {
     if (ngon.material.isGrowing)
     {
@@ -94,7 +85,7 @@ function shader_grow(ngon)
 }
 
 // Moves vertices back and forth in a sine pattern.
-function shader_wavy(ngon)
+shaderFunctions["shader_wavy"] = function(ngon)
 {
     //if (ngon.material.isWavy)
     {
@@ -105,7 +96,7 @@ function shader_wavy(ngon)
     }
 }
 
-function shader_vertex_points(ngon)
+shaderFunctions["shader_vertex_points"] = function(ngon)
 {
     if (ngon.material.isPointCloud)
     {
@@ -128,7 +119,7 @@ function shader_vertex_points(ngon)
     }
 }
 
-function shader_fade_in_out(ngon)
+shaderFunctions["shader_fade_in_out"] = function(ngon)
 {
     for (let v = 0; v < ngon.vertices.length; v++)
     {
