@@ -409,7 +409,7 @@ Overall, pixel shaders let you create a variety of effects, from simple 2d pixel
 That said, a downside of shaders is that you pay a price for them in performance: even a slightly complex shader can readily halve your FPS. A basic trick is to limit yourself to relatively lower resolutions when using shaders.
 
 ### More examples
-The [samples/](samples/) directory contains various examples of the renderer in action.
+The [samples/](samples/) directory contains various examples of the renderer in action. But note that some of them may not run on Apple devices due to the way they access their resource files.
 
 ## Creating and rendering 3d models
 ### N-gons
