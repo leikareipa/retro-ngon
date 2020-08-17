@@ -36,20 +36,20 @@ The retro n-gon renderer encourages low resolutions, very low polycounts, and de
 ![A scene from Tomb Raider, textured](./images/screenshots/alpha/tr-rngon-1.png)\
 **A scene** from Tomb Raider 1 as rendered by the retro n-gon renderer and consisting of textured quads and triangles. (Based on assets produced by Core Design for *Tomb Raider*. Core Design is not associated with the retro n-gon renderer.)
 
-![A scene from Quake, high-res](./images/screenshots/beta/quake-1.png)\
-**Level E1M1** from Quake 1 rendered with a per-pixel lighting shader. (Based on textures and 3D models produced by id Software for *Quake*; id Software is not associated with the retro n-gon renderer.)
-
-![A scene from RallySportED-js](./images/screenshots/alpha/rsed-rngon-1.png)\
-**The track** editor view in RallySportED-js, with geometry built from texture-mapped, wireframed quads. (Based on textures and 3D models produced by Jukka Jäkälä for *Rally-Sport*. Jukka Jäkälä is not associated with the retro n-gon renderer.)
-
 ![A view from Grand Prix Legends](./images/screenshots/beta/grand-prix-legends-rouen.png)\
 **A view** of the race track at Rouen in Grand Prix Legends. (Based on textures and 3D models produced by Papyrus Design Group for *Grand Prix Legends*. Papyrus Design Group is not associated with the retro n-gon renderer.)
+
+![A scene from RallySportED-js](./images/screenshots/beta/rallysported.png)\
+**The track editor view** in RallySportED-js, with geometry built from texture-mapped, wireframed quads. (Based on textures and 3D models produced by Jukka Jäkälä for *Rally-Sport*. Jukka Jäkälä is not associated with the retro n-gon renderer.)
 
 ![A scene from Tomb Raider, vertex-lit](./images/screenshots/beta/tomb-raider-1-vertex-shade.png)\
 **Vertex lighting** with Gouraud interpolation in a scene from Tomb Raider 1. (Based on assets produced by Core Design for *Tomb Raider*. Core Design is not associated with the retro n-gon renderer.)
 
-![Depth-based blurring with a pixel shader](./images/screenshots/beta/shader-distance-blur.png)
-**Depth-based** blurring applied with a pixel shader. (See [here](./samples/pixel-shaders/assets/copying.txt) for texture copyright information.)
+![Ray-traced lighting with a pixel shader](./images/screenshots/beta/shader-ray-trace.png)
+**Ray-traced lighting** applied with a pixel shader. (See [here](./samples/raytraced-lighting/assets/copying.txt) for texture copyright information.)
+
+![Depth blur with a pixel shader](./images/screenshots/beta/shader-distance-blur.png)
+**Depth blur** applied with a pixel shader. (See [here](./samples/pixel-shaders/assets/copying.txt) for texture copyright information.)
 
 # User's manual
 In this section, you'll find both theoretical and practical guidance on using the retro n-gon renderer; including a reference manual for the renderer's API.
