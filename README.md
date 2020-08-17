@@ -1,11 +1,11 @@
 # The retro n-gon renderer
-A minimalist 3d software renderer that draws n-sided polygons (as well as lines and points) onto a user-supplied HTML5 canvas. Its intended use cases are chiefly those where a minimalist retro aesthetic is preferred.
+A minimalist 3D software renderer that draws n-sided polygons (as well as lines and points) onto a user-supplied HTML5 canvas. Its intended use cases are chiefly those where a minimalist retro aesthetic is preferred.
 
 You can view an interactive sample of the renderer's output [here](https://www.tarpeeksihyvaesoft.com/s/retro-ngon/samples/tomb-raider-home/) (interaction requires a mouse and keyboard; click on the page to engage mouse lock). This renders a scene from the PC game *Tomb Raider* in which you can move around using the mouse and keyboard (the ESDF keys, specifically).
 
 A non-interactive render sample is also available [here](https://www.tarpeeksihyvaesoft.com/s/retro-ngon/samples/textured-cube-model/). It produces a spinning texture-mapped cube.
 
-![A textured cube](/images/painting-cube.png)
+![A textured cube](./images/painting-cube.png)
 
 ### Features
 - Easy-to-use API
@@ -18,7 +18,7 @@ A non-interactive render sample is also available [here](https://www.tarpeeksihy
 - [RallySportED-js](https://github.com/leikareipa/rallysported-js/), a contemporary asset editor for the DOS game Rally-Sport
 
 ### Suggested use cases
-The retro n-gon renderer is not intended as a general-purpose software 3d renderer. It omits many modern features in favor of a legit retro look and feel.
+The retro n-gon renderer is not intended as a general-purpose software 3D renderer. It omits many modern features in favor of a legit retro look and feel.
 
 I have a number of other open-source software renderer projects also, some of which might fit your needs or interests better:
 - [Wray](https://github.com/leikareipa/wray/) for path tracing in JavaScript
@@ -29,27 +29,27 @@ I have a number of other open-source software renderer projects also, some of wh
 
 The retro n-gon renderer encourages low resolutions, very low polycounts, and designing your way around technical limitations &ndash; like in the old days of software rendering. You might use the renderer for some of the following purposes:
 - Engagement in feature minimalism
-- Retro 3d games with sparse, simple environments
-- Visualizing 3d models in an old-fashioned manner
+- Retro 3D games with sparse, simple environments
+- Visualizing 3D models in an old-fashioned manner
 
 # Screenshots
-![A scene from Tomb Raider, textured](/images/screenshots/alpha/tr-rngon-1.png)\
+![A scene from Tomb Raider, textured](./images/screenshots/alpha/tr-rngon-1.png)\
 **A scene** from Tomb Raider 1 as rendered by the retro n-gon renderer and consisting of textured quads and triangles. (Based on assets produced by Core Design for *Tomb Raider*. Core Design is not associated with the retro n-gon renderer.)
 
-![A scene from Quake, high-res](/images/screenshots/beta/quake-1.png)\
-**Level E1M1** from Quake 1 rendered with a per-pixel lighting shader. (Based on textures and 3d models produced by id Software for *Quake*; id Software is not associated with the retro n-gon renderer.)
+![A scene from Quake, high-res](./images/screenshots/beta/quake-1.png)\
+**Level E1M1** from Quake 1 rendered with a per-pixel lighting shader. (Based on textures and 3D models produced by id Software for *Quake*; id Software is not associated with the retro n-gon renderer.)
 
-![A scene from RallySportED-js](/images/screenshots/alpha/rsed-rngon-1.png)\
-**The track** editor view in RallySportED-js, with geometry built from texture-mapped, wireframed quads. (Based on textures and 3d models produced by Jukka Jäkälä for *Rally-Sport*. Jukka Jäkälä is not associated with the retro n-gon renderer.)
+![A scene from RallySportED-js](./images/screenshots/alpha/rsed-rngon-1.png)\
+**The track** editor view in RallySportED-js, with geometry built from texture-mapped, wireframed quads. (Based on textures and 3D models produced by Jukka Jäkälä for *Rally-Sport*. Jukka Jäkälä is not associated with the retro n-gon renderer.)
 
-![A view from Grand Prix Legends](/images/screenshots/beta/grand-prix-legends-rouen.png)\
-**A view** of the race track at Rouen in Grand Prix Legends. (Based on textures and 3d models produced by Papyrus Design Group for *Grand Prix Legends*. Papyrus Design Group is not associated with the retro n-gon renderer.)
+![A view from Grand Prix Legends](./images/screenshots/beta/grand-prix-legends-rouen.png)\
+**A view** of the race track at Rouen in Grand Prix Legends. (Based on textures and 3D models produced by Papyrus Design Group for *Grand Prix Legends*. Papyrus Design Group is not associated with the retro n-gon renderer.)
 
-![A scene from Tomb Raider, vertex-lit](/images/screenshots/beta/tomb-raider-1-vertex-shade.png)\
+![A scene from Tomb Raider, vertex-lit](./images/screenshots/beta/tomb-raider-1-vertex-shade.png)\
 **Vertex lighting** with Gouraud interpolation in a scene from Tomb Raider 1. (Based on assets produced by Core Design for *Tomb Raider*. Core Design is not associated with the retro n-gon renderer.)
 
-![Depth-based blurring with a pixel shader](/images/screenshots/beta/shader-distance-blur.png)
-**Depth-based** blurring applied with a pixel shader. (See [here](samples/pixel-shaders/assets/textures/copying.txt) for texture copyright information.)
+![Depth-based blurring with a pixel shader](./images/screenshots/beta/shader-distance-blur.png)
+**Depth-based** blurring applied with a pixel shader. (See [here](./samples/pixel-shaders/assets/copying.txt) for texture copyright information.)
 
 # User's manual
 In this section, you'll find both theoretical and practical guidance on using the retro n-gon renderer; including a reference manual for the renderer's API.
@@ -63,7 +63,7 @@ Contents:
     - [Adding pixelation](#adding-pixelation)
     - [Creating pixel shaders for extra visual effects](#creating-pixel-shaders-for-extra-visual-effects)
     - [More examples](#more-examples)
-- [Creating and rendering 3d models](#creating-and-rendering-3d-models)
+- [Creating and rendering 3D models](#creating-and-rendering-3d-models)
     - [N-gons](#n-gons)
     - [Meshes](#meshes)
     - [Models](#models)
@@ -88,7 +88,7 @@ mesh = Rngon.mesh([ngon])
 Rngon.render("the-canvas", [mesh], {options})
 ```
 
-Getting a bit ahead of ourselves, it's worth noting that you don't need to hand-code 3d models out of individual n-gons, either: you can also export models directly from Blender. You'll learn more about it in later sections of this document; but for now, the following pseudocode gives you a feel for how you would render a Blender-exported model called `scene`:
+Getting a bit ahead of ourselves, it's worth noting that you don't need to hand-code 3D models out of individual n-gons, either: you can also export models directly from Blender. You'll learn more about it in later sections of this document; but for now, the following pseudocode gives you a feel for how you would render a Blender-exported model called `scene`:
 ```
 // Load the exported model file.
 <script src="scene.js"></script>
@@ -126,10 +126,10 @@ The following code first constructs a HTML5 canvas element to render into, using
                  })
 </script>
 ```
-![A blue quad](images/tutorials/blue-quad.png)
+![A blue quad](./images/tutorials/blue-quad.png)
 
 ### Rendering a textured quad
-Textures are a staple of 3d rendering, so let's add one. The code below is otherwise the same as above, but additionally creates a `texture` object and appends it to the quad's material property. You'll learn more about textures later in this document, but for right now, the details don't need worrying about. Just know that this is roughly how textures are added to n-gons. Since the base color of an n-gon also modifies the color of its texture, we set the color to white instead of blue, as we don't want the texture to be tinted blue, here.
+Textures are a staple of 3D rendering, so let's add one. The code below is otherwise the same as above, but additionally creates a `texture` object and appends it to the quad's material property. You'll learn more about textures later in this document, but for right now, the details don't need worrying about. Just know that this is roughly how textures are added to n-gons. Since the base color of an n-gon also modifies the color of its texture, we set the color to white instead of blue, as we don't want the texture to be tinted blue, here.
 ```
 <canvas id="canvas" style="width: 300px; height: 300px; background-color: rgba(0, 0, 0, .05);"></canvas>
 <script src="distributable/rngon.cat.js"></script>
@@ -160,7 +160,7 @@ Textures are a staple of 3d rendering, so let's add one. The code below is other
                  })
 </script>
 ```
-![A textured quad](images/tutorials/textured-quad.png)
+![A textured quad](./images/tutorials/textured-quad.png)
 
 You might notice that the texture hasn't rotated with the quad: its lines are perpendicular to the horizon, while the quad's run diagonally, having been rotated by 45 degrees. This is an artefact of the renderer's default texture-mapping mode. You can learn more about the texturing modes further down, but for now, we can fix this by choosing a more suitable mode.
 
@@ -177,7 +177,7 @@ The code below modifies the `quad` object given above to add UV texture coordina
                                 uvWrapping: "clamp"
                             })
 ```
-![A textured quad with affine mapping](images/tutorials/textured-quad-affine.png)
+![A textured quad with affine mapping](./images/tutorials/textured-quad-affine.png)
 
 ### Giving the quad a spin
 With a few simple additions, we can modify the code so far to add a spinning animation to the quad. We'll do this by repeatedly calling `render()` in sync with the device's refresh rate via `window.requestAnimationFrame()`, and for each frame wrapping the quad in a new mesh with a slightly increased rotation value. (The retro n-gon renderer favors immutable data, which is why we're creating the mesh object from scratch each frame, rather than modifying the rotation of an existing mesh. Although note that since alpha.5 and later versions, the renderer has now begun moving away from immutable structures, for reasons of performance.)
@@ -232,8 +232,8 @@ Rngon.render("canvas", [rotatingQuad(frameCount)],
                  scale: 0.14
              })
 ```
-![A textured quad with blurry upscaling](images/tutorials/textured-quad-upscaled-blurry.png)
-![A textured quad with pixelated upscaling](images/tutorials/textured-quad-upscaled-pixelated.png)
+![A textured quad with blurry upscaling](./images/tutorials/textured-quad-upscaled-blurry.png)
+![A textured quad with pixelated upscaling](./images/tutorials/textured-quad-upscaled-pixelated.png)
 
 Setting the `scale` property to a value less than 1 causes the pixel size to be upscaled by the inverse of the property's value &ndash; in this case, by 1 / 0.14 &asymp; 7. In other words, you get chunky pixels, while the display size remains the same.
 
@@ -253,7 +253,7 @@ image-rendering: -webkit-crisp-edges; /* For Safari*/
 ```
 
 ### Creating pixel shaders for extra visual effects
-Pixel shaders allow you to add a variety of visual effects to your renderings, from simple 2d pixel manipulation to complex 3d lighting and more.
+Pixel shaders allow you to add a variety of visual effects to your renderings, from simple 2d pixel manipulation to complex 3D lighting and more.
 
 To enable the renderer's shader functionality, we need to pass a shader function to `render()` via its `pixelShaderFunction` property. Like so:
 
@@ -290,8 +290,8 @@ function sample_shader({renderWidth, renderHeight, pixelBuffer})
 
 The shader iterates over all of the pixels in the rasterized image (RGBA, so four elements per pixel), setting their color to red:0, green:150, blue:255, and alpha:255. Once the function returns, the renderer will draw the modified pixel buffer onto the canvas, which presents as a solid blue image. The two pictures below show the rendering before and after applying the shader.
 
-![Before applying the shader](images/tutorials/shader-before-all-blue.png)
-![After applying the shader](images/tutorials/shader-after-all-blue.png)
+![Before applying the shader](./images/tutorials/shader-before-all-blue.png)
+![After applying the shader](./images/tutorials/shader-after-all-blue.png)
 
 Although we've done so above, a shader doesn't normally need to explicitly set the alpha channel of a pixel, since any rasterized pixel will already have its alpha set to 255 by default. However, in the above example, where we render only a quad with nothing in the background, the unrendered background pixels have an alpha of 0 and will thus not be visible unless we manually assign them a more opaque value.
 
@@ -313,8 +313,8 @@ function sample_shader({renderWidth, renderHeight, pixelBuffer})
 }
 ```
 
-![Before applying the shader](images/tutorials/shader-before-alpha-blue.png)
-![After applying the shader](images/tutorials/shader-after-alpha-blue.png)
+![Before applying the shader](./images/tutorials/shader-before-alpha-blue.png)
+![After applying the shader](./images/tutorials/shader-after-alpha-blue.png)
 
 With simple pixel shaders like these, you can create various effects like grayscaling, blurring and sharpening. However, by accessing the extra information passed to our shader &ndash; the fragment buffer and the n-gon cache &ndash; we can write even more powerful shaders!
 
@@ -339,8 +339,8 @@ function sample_shader({renderWidth, renderHeight, pixelBuffer, fragmentBuffer})
 }
 ```
 
-![Before applying the shader](images/tutorials/shader-before-corner-blue.png)
-![After applying the shader](images/tutorials/shader-after-corner-blue.png)
+![Before applying the shader](./images/tutorials/shader-before-corner-blue.png)
+![After applying the shader](./images/tutorials/shader-after-corner-blue.png)
 
 Each of the fragment buffer's elements is an object that contains render-related information about a corresponding rasterized pixel; e.g. `fragmentBuffer[x]` provides information about the pixel in `pixelBuffer[x * 4]`. For a list of the properties available in the fragment buffer, see [js/retro-ngon/retro-ngon.js](js/retro-ngon/retro-ngon.js) &ndash; these include interpolated world coordinates, surface normals, texture coordinates, etc.
 
@@ -376,8 +376,8 @@ function sample_shader({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, 
 }
 ```
 
-![Before applying the shader](images/tutorials/shader-before-blue-corners.png)
-![After applying the shader](images/tutorials/shader-after-blue-corners.png)
+![Before applying the shader](./images/tutorials/shader-before-blue-corners.png)
+![After applying the shader](./images/tutorials/shader-after-blue-corners.png)
 
 In the above shader, we use the fragment buffer's 'ngonIdx' property to find which of the n-gon cache's polygons a given pixel is part of. Once we know that, we can directly access that n-gon's public properties.
 
@@ -399,21 +399,21 @@ function sample_shader({renderWidth, renderHeight, pixelBuffer, fragmentBuffer})
 }
 ```
 
-![Before applying the shader](images/tutorials/shader-before-world-alpha.png)
-![After applying the shader](images/tutorials/shader-after-world-alpha.png)
+![Before applying the shader](./images/tutorials/shader-before-world-alpha.png)
+![After applying the shader](./images/tutorials/shader-after-world-alpha.png)
 
-Unlike the 2d screen-space vertex coordinates of the n-gon cache, the fragment buffer's world coordinates give you the corresponding 3d world position of any given rasterized pixel. This is rather powerful, as it allows you to e.g. compute per-pixel 3d lighting.
+Unlike the 2d screen-space vertex coordinates of the n-gon cache, the fragment buffer's world coordinates give you the corresponding 3D world position of any given rasterized pixel. This is rather powerful, as it allows you to e.g. compute per-pixel 3D lighting.
 
-Overall, pixel shaders let you create a variety of effects, from simple 2d pixel manipulation to complex 3d per-pixel lighting and more. Get creative and see what effects you can make happen!
+Overall, pixel shaders let you create a variety of effects, from simple 2d pixel manipulation to complex 3D per-pixel lighting and more. Get creative and see what effects you can make happen!
 
 That said, a downside of shaders is that you pay a price for them in performance: even a slightly complex shader can readily halve your FPS. A basic trick is to limit yourself to relatively lower resolutions when using shaders.
 
 ### More examples
-The [samples/](samples/) directory contains various examples of the renderer in action. But note that some of them may not run on Apple devices due to the way they access their resource files.
+The [samples/](./samples/) directory contains various examples of the renderer in action. But note that some of them may not run on Apple devices due to the way they access their resource files.
 
-## Creating and rendering 3d models
+## Creating and rendering 3D models
 ### N-gons
-The building-block of 3d models in the retro n-gon renderer is the n-gon. It's a polygon of _n_ sides (_n_-gon), or a line (2-gon), or a single point (1-gon). An n-gon is made up of one or more vertices, and a material that describes how the n-gon should look when rendered (its color, texture, and so on).
+The building-block of 3D models in the retro n-gon renderer is the n-gon. It's a polygon of _n_ sides (_n_-gon), or a line (2-gon), or a single point (1-gon). An n-gon is made up of one or more vertices, and a material that describes how the n-gon should look when rendered (its color, texture, and so on).
 
 A red triangle, for instance, could be created like so:
 ```
@@ -454,7 +454,7 @@ The `wireframeColor` property sets the color of the n-gon's wireframe. Note that
 The `auxiliary` property defines an object containing properties to which auxiliary render buffers have read access.
 
 ### Meshes
-To render n-gons, you first wrap them in a mesh. Meshes are collections of n-gons that share a purpose; for instance, the n-gons that make up a model of a spoon. A mesh thus consists of an array one or more n-gons, and a particular set of 3d transformations that affect the mesh's n-gons in unison.
+To render n-gons, you first wrap them in a mesh. Meshes are collections of n-gons that share a purpose; for instance, the n-gons that make up a model of a spoon. A mesh thus consists of an array one or more n-gons, and a particular set of 3D transformations that affect the mesh's n-gons in unison.
 
 A mesh containing one triangle rotated by 45 degrees and moved by 11 units along an axis could be created like so:
 ```
@@ -486,9 +486,9 @@ The `scaling` property scales each of the mesh's n-gons by the given amount alon
 If both translation and rotation are defined, the rotation will be applied first.
 
 ### Models
-Meshes and n-gons are the retro n-gon renderer's native objects. Models, on the other hand, are an interface between these native objects and external 3d assets.
+Meshes and n-gons are the retro n-gon renderer's native objects. Models, on the other hand, are an interface between these native objects and external 3D assets.
 
-For instance, when you create a 3d scene in Blender and export it using the retro n-gon renderer's Blender export script (more of which in the sections, below), you get a model: a JavaScript file whose code, after some processing to load any assets from disk etc., returns an array of n-gons corresponding to the original scene's polygons. Something like the following:
+For instance, when you create a 3D scene in Blender and export it using the retro n-gon renderer's Blender export script (more of which in the sections, below), you get a model: a JavaScript file whose code, after some processing to load any assets from disk etc., returns an array of n-gons corresponding to the original scene's polygons. Something like the following:
 ```
 const scene =
 {
@@ -521,9 +521,9 @@ The `scene` object (though it could be called anything) contains the `ngons` arr
 ```
 
 ### Exporting models from Blender
-You can use the free 3d modeling program, [Blender](https://www.blender.org/), to create 3d assets for use with the retro n-gon renderer. A script to export scenes from Blender into the retro n-gon renderer's format is provided under [tools/conversion/](tools/conversion/).
+You can use the free 3D modeling program, [Blender](https://www.blender.org/), to create 3D assets for use with the retro n-gon renderer. A script to export scenes from Blender into the retro n-gon renderer's format is provided under [tools/conversion/](./tools/conversion/).
 
-At the moment, the Blender export script is quite rudimentary, and doesn't necessarily allow for a convenient asset workflow. Nonetheless, with certain precautions as discussed below, it allows you to create 3d scenes in Blender using native n-gons, and to import the results directly for use with the retro n-gon renderer.
+At the moment, the Blender export script is quite rudimentary, and doesn't necessarily allow for a convenient asset workflow. Nonetheless, with certain precautions as discussed below, it allows you to create 3D scenes in Blender using native n-gons, and to import the results directly for use with the retro n-gon renderer.
 
 To export a scene from Blender, simply load up the export script file in Blender, and run it. The exact way to load Python scripts into Blender will depend on your version of Blender &ndash; if you're uncertain, just have a look on Google for the specifics, but know that it's not a complicated process.
 
@@ -550,13 +550,13 @@ const ngon = Rngon.ngon([...],
 
 By default, you don't need to provide UV coordinates for the n-gon's vertices for texturing to work. The texture will be mapped onto the n-gon's face disregarding its orientation, so no UV are needed. Depending on the n-gon's orientation, this mapping can result in texture-warping, however, as shown below.
 
-![A textured quad with ortho mapping](images/tutorials/ortho-mapping-straight.png) ![A textured quad with ortho mapping, rotated](images/tutorials/ortho-mapping.png)
+![A textured quad with ortho mapping](./images/tutorials/ortho-mapping-straight.png) ![A textured quad with ortho mapping, rotated](./images/tutorials/ortho-mapping.png)
 
 The texture-mapping mode can be changed via the n-gon's `textureMapping` material property, which by default is `ortho` and behaves as described above. The second mode is `affine` &ndash; it requires UV coordinates, but will eliminate texture warp in many cases. In the two images, below, `ortho` mapping is shown on the left, and `affine` mapping on the right.
 
-![A textured quad with ortho mapping](images/tutorials/ortho-mapping.png) ![A textured quad with affine mapping](images/tutorials/affine-mapping.png)
+![A textured quad with ortho mapping](./images/tutorials/ortho-mapping.png) ![A textured quad with affine mapping](./images/tutorials/affine-mapping.png)
 
-The difference in performance between `ortho` and `affine` mapping should be negligible, but you can test for your target platforms using [tests/performance/perftest1.html](tests/performance/perftest1.html).
+The difference in performance between `ortho` and `affine` mapping should be negligible, but you can test for your target platforms using [tests/performance/perftest1.html](./tests/performance/perftest1.html).
 
 The texture for an n-gon's material is created using the `texture_rgba()` function. It takes as input an object specifying the texture's width, height, pixel data, and certain optional properties. The following code creates a red 1 x 1 texture:
 ```
@@ -580,7 +580,7 @@ When using Base64-encoded pixel data, the `encoding` property must be set to "ba
 
 The benefit of using Base64 encoding &ndash; in tandem with 16-bit color &ndash; is a notable reduction in file size. The reduced color depth causes some degradation in color fidelity, true, but given the renderer's low fidelity overall (low resolutions and polycounts), it's likely not going be visually disruptive in many cases.
 
-A simple PHP script for converting PNG images into the retro n-gon renderer's JSON format is provided under [tools/conversion/](tools/conversion/).
+A simple PHP script for converting PNG images into the retro n-gon renderer's JSON format is provided under [tools/conversion/](./tools/conversion/).
 
 If your JSON texture data is stored in a JSON file rather than as a JavaScript object, you can create a texture from it by calling  the `texture_rgba.create_with_data_from_file()` function. It returns a Promise of a texture, resolved once the file has been loaded and a texture created from its data. The following code creates a texture from a JSON file:
 ```
@@ -803,7 +803,7 @@ A collection of thematically-related n-gons, rendered as a unit with shared tran
 | Type                 | Name            | Description |
 | -------------------- | --------------- | ----------- |
 | *translation_vector* | translation     | The amount by and direction in which to displace the mesh's n-gons. This is in addition to the n-gons' local coordinates; such that if an n-gon's vertex is located at x = 10, and the mesh it belongs to is translated by 10 on x, the vertex's new location will be x = 20. Defaults to *translation_vector(0, 0, 0)*. |
-| *rotation_vector*    | rotation        | The amount of rotation, in degrees 0-359, to apply to each of the mesh's n-gons. Defaults to *rotation_vector(0, 0, 0)*.<br><br>NOTE: The rotation is not applied to the n-gons' surface normals. If you require the surface normals to respect the mesh's rotation, the rotation must be applied - e.g. in your 3d editor of choice - prior to importing the mesh into the renderer, and no further rotation should be requested via this property. |
+| *rotation_vector*    | rotation        | The amount of rotation, in degrees 0-359, to apply to each of the mesh's n-gons. Defaults to *rotation_vector(0, 0, 0)*.<br><br>NOTE: The rotation is not applied to the n-gons' surface normals. If you require the surface normals to respect the mesh's rotation, the rotation must be applied - e.g. in your 3D editor of choice - prior to importing the mesh into the renderer, and no further rotation should be requested via this property. |
 | *scaling_vector*     | scaling         | The amount by which to scale each of the mesh's n-gons along each of the three axes. Defaults to *scaling_vector(1, 1, 1)*. |
 
 *Note:* If both *translation* and *rotation* are given, the rotation will be applied first.
@@ -1084,7 +1084,7 @@ const texture = Rngon.texture_rgba(
 As suggested in the sections, above, the retro n-gon renderer is not intended to provide fluid rendering of high-polycount, high-resolution scenes. Rather, low resolutions and spartan scenes are its domains.
 
 ## Performance on desktop
-The table below lists the results of [tests/performance/perftest1.html](tests/performance/perftest1.html) as of [de12aa8](https://github.com/leikareipa/retro-ngon/tree/de12aa8b6dd64308ac851659ac1c4da5cf437ee3) running on a Xeon E3-1230 v3 desktop PC in Chrome 79 (top value) and Firefox 72 (bottom value).
+The table below lists the results of [tests/performance/perftest1.html](./tests/performance/perftest1.html) as of [de12aa8](https://github.com/leikareipa/retro-ngon/tree/de12aa8b6dd64308ac851659ac1c4da5cf437ee3) running on a Xeon E3-1230 v3 desktop PC in Chrome 79 (top value) and Firefox 72 (bottom value).
 
 The values given are frames per second for scenes with 30, 60, ..., 960 polygons. A bullet indicates that the frame rate was at least 60, the screen's refresh rate during the tests.
 
@@ -1130,7 +1130,7 @@ The values given are frames per second for scenes with 30, 60, ..., 960 polygons
 Overall, Chrome is somewhat faster than Firefox, but both browsers are able to reach 60 FPS with scenes of up to 300 textured or 500 untextured polygons.
 
 ## Performance on mobile
-The table below lists the results of [tests/performance/perftest1.html](tests/performance/perftest1.html) as of [de12aa8](https://github.com/leikareipa/retro-ngon/tree/de12aa8b6dd64308ac851659ac1c4da5cf437ee3) running on an Honor View20 phone in Chrome 79.
+The table below lists the results of [tests/performance/perftest1.html](./tests/performance/perftest1.html) as of [de12aa8](https://github.com/leikareipa/retro-ngon/tree/de12aa8b6dd64308ac851659ac1c4da5cf437ee3) running on an Honor View20 phone in Chrome 79.
 
 The values given are frames per second for scenes with 30, 60, ..., 960 polygons. A bullet indicates that the frame rate was at least 60, the screen's refresh rate during the tests.
 
@@ -1223,9 +1223,9 @@ Below are rough estimates of the required browser versions for a given version o
 # Authors and credits
 The main author of the retro n-gon renderer is the one-man Tarpeeksi Hyvae Soft (see on [GitHub](https://github.com/leikareipa) and the [Web](https://www.tarpeeksihyvaesoft.com)).
 
-On 3d software rendering in general, the aforementioned main author has benefited a good bit from tutorials by Benny Bobaganoosh. You can check out his [YouTube](https://www.youtube.com/playlist?list=PLEETnX-uPtBUbVOok816vTl1K9vV1GgH5) and [GitHub](https://github.com/BennyQBD/3DSoftwareRenderer). The retro n-gon renderer's matrix code ([js/retro-ngon/matrix44.js](js/retro-ngon/matrix44.js)) is adapted, with superficial changes, from [Benny's code](https://github.com/BennyQBD/3DSoftwareRenderer/blob/master/src/Matrix4f.java).
+On 3D software rendering in general, the aforementioned main author has benefited a good bit from tutorials by Benny Bobaganoosh. You can check out his [YouTube](https://www.youtube.com/playlist?list=PLEETnX-uPtBUbVOok816vTl1K9vV1GgH5) and [GitHub](https://github.com/BennyQBD/3DSoftwareRenderer). The retro n-gon renderer's matrix code ([js/retro-ngon/matrix44.js](./js/retro-ngon/matrix44.js)) is adapted, with superficial changes, from [Benny's code](https://github.com/BennyQBD/3DSoftwareRenderer/blob/master/src/Matrix4f.java).
 
-The implementation of the Bresenham line algo in [js/retro-ngon/line-draw.js](js/retro-ngon/line-draw.js) has been adapted, with changes, from the one given by [Phrogz](https://stackoverflow.com/users/405017/phrogz) on [Stack Overflow](https://stackoverflow.com/a/4672319).
+The implementation of the Bresenham line algo in [js/retro-ngon/line-draw.js](./js/retro-ngon/line-draw.js) has been adapted, with changes, from the one given by [Phrogz](https://stackoverflow.com/users/405017/phrogz) on [Stack Overflow](https://stackoverflow.com/a/4672319).
 
 The browser icons used in the Browser compatibility section, above, come from [alrra](https://github.com/alrra)'s [Browser Logos](https://github.com/alrra/browser-logos) repository.
 
