@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (16 August 2020 17:05:27 UTC)
+// VERSION: beta live (17 August 2020 00:44:22 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -1742,6 +1742,11 @@ Rngon.render_async = function(meshes = [Rngon.mesh()],
         // Listen for messages from the worker.
         workerThread.onmessage = (message)=>
         {
+            // For now, we assume that the worker will only send one message: either that
+            // it's finished rendering, or that something went wrong. So once we've received
+            // this first message, the worker has done its thing, and we can terminate it.
+            workerThread.terminate();
+
             message = message.data;
 
             if (typeof message.type !== "string")
@@ -1764,7 +1769,7 @@ Rngon.render_async = function(meshes = [Rngon.mesh()],
                 } 
                 case "error":
                 {
-                    resolve(`A render worker reported the following error: ${message.errorText}`);
+                    reject(`A render worker reported the following error: ${message.errorText}`);
 
                     break;
                 } 

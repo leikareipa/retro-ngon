@@ -38,6 +38,11 @@ Rngon.render_async = function(meshes = [Rngon.mesh()],
         // Listen for messages from the worker.
         workerThread.onmessage = (message)=>
         {
+            // For now, we assume that the worker will only send one message: either that
+            // it's finished rendering, or that something went wrong. So once we've received
+            // this first message, the worker has done its thing, and we can terminate it.
+            workerThread.terminate();
+
             message = message.data;
 
             if (typeof message.type !== "string")
@@ -60,7 +65,7 @@ Rngon.render_async = function(meshes = [Rngon.mesh()],
                 } 
                 case "error":
                 {
-                    resolve(`A render worker reported the following error: ${message.errorText}`);
+                    reject(`A render worker reported the following error: ${message.errorText}`);
 
                     break;
                 } 
