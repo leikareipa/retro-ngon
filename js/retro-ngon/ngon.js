@@ -125,13 +125,13 @@ Rngon.ngon.clip_to_viewport = function(ngon)
 
     function clip_on_axis(axis, factor)
     {
-        if (!ngon.vertices.length)
+        if (ngon.vertices.length < 2)
         {
             return;
         }
 
-        let prevVertex = ngon.vertices[ngon.vertices.length - 1];
-        let prevComponent = prevVertex[axis] * factor;
+        let prevVertex = ngon.vertices[ngon.vertices.length - ((ngon.vertices.length == 2)? 2 : 1)];
+        let prevComponent = (prevVertex[axis] * factor);
         let isPrevVertexInside = (prevComponent <= prevVertex.w);
         
         // The vertices array will be modified in-place by appending the clipped vertices
@@ -140,13 +140,13 @@ Rngon.ngon.clip_to_viewport = function(ngon)
         let numOriginalVertices = ngon.vertices.length;
         for (let i = 0; i < numOriginalVertices; i++)
         {
-            const curComponent = ngon.vertices[i][axis] * factor;
-            const isThisVertexInside = (curComponent <= ngon.vertices[i].w);
+            const curComponent = (ngon.vertices[i][axis] * factor);
+            const thisVertexIsInside = (curComponent <= ngon.vertices[i].w);
 
             // If either the current vertex or the previous vertex is inside but the other isn't,
             // and they aren't both inside, interpolate a new vertex between them that lies on
             // the clipping plane.
-            if (isThisVertexInside ^ isPrevVertexInside)
+            if (thisVertexIsInside ^ isPrevVertexInside)
             {
                 const lerpStep = (prevVertex.w - prevComponent) /
                                   ((prevVertex.w - prevComponent) - (ngon.vertices[i].w - curComponent));
@@ -176,14 +176,14 @@ Rngon.ngon.clip_to_viewport = function(ngon)
                 }
             }
             
-            if (isThisVertexInside)
+            if (thisVertexIsInside)
             {
                 ngon.vertices[numOriginalVertices + k++] = ngon.vertices[i];
             }
 
             prevVertex = ngon.vertices[i];
             prevComponent = curComponent;
-            isPrevVertexInside = isThisVertexInside;
+            isPrevVertexInside = thisVertexIsInside;
         }
 
         ngon.vertices.splice(0, numOriginalVertices);
