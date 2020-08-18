@@ -31,7 +31,6 @@
             function perpixel_light_shader({renderWidth, renderHeight, pixelBuffer, fragmentBuffer, ngonCache})
             {
                 const lightDirection = Rngon.vector3();
-                const surfaceNormal = Rngon.vector3();
 
                 for (let i = 0; i < (renderWidth * renderHeight); i++)
                 {
@@ -68,11 +67,7 @@
                             lightDirection.z = (light.position.z - thisFragment.worldZ);
                             Rngon.vector3.normalize(lightDirection);
 
-                            surfaceNormal.x = thisFragment.normalX;
-                            surfaceNormal.y = thisFragment.normalY;
-                            surfaceNormal.z = thisFragment.normalZ;
-
-                            const shadeMul = Math.max(0, Math.min(1, Rngon.vector3.dot(surfaceNormal, lightDirection)));
+                            const shadeMul = Math.max(0, Math.min(1, Rngon.vector3.dot(thisNgon.normal, lightDirection)));
 
                             strongestShade = Math.max(strongestShade, (distanceMul * shadeMul * lightIntensity));
                         }
