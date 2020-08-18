@@ -171,26 +171,26 @@ function ps_raytraced_lighting({renderWidth, renderHeight, fragmentBuffer, pixel
         pixelWorldPosition.y = thisFragment.worldY;
         pixelWorldPosition.z = thisFragment.worldZ;
 
+        surfaceNormal.x = thisFragment.normalX;
+        surfaceNormal.y = thisFragment.normalY;
+        surfaceNormal.z = thisFragment.normalZ;
+
         // The pixel's world position is used as the ray's origin, so offset it to avoid
         // self-intersection.
         pixelWorldPosition.x += (surfaceNormal.x * 0.00001);
         pixelWorldPosition.y += (surfaceNormal.y * 0.00001);
         pixelWorldPosition.z += (surfaceNormal.z * 0.00001);
 
-        const lightDistance = Math.sqrt(((pixelWorldPosition.x - light.position.x) * (pixelWorldPosition.x - light.position.x)) +
-                                        ((pixelWorldPosition.y - light.position.y) * (pixelWorldPosition.y - light.position.y)) +
-                                        ((pixelWorldPosition.z - light.position.z) * (pixelWorldPosition.z - light.position.z)));
-        
-        const distanceMul = Math.max(0, Math.min(1, (1 - (lightDistance / light.reach))));
-
         lightDirection.x = (light.position.x - thisFragment.worldX);
         lightDirection.y = (light.position.y - thisFragment.worldY);
         lightDirection.z = (light.position.z - thisFragment.worldZ);
         Rngon.vector3.normalize(lightDirection);
 
-        surfaceNormal.x = thisFragment.normalX;
-        surfaceNormal.y = thisFragment.normalY;
-        surfaceNormal.z = thisFragment.normalZ;
+        const lightDistance = Math.sqrt(((pixelWorldPosition.x - light.position.x) * (pixelWorldPosition.x - light.position.x)) +
+                                        ((pixelWorldPosition.y - light.position.y) * (pixelWorldPosition.y - light.position.y)) +
+                                        ((pixelWorldPosition.z - light.position.z) * (pixelWorldPosition.z - light.position.z)));
+        
+        const distanceMul = Math.max(0, Math.min(1, (1 - (lightDistance / light.reach))));
 
         const shadeMul = Math.max(0, Math.min(1, Rngon.vector3.dot(surfaceNormal, lightDirection)));
 
