@@ -4,7 +4,7 @@
         <meta name="viewport" content="width=device-width">
         <meta http-equiv="content-type" content="text/html; charset=UTF-8">
         <link rel="stylesheet" type="text/css" href="benchmark.css">
-        <title>Benchmark - Quake 1 (E1M1) with lighting - Retro n-gon renderer</title>
+        <title>Benchmark - Quake 1 (E1M1) with per-pixel lighting - Retro n-gon renderer</title>
     </head>
     <body>
         <script src="../../../distributable/rngon.cat.js"></script>
@@ -21,9 +21,9 @@
                           scale: 0.2,
                           lights:
                           [
-                              Rngon.light(Rngon.vector3(488, 177, 299)),
-                              Rngon.light(Rngon.vector3(409, 115, 758)),
-                              Rngon.light(Rngon.vector3(481, 182, 113)),
+                              Rngon.light(Rngon.vector3(488, 177, 299), {reach: 300, intensity: 3}),
+                              Rngon.light(Rngon.vector3(409, 115, 758), {reach: 200, intensity: 2}),
+                              Rngon.light(Rngon.vector3(481, 182, 113), {reach: 300, intensity: 3}),
                           ],
                           pixelShaderFunction: perpixel_light_shader,
                       });
@@ -42,23 +42,12 @@
                     for (let l = 0; l < Rngon.internalState.lights.length; l++)
                     {
                         const light = Rngon.internalState.lights[l];
-                        
-                        /// Temp hack. Light objects don't yet support setting intensity etc.,
-                        /// so we'll just manually assign those parameters based on the light
-                        /// index.
-                        let lightReach = 0;
-                        let lightIntensity = 0;
-                        switch (l)
-                        {
-                            case 0: case 2: lightReach = (300 * 300); lightIntensity = 3; break;
-                            case 1: lightReach = (200 * 200); lightIntensity = 2; break;
-                        }
 
                         const distance = (((thisFragment.worldX - light.position.x) * (thisFragment.worldX - light.position.x)) +
                                           ((thisFragment.worldY - light.position.y) * (thisFragment.worldY - light.position.y)) +
                                           ((thisFragment.worldZ - light.position.z) * (thisFragment.worldZ - light.position.z)));
 
-                        const distanceMul = Math.max(0, Math.min(1, (1 - (distance / lightReach))));
+                        const distanceMul = Math.max(0, Math.min(1, (1 - (distance / (light.reach * light.reach)))));
 
                         if ((thisFragment.shade > 0) && (distanceMul > 0))
                         {
@@ -69,7 +58,7 @@
 
                             const shadeMul = Math.max(0, Math.min(1, Rngon.vector3.dot(thisNgon.normal, lightDirection)));
 
-                            strongestShade = Math.max(strongestShade, (distanceMul * shadeMul * lightIntensity));
+                            strongestShade = Math.max(strongestShade, (distanceMul * shadeMul * light.intensity));
                         }
                     }
 
