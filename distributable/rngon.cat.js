@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (18 August 2020 13:57:38 UTC)
+// VERSION: beta live (18 August 2020 21:39:08 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -731,13 +731,13 @@ Rngon.ngon.clip_to_viewport = function(ngon)
 
     function clip_on_axis(axis, factor)
     {
-        if (!ngon.vertices.length)
+        if (ngon.vertices.length < 2)
         {
             return;
         }
 
-        let prevVertex = ngon.vertices[ngon.vertices.length - 1];
-        let prevComponent = prevVertex[axis] * factor;
+        let prevVertex = ngon.vertices[ngon.vertices.length - ((ngon.vertices.length == 2)? 2 : 1)];
+        let prevComponent = (prevVertex[axis] * factor);
         let isPrevVertexInside = (prevComponent <= prevVertex.w);
         
         // The vertices array will be modified in-place by appending the clipped vertices
@@ -746,13 +746,13 @@ Rngon.ngon.clip_to_viewport = function(ngon)
         let numOriginalVertices = ngon.vertices.length;
         for (let i = 0; i < numOriginalVertices; i++)
         {
-            const curComponent = ngon.vertices[i][axis] * factor;
-            const isThisVertexInside = (curComponent <= ngon.vertices[i].w);
+            const curComponent = (ngon.vertices[i][axis] * factor);
+            const thisVertexIsInside = (curComponent <= ngon.vertices[i].w);
 
             // If either the current vertex or the previous vertex is inside but the other isn't,
             // and they aren't both inside, interpolate a new vertex between them that lies on
             // the clipping plane.
-            if (isThisVertexInside ^ isPrevVertexInside)
+            if (thisVertexIsInside ^ isPrevVertexInside)
             {
                 const lerpStep = (prevVertex.w - prevComponent) /
                                   ((prevVertex.w - prevComponent) - (ngon.vertices[i].w - curComponent));
@@ -782,14 +782,14 @@ Rngon.ngon.clip_to_viewport = function(ngon)
                 }
             }
             
-            if (isThisVertexInside)
+            if (thisVertexIsInside)
             {
                 ngon.vertices[numOriginalVertices + k++] = ngon.vertices[i];
             }
 
             prevVertex = ngon.vertices[i];
             prevComponent = curComponent;
-            isPrevVertexInside = isThisVertexInside;
+            isPrevVertexInside = thisVertexIsInside;
         }
 
         ngon.vertices.splice(0, numOriginalVertices);
@@ -800,19 +800,47 @@ Rngon.ngon.clip_to_viewport = function(ngon)
 "use strict";
 
 // Draws a line between the two given vertices into the render's pixel buffer.
-// Note that the line will ignore the depth and fragment buffers.
 Rngon.line_draw = function(vert1 = Rngon.vertex(),
                            vert2 = Rngon.vertex(),
-                           lineColor = Rngon.color_rgba(127, 127, 127, 255))
+                           lineColor = null,
+                           ngonIdx = 0,
+                           ignoreDepthBuffer = false)
 {
     const pixelBuffer = Rngon.internalState.pixelBuffer.data;
-    const bufferWidth = Rngon.internalState.pixelBuffer.width;
-    const bufferHeight = Rngon.internalState.pixelBuffer.height;
+    const depthBuffer = ((Rngon.internalState.useDepthBuffer && !ignoreDepthBuffer)? Rngon.internalState.depthBuffer.data : null);
+    const fragmentBuffer = (Rngon.internalState.usePixelShaders? Rngon.internalState.fragmentBuffer.data : null);
+    const renderWidth = Rngon.internalState.pixelBuffer.width;
+    const renderHeight = Rngon.internalState.pixelBuffer.height;
+    const interpolatePerspective = Rngon.internalState.usePerspectiveCorrectInterpolation;
 
     let x0 = Math.round(vert1.x);
     let y0 = Math.round(vert1.y);
     const x1 = Math.round(vert2.x);
     const y1 = Math.round(vert2.y);
+    const lineLength = Math.sqrt((x1 - x0) * (x1 - x0) + (y1 - y0) * (y1 - y0));
+
+    // Establish interpolation parameters.
+    const w1 = (interpolatePerspective? vert1.w : 1);
+    const w2 = (interpolatePerspective? vert2.w : 1);
+    const depth1 = (vert1.z / Rngon.internalState.farPlaneDistance);
+    const depth2 = (vert2.z / Rngon.internalState.farPlaneDistance);
+    let startDepth = depth1/w1;
+    const deltaDepth = ((depth2/w2 - depth1/w1) / lineLength);
+    let startShade = vert1.shade/w1;
+    const deltaShade = ((vert2.shade/w2 - vert1.shade/w1) / lineLength);
+    let startInvW = 1/w1;
+    const deltaInvW = ((1/w2 - 1/w1) / lineLength);
+    if (fragmentBuffer)
+    {
+        var startWorldX = vert1.worldX/w1;
+        var deltaWorldX = ((vert2.worldX/w2 - vert1.worldX/w1) / lineLength);
+
+        var startWorldY = vert1.worldY/w1;
+        var deltaWorldY = ((vert2.worldY/w2 - vert1.worldY/w1) / lineLength);
+
+        var startWorldZ = vert1.worldZ/w1;
+        var deltaWorldZ = ((vert2.worldZ/w2 - vert1.worldZ/w1) / lineLength);
+    }
 
     // Bresenham line algo. Adapted from https://stackoverflow.com/a/4672319.
     {
@@ -821,12 +849,32 @@ Rngon.line_draw = function(vert1 = Rngon.vertex(),
         const sx = ((x0 < x1)? 1 : -1);
         const sy = ((y0 < y1)? 1 : -1); 
         let err = (((dx > dy)? dx : -dy) / 2);
+
+        const maxNumSteps = (renderWidth + renderHeight);
+        let numSteps = 0;
         
-        while (1)
+        while (++numSteps < maxNumSteps)
         {
             put_pixel(x0, y0);
 
-            if ((x0 === x1) && (y0 === y1)) break;
+            if ((x0 === x1) && (y0 === y1))
+            {
+                break;
+            }
+
+            // Increment interpolated values.
+            {
+                startDepth += deltaDepth;
+                startShade += deltaShade;
+                startInvW += deltaInvW;
+
+                if (fragmentBuffer)
+                {
+                    startWorldX += deltaWorldX;
+                    startWorldY += deltaWorldY;
+                    startWorldZ += deltaWorldZ;
+                }
+            }
 
             const e2 = err;
             if (e2 > -dx)
@@ -840,21 +888,56 @@ Rngon.line_draw = function(vert1 = Rngon.vertex(),
                 y0 += sy;
             }
         }
-    }
 
-    function put_pixel(x = 0, y = 0)
-    {
-        if ((x < 0 || x >= bufferWidth) ||
-            (y < 0 || y >= bufferHeight))
+        function put_pixel(x, y)
         {
+            const idx = ((x + y * renderWidth) * 4);
+            const depthBufferIdx = (idx / 4);
+
+            if ((x < 0) || (x >= renderWidth) ||
+                (y < 0) || (y >= renderHeight))
+            {
+                return;
+            }
+            
+            const depth = (startDepth / startInvW);
+            const shade = (startShade / startInvW);
+
+            // Depth test.
+            if (depthBuffer && (depthBuffer[depthBufferIdx] <= depth)) return;
+
+            // Alpha test.
+            if (lineColor.alpha !== 255) return;
+
+            // Draw the pixel.
+            {
+                pixelBuffer[idx + 0] = (shade * lineColor.red);
+                pixelBuffer[idx + 1] = (shade * lineColor.green);
+                pixelBuffer[idx + 2] = (shade * lineColor.blue);
+                pixelBuffer[idx + 3] = 255;
+
+                if (depthBuffer)
+                {
+                    depthBuffer[depthBufferIdx] = depth;
+                }
+
+                if (fragmentBuffer)
+                {
+                    const fragment = fragmentBuffer[depthBufferIdx];
+                    fragment.ngonIdx = ngonIdx;
+                    fragment.textureUScaled = 0;
+                    fragment.textureVScaled = 0;
+                    fragment.depth = (startDepth / startInvW);
+                    fragment.shade = (startShade / startInvW);
+                    fragment.worldX = (startWorldX / startInvW);
+                    fragment.worldY = (startWorldY / startInvW);
+                    fragment.worldZ = (startWorldZ / startInvW);
+                    fragment.w = (1 / startInvW);
+                }
+            }
+
             return;
         }
-
-        const idx = ((x + y * bufferWidth) * 4);
-        pixelBuffer[idx + 0] = lineColor.red;
-        pixelBuffer[idx + 1] = lineColor.green;
-        pixelBuffer[idx + 2] = lineColor.blue;
-        pixelBuffer[idx + 3] = lineColor.alpha;
     }
 };
 /*
@@ -1068,7 +1151,6 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
         }
 
         // Rasterize a point.
-        /// TODO: Add the fragment buffer, depth testing, and alpha testing for points and/or lines.
         if (ngon.vertices.length === 1)
         {
             const idx = ((Math.round(ngon.vertices[0].x) + Math.round(ngon.vertices[0].y) * renderWidth) * 4);
@@ -1100,21 +1182,15 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                 if (usePixelShaders)
                 {
                     const fragment = fragmentBuffer[depthBufferIdx];
-                    fragment.textureU = 0;
-                    fragment.textureV = 0;
+                    fragment.ngonIdx = n;
                     fragment.textureUScaled = 0;
                     fragment.textureVScaled = 0;
-                    fragment.textureMipLevelIdx = textureMipLevelIdx;
                     fragment.depth = depth;
                     fragment.shade = shade;
                     fragment.worldX = ngon.vertices[0].worldX;
                     fragment.worldY = ngon.vertices[0].worldY;
                     fragment.worldZ = ngon.vertices[0].worldZ;
-                    fragment.normalX = ngon.normal.x;
-                    fragment.normalY = ngon.normal.y;
-                    fragment.normalZ = ngon.normal.z;
-                    fragment.ngonIdx = n;
-                    fragment.w = (interpolatePerspective? ngon.vertices[0].w : 1);
+                    fragment.w = ngon.vertices[0].w;
                 }
             }
 
@@ -1123,12 +1199,12 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
         // Rasterize a line.
         else if (ngon.vertices.length === 2)
         {
-            Rngon.line_draw(ngon.vertices[0], ngon.vertices[1], material.color);
+            Rngon.line_draw(ngon.vertices[0], ngon.vertices[1], material.color, n, false);
 
             continue;
         }
-        
         // Rasterize a polygon with 3 or more vertices.
+        else
         {
             // Figure out which of the n-gon's vertices are on its left side and which on the
             // right. The vertices on both sides will be arranged from smallest Y to largest
@@ -1583,12 +1659,12 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                 {
                     for (let l = 1; l < numLeftVerts; l++)
                     {
-                        Rngon.line_draw(leftVerts[l-1], leftVerts[l], material.wireframeColor);
+                        Rngon.line_draw(leftVerts[l-1], leftVerts[l], material.wireframeColor, n, true);
                     }
 
                     for (let r = 1; r < numRightVerts; r++)
                     {
-                        Rngon.line_draw(rightVerts[r-1], rightVerts[r], material.wireframeColor);
+                        Rngon.line_draw(rightVerts[r-1], rightVerts[r], material.wireframeColor, n, true);
                     }
                 }
             }

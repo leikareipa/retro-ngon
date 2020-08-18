@@ -83,7 +83,6 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
         }
 
         // Rasterize a point.
-        /// TODO: Add the fragment buffer, depth testing, and alpha testing for points and/or lines.
         if (ngon.vertices.length === 1)
         {
             const idx = ((Math.round(ngon.vertices[0].x) + Math.round(ngon.vertices[0].y) * renderWidth) * 4);
@@ -115,21 +114,15 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                 if (usePixelShaders)
                 {
                     const fragment = fragmentBuffer[depthBufferIdx];
-                    fragment.textureU = 0;
-                    fragment.textureV = 0;
+                    fragment.ngonIdx = n;
                     fragment.textureUScaled = 0;
                     fragment.textureVScaled = 0;
-                    fragment.textureMipLevelIdx = textureMipLevelIdx;
                     fragment.depth = depth;
                     fragment.shade = shade;
                     fragment.worldX = ngon.vertices[0].worldX;
                     fragment.worldY = ngon.vertices[0].worldY;
                     fragment.worldZ = ngon.vertices[0].worldZ;
-                    fragment.normalX = ngon.normal.x;
-                    fragment.normalY = ngon.normal.y;
-                    fragment.normalZ = ngon.normal.z;
-                    fragment.ngonIdx = n;
-                    fragment.w = (interpolatePerspective? ngon.vertices[0].w : 1);
+                    fragment.w = ngon.vertices[0].w;
                 }
             }
 
@@ -138,12 +131,12 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
         // Rasterize a line.
         else if (ngon.vertices.length === 2)
         {
-            Rngon.line_draw(ngon.vertices[0], ngon.vertices[1], material.color);
+            Rngon.line_draw(ngon.vertices[0], ngon.vertices[1], material.color, n, false);
 
             continue;
         }
-        
         // Rasterize a polygon with 3 or more vertices.
+        else
         {
             // Figure out which of the n-gon's vertices are on its left side and which on the
             // right. The vertices on both sides will be arranged from smallest Y to largest
@@ -598,12 +591,12 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                 {
                     for (let l = 1; l < numLeftVerts; l++)
                     {
-                        Rngon.line_draw(leftVerts[l-1], leftVerts[l], material.wireframeColor);
+                        Rngon.line_draw(leftVerts[l-1], leftVerts[l], material.wireframeColor, n, true);
                     }
 
                     for (let r = 1; r < numRightVerts; r++)
                     {
-                        Rngon.line_draw(rightVerts[r-1], rightVerts[r], material.wireframeColor);
+                        Rngon.line_draw(rightVerts[r-1], rightVerts[r], material.wireframeColor, n, true);
                     }
                 }
             }
