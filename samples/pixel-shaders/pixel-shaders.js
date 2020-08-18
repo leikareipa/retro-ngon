@@ -244,17 +244,21 @@ shaderFunctions["shader_shade_map"] = function({renderWidth, renderHeight, fragm
     }
 }
 
-shaderFunctions["shader_normal_map"] = function({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
+shaderFunctions["shader_normal_map"] = function({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
 {
     for (let i = 0; i < (renderWidth * renderHeight); i++)
     {
-        const x = fragmentBuffer[i].normalX;
-        const y = fragmentBuffer[i].normalY;
-        const z = fragmentBuffer[i].normalZ;
+        const thisFragment = fragmentBuffer[i];
+        const thisNgon = (thisFragment? ngonCache[thisFragment.ngonIdx] : null);
 
-        pixelBuffer[(i * 4) + 0] = Math.abs(x * 255);
-        pixelBuffer[(i * 4) + 1] = Math.abs(y * 255);
-        pixelBuffer[(i * 4) + 2] = Math.abs(z * 255);
+        if (!thisNgon)
+        {
+            continue;
+        }
+
+        pixelBuffer[(i * 4) + 0] = Math.abs(thisNgon.normal.x * 255);
+        pixelBuffer[(i * 4) + 1] = Math.abs(thisNgon.normal.y * 255);
+        pixelBuffer[(i * 4) + 2] = Math.abs(thisNgon.normal.z * 255);
     }
 }
 
@@ -272,15 +276,31 @@ shaderFunctions["shader_world_position_map"] = function({renderWidth, renderHeig
     }
 }
 
-shaderFunctions["shader_uv_map"] = function({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
+shaderFunctions["shader_uv_map"] = function({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
 {
     for (let i = 0; i < (renderWidth * renderHeight); i++)
     {
-        const u = fragmentBuffer[i].textureU;
-        const v = fragmentBuffer[i].textureV;
+        const thisFragment = fragmentBuffer[i];
+        const thisNgon = (thisFragment? ngonCache[thisFragment.ngonIdx] : null);
 
-        pixelBuffer[(i * 4) + 0] = Math.abs(v * 255);
-        pixelBuffer[(i * 4) + 1] = Math.abs(u * 255);
+        if (!thisNgon)
+        {
+            continue;
+        }
+
+        let u = fragmentBuffer[i].textureUScaled;
+        let v = fragmentBuffer[i].textureVScaled;
+        const texture = (thisNgon.material.texture || null);
+
+        // Take the scaled UV coordinates back into the [0,1] range.
+        if (texture)
+        {
+            u /= texture.width;
+            v /= texture.height;
+        }
+
+        pixelBuffer[(i * 4) + 0] = (v * 255);
+        pixelBuffer[(i * 4) + 1] = (u * 255);
         pixelBuffer[(i * 4) + 2] = 127;
     }
 }
@@ -377,29 +397,24 @@ shaderFunctions["shader_wireframe"] = function({renderWidth, renderHeight, fragm
 // has the 'isBacklit' property set to true.
 shaderFunctions["shader_backlight"] = function({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, cameraPosition, ngonCache})
 {
-    const surfaceNormal = Rngon.vector3();
     const viewVector = Rngon.vector3();
 
     for (let i = 0; i < (renderWidth * renderHeight); i++)
     {
         const thisFragment = fragmentBuffer[i];
-        
-        if (!ngonCache[thisFragment.ngonIdx] ||
-            !ngonCache[thisFragment.ngonIdx].material.isBacklit)
+        const thisNgon = (thisFragment? ngonCache[thisFragment.ngonIdx] : null);
+
+        if (!thisNgon || !thisNgon.material.isBacklit)
         {
             continue;
         }
-
-        surfaceNormal.x = thisFragment.normalX;
-        surfaceNormal.y = thisFragment.normalY;
-        surfaceNormal.z = thisFragment.normalZ;
 
         viewVector.x = (thisFragment.worldX - cameraPosition.x);
         viewVector.y = (thisFragment.worldY - cameraPosition.y);
         viewVector.z = (thisFragment.worldZ - cameraPosition.z);
         Rngon.vector3.normalize(viewVector);
 
-        const dot = Rngon.vector3.dot(surfaceNormal, viewVector);
+        const dot = Rngon.vector3.dot(thisNgon.normal, viewVector);
 
         pixelBuffer[(i * 4) + 0] *= (2 + dot);
         pixelBuffer[(i * 4) + 1] *= (2 + dot);
@@ -413,7 +428,6 @@ shaderFunctions["shader_per_pixel_light"] = function({renderWidth, renderHeight,
     const lightReach = (100 * 100);
     const lightIntensity = 2.5;
     const lightDirection = Rngon.vector3();
-    const surfaceNormal = Rngon.vector3();
 
     for (let i = 0; i < (renderWidth * renderHeight); i++)
     {
@@ -442,11 +456,7 @@ shaderFunctions["shader_per_pixel_light"] = function({renderWidth, renderHeight,
                     lightDirection.z = (light.position.z - thisFragment.worldZ);
                     Rngon.vector3.normalize(lightDirection);
 
-                    surfaceNormal.x = thisFragment.normalX;
-                    surfaceNormal.y = thisFragment.normalY;
-                    surfaceNormal.z = thisFragment.normalZ;
-
-                    shadeMul = Math.max(0, Math.min(1, Rngon.vector3.dot(surfaceNormal, lightDirection)));
+                    shadeMul = Math.max(0, Math.min(1, Rngon.vector3.dot(thisNgon.normal, lightDirection)));
                 }
             }
 

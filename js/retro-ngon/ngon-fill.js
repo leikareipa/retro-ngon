@@ -57,7 +57,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
 
         let texture = null;
         let textureMipLevel = null;
-        let textureMipLevelIdx = 3;
+        let textureMipLevelIdx = 0;
         if (material.texture)
         {
             texture = material.texture;
@@ -545,20 +545,14 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                 if (usePixelShaders)
                                 {
                                     const fragment = fragmentBuffer[depthBufferIdx];
-                                    fragment.textureU = (iplU / iplInvW);
-                                    fragment.textureV = (iplV / iplInvW);
+                                    fragment.ngonIdx = n;
                                     fragment.textureUScaled = ~~u;
                                     fragment.textureVScaled = ~~v;
-                                    fragment.textureMipLevelIdx = textureMipLevelIdx;
                                     fragment.depth = (iplDepth / iplInvW);
                                     fragment.shade = (iplShade / iplInvW);
                                     fragment.worldX = (iplWorldX / iplInvW);
                                     fragment.worldY = (iplWorldY / iplInvW);
                                     fragment.worldZ = (iplWorldZ / iplInvW);
-                                    fragment.normalX = ngon.normal.x;
-                                    fragment.normalY = ngon.normal.y;
-                                    fragment.normalZ = ngon.normal.z;
-                                    fragment.ngonIdx = n;
                                     fragment.w = (1 / iplInvW);
                                 }
                             }

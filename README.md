@@ -318,7 +318,7 @@ function sample_shader({renderWidth, renderHeight, pixelBuffer})
 
 With simple pixel shaders like these, you can create various effects like grayscaling, blurring and sharpening. However, by accessing the extra information passed to our shader &ndash; the fragment buffer and the n-gon cache &ndash; we can write even more powerful shaders!
 
-For example, to color only one corner of our quad blue, we can use the fragment buffer's texture coordinates to identify the desired region on the quad's face, then color in only those pixels whose texture coordinates are within that region:
+For example, to color only half of our quad blue, we can make use of the fragment buffer's XYZ world coordinates:
 
 ```
 function sample_shader({renderWidth, renderHeight, pixelBuffer, fragmentBuffer})
@@ -328,8 +328,7 @@ function sample_shader({renderWidth, renderHeight, pixelBuffer, fragmentBuffer})
         const thisFragment = fragmentBuffer[i];
 
         if (thisFragment &&
-            thisFragment.textureU < 0.25 &&
-            thisFragment.textureV > 0.75)
+            thisFragment.worldY < 0)
         {
             pixelBuffer[(i * 4) + 0] = 0;
             pixelBuffer[(i * 4) + 1] = 150;
@@ -381,7 +380,7 @@ function sample_shader({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, 
 
 In the above shader, we use the fragment buffer's 'ngonIdx' property to find which of the n-gon cache's polygons a given pixel is part of. Once we know that, we can directly access that n-gon's public properties.
 
-The following shader uses the fragment buffer's XYZ world coordinates to apply an alpha fading effect. It exploits the fact that this particular quad's world coordinates are always in the range [-1, 1], using them as an alpha multiplier:
+The following shader uses the fragment buffer's world coordinates to apply an alpha fading effect. It exploits the fact that this particular quad's world coordinates are always in the range [-1, 1], using them as an alpha multiplier:
 
 ```
 function sample_shader({renderWidth, renderHeight, pixelBuffer, fragmentBuffer})

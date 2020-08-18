@@ -59,13 +59,9 @@ Rngon.internalState =
             // part of.
             ngonIdx: undefined,
 
-            // Texture coordinates at this pixel.
-            textureU: undefined,
-            textureV: undefined,
-
             // Texture coordinates at this pixel, scaled to the dimensions of the
             // n-gon's texture and with any clamping/repetition applied. In other
-            // words, these are the exact texture coordinates with which the pixel's
+            // words, these are the exact texture coordinates from which the pixel's
             // texel was obtained.
             textureUScaled: undefined,
             textureVScaled: undefined,
@@ -79,11 +75,6 @@ Rngon.internalState =
             worldX: undefined,
             worldY: undefined,
             worldZ: undefined,
-
-            // Normal at this pixel.
-            normalX: undefined,
-            normalY: undefined,
-            normalZ: undefined,
 
             // The value written into the depth buffer by this fragment.
             depth: undefined,

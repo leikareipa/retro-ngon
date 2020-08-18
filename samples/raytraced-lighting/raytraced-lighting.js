@@ -142,7 +142,7 @@ function vs_copy_ngons(ngon)
 
 // A pixel shader that shades each pixel based on whether and how the light source is
 // visible to it.
-function ps_raytraced_lighting({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
+function ps_raytraced_lighting({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
 {
     // Defer shading until the scene's BVH has been built.
     if (!sceneBVH)
@@ -155,14 +155,14 @@ function ps_raytraced_lighting({renderWidth, renderHeight, fragmentBuffer, pixel
     // Pre-create storage objects, so we don't need to keep re-creating them in the
     // render loop.
     const lightDirection = Rngon.vector3();
-    const surfaceNormal = Rngon.vector3();
     const pixelWorldPosition = Rngon.vector3();
 
     for (let i = 0; i < (renderWidth * renderHeight); i++)
     {
         const thisFragment = fragmentBuffer[i];
+        const thisNgon = (thisFragment? ngonCache[thisFragment.ngonIdx] : null);
 
-        if (!thisFragment)
+        if (!thisNgon)
         {
             continue;
         }
@@ -171,15 +171,11 @@ function ps_raytraced_lighting({renderWidth, renderHeight, fragmentBuffer, pixel
         pixelWorldPosition.y = thisFragment.worldY;
         pixelWorldPosition.z = thisFragment.worldZ;
 
-        surfaceNormal.x = thisFragment.normalX;
-        surfaceNormal.y = thisFragment.normalY;
-        surfaceNormal.z = thisFragment.normalZ;
-
         // The pixel's world position is used as the ray's origin, so offset it to avoid
         // self-intersection.
-        pixelWorldPosition.x += (surfaceNormal.x * 0.00001);
-        pixelWorldPosition.y += (surfaceNormal.y * 0.00001);
-        pixelWorldPosition.z += (surfaceNormal.z * 0.00001);
+        pixelWorldPosition.x += (thisNgon.normal.x * 0.00001);
+        pixelWorldPosition.y += (thisNgon.normal.y * 0.00001);
+        pixelWorldPosition.z += (thisNgon.normal.z * 0.00001);
 
         lightDirection.x = (light.position.x - thisFragment.worldX);
         lightDirection.y = (light.position.y - thisFragment.worldY);
@@ -192,7 +188,7 @@ function ps_raytraced_lighting({renderWidth, renderHeight, fragmentBuffer, pixel
         
         const distanceMul = Math.max(0, Math.min(1, (1 - (lightDistance / light.reach))));
 
-        const shadeMul = Math.max(0, Math.min(1, Rngon.vector3.dot(surfaceNormal, lightDirection)));
+        const shadeMul = Math.max(0, Math.min(1, Rngon.vector3.dot(thisNgon.normal, lightDirection)));
 
         // If distanceMul * shadeMul is <= 0, it means there's no light falling on this
         // pixel from the light source, and so we don't need to cast a light ray. Otherwise,

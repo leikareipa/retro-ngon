@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (17 August 2020 00:44:22 UTC)
+// VERSION: beta live (18 August 2020 13:57:38 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -84,13 +84,9 @@ Rngon.internalState =
             // part of.
             ngonIdx: undefined,
 
-            // Texture coordinates at this pixel.
-            textureU: undefined,
-            textureV: undefined,
-
             // Texture coordinates at this pixel, scaled to the dimensions of the
             // n-gon's texture and with any clamping/repetition applied. In other
-            // words, these are the exact texture coordinates with which the pixel's
+            // words, these are the exact texture coordinates from which the pixel's
             // texel was obtained.
             textureUScaled: undefined,
             textureVScaled: undefined,
@@ -104,11 +100,6 @@ Rngon.internalState =
             worldX: undefined,
             worldY: undefined,
             worldZ: undefined,
-
-            // Normal at this pixel.
-            normalX: undefined,
-            normalY: undefined,
-            normalZ: undefined,
 
             // The value written into the depth buffer by this fragment.
             depth: undefined,
@@ -1051,7 +1042,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
 
         let texture = null;
         let textureMipLevel = null;
-        let textureMipLevelIdx = 3;
+        let textureMipLevelIdx = 0;
         if (material.texture)
         {
             texture = material.texture;
@@ -1539,20 +1530,14 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                 if (usePixelShaders)
                                 {
                                     const fragment = fragmentBuffer[depthBufferIdx];
-                                    fragment.textureU = (iplU / iplInvW);
-                                    fragment.textureV = (iplV / iplInvW);
+                                    fragment.ngonIdx = n;
                                     fragment.textureUScaled = ~~u;
                                     fragment.textureVScaled = ~~v;
-                                    fragment.textureMipLevelIdx = textureMipLevelIdx;
                                     fragment.depth = (iplDepth / iplInvW);
                                     fragment.shade = (iplShade / iplInvW);
                                     fragment.worldX = (iplWorldX / iplInvW);
                                     fragment.worldY = (iplWorldY / iplInvW);
                                     fragment.worldZ = (iplWorldZ / iplInvW);
-                                    fragment.normalX = ngon.normal.x;
-                                    fragment.normalY = ngon.normal.y;
-                                    fragment.normalZ = ngon.normal.z;
-                                    fragment.ngonIdx = n;
                                     fragment.w = (1 / iplInvW);
                                 }
                             }
