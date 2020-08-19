@@ -591,12 +591,12 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                 {
                     for (let l = 1; l < numLeftVerts; l++)
                     {
-                        Rngon.line_draw(leftVerts[l-1], leftVerts[l], material.wireframeColor, n, true);
+                        Rngon.line_draw(leftVerts[l-1], leftVerts[l], material.wireframeColor, n);
                     }
 
                     for (let r = 1; r < numRightVerts; r++)
                     {
-                        Rngon.line_draw(rightVerts[r-1], rightVerts[r], material.wireframeColor, n, true);
+                        Rngon.line_draw(rightVerts[r-1], rightVerts[r], material.wireframeColor, n);
                     }
                 }
             }

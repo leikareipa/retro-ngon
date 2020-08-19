@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (18 August 2020 21:39:08 UTC)
+// VERSION: beta live (19 August 2020 01:12:26 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -807,7 +807,7 @@ Rngon.line_draw = function(vert1 = Rngon.vertex(),
                            ignoreDepthBuffer = false)
 {
     const pixelBuffer = Rngon.internalState.pixelBuffer.data;
-    const depthBuffer = ((Rngon.internalState.useDepthBuffer && !ignoreDepthBuffer)? Rngon.internalState.depthBuffer.data : null);
+    const depthBuffer = (Rngon.internalState.useDepthBuffer? Rngon.internalState.depthBuffer.data : null);
     const fragmentBuffer = (Rngon.internalState.usePixelShaders? Rngon.internalState.fragmentBuffer.data : null);
     const renderWidth = Rngon.internalState.pixelBuffer.width;
     const renderHeight = Rngon.internalState.pixelBuffer.height;
@@ -904,7 +904,7 @@ Rngon.line_draw = function(vert1 = Rngon.vertex(),
             const shade = (startShade / startInvW);
 
             // Depth test.
-            if (depthBuffer && (depthBuffer[depthBufferIdx] <= depth)) return;
+            if (!ignoreDepthBuffer && depthBuffer && (depthBuffer[depthBufferIdx] <= depth)) return;
 
             // Alpha test.
             if (lineColor.alpha !== 255) return;
@@ -1659,12 +1659,12 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                 {
                     for (let l = 1; l < numLeftVerts; l++)
                     {
-                        Rngon.line_draw(leftVerts[l-1], leftVerts[l], material.wireframeColor, n, true);
+                        Rngon.line_draw(leftVerts[l-1], leftVerts[l], material.wireframeColor, n);
                     }
 
                     for (let r = 1; r < numRightVerts; r++)
                     {
-                        Rngon.line_draw(rightVerts[r-1], rightVerts[r], material.wireframeColor, n, true);
+                        Rngon.line_draw(rightVerts[r-1], rightVerts[r], material.wireframeColor, n);
                     }
                 }
             }

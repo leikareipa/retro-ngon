@@ -8,7 +8,7 @@ Rngon.line_draw = function(vert1 = Rngon.vertex(),
                            ignoreDepthBuffer = false)
 {
     const pixelBuffer = Rngon.internalState.pixelBuffer.data;
-    const depthBuffer = ((Rngon.internalState.useDepthBuffer && !ignoreDepthBuffer)? Rngon.internalState.depthBuffer.data : null);
+    const depthBuffer = (Rngon.internalState.useDepthBuffer? Rngon.internalState.depthBuffer.data : null);
     const fragmentBuffer = (Rngon.internalState.usePixelShaders? Rngon.internalState.fragmentBuffer.data : null);
     const renderWidth = Rngon.internalState.pixelBuffer.width;
     const renderHeight = Rngon.internalState.pixelBuffer.height;
@@ -105,7 +105,7 @@ Rngon.line_draw = function(vert1 = Rngon.vertex(),
             const shade = (startShade / startInvW);
 
             // Depth test.
-            if (depthBuffer && (depthBuffer[depthBufferIdx] <= depth)) return;
+            if (!ignoreDepthBuffer && depthBuffer && (depthBuffer[depthBufferIdx] <= depth)) return;
 
             // Alpha test.
             if (lineColor.alpha !== 255) return;
