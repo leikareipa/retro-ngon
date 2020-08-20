@@ -425,33 +425,6 @@ const ngon = Rngon.ngon([Rngon.vertex(0, 0, 0),
 ```
 Here, we define the three vertices of the triangle, and specify the `color` property of its material. Note that the vertices are passed as an array that can include an arbitrary number of them &ndash; three to make a triangle, four to make a quad, and so on.
 
-The following are valid properties of an n-gon's material, and the valid values of each property, separated by the | symbol:
-```
-{
-    color: Rngon.color_rgba(...)
-    texture: Rngon.texture_rgba(...)
-    textureMapping: "ortho" | "affine"
-    hasWireframe: true | false
-    isTwoSided: true | false
-    wireframeColor: Rngon.color_rgba(...)
-    auxiliary: {}
-}
-```
-
-The `color` property sets the n-gon's base color. If the n-gon has no texture, its entire face will be rendered with the base color. If it has a texture, the colors of the texture will be modulated by the base color.
-
-The `texture` property sets the n-gon's texture. You can read more about texturing further down this document.
-
-The `textureMapping` property defines how textures should be mapped onto the n-gon's face. You can read more about texturing further down this document.
-
-The `hasWireframe` property determines whether a line should be drawn around the n-gon's face.
-
-The `isTwoSided` property determines whether the n-gon should be visible when viewed from behind (relative to the direction of its surface normal). If set to true, you must also provide the n-gon with a valid surface normal, which otherwise defaults to an *up*-vector of {x:0, y:1, z:0}.
-
-The `wireframeColor` property sets the color of the n-gon's wireframe. Note that if `hasWireframe` is false, no wireframe will be drawn, regardless of its color.
-
-The `auxiliary` property defines an object containing properties to which auxiliary render buffers have read access.
-
 ### Meshes
 To render n-gons, you first wrap them in a mesh. Meshes are collections of n-gons that share a purpose; for instance, the n-gons that make up a model of a spoon. A mesh thus consists of an array one or more n-gons, and a particular set of 3D transformations that affect the mesh's n-gons in unison.
 
@@ -854,6 +827,7 @@ An n-gon &ndash; a shape defined by *n* vertices; typically a triangle or a quad
 | *string*             | textureMapping  | Defines how textures (if any) should be mapped onto the n-gon's surface during rendering. Possible values: "ortho" (view-dependent mapping without UV), "affine" (UV mapping). If set to "ortho", vertices do not need UV coordinates, but visual distortions will be introduced in many cases. The "affine" mapping mode requires vertices to have UV coordinates, but results in more visually-accurate mapping. Defaults to *"ortho"*. |
 | *string*             | uvWrapping  | Controls how the texture sampler should interpret UV coordinates. Possible values: "clamp" (UV coordinates are clamped to [0,1-ϵ], or [-ϵ,-1] if negative values are given), "repeat" (discards the coordinate's integer part and repeats the texture). Defaults to *"repeat"*. |
 | *boolean*            | hasWireframe    | If true, the n-gon will be rendered with a wireframe outline. Defaults to *false*. |
+| *boolean*            | hasFill         | If false, the n-gon's pixels will not be rendered (filled in). Setting this to false and 'hasWireframe' to true results in just the n-gon's wireframe outline being rendered. Defaults to *true*. |
 | *boolean*            | isTwoSided    | If true, the n-gon can be viewed from both front and back. Otherwise, the n-gon will be culled when viewed from behind, as determined by the direction of its surface normal. Defaults to *true*.<br><br>Note: Should not be set to false for n-gons that are part of a **mesh** object to which you have applied rotation. This is because surface normals ignore rotation, so applying backface culling in these cases would give an incorrect result. |
 | *color_rgba*         | wireframeColor  | If the n-gon has a wireframe, this property gives the wireframe's color as a **color_rgba** object. Defaults to *color_rgba(0, 0, 0)*. |
 | *array*              | auxiliary       | Properties accessible to the auxiliary buffers of **render**. Defaults to *{}*. |

@@ -256,6 +256,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
 
             // Draw the n-gon. On each horizontal raster line, there will be two edges: left and right.
             // We'll render into the pixel buffer each horizontal span that runs between the two edges.
+            if (material.hasFill)
             {
                 let curLeftEdgeIdx = 0;
                 let curRightEdgeIdx = 0;
@@ -584,20 +585,20 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                     if (y === (leftEdge.endY - 1)) leftEdge = leftEdges[++curLeftEdgeIdx];
                     if (y === (rightEdge.endY - 1)) rightEdge = rightEdges[++curRightEdgeIdx];
                 }
+            }
 
-                // Draw a wireframe around any n-gons that wish for one.
-                if (Rngon.internalState.showGlobalWireframe ||
-                    material.hasWireframe)
+            // Draw a wireframe around any n-gons that wish for one.
+            if (Rngon.internalState.showGlobalWireframe ||
+                material.hasWireframe)
+            {
+                for (let l = 1; l < numLeftVerts; l++)
                 {
-                    for (let l = 1; l < numLeftVerts; l++)
-                    {
-                        Rngon.line_draw(leftVerts[l-1], leftVerts[l], material.wireframeColor, n);
-                    }
+                    Rngon.line_draw(leftVerts[l-1], leftVerts[l], material.wireframeColor, n);
+                }
 
-                    for (let r = 1; r < numRightVerts; r++)
-                    {
-                        Rngon.line_draw(rightVerts[r-1], rightVerts[r], material.wireframeColor, n);
-                    }
+                for (let r = 1; r < numRightVerts; r++)
+                {
+                    Rngon.line_draw(rightVerts[r-1], rightVerts[r], material.wireframeColor, n);
                 }
             }
         }

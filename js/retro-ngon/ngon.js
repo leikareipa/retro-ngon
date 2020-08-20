@@ -87,6 +87,7 @@ Rngon.ngon.defaultMaterial =
     renderVertexShade: true,
     ambientLightLevel: 0,
     hasWireframe: false,
+    hasFill: true,
     isTwoSided: true,
     wireframeColor: Rngon.color_rgba(0, 0, 0),
     allowTransform: true,
