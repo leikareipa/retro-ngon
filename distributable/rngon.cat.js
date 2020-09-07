@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (20 August 2020 18:20:25 UTC)
+// VERSION: beta live (07 September 2020 14:08:06 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -2370,10 +2370,17 @@ Rngon.ngon_transform_and_light = function(ngons = [],
 
 Rngon.ngon_transform_and_light.apply_lighting = function(ngon)
 {
+    // Pre-allocate a vector object to operate on, so we don't need to create one repeatedly.
     const lightDirection = Rngon.vector3();
 
+    let faceShade = ngon.material.ambientLightLevel;
+    for (let v = 0; v < ngon.vertices.length; v++)
+    {
+        ngon.vertices[v].shade = ngon.material.ambientLightLevel;
+    }
+
     // Get the average XYZ point on this n-gon's face.
-    let faceX = 0, faceY = 0, faceZ = 0, faceShade = 0;
+    let faceX = 0, faceY = 0, faceZ = 0;
     if (ngon.material.vertexShading === "flat")
     {
         for (const vertex of ngon.vertices)
@@ -2403,8 +2410,6 @@ Rngon.ngon_transform_and_light.apply_lighting = function(ngon)
             {
                 const vertex = ngon.vertices[v];
 
-                vertex.shade = 0;
-
                 const distance = (((vertex.x - light.position.x) * (vertex.x - light.position.x)) +
                                   ((vertex.y - light.position.y) * (vertex.y - light.position.y)) +
                                   ((vertex.z - light.position.z) * (vertex.z - light.position.z)));
@@ -2416,7 +2421,7 @@ Rngon.ngon_transform_and_light.apply_lighting = function(ngon)
                 lightDirection.z = (light.position.z - vertex.z);
                 Rngon.vector3.normalize(lightDirection);
 
-                const shadeFromThisLight = Math.max(ngon.material.ambientLightLevel, Math.min(1, Rngon.vector3.dot(ngon.vertexNormals[v], lightDirection)));
+                const shadeFromThisLight = Math.max(0, Math.min(1, Rngon.vector3.dot(ngon.vertexNormals[v], lightDirection)));
 
                 vertex.shade = Math.max(vertex.shade, (shadeFromThisLight * distanceMul * light.intensity));
             }
@@ -2434,7 +2439,7 @@ Rngon.ngon_transform_and_light.apply_lighting = function(ngon)
             lightDirection.z = (light.position.z - faceZ);
             Rngon.vector3.normalize(lightDirection);
 
-            const shadeFromThisLight = Math.max(ngon.material.ambientLightLevel, Math.min(1, Rngon.vector3.dot(ngon.normal, lightDirection)));
+            const shadeFromThisLight = Math.max(0, Math.min(1, Rngon.vector3.dot(ngon.normal, lightDirection)));
 
             faceShade = Math.max(faceShade, (shadeFromThisLight * distanceMul * light.intensity));
         }
