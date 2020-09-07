@@ -40,5 +40,9 @@ export const sample_scene = (frameCount = 0)=>
 };
 
 export const sampleRenderOptions = {
-    lights: [Rngon.light(Rngon.translation_vector(0, 70, -120))],
+    lights: [
+        Rngon.light(Rngon.translation_vector(0, 70, -120), {
+            reach: 200,
+            intensity: 2,
+        })],
 }
