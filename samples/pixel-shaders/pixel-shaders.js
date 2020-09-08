@@ -16,7 +16,11 @@ import {first_person_camera} from "./camera.js";
 const shaderFunctions = {};
 
 const lights = [
-    Rngon.light(Rngon.translation_vector(11, 45, -35), {intensity: 1, reach: 100}),
+    Rngon.light(Rngon.translation_vector(11, 45, -35), {
+        intensity: 70,
+        clip: 1,
+        attenuation: 1,
+    }),
 ];
 
 const camera = first_person_camera("canvas",

@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (07 September 2020 14:08:06 UTC)
+// VERSION: beta live (08 September 2020 22:44:56 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -367,8 +367,18 @@ Rngon.light = function(position = Rngon.translation_vector(0, 0, 0),
 }
 
 Rngon.light.defaultSettings = {
-    intensity: 3,
-    reach: 150, // The distance, in world units, from the light's position to where the light's intensity has fallen to 0.
+    intensity: 100000,
+
+    // The maximum shade value that this light can generate. A value of 1 means
+    // that a surface fully lit by this light displays its base color (or base
+    // texel) and never a color brighter than that. A value higher than one will
+    // boost the base color of a fully lit surface by that multiple.
+    clip: 1,
+
+    // How strongly the light attenuates with distance. Values lower than 1
+    // cause the light to attenuate less over a distance; while values above
+    // 1 cause the light to attenuate more over a distance.
+    attenuation: 1,
 }
 /*
  * Tarpeeksi Hyvae Soft 2019 /
@@ -2401,20 +2411,17 @@ Rngon.ngon_transform_and_light.apply_lighting = function(ngon)
         // If we've already found the maximum brightness, we don't need to continue.
         //if (shade >= 255) break;
 
-        /// TODO: These should be properties of the light object.
-        const lightReach = (light.reach * light.reach);
-
         if (ngon.material.vertexShading === "gouraud")
         {
             for (let v = 0; v < ngon.vertices.length; v++)
             {
                 const vertex = ngon.vertices[v];
 
-                const distance = (((vertex.x - light.position.x) * (vertex.x - light.position.x)) +
-                                  ((vertex.y - light.position.y) * (vertex.y - light.position.y)) +
-                                  ((vertex.z - light.position.z) * (vertex.z - light.position.z)));
+                const distance = Math.sqrt(((vertex.x - light.position.x) * (vertex.x - light.position.x)) +
+                                           ((vertex.y - light.position.y) * (vertex.y - light.position.y)) +
+                                           ((vertex.z - light.position.z) * (vertex.z - light.position.z)));
 
-                const distanceMul = Math.max(0, Math.min(1, (1 - (distance / lightReach))));
+                const distanceMul = (1 / (1 + (light.attenuation * distance)));
 
                 lightDirection.x = (light.position.x - vertex.x);
                 lightDirection.y = (light.position.y - vertex.y);
@@ -2423,16 +2430,16 @@ Rngon.ngon_transform_and_light.apply_lighting = function(ngon)
 
                 const shadeFromThisLight = Math.max(0, Math.min(1, Rngon.vector3.dot(ngon.vertexNormals[v], lightDirection)));
 
-                vertex.shade = Math.max(vertex.shade, (shadeFromThisLight * distanceMul * light.intensity));
+                vertex.shade = Math.max(vertex.shade, Math.min(light.clip, (shadeFromThisLight * distanceMul * light.intensity)));
             }
         }
         else if (ngon.material.vertexShading === "flat")
         {
-            const distance = (((faceX - light.position.x) * (faceX - light.position.x)) +
-                              ((faceY - light.position.y) * (faceY - light.position.y)) +
-                              ((faceZ - light.position.z) * (faceZ - light.position.z)));
+            const distance = Math.sqrt(((faceX - light.position.x) * (faceX - light.position.x)) +
+                                       ((faceY - light.position.y) * (faceY - light.position.y)) +
+                                       ((faceZ - light.position.z) * (faceZ - light.position.z)));
 
-            const distanceMul = Math.max(0, Math.min(1, (1 - (distance / lightReach))));
+            const distanceMul = (1 / (1 + (light.attenuation * distance)));
 
             lightDirection.x = (light.position.x - faceX);
             lightDirection.y = (light.position.y - faceY);
@@ -2441,7 +2448,7 @@ Rngon.ngon_transform_and_light.apply_lighting = function(ngon)
 
             const shadeFromThisLight = Math.max(0, Math.min(1, Rngon.vector3.dot(ngon.normal, lightDirection)));
 
-            faceShade = Math.max(faceShade, (shadeFromThisLight * distanceMul * light.intensity));
+            faceShade = Math.max(faceShade, Math.min(light.clip, (shadeFromThisLight * distanceMul * light.intensity)));
         }
         else
         {

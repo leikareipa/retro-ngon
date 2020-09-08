@@ -40,7 +40,11 @@ import {ray} from "./ray.js";
 
 const lights = [
     // The light source we'll trace rays toward.
-    Rngon.light(Rngon.translation_vector(11, 45, -35), {intensity: 3, reach: 150}),
+    Rngon.light(Rngon.translation_vector(11, 45, -35), {
+        intensity: 100,
+        clip: 2,
+        attenuation: 1,
+    }),
 ];
 
 const camera = first_person_camera("canvas",
@@ -186,7 +190,7 @@ function ps_raytraced_lighting({renderWidth, renderHeight, fragmentBuffer, pixel
                                         ((pixelWorldPosition.y - light.position.y) * (pixelWorldPosition.y - light.position.y)) +
                                         ((pixelWorldPosition.z - light.position.z) * (pixelWorldPosition.z - light.position.z)));
         
-        const distanceMul = Math.max(0, Math.min(1, (1 - (lightDistance / light.reach))));
+        const distanceMul = (1 / (1 + (light.attenuation * lightDistance)));
 
         const shadeMul = Math.max(0, Math.min(1, Rngon.vector3.dot(thisNgon.normal, lightDirection)));
 
@@ -212,9 +216,11 @@ function ps_raytraced_lighting({renderWidth, renderHeight, fragmentBuffer, pixel
         // light's distance and incident angle.
         else
         {
-            pixelBuffer[(i * 4) + 0] *= (distanceMul * shadeMul * light.intensity);
-            pixelBuffer[(i * 4) + 1] *= (distanceMul * shadeMul * light.intensity);
-            pixelBuffer[(i * 4) + 2] *= (distanceMul * shadeMul * light.intensity);
+            const shade = Math.min(light.clip, (shadeMul * distanceMul * light.intensity));
+            
+            pixelBuffer[(i * 4) + 0] *= shade;
+            pixelBuffer[(i * 4) + 1] *= shade;
+            pixelBuffer[(i * 4) + 2] *= shade;
         }
     }
 
