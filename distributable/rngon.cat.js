@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (08 September 2020 22:44:56 UTC)
+// VERSION: beta live (11 September 2020 18:41:41 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -367,7 +367,7 @@ Rngon.light = function(position = Rngon.translation_vector(0, 0, 0),
 }
 
 Rngon.light.defaultSettings = {
-    intensity: 100000,
+    intensity: 100,
 
     // The maximum shade value that this light can generate. A value of 1 means
     // that a surface fully lit by this light displays its base color (or base
@@ -375,9 +375,9 @@ Rngon.light.defaultSettings = {
     // boost the base color of a fully lit surface by that multiple.
     clip: 1,
 
-    // How strongly the light attenuates with distance. Values lower than 1
-    // cause the light to attenuate less over a distance; while values above
-    // 1 cause the light to attenuate more over a distance.
+    // How strongly the light's intensity attenuates with distance from the light
+    // source. Values lower than 1 cause the light to attenuate less over a distance;
+    // while values above 1 cause the light to attenuate more over a distance.
     attenuation: 1,
 }
 /*
@@ -2237,7 +2237,8 @@ Rngon.ngon_transform_and_light = function(ngons = [],
                                                       ngon.vertices[v].z,
                                                       ngon.vertices[v].u,
                                                       ngon.vertices[v].v,
-                                                      ngon.vertices[v].w);
+                                                      ngon.vertices[v].w,
+                                                      ngon.vertices[v].shade);
 
                 if (Rngon.internalState.useVertexShaders ||
                     (ngon.material.vertexShading === "gouraud"))
@@ -2249,13 +2250,10 @@ Rngon.ngon_transform_and_light = function(ngons = [],
             }
 
             cachedNgon.material = ngon.material;
-            
             cachedNgon.normal.x = ngon.normal.x;
             cachedNgon.normal.y = ngon.normal.y;
             cachedNgon.normal.z = ngon.normal.z;
-
             cachedNgon.isActive = true;
-
             cachedNgon.mipLevel = ngon.mipLevel;
         }
 

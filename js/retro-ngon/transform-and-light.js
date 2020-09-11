@@ -54,7 +54,8 @@ Rngon.ngon_transform_and_light = function(ngons = [],
                                                       ngon.vertices[v].z,
                                                       ngon.vertices[v].u,
                                                       ngon.vertices[v].v,
-                                                      ngon.vertices[v].w);
+                                                      ngon.vertices[v].w,
+                                                      ngon.vertices[v].shade);
 
                 if (Rngon.internalState.useVertexShaders ||
                     (ngon.material.vertexShading === "gouraud"))
@@ -66,13 +67,10 @@ Rngon.ngon_transform_and_light = function(ngons = [],
             }
 
             cachedNgon.material = ngon.material;
-            
             cachedNgon.normal.x = ngon.normal.x;
             cachedNgon.normal.y = ngon.normal.y;
             cachedNgon.normal.z = ngon.normal.z;
-
             cachedNgon.isActive = true;
-
             cachedNgon.mipLevel = ngon.mipLevel;
         }
 
