@@ -198,7 +198,7 @@ function ps_raytraced_lighting({renderWidth, renderHeight, fragmentBuffer, pixel
         // pixel from the light source, and so we don't need to cast a light ray. Otherwise,
         // we cast a ray from this pixel toward the light's direction.
         const intersection = ((distanceMul * shadeMul > 0) &&
-                              ray(pixelWorldPosition, lightDirection).intersect_bvh(sceneBVH));
+                              ray(pixelWorldPosition, lightDirection).intersect_bvh(sceneBVH, 1));
 
         // If the light ray intersects nothing or intersects something that's closer
         // than the light, it means light is prevented from reaching on this pixel.

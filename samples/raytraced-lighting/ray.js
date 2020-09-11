@@ -84,7 +84,7 @@ export function ray(pos = Rngon.vector3(0, 0, 0), dir = Rngon.vector3(0, 0, 1))
         // Traces the ray recursively through the given BVH. Returns null if no triangle in
         // the BVH was intersected; and otherwise an object containing the triangle that was
         // intersected and the distance to the point of intersection on it along the ray.
-        intersect_bvh: function(bvh)
+        intersect_bvh: function(bvh, epsilon = 0)
         {
             const ray = this;
 
@@ -101,7 +101,11 @@ export function ray(pos = Rngon.vector3(0, 0, 0), dir = Rngon.vector3(0, 0, 1))
                     {
                         const distance = ray.intersect_triangle(triangle);
 
-                        if (distance < intersectionInfo.distance)
+                        // To avoid "self-intersection" at shared vertices (i.e. immediately
+                        // intersecting another triangle at the point of the shared vertex), we
+                        // require valid intersection distances to be slightly non-zero.*/
+                        if ((distance > epsilon) &&
+                            (distance < intersectionInfo.distance))
                         {
                             intersectionInfo.triangle = triangle;
                             intersectionInfo.distance = distance;
