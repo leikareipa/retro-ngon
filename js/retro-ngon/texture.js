@@ -7,8 +7,22 @@
 "use strict";
 
 // A 32-bit texture.
-Rngon.texture_rgba = function(data = {width: 0, height: 0, pixels: []})
+Rngon.texture_rgba = function(data = {})
 {
+    // Append default parameter arguments.
+    data =
+    {
+        ...{
+            width: 0,
+            height: 0,
+            pixels: [],
+            encoding: "none",
+            channels: "rgba:8+8+8+8",
+            needsFlip: true,
+        },
+        ...data,
+    }
+
     // The maximum dimensions of a texture.
     const maxWidth = 32768;
     const maxHeight = 32768;
@@ -23,7 +37,7 @@ Rngon.texture_rgba = function(data = {width: 0, height: 0, pixels: []})
                  || Rngon.throw("Expected texture width/height to be no more than " + maxWidth + "/" + maxHeight + ".");
 
     // If necessary, decode the pixel data into raw RGBA/8888.
-    if (typeof data.encoding !== "undefined" && data.encoding !== "none")
+    if (data.encoding !== "none")
     {
         // In Base64-encoded data, each pixel's RGBA is expected to be given as a 16-bit
         // value, where each of the RGB channels takes up 5 bits and the alpha channel
@@ -72,7 +86,7 @@ Rngon.texture_rgba = function(data = {width: 0, height: 0, pixels: []})
     {
         for (let x = 0; x < data.width; x++)
         {
-            const idx = ((x + (data.height - y - 1) * data.width) * numColorChannels);
+            const idx = ((x + (data.needsFlip? (data.height - y - 1) : y) * data.width) * numColorChannels);
 
             pixelArray.push({red:   data.pixels[idx + 0],
                              green: data.pixels[idx + 1],
@@ -125,13 +139,13 @@ Rngon.texture_rgba = function(data = {width: 0, height: 0, pixels: []})
         }
     }
 
-    const publicInterface = Object.freeze(
+    const publicInterface =
     {
         width: data.width,
         height: data.height,
         pixels: pixelArray,
         mipLevels: mipmaps,
-    });
+    };
     
     return publicInterface;
 }
