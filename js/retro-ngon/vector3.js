@@ -71,3 +71,10 @@ Rngon.vector3.cross = function(v, other)
 
     return c;
 }
+
+Rngon.vector3.invert = function(v)
+{
+    v.x *= -1;
+    v.y *= -1;
+    v.z *= -1;
+}

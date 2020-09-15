@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (12 September 2020 14:01:48 UTC)
+// VERSION: beta live (15 September 2020 15:08:56 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -485,6 +485,13 @@ Rngon.vector3.cross = function(v, other)
     c.z = ((v.x * other.y) - (v.y * other.x));
 
     return c;
+}
+
+Rngon.vector3.invert = function(v)
+{
+    v.x *= -1;
+    v.y *= -1;
+    v.z *= -1;
 }
 /*
  * 2019 Tarpeeksi Hyvae Soft
