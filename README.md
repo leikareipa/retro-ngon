@@ -33,11 +33,8 @@ The retro n-gon renderer encourages low resolutions, very low polycounts, and de
 - Visualizing 3D models in an old-fashioned manner
 
 # Screenshots
-![A scene from Tomb Raider, textured](./images/screenshots/alpha/tr-rngon-1.png)\
-**A scene** from Tomb Raider 1 as rendered by the retro n-gon renderer and consisting of textured quads and triangles. (Based on assets produced by Core Design for *Tomb Raider*. Core Design is not associated with the retro n-gon renderer.)
-
-![A view from Grand Prix Legends](./images/screenshots/beta/grand-prix-legends-rouen.png)\
-**A view** of the race track at Rouen in Grand Prix Legends. (Based on textures and 3D models produced by Papyrus Design Group for *Grand Prix Legends*. Papyrus Design Group is not associated with the retro n-gon renderer.)
+![A scene from Tomb Raider, textured](./images/screenshots/beta/tomb-raider-1-texture-lightmap.png)\
+**A scene** from Tomb Raider 1 as rendered by the retro n-gon renderer and consisting of textured quads. A custom lightmap has been baked onto the textures. (Based on assets produced by Core Design for *Tomb Raider*. Core Design is not associated with the retro n-gon renderer.)
 
 ![A scene from RallySportED-js](./images/screenshots/beta/rallysported.png)\
 **The track editor view** in RallySportED-js, with geometry built from texture-mapped, wireframed quads. (Based on textures and 3D models produced by Jukka Jäkälä for *Rally-Sport*. Jukka Jäkälä is not associated with the retro n-gon renderer.)
@@ -47,6 +44,9 @@ The retro n-gon renderer encourages low resolutions, very low polycounts, and de
 
 ![Ray-traced lighting with a pixel shader](./images/screenshots/beta/shader-ray-trace.png)
 **Ray-traced lighting** applied with a pixel shader. (See [here](./samples/raytraced-lighting/assets/copying.txt) for texture copyright information.)
+
+![A view from Grand Prix Legends](./images/screenshots/beta/grand-prix-legends-rouen.png)\
+**A view** of the race track at Rouen in Grand Prix Legends. Note the low FPS due to a lack of visibility culling in the scene. (Based on textures and 3D models produced by Papyrus Design Group for *Grand Prix Legends*. Papyrus Design Group is not associated with the retro n-gon renderer.)
 
 ![Depth blur with a pixel shader](./images/screenshots/beta/shader-distance-blur.png)
 **Depth blur** applied with a pixel shader. (See [here](./samples/pixel-shaders/assets/copying.txt) for texture copyright information.)
