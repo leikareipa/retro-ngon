@@ -45,7 +45,7 @@ export function bake_texture_lightmap(ngons = [Rngon.ngon()],
 
         console.log("Baking finished");
 
-        // Clean up any temporary data we created into the n-gons array.
+        // Clean up any temporary data we created that won't be needed anymore.
         for (const ngon of ngons)
         {
             if (ngon.material.texture &&
@@ -75,37 +75,120 @@ function create_shade_map(triangles = [Rngon.ngon()],
 
     while ((performance.now() - startTime) < (secondsToBake * 1000))
     {
-        const randomLight = lights[Math.floor(Math.random() * lights.length)];
+        const randomTriangle = triangles[Math.floor(Math.random() * triangles.length)];
 
-        const rayDirection = Rngon.vector3((Math.random() - Math.random()),
-                                           (Math.random() - Math.random()),
-                                           (Math.random() - Math.random()));
+        const r1 = Math.sqrt(Math.random());
+        const r2 = Math.random();
+        const x = (1 - r1) * randomTriangle.vertices[0].x + (r1 * (1 - r2)) * randomTriangle.vertices[1].x + (r1 * r2) * randomTriangle.vertices[2].x;
+        const y = (1 - r1) * randomTriangle.vertices[0].y + (r1 * (1 - r2)) * randomTriangle.vertices[1].y + (r1 * r2) * randomTriangle.vertices[2].y;
+        const z = (1 - r1) * randomTriangle.vertices[0].z + (r1 * (1 - r2)) * randomTriangle.vertices[1].z + (r1 * r2) * randomTriangle.vertices[2].z;
+        const randomPointOnTriangle = Rngon.vector3(x, y, z);
 
-        Rngon.vector3.normalize(rayDirection);
-
-        const lightRay = ray({...randomLight.position}, rayDirection);
-        lightRay.lightSource = randomLight;
-        lightRay.intensity = randomLight.intensity;
-
-        trace_ray_into_scene(lightRay, sceneBVH);
-
-        // Indicate to the user how much time remains in the baking.
-        if ((performance.now() - updateTimer) > 1000)
+        for (const light of lights)
         {
-            const msRemaining = ((secondsToBake * 1000) - (performance.now() - startTime));
-            const sRemaining = Math.ceil(msRemaining / 1000);
-            const mRemaining = Math.round(sRemaining / 60);
-            const hRemaining = Math.round(mRemaining / 60);
+            const rayDirection = Rngon.vector3((randomPointOnTriangle.x - light.position.x),
+                                               (randomPointOnTriangle.y - light.position.y),
+                                               (randomPointOnTriangle.z - light.position.z));
 
-            const timeLabel = hRemaining > 0
-                              ? `${hRemaining} hr`
-                              : mRemaining > 0
-                              ? `${mRemaining} min`
-                              : `${sRemaining} sec`;
+            Rngon.vector3.normalize(rayDirection);
 
-            console.log(`Baking to textures... ETA = ${timeLabel}`);
+            // If the light ray would hit the triangle from behind.
+            if (!randomTriangle.material.isTwoSided &&
+                Rngon.vector3.dot(randomTriangle.normal, rayDirection) >= 0)
+            {
+                continue;
+            }
 
-            updateTimer = performance.now();
+            const lightRay = ray({...light.position}, rayDirection);
+            lightRay.lightSource = light;
+            lightRay.intensity = light.intensity;
+
+            trace_light_ray(lightRay, sceneBVH);
+
+            if (lightRay.intersection &&
+                lightRay.intersection.triangle == randomTriangle)
+            {
+                // Barycentric interpolation of shade map UV coordinates.
+                const u = ((randomTriangle.vertices[0].u * lightRay.intersection.w) +
+                           (randomTriangle.vertices[1].u * lightRay.intersection.u) +
+                           (randomTriangle.vertices[2].u * lightRay.intersection.v));
+                const v = ((randomTriangle.vertices[0].v * lightRay.intersection.w) +
+                           (randomTriangle.vertices[1].v * lightRay.intersection.u) +
+                           (randomTriangle.vertices[2].v * lightRay.intersection.v));
+
+                const texture = randomTriangle.material.texture;
+                const texel = texture.shadeMap[~~(u * texture.width) + ~~(v * texture.height) * texture.width];
+
+                if (texel)
+                {
+                    // To get soft shadows, we cast 'feeler rays', i.e. additional rays from the
+                    // light source toward the target point, with a randomly altered origin
+                    // somewhere within the area of the light source.
+                    //
+                    // For points that are lit by the entire surface of the light source, all feeler
+                    // rays are expected to intersect with the corresponding polygon; otherwise,
+                    // only a subset of the feeler rays will intersect. We can then modulate the
+                    // light intensity arriving at the point from the main ray by the ratio of
+                    // intersecting feeler rays to approximate soft shadows.
+                    const numFeelerRays = 4;
+                    const numFeelerRaysHit = (()=>
+                    {
+                        let hits = 0;
+
+                        for (let f = 0; f < numFeelerRays; f++)
+                        {
+                            const lightDiameter = 500;
+
+                            const randomOffsetPos = Rngon.vector3((light.position.x + (lightDiameter * (Math.random() - Math.random()))),
+                                                                  (light.position.y + (lightDiameter * (Math.random() - Math.random()))),
+                                                                  (light.position.z + (lightDiameter * (Math.random() - Math.random()))));
+
+                            const rayDirection = Rngon.vector3((randomPointOnTriangle.x - randomOffsetPos.x),
+                                                               (randomPointOnTriangle.y - randomOffsetPos.y),
+                                                               (randomPointOnTriangle.z - randomOffsetPos.z));
+
+                            const feelerRay = ray(randomOffsetPos, rayDirection);
+                            feelerRay.lightSource = light;
+                            feelerRay.intensity = light.intensity;
+
+                            trace_light_ray(feelerRay, sceneBVH);
+
+                            if (feelerRay.intersection &&
+                                feelerRay.intersection.triangle == randomTriangle)
+                            {
+                                hits++;
+                            }
+                        }
+
+                        return hits;
+                    })();
+
+                    // Ratio of feeler rays + the main ray that intersect the texel's point.
+                    const feelerContrib = ((numFeelerRaysHit + 1) / (numFeelerRays + 1));
+                    
+                    texel.accumulatedLight = Math.max(texel.accumulatedLight, (feelerContrib * Math.min(lightRay.lightSource.clip, lightRay.intensity)));
+                    texel.numSamples = 1;
+                }
+            }
+
+            // Indicate to the user how much time remains in the baking.
+            if ((performance.now() - updateTimer) > 1000)
+            {
+                const msRemaining = ((secondsToBake * 1000) - (performance.now() - startTime));
+                const sRemaining = Math.ceil(msRemaining / 1000);
+                const mRemaining = Math.floor(sRemaining / 60);
+                const hRemaining = Math.floor(mRemaining / 60);
+
+                const timeLabel = hRemaining > 0
+                                ? `${hRemaining} hr`
+                                : mRemaining > 0
+                                ? `${mRemaining} min`
+                                : `${sRemaining} sec`;
+
+                console.log(`Baking to textures... ETA = ${timeLabel}`);
+
+                updateTimer = performance.now();
+            }
         }
     }
 
@@ -137,7 +220,7 @@ function multiply_textures_by_shade_map(triangles = [Rngon.ngon()])
 }
 
 // Traces the given ray of light into the given scene represented as a BVH tree.
-function trace_ray_into_scene(ray, sceneBVH, depth = 1)
+function trace_light_ray(ray, sceneBVH, depth = 1)
 {
     if ((depth > 1) ||
         (ray.intensity < (1 / 255))) // If the ray's light contribution would be insignificant.
@@ -145,17 +228,19 @@ function trace_ray_into_scene(ray, sceneBVH, depth = 1)
         return;
     }
 
-    const intersection = ray.intersect_bvh(sceneBVH, EPSILON);
+    ray.intersection = ray.intersect_bvh(sceneBVH, EPSILON);
 
-    if (intersection)
+    if (ray.intersection)
     {
-        const triangle = intersection.triangle;
+        const triangle = ray.intersection.triangle;
         const surfaceNormal = {...triangle.normal};
 
         // If the ray intersected a triangle from behind.
         if (!triangle.material.isTwoSided &&
             Rngon.vector3.dot(surfaceNormal, ray.dir) >= 0)
         {
+            ray.intersection = null;
+
             return;
         }
 
@@ -168,36 +253,16 @@ function trace_ray_into_scene(ray, sceneBVH, depth = 1)
             Rngon.vector3.invert(surfaceNormal);
         }
         
-        // Write the light contribution into the triangle's texture.
-        {
-            const surfaceAlbedo = 0.8;
-            const distanceAttenuation = (1 / (1 + (intersection.distance * ray.lightSource.attenuation)));
+        // Attenuate the light's intensity as it scatters from this surface.
+        const surfaceAlbedo = 0.8;
+        const distanceAttenuation = (1 / (1 + (ray.intersection.distance * ray.lightSource.attenuation)));
+        ray.intensity *= (distanceAttenuation * surfaceAlbedo);
 
-            ray.intensity *= (distanceAttenuation * surfaceAlbedo);
-
-            // Barycentric interpolation of texture UV coordinates.
-            const u = ((triangle.vertices[0].u * intersection.w) +
-                       (triangle.vertices[1].u * intersection.u) +
-                       (triangle.vertices[2].u * intersection.v));
-            const v = ((triangle.vertices[0].v * intersection.w) +
-                       (triangle.vertices[1].v * intersection.u) +
-                       (triangle.vertices[2].v * intersection.v));
-
-            const texture = triangle.material.texture;
-            const texel = texture.shadeMap[~~(u * texture.width) + ~~(v * texture.height) * texture.width];
-
-            if (texel)
-            {
-                texel.accumulatedLight += Math.min(ray.lightSource.clip, ray.intensity);
-                texel.numSamples++;
-            }
-        }
-        
         // Scatter the ray back out into the scene.
-        ray.step(intersection.distance);
+        ray.step(ray.intersection.distance);
         ray.step(EPSILON, surfaceNormal);
         ray.aimAt.random_in_hemisphere_cosine_weighted(surfaceNormal);
-        trace_ray_into_scene(ray, sceneBVH, (depth + 1));
+        trace_light_ray(ray, sceneBVH, (depth + 1));
     }
 
     return;
