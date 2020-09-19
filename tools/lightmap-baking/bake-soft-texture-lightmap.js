@@ -15,9 +15,13 @@ import {ray} from "./ray.js";
 // suitable value depends on your scene - but the default should be ok in most cases.
 let EPSILON = 0.00001;
 
-// Traces light rays into the scene of n-gons, modifying the n-gons' texture colors
-// according to how much light reaches each texel. The n-gons' vertices are expected
-// to be in world space.
+// The name of the polygon material property which defines how much light the polygon
+// emits.
+const LIGHT_EMISSION_PROPERTY_NAME = "lightEmit";
+
+// Path-traces light into the scene of n-gons, modifying the n-gons' texture colors
+// according to how much light reaches each texel. Produces soft shadows and indirect
+// lighting. The n-gons' vertices are expected to be in world space.
 //
 // Returns a Promise that resolves when the process has finished. This will generally
 // take roughly the number of seconds provided by the caller via 'secondsToBake'. Due
@@ -80,7 +84,7 @@ function insert_light_source_meshes(lights = [Rngon.light()],
     for (const light of lights)
     {
         const lightMaterial = {
-            lightEmit: (light.intensity / 256),
+            [LIGHT_EMISSION_PROPERTY_NAME]: (light.intensity / 256),
             ambientLightLevel: 1,
             color:Rngon.color_rgba(255,255,255),
         };
@@ -142,12 +146,17 @@ function bake_shade_map(triangles = [Rngon.ngon()],
 {
     const sceneBVH = bvh(triangles);
     const startTime = performance.now();
-    let updateTimer = startTime;
+    let updateTimer = 0;
 
     while ((performance.now() - startTime) < (secondsToBake * 1000))
     {
-        const numSamplesPerTexel = 50;
         const randomTriangle = triangles[Math.floor(Math.random() * triangles.length)];
+
+        // We don't need to cast light on light sources.
+        if (randomTriangle.material[LIGHT_EMISSION_PROPERTY_NAME] > 0)
+        {
+            continue;
+        }
 
         // Select a randon point on the triangle.
         const r1 = Math.sqrt(Math.random());
@@ -183,6 +192,9 @@ function bake_shade_map(triangles = [Rngon.ngon()],
         const texture = randomTriangle.material.texture;
         const texel = texture.shadeMap[Math.floor(u * texture.width) + Math.floor(v * texture.height) * texture.width];
 
+        // Cast random rays from this point out into the scene, and add the light
+        // contribution from each ray into the point's corresponding shade map element.
+        const numSamplesPerTexel = 50;
         for (let i = 0; i < numSamplesPerTexel; i++)
         {
             const lightRay = ray({...randomPointOnTriangle});
@@ -199,18 +211,21 @@ function bake_shade_map(triangles = [Rngon.ngon()],
             }
 
             // Indicate to the user how much time remains in the baking.
-            if ((performance.now() - updateTimer) > 1000)
+            if (!updateTimer ||
+                ((performance.now() - updateTimer) > 3000))
             {
                 const msRemaining = ((secondsToBake * 1000) - (performance.now() - startTime));
-                const sRemaining = Math.ceil(msRemaining / 1000);
-                const mRemaining = Math.floor(sRemaining / 60);
-                const hRemaining = Math.floor(mRemaining / 60);
+                const sRemaining = Math.round(msRemaining / 1000);
+                const mRemaining = Math.round(sRemaining / 60);
+                const hRemaining = Math.round(mRemaining / 60);
 
-                const timeLabel = hRemaining > 0
-                                ? `${hRemaining} hr`
-                                : mRemaining > 0
-                                ? `${mRemaining} min`
-                                : `${sRemaining} sec`;
+                const timeLabel = (()=>
+                {
+                    if (!updateTimer) return `(n/a)`; // We don't have a reliable time estimate yet.
+                    if (sRemaining < 60) return `${sRemaining} sec`;
+                    if (mRemaining < 60) return `${mRemaining} min`;
+                    else return `${hRemaining} hr`;
+                })();
 
                 console.log(`Baking to textures... ETA = ${timeLabel}`);
 
@@ -261,9 +276,9 @@ function trace_ray(ray, sceneBVH, depth = 0)
         return 0;
     }
 
-    if (intersection.triangle.material.lightEmit)
+    if (intersection.triangle.material[LIGHT_EMISSION_PROPERTY_NAME])
     {
-        return intersection.triangle.material.lightEmit;
+        return intersection.triangle.material[LIGHT_EMISSION_PROPERTY_NAME];
     }
 
     // If the ray intersected a triangle from behind.
