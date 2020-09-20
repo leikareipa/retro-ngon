@@ -221,7 +221,6 @@ function bake_shade_map(triangles = [Rngon.ngon()],
 
                 const timeLabel = (()=>
                 {
-                    if (!updateTimer) return `(n/a)`; // We don't have a reliable time estimate yet.
                     if (sRemaining < 60) return `${sRemaining} sec`;
                     if (mRemaining < 60) return `${mRemaining} min`;
                     else return `${hRemaining} hr`;

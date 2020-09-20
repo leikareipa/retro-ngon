@@ -90,7 +90,8 @@ export function ray(pos = Rngon.vector3(0, 0, 0), dir = Rngon.vector3(0, 0, 1))
         // Returns the ray's distance to its corresponding intersection point on the given
         // triangle; or null if the ray doesn't intersect the triangle. Adapted from Moller
         // & Trumbore 1997: "Fast, minimum storage ray/triangle intersection".
-        intersect_triangle: function(triangle = Rngon.ngon())
+        intersect_triangle: function(triangle = Rngon.ngon(),
+                                     options = {})
         {
             const ray = publicInterface;
             const epsilon = 0.00001;
@@ -122,29 +123,37 @@ export function ray(pos = Rngon.vector3(0, 0, 0), dir = Rngon.vector3(0, 0, 1))
             const distance = (Rngon.vector3.dot(e2, qv) * invD);
             if (distance <= 0) return noHit;
 
-            // If the triangle has a texture and the intersection point is over
-            // a transparent pixel, don't accept it as an intersection.
-            if (triangle.material.texture)
+            // If we've been told to ignore transparency, we'll consider an intersection
+            // valid even if it's over a transparent part of the triangle. Otherwise,
+            // we'll ignore the intersection if it's over a transparent portion.
+            if (!options.ignoreTransparency)
             {
-                const w = (1 - u - v);
-                const texture = triangle.material.texture;
-
-                // Barycentric interpolation of texture UV coordinates.
-                let tu = ((triangle.vertices[0].u * w) +
-                          (triangle.vertices[1].u * u) +
-                          (triangle.vertices[2].u * v));
-                let tv = ((triangle.vertices[0].v * w) +
-                          (triangle.vertices[1].v * u) +
-                          (triangle.vertices[2].v * v));
-
-                [tu, tv] = uv_to_texel_coordinates(tu, tv, triangle.material);
-
-                const texel = texture.pixels[Math.round(tu) + Math.round(tv) * texture.width];
-
-                if (texel &&
-                    (texel.alpha < 255))
+                if (triangle.material.color.alpha < 255)
                 {
                     return noHit;
+                }
+
+                if (triangle.material.texture)
+                {
+                    const w = (1 - u - v);
+                    const texture = triangle.material.texture;
+
+                    // Barycentric interpolation of texture UV coordinates.
+                    let tu = ((triangle.vertices[0].u * w) +
+                              (triangle.vertices[1].u * u) +
+                              (triangle.vertices[2].u * v));
+                    let tv = ((triangle.vertices[0].v * w) +
+                              (triangle.vertices[1].v * u) +
+                              (triangle.vertices[2].v * v));
+
+                    [tu, tv] = uv_to_texel_coordinates(tu, tv, triangle.material);
+
+                    const texel = texture.pixels[Math.round(tu) + Math.round(tv) * texture.width];
+
+                    if (texel && (texel.alpha < 255))
+                    {
+                        return noHit;
+                    }
                 }
             }
         
@@ -181,7 +190,7 @@ export function ray(pos = Rngon.vector3(0, 0, 0), dir = Rngon.vector3(0, 0, 1))
         // Traces the ray recursively through the given BVH. Returns null if no triangle in
         // the BVH was intersected; and otherwise an object containing the triangle that was
         // intersected and the distance to the point of intersection on it along the ray.
-        intersect_bvh: function(bvh, epsilon = 0)
+        intersect_bvh: function(bvh, epsilon = 0, options = {})
         {
             const ray = this;
 
@@ -199,7 +208,7 @@ export function ray(pos = Rngon.vector3(0, 0, 0), dir = Rngon.vector3(0, 0, 1))
                 {
                     for (const triangle of aabb.triangles)
                     {
-                        const [distance, u, v] = ray.intersect_triangle(triangle);
+                        const [distance, u, v] = ray.intersect_triangle(triangle, options);
 
                         // To avoid "self-intersection" at shared vertices (i.e. immediately
                         // intersecting another triangle at the point of the shared vertex), we
