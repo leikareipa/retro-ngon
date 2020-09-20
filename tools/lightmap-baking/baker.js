@@ -69,7 +69,7 @@ export function bake_lightmap(ngons = [Rngon.ngon()],
         {
             console.log(`Spawning baker thread ${i+1}/${options.numWorkers}...`);
 
-            const worker = new Worker(`../tools/lightmap-baking/${workerScriptFilename}`);
+            const worker = new Worker(`${options.scriptBasePath}/${workerScriptFilename}`);
 
             workers.push(worker);
 
@@ -180,6 +180,7 @@ bake_lightmap.defaultOptions = {
     numMinutesToBake: 1,   // For target{"textures"}. Longer bake time gives better-quality lighting.
     numWorkers: 1,         // In how many concurrent Web Workers to bake.
     epsilon: 0.00001,
+    scriptBasePath: "",    // The base path for the lightmap baker's scripts, without the trailing slash.
 };
 
 // Applies the given shade maps to the given n-ngons' textures.
