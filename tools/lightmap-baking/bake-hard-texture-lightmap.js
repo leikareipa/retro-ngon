@@ -7,57 +7,111 @@
 
 "use strict";
 
-import {bvh} from "./bvh.js";
-import {ray} from "./ray.js";
+importScripts("../../distributable/rngon.cat.js",
+              "./bvh.js",
+              "./ray.js",
+              "./baker-aux.js");
+
+onmessage = (message)=>
+{
+    message = message.data;
+
+    if ((typeof message != "object") ||
+        (typeof message.command != "string"))
+    {
+        postMessage({
+            type: "error",
+            errorString: "A worker thread received an invalid message.",
+        });
+
+        return;
+    }
+
+    switch (message.command)
+    {
+        case "start":
+        {
+            try
+            {
+                bake_hard_texture_lightmap(message.ngons,
+                                           message.lights,
+                                           message.options);
+            }
+            catch (error)
+            {
+                postMessage({
+                    type: "error",
+                    errorMessage: error,
+                });
+
+                return;
+            }
+
+            postMessage({
+                type: "finished",
+                shadeMaps: SHADE_MAPS,
+            });
+
+            break;
+        }
+        default:
+        {
+            postMessage({
+                type: "error",
+                errorString: "A worker thread received an unrecognized message.",
+            });
+    
+            return;
+        }
+    }
+}
 
 // The smallest non-zero value; used in certain floating-point operations to prevent
 // accuracy issues. You can set a custom value via bake_texture_lightmap(). The most
 // suitable value depends on your scene - but the default should be ok in most cases.
 let EPSILON = 0.00001;
 
+// A shade map for each n-gon in the scene (in the same order as the n-gons array).
+// Each shade map is a grayscale image the same resolution as the corresponding n-gon's
+// texture; each pixel in the shade map corresponding to a pixel in the texture and
+// defining on a scale from 0 (black) to 1+ (white) how much light is falling on that
+// texture pixel.
+//
+// Each element in the shade map is an object of the following form:
+//
+//   {
+//       accumulatedLight: <number>,
+//       numSamples: <number>
+//   }
+//
+// To get the final shade value, divide accumulatedLight by numSamples and clamp to
+// the desired range (the result without clamping may be higher than 1, dependent on
+// the intensity of the scene's lights).
+const SHADE_MAPS = [];
+
 // Ray-traces light into the scene of n-gons, modifying the n-gons' texture colors
 // according to how much light reaches each texel. Produces hard shadows. The n-gons'
 // vertices are expected to be in world space.
 //
 // Returns a Promise that resolves when the process has finished. This will generally
-// take roughly the number of seconds provided by the caller via 'secondsToBake'. Due
+// take roughly the number of seconds provided by the caller via 'numMinutesToBake'. Due
 // to the ray-tracing algorithm used, the resulting lightmap will be of higher quality
 // the longer the baking is allowed to run, and vice versa.
 //
 // WARNING: Modifies the n-gons' underlying data. All textures will be duplicated
 // such that the texture of each n-gon is unique to that n-gon. This means a large
 // multiplicative increase in the amount of texture data.
-export function bake_hard_texture_lightmap(ngons = [Rngon.ngon()],
-                                           lights = [Rngon.light()],
-                                           secondsToBake = 10,
-                                           epsilon = undefined)
+function bake_hard_texture_lightmap(ngons = [Rngon.ngon()],
+                                    lights = [Rngon.light()],
+                                    options = {})
 {
-    EPSILON = (epsilon || EPSILON);
+    EPSILON = (options.epsilon || EPSILON);
 
-    return new Promise((resolve)=>
-    {
-        console.log(`Baking for ${secondsToBake} sec`);
+    initialize_shade_maps(ngons);
+    const triangles = triangulate_ngons(ngons);
+    bake_shade_map(triangles, lights, options.numMinutesToBake);
 
-        const triangles = triangulate_faces_and_duplicate_textures(ngons);
-        mark_npot_textures(triangles);
-        create_shade_map(triangles, lights, secondsToBake);
-        multiply_textures_by_shade_map(triangles);
-
-        console.log("Baking finished");
-
-        // Clean up any temporary data we created into the n-gons array.
-        for (const ngon of ngons)
-        {
-            if (ngon.material.texture &&
-                ngon.material.texture.shadeMap)
-            {
-                delete ngon.material.texture.shadeMap;
-            }
-        }
-
-        resolve();
-        return;
-    });
+    return;
 }
 
 // Renders into each triangle's texture object a shade map based on the amount of
@@ -65,15 +119,14 @@ export function bake_hard_texture_lightmap(ngons = [Rngon.ngon()],
 // only creates the shade map; it doesn't modify the correspinding texels (you'd
 // call multiply_textures_by_shade_map() after this function to have the shade map
 // applied).
-function create_shade_map(triangles = [Rngon.ngon()],
-                          lights = [Rngon.light()],
-                          secondsToBake = 1)
+function bake_shade_map(triangles = [Rngon.ngon()],
+                        lights = [Rngon.light()],
+                        numMinutesToBake = 1)
 {
     const sceneBVH = bvh(triangles);
     const startTime = performance.now();
-    let updateTimer = 0;
 
-    while ((performance.now() - startTime) < (secondsToBake * 1000))
+    while ((performance.now() - startTime) < (numMinutesToBake * 60 * 1000))
     {
         const randomLight = lights[Math.floor(Math.random() * lights.length)];
 
@@ -88,51 +141,6 @@ function create_shade_map(triangles = [Rngon.ngon()],
         lightRay.intensity = randomLight.intensity;
 
         trace_ray_into_scene(lightRay, sceneBVH);
-
-        // Indicate to the user how much time remains in the baking.
-        if (!updateTimer ||
-            ((performance.now() - updateTimer) > 3000))
-        {
-            const msRemaining = ((secondsToBake * 1000) - (performance.now() - startTime));
-            const sRemaining = Math.round(msRemaining / 1000);
-            const mRemaining = Math.round(sRemaining / 60);
-            const hRemaining = Math.round(mRemaining / 60);
-
-            const timeLabel = (()=>
-            {
-                if (sRemaining < 60) return `${sRemaining} sec`;
-                if (mRemaining < 60) return `${mRemaining} min`;
-                else return `${hRemaining} hr`;
-            })();
-
-            console.log(`Baking to textures... ETA = ${timeLabel}`);
-
-            updateTimer = performance.now();
-        }
-    }
-
-    return;
-}
-
-// Multiplies each given triangle's texel color by the triangle's corresponding
-// shade map value.
-function multiply_textures_by_shade_map(triangles = [Rngon.ngon()])
-{
-    for (const triangle of triangles)
-    {
-        const texture = triangle.material.texture;
-
-        for (let i = 0; i < (texture.width * texture.height); i++)
-        {
-            const shaxel = texture.shadeMap[i];
-            const texel = texture.pixels[i];
-            const shade = Math.max(triangle.material.ambientLightLevel,
-                                   (shaxel.accumulatedLight / (shaxel.numSamples || 1)));
-
-            texel.red   = Math.max(0, Math.min(255,  (texel.red   * shade)));
-            texel.green = Math.max(0, Math.min(255, (texel.green * shade)));
-            texel.blue  = Math.max(0, Math.min(255, (texel.blue  * shade)));
-        }
     }
 
     return;
@@ -178,15 +186,17 @@ function trace_ray_into_scene(ray, sceneBVH, depth = 1)
             ray.intensity *= (distanceAttenuation * surfaceAlbedo);
 
             // Barycentric interpolation of texture UV coordinates.
-            const u = ((triangle.vertices[0].u * intersection.w) +
-                       (triangle.vertices[1].u * intersection.u) +
-                       (triangle.vertices[2].u * intersection.v));
-            const v = ((triangle.vertices[0].v * intersection.w) +
-                       (triangle.vertices[1].v * intersection.u) +
-                       (triangle.vertices[2].v * intersection.v));
+            let u = ((triangle.vertices[0].u * intersection.w) +
+                     (triangle.vertices[1].u * intersection.u) +
+                     (triangle.vertices[2].u * intersection.v));
+            let v = ((triangle.vertices[0].v * intersection.w) +
+                     (triangle.vertices[1].v * intersection.u) +
+                     (triangle.vertices[2].v * intersection.v));
+
+            [u, v] = uv_to_texel_coordinates(u, v, triangle.material);
 
             const texture = triangle.material.texture;
-            const texel = texture.shadeMap[~~(u * texture.width) + ~~(v * texture.height) * texture.width];
+            const texel = texture.shadeMap[Math.round(u) + Math.round(v) * texture.width];
 
             if (texel)
             {
@@ -200,101 +210,6 @@ function trace_ray_into_scene(ray, sceneBVH, depth = 1)
         ray.step(EPSILON, surfaceNormal);
         ray.aimAt.random_in_hemisphere_cosine_weighted(surfaceNormal);
         trace_ray_into_scene(ray, sceneBVH, (depth + 1));
-    }
-
-    return;
-}
-
-// Creates and returns an array containing triangulated versions of the given
-// n-gons. The triangles' data are based on references to the n-gon data: e.g.
-// vertices and materials are copied by reference, so modifying those data via
-// the returned array will generally also modify the original n-gon data.
-//
-// The texture of each triangle will be deep-copy duplicated, such that modifying
-// any triangle's texture will have no effect on the texture of any other triangle.
-// Untextured faces will be assigned a deep copy of a blank texture.
-function triangulate_faces_and_duplicate_textures(ngons = [])
-{
-    Rngon.assert && ngons.every(n=>n.vertices.length >= 3)
-                 || Rngon.throw("All n-gons must have at least three vertices.");
-
-    return ngons.reduce((triangles, ngon)=>
-    {
-        const initialVertex = ngon.vertices[0];
-
-        // Create a deep copy of each polygon's texture. Untextured polygons are
-        // assigned a deep copy of a blank texture whose color matches the polygon's
-        // material color.
-        {
-            const texture = (ngon.material.texture || {width:64, height:64});
-            const copiedPixels = new Array(texture.width * texture.height * 4);
-
-            for (let t = 0; t < (texture.width * texture.height); t++)
-            {
-                const texelColor = (texture.pixels? texture.pixels[t] : ngon.material.color);
-
-                copiedPixels[t*4+0] = texelColor.red;
-                copiedPixels[t*4+1] = texelColor.green;
-                copiedPixels[t*4+2] = texelColor.blue;
-                copiedPixels[t*4+3] = texelColor.alpha;
-            }
-
-            const newTexture = Rngon.texture_rgba({
-                width: texture.width,
-                height: texture.height,
-                pixels: copiedPixels,
-                needsFlip: false,
-            });
-
-            newTexture.shadeMap = new Array(texture.width * texture.height).fill().map(e=>({
-                accumulatedLight: 0.0,
-                numSamples: 0,
-            }));
-
-            ngon.material.texture = newTexture;
-        }
-
-        // Triangulate the n-gon.
-        for (let i = 1; i < (ngon.vertices.length - 1); i++)
-        {
-            triangles.push({
-                normal: ngon.normal,
-                material: ngon.material,
-                vertices: [
-                    initialVertex,
-                    ngon.vertices[i],
-                    ngon.vertices[i+1]
-                ],
-            });
-        }
-
-        return triangles;
-    }, []);
-}
-
-// Marks any non-power-of-two affine-mapped faces in the given array of triangles
-// as using the non-power-of-two affine texture mapper. This needs to be done since
-// the default affine mapper expects textures to be power-of-two.
-function mark_npot_textures(triangles = [Rngon.ngon()])
-{
-    for (const triangle of triangles)
-    {
-        const texture = triangle.material.texture;
-
-        if (texture &&
-            triangle.material.textureMapping === "affine")
-        {
-            let widthIsPOT = ((texture.width & (texture.width - 1)) === 0);
-            let heightIsPOT = ((texture.height & (texture.height - 1)) === 0);
-
-            if (texture.width === 0) widthIsPOT = false;
-            if (texture.height === 0) heightIsPOT = false;
-
-            if (!widthIsPOT || !heightIsPOT)
-            {
-                triangle.material.textureMapping = "affine-npot";
-            }
-        }
     }
 
     return;

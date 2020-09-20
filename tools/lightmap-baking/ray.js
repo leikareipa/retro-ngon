@@ -9,7 +9,7 @@
 
 "use strict";
 
-export function ray(pos = Rngon.vector3(0, 0, 0), dir = Rngon.vector3(0, 0, 1))
+function ray(pos = Rngon.vector3(0, 0, 0), dir = Rngon.vector3(0, 0, 1))
 {
     const publicInterface =
     {

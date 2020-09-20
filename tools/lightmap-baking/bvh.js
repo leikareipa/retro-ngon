@@ -58,7 +58,7 @@ function bvh_aabb(mesh = [Rngon.ngon()], isLeaf = false)
 }
 
 // Recursively splits the given mesh into smaller and smaller bounding boxes.
-export function bvh(mesh = [Rngon.ngon()])
+function bvh(mesh = [Rngon.ngon()])
 {
     Rngon.assert && Array.isArray(mesh)
                  || Rngon.throw("Expected an array of triangles for creating a BVH.");
