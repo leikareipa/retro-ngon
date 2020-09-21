@@ -196,7 +196,7 @@ function trace_ray_into_scene(ray, sceneBVH, depth = 1)
             [u, v] = uv_to_texel_coordinates(u, v, triangle.material);
 
             const texture = triangle.material.texture;
-            const texel = texture.shadeMap[Math.round(u) + Math.round(v) * texture.width];
+            const texel = texture.shadeMap[Math.floor(u) + Math.floor(v) * texture.width];
 
             if (texel)
             {
