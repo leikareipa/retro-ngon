@@ -226,7 +226,7 @@ function bake_shade_map(triangles = [Rngon.ngon()],
                       (randomTriangle.vertices[1].v * u) +
                       (randomTriangle.vertices[2].v * v));
 
-            [tu, tv] = uv_to_texel_coordinates(u, v, randomTriangle.material);
+            [tu, tv] = uv_to_texel_coordinates(tu, tv, randomTriangle.material);
 
             return [tu, tv];
         })();
