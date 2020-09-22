@@ -21,6 +21,19 @@ const Rngon = {};
 
     Rngon.lerp = (x, y, interval)=>(x + (interval * (y - x)));
 
+    // Returns a bilinearly sampled value from a one-channel 2D image (or other
+    // such array of data). Expects the 'sampler' argument to be a function of
+    // the form (a, b)=>image[(x + a) + (y + b) * width], i.e. a function that
+    // returns the relevant image source value at XY, offset respectively by the
+    // two arguments to the function (the absolute XY coordinates are baked into
+    // the sampler function's body).
+    Rngon.bilinear_sample = (sampler, bias = 0.5)=>
+    {
+        const px1 = Rngon.lerp(sampler(0, 0), sampler(0, 1), bias);
+        const px2 = Rngon.lerp(sampler(1, 0), sampler(1, 1), bias);
+        return Rngon.lerp(px1, px2, bias);
+    };
+
     Rngon.throw = (errMessage = "")=>
     {
         if (Rngon.internalState.allowWindowAlert)
