@@ -192,7 +192,7 @@ function bake_shade_map(triangles = [Rngon.ngon()],
         const randomTriangle = triangles[Math.floor(Math.random() * triangles.length)];
 
         // We don't need to cast light on light sources.
-        if (!randomTriangle.material.texture ||
+        if (!randomTriangle.material.shadeMap ||
             (randomTriangle.material[LIGHT_EMISSION_PROPERTY_NAME] > 0))
         {
             continue;
@@ -231,8 +231,8 @@ function bake_shade_map(triangles = [Rngon.ngon()],
             return [tu, tv];
         })();
         
-        const texture = randomTriangle.material.texture;
-        const texel = texture.shadeMap[Math.floor(u) + Math.floor(v) * texture.width];
+        const shadeMap = randomTriangle.material.shadeMap;
+        const texel = shadeMap[Math.floor(u) + Math.floor(v) * shadeMap.width];
 
         // Cast random rays from this point out into the scene, and add the light
         // contribution from each ray into the point's corresponding shade map element.
@@ -294,8 +294,8 @@ function trace_ray(ray, sceneBVH, depth = 0)
 
         [u, v] = uv_to_texel_coordinates(u, v, intersection.triangle.material);
 
-        const texture = intersection.triangle.material.texture;
-        const texel = texture.shadeMap[Math.floor(u) + Math.floor(v) * texture.width];
+        const shadeMap = intersection.triangle.material.shadeMap;
+        const texel = shadeMap[Math.floor(u) + Math.floor(v) * shadeMap.width];
 
         if (texel && texel.numSamples)
         {

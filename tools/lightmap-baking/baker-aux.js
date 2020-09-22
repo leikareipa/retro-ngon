@@ -41,12 +41,9 @@ function triangulate_ngons(ngons = [Rngon.ngon()])
 // called on the original n-gons, before their triangulation.
 function initialize_shade_maps(ngons = [Rngon.ngon()])
 {
-    Rngon.assert && ngons.every(n=>n.material.texture)
-                 || Rngon.throw("All n-gons must have a texture.");
-
     for (const ngon of ngons)
     {
-        const texture = ngon.material.texture;
+        const texture = (ngon.material.texture || {width:64, height:64});
 
         SHADE_MAPS.push(new Array(texture.width * texture.height)
                                  .fill()
@@ -55,7 +52,9 @@ function initialize_shade_maps(ngons = [Rngon.ngon()])
             numSamples: 0,
         })));
 
-        ngon.material.texture.shadeMap = SHADE_MAPS[SHADE_MAPS.length - 1]; 
+        ngon.material.shadeMap = SHADE_MAPS[SHADE_MAPS.length - 1];
+        ngon.material.shadeMap.width = texture.width;
+        ngon.material.shadeMap.height = texture.height;
     }
 }
 
@@ -63,10 +62,10 @@ function initialize_shade_maps(ngons = [Rngon.ngon()])
 // (The code here should match that in ngon-fill.js.)
 function uv_to_texel_coordinates(u, v, material)
 {
-    const texture = material.texture;
+    const texture = material.shadeMap;
 
     Rngon.assert && (texture)
-                 || Rngon.throw("The material must have a texture.");
+                 || Rngon.throw("The material must have a shade map.");
 
     switch (material.textureMapping)
     {

@@ -23,11 +23,6 @@ export function bake_lightmap(ngons = [Rngon.ngon()],
 
     return new Promise((resolve, reject)=>
     {
-        if (options.target == "textures")
-        {
-            duplicate_ngon_textures(ngons);
-        }
-    
         // Vertex-baking only supports running in one thread.
         if (options.target == "vertices")
         {
@@ -197,6 +192,10 @@ function apply_shade_maps(ngons = [Rngon.ngon()],
 {
     if (shadingTarget == "textures")
     {
+        // We have one shade map per n-gon, and we multiply the n-gon's texture by
+        // the shade map, so each n-gon's texture must be unique.
+        duplicate_ngon_textures(ngons);
+
         for (const [ngonIdx, ngon] of ngons.entries())
         {
             const texture = ngon.material.texture;
@@ -207,8 +206,8 @@ function apply_shade_maps(ngons = [Rngon.ngon()],
                 const numSamples = shadeMaps.reduce((acc, set)=>(acc + set[ngonIdx][pixelIdx].numSamples), 0);
                 const texel = texture.pixels[pixelIdx];
 
-                const shade = Math.max(ngon.material.ambientLightLevel,
-                                    (accumulatedLight / (numSamples || 1)));
+                const shade = Math.max(0,
+                                       (accumulatedLight / (numSamples || 1)));
 
                 texel.red   = Math.max(0, Math.min(texel.red,   (texel.red   * shade)));
                 texel.green = Math.max(0, Math.min(texel.green, (texel.green * shade)));
