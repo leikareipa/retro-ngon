@@ -27,11 +27,11 @@ const Rngon = {};
     // returns the relevant image source value at XY, offset respectively by the
     // two arguments to the function (the absolute XY coordinates are baked into
     // the sampler function's body).
-    Rngon.bilinear_sample = (sampler, bias = 0.5)=>
+    Rngon.bilinear_sample = (sampler, biasX = 0.5, biasY = biasX)=>
     {
-        const px1 = Rngon.lerp(sampler(0, 0), sampler(0, 1), bias);
-        const px2 = Rngon.lerp(sampler(1, 0), sampler(1, 1), bias);
-        return Rngon.lerp(px1, px2, bias);
+        const px1 = Rngon.lerp(sampler(0, 0), sampler(0, 1), biasY);
+        const px2 = Rngon.lerp(sampler(1, 0), sampler(1, 1), biasY);
+        return Rngon.lerp(px1, px2, biasX);
     };
 
     Rngon.throw = (errMessage = "")=>
