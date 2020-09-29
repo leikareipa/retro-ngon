@@ -7,6 +7,13 @@
 
 "use strict";
 
+import * as FileSaver from "./filesaver/FileSaver.js";
+import {combined_shade_maps_sets,
+        apply_shade_maps_to_ngons,
+        load_shade_maps_from_file,
+        save_shade_maps_to_file,
+        bilinear_filter_shade_maps} from "./shademap-tools.js";
+
 // An interface for lightmap baking. Returns a promise that resolves when the baking
 // has completed. See the bake_lightmap.defaultOptions object for information about
 // the options you can pass in.
@@ -90,12 +97,16 @@ export function bake_lightmap(ngons = [Rngon.ngon()],
 
                         if (++numWorkersFinished == options.numWorkers)
                         {
-                            apply_shade_maps(ngons, shadeMaps, options.target);
+                            (async()=>
+                            {
+                                await process_shade_maps(ngons, shadeMaps, options);
 
-                            loggingIntervalId = clearInterval(loggingIntervalId);
-                            console.log("Baking finished");
+                                loggingIntervalId = clearInterval(loggingIntervalId);
+                                console.log("Baking finished");
 
-                            resolve();
+                                resolve();
+                            })();
+
                             return;
                         }
 
@@ -176,6 +187,10 @@ bake_lightmap.defaultOptions = {
     numWorkers: 1,         // In how many concurrent Web Workers to bake.
     epsilon: 0.00001,
     scriptBasePath: "",    // The base path for the lightmap baker's scripts, without the trailing slash.
+    outputFile: null,
+    inputFile: null,
+    maxShadeMapWidth: Infinity,
+    maxShadeMapHeight: Infinity,
 };
 
 // Applies the given shade maps to the given n-ngons' textures.
@@ -186,47 +201,37 @@ bake_lightmap.defaultOptions = {
 //
 // If the shading target is "vertices", the shade map array's elements are numerical
 // shade values, one for each vertex in the given array of n-gons.
-function apply_shade_maps(ngons = [Rngon.ngon()],
-                          shadeMaps = [],
-                          shadingTarget = "")
+async function process_shade_maps(ngons = [Rngon.ngon()],
+                                  shadeMaps = [],
+                                  options = {})
 {
-    if (shadingTarget == "textures")
+    if (options.target == "textures")
     {
         // We have one shade map per n-gon, and we multiply the n-gon's texture by
         // the shade map, so each n-gon's texture must be unique.
         duplicate_ngon_textures(ngons);
 
-        for (const [ngonIdx, ngon] of ngons.entries())
+        if (options.inputFile)
         {
-            const texture = ngon.material.texture;
-
-            for (let pixelIdx = 0; pixelIdx < (texture.width * texture.height); pixelIdx++)
-            {
-                const accumulatedLight = shadeMaps.reduce((acc, set)=>(acc + set[ngonIdx][pixelIdx].accumulatedLight), 0);
-                const numSamples = shadeMaps.reduce((acc, set)=>(acc + set[ngonIdx][pixelIdx].numSamples), 0);
-                const texel = texture.pixels[pixelIdx];
-
-                const shade = Math.max(0,
-                                       (accumulatedLight / (numSamples || 1)));
-
-                texel.red   = Math.max(0, Math.min(texel.red,   (texel.red   * shade)));
-                texel.green = Math.max(0, Math.min(texel.green, (texel.green * shade)));
-                texel.blue  = Math.max(0, Math.min(texel.blue,  (texel.blue  * shade)));
-            }
+            console.log("Integrating previous shading data...");
+            shadeMaps.push(await load_shade_maps_from_file(options.inputFile,
+                                                           ngons,
+                                                           options.maxShadeMapWidth,
+                                                           options.maxShadeMapHeight));
         }
+
+        shadeMaps = combined_shade_maps_sets(shadeMaps, ngons);
+
+        if (options.outputFile)
+        {
+            save_shade_maps_to_file(shadeMaps, options.outputFile);
+        }
+
+        apply_shade_maps_to_ngons(shadeMaps, ngons, "textures");
     }
-    else if (shadingTarget == "vertices")
+    else if (options.target == "vertices")
     {
-        const shadeMap = shadeMaps[0];
-        let shadeIdx = 0;
-
-        for (const ngon of ngons)
-        {
-            for (const vertex of ngon.vertices)
-            {
-                vertex.shade = shadeMap[shadeIdx++];
-            }
-        }
+        apply_shade_maps_to_ngons(shadeMaps[0], ngons, "vertices");
     }
 
     return;

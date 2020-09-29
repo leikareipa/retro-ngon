@@ -10,7 +10,7 @@
 importScripts("../../distributable/rngon.cat.js",
               "./bvh.js",
               "./ray.js",
-              "./baker-aux.js");
+              "./baker-shared.js");
 
 onmessage = (message)=>
 {
@@ -102,7 +102,7 @@ function bake_soft_texture_lightmap(ngons = [Rngon.ngon()],
 {
     EPSILON = (options.epsilon || EPSILON);
 
-    initialize_shade_maps(ngons);
+    initialize_shade_maps(ngons, options.maxShadeMapWidth, options.maxShadeMapHeight);
     insert_light_source_meshes(lights, ngons);
     const triangles = triangulate_ngons(ngons);
     bake_shade_map(triangles, options.numMinutesToBake);
@@ -119,46 +119,44 @@ function insert_light_source_meshes(lights = [Rngon.light()],
 {
     const numOriginalNgons = ngons.length;
 
-    const cubeRadius = 300;
-
     for (const light of lights)
     {
         const lightMaterial = {
-            [LIGHT_EMISSION_PROPERTY_NAME]: (light.intensity / 256),
+            [LIGHT_EMISSION_PROPERTY_NAME]: light.intensity,
             ambientLightLevel: 1,
             color:Rngon.color_rgba(255,255,255),
         };
 
         const cubeNgons = [
-            Rngon.ngon([Rngon.vertex(-cubeRadius,  cubeRadius,  cubeRadius),
-                        Rngon.vertex(-cubeRadius, -cubeRadius,  cubeRadius),
-                        Rngon.vertex( cubeRadius, -cubeRadius,  cubeRadius),
-                        Rngon.vertex( cubeRadius,  cubeRadius,  cubeRadius)],
+            Rngon.ngon([Rngon.vertex(-light.meshRadius,  light.meshRadius,  light.meshRadius),
+                        Rngon.vertex(-light.meshRadius, -light.meshRadius,  light.meshRadius),
+                        Rngon.vertex( light.meshRadius, -light.meshRadius,  light.meshRadius),
+                        Rngon.vertex( light.meshRadius,  light.meshRadius,  light.meshRadius)],
                         lightMaterial, Rngon.vector3(0, 0, -1)),
-            Rngon.ngon([Rngon.vertex(-cubeRadius,  cubeRadius, -cubeRadius),
-                        Rngon.vertex(-cubeRadius, -cubeRadius, -cubeRadius),
-                        Rngon.vertex( cubeRadius, -cubeRadius, -cubeRadius),
-                        Rngon.vertex( cubeRadius,  cubeRadius, -cubeRadius)],
+            Rngon.ngon([Rngon.vertex(-light.meshRadius,  light.meshRadius, -light.meshRadius),
+                        Rngon.vertex(-light.meshRadius, -light.meshRadius, -light.meshRadius),
+                        Rngon.vertex( light.meshRadius, -light.meshRadius, -light.meshRadius),
+                        Rngon.vertex( light.meshRadius,  light.meshRadius, -light.meshRadius)],
                         lightMaterial, Rngon.vector3(0, 0, 1)),
-            Rngon.ngon([Rngon.vertex(-cubeRadius,  cubeRadius,  cubeRadius),
-                        Rngon.vertex(-cubeRadius,  cubeRadius, -cubeRadius),
-                        Rngon.vertex(-cubeRadius, -cubeRadius, -cubeRadius),
-                        Rngon.vertex(-cubeRadius, -cubeRadius,  cubeRadius)],
+            Rngon.ngon([Rngon.vertex(-light.meshRadius,  light.meshRadius,  light.meshRadius),
+                        Rngon.vertex(-light.meshRadius,  light.meshRadius, -light.meshRadius),
+                        Rngon.vertex(-light.meshRadius, -light.meshRadius, -light.meshRadius),
+                        Rngon.vertex(-light.meshRadius, -light.meshRadius,  light.meshRadius)],
                         lightMaterial, Rngon.vector3(-1, 0, 0)),
-            Rngon.ngon([Rngon.vertex( cubeRadius,  cubeRadius,  cubeRadius),
-                        Rngon.vertex( cubeRadius,  cubeRadius, -cubeRadius),
-                        Rngon.vertex( cubeRadius, -cubeRadius, -cubeRadius),
-                        Rngon.vertex( cubeRadius, -cubeRadius,  cubeRadius)],
+            Rngon.ngon([Rngon.vertex( light.meshRadius,  light.meshRadius,  light.meshRadius),
+                        Rngon.vertex( light.meshRadius,  light.meshRadius, -light.meshRadius),
+                        Rngon.vertex( light.meshRadius, -light.meshRadius, -light.meshRadius),
+                        Rngon.vertex( light.meshRadius, -light.meshRadius,  light.meshRadius)],
                         lightMaterial, Rngon.vector3(1, 0, 0)),
-            Rngon.ngon([Rngon.vertex(-cubeRadius,  cubeRadius,  cubeRadius),
-                        Rngon.vertex( cubeRadius,  cubeRadius,  cubeRadius),
-                        Rngon.vertex( cubeRadius,  cubeRadius, -cubeRadius),
-                        Rngon.vertex(-cubeRadius,  cubeRadius, -cubeRadius)],
+            Rngon.ngon([Rngon.vertex(-light.meshRadius,  light.meshRadius,  light.meshRadius),
+                        Rngon.vertex( light.meshRadius,  light.meshRadius,  light.meshRadius),
+                        Rngon.vertex( light.meshRadius,  light.meshRadius, -light.meshRadius),
+                        Rngon.vertex(-light.meshRadius,  light.meshRadius, -light.meshRadius)],
                         lightMaterial, Rngon.vector3(0, 1, 0)),
-            Rngon.ngon([Rngon.vertex(-cubeRadius, -cubeRadius,  cubeRadius),
-                        Rngon.vertex( cubeRadius, -cubeRadius,  cubeRadius),
-                        Rngon.vertex( cubeRadius, -cubeRadius, -cubeRadius),
-                        Rngon.vertex(-cubeRadius, -cubeRadius, -cubeRadius)],
+            Rngon.ngon([Rngon.vertex(-light.meshRadius, -light.meshRadius,  light.meshRadius),
+                        Rngon.vertex( light.meshRadius, -light.meshRadius,  light.meshRadius),
+                        Rngon.vertex( light.meshRadius, -light.meshRadius, -light.meshRadius),
+                        Rngon.vertex(-light.meshRadius, -light.meshRadius, -light.meshRadius)],
                         lightMaterial, Rngon.vector3(0, -1, 0)),
         ];
 
@@ -260,7 +258,7 @@ function bake_shade_map(triangles = [Rngon.ngon()],
 // Traces the given ray of light into the given scene represented as a BVH tree.
 function trace_ray(ray, sceneBVH, depth = 0)
 {
-    if (depth > 3)
+    if (depth > 6)
     {
         return 0;
     }

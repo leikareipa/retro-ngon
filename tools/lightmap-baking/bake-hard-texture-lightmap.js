@@ -10,7 +10,7 @@
 importScripts("../../distributable/rngon.cat.js",
               "./bvh.js",
               "./ray.js",
-              "./baker-aux.js");
+              "./baker-shared.js");
 
 onmessage = (message)=>
 {
@@ -107,7 +107,7 @@ function bake_hard_texture_lightmap(ngons = [Rngon.ngon()],
 {
     EPSILON = (options.epsilon || EPSILON);
 
-    initialize_shade_maps(ngons);
+    initialize_shade_maps(ngons, options.maxShadeMapWidth, options.maxShadeMapHeight);
     const triangles = triangulate_ngons(ngons);
     bake_shade_map(triangles, lights, options.numMinutesToBake);
 

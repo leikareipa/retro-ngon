@@ -39,13 +39,18 @@ function triangulate_ngons(ngons = [Rngon.ngon()])
 
 // Creates the shade maps that will be used in baking. This function should be
 // called on the original n-gons, before their triangulation.
-function initialize_shade_maps(ngons = [Rngon.ngon()])
+function initialize_shade_maps(ngons = [Rngon.ngon()],
+                               maxShadeMapWidth = 2,
+                               maxShadeMapHeight = 2)
 {
     for (const ngon of ngons)
     {
         const texture = (ngon.material.texture || {width:64, height:64});
 
-        SHADE_MAPS.push(new Array(texture.width * texture.height)
+        const width = Math.max(2, Math.min(maxShadeMapWidth, texture.width));
+        const height = Math.max(2, Math.min(maxShadeMapHeight, texture.height));
+
+        SHADE_MAPS.push(new Array(width * height)
                                  .fill()
                                  .map(pixel=>({
             accumulatedLight: 0.0,
@@ -53,8 +58,8 @@ function initialize_shade_maps(ngons = [Rngon.ngon()])
         })));
 
         ngon.material.shadeMap = SHADE_MAPS[SHADE_MAPS.length - 1];
-        ngon.material.shadeMap.width = texture.width;
-        ngon.material.shadeMap.height = texture.height;
+        ngon.material.shadeMap.width = width;
+        ngon.material.shadeMap.height = height;
     }
 }
 

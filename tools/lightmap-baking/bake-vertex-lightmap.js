@@ -153,8 +153,8 @@ function bake_vertex_lightmap(ngons = [Rngon.ngon()],
         }
 
         const triangleMidpoint = Rngon.vector3(((triangle.vertices[0].x + triangle.vertices[1].x + triangle.vertices[2].x) / 3),
-                                                ((triangle.vertices[0].y + triangle.vertices[1].y + triangle.vertices[2].y) / 3),
-                                                ((triangle.vertices[0].z + triangle.vertices[1].z + triangle.vertices[2].z) / 3));
+                                               ((triangle.vertices[0].y + triangle.vertices[1].y + triangle.vertices[2].y) / 3),
+                                               ((triangle.vertices[0].z + triangle.vertices[1].z + triangle.vertices[2].z) / 3));
 
         for (const vertex of triangle.vertices)
         {
@@ -172,8 +172,8 @@ function bake_vertex_lightmap(ngons = [Rngon.ngon()],
                 // away from.
                 {
                     const lightDirection = Rngon.vector3((vertex.x - light.position.x),
-                                                            (vertex.y - light.position.y),
-                                                            (vertex.z - light.position.z));
+                                                         (vertex.y - light.position.y),
+                                                         (vertex.z - light.position.z));
 
                     Rngon.vector3.normalize(lightDirection);
 
@@ -193,11 +193,11 @@ function bake_vertex_lightmap(ngons = [Rngon.ngon()],
                 // Calculate the amount of light falling on this vertex from
                 // this light source.
                 if (point_sees_point(Rngon.vector3((adjustexVertexPos.x + (vertexNormal.x * epsilon)),
-                                                    (adjustexVertexPos.y + (vertexNormal.x * epsilon)),
-                                                    (adjustexVertexPos.z + (vertexNormal.x * epsilon))),
-                                        light.position,
-                                        sceneBVH,
-                                        epsilon))
+                                                   (adjustexVertexPos.y + (vertexNormal.y * epsilon)),
+                                                   (adjustexVertexPos.z + (vertexNormal.z * epsilon))),
+                                     light.position,
+                                     sceneBVH,
+                                     epsilon))
                 {
                     const infall = light.intensity *
                                     scatter_attenuation(vertex,
@@ -222,14 +222,14 @@ function bake_vertex_lightmap(ngons = [Rngon.ngon()],
                     }
 
                     const dstTriangleMidpoint = Rngon.vector3((dstTriangle.vertices[0].x + dstTriangle.vertices[1].x + dstTriangle.vertices[2].x)/3,
-                                                                (dstTriangle.vertices[0].y + dstTriangle.vertices[1].y + dstTriangle.vertices[2].y)/3,
-                                                                (dstTriangle.vertices[0].z + dstTriangle.vertices[1].z + dstTriangle.vertices[2].z)/3);
+                                                              (dstTriangle.vertices[0].y + dstTriangle.vertices[1].y + dstTriangle.vertices[2].y)/3,
+                                                              (dstTriangle.vertices[0].z + dstTriangle.vertices[1].z + dstTriangle.vertices[2].z)/3);
 
                     for (const dstVertex of dstTriangle.vertices)
                     {
                         // To make indirect lighting more visually pronounced,
                         // we'll boost it by this multiplier.
-                        const lightMultiplier = 256;
+                        const lightMultiplier = 10;
 
                         const dstVertexNormal = {...dstVertex.normal};
 
@@ -256,23 +256,23 @@ function bake_vertex_lightmap(ngons = [Rngon.ngon()],
                         // Move each vertex slightly towards the triangle's midpoint, to avoid
                         // spurious intersections at shared vertices.
                         const adjustexDstVertexPos = Rngon.vector3(Rngon.lerp(dstVertex.x, dstTriangleMidpoint.x, epsilon),
-                                                                    Rngon.lerp(dstVertex.y, dstTriangleMidpoint.y, epsilon),
-                                                                    Rngon.lerp(dstVertex.z, dstTriangleMidpoint.z, epsilon));
+                                                                   Rngon.lerp(dstVertex.y, dstTriangleMidpoint.y, epsilon),
+                                                                   Rngon.lerp(dstVertex.z, dstTriangleMidpoint.z, epsilon));
 
                         // Calculate the amount of light falling on this vertex from
                         // the source vertex.
                         if (point_sees_point(Rngon.vector3((adjustexDstVertexPos.x + (dstVertexNormal.x * epsilon)),
-                                                            (adjustexDstVertexPos.y + (dstVertexNormal.y * epsilon)),
-                                                            (adjustexDstVertexPos.z + (dstVertexNormal.z * epsilon))),
+                                                           (adjustexDstVertexPos.y + (dstVertexNormal.y * epsilon)),
+                                                           (adjustexDstVertexPos.z + (dstVertexNormal.z * epsilon))),
                                                 Rngon.vector3((adjustexVertexPos.x + (vertexNormal.x * epsilon)),
-                                                            (adjustexVertexPos.y + (vertexNormal.y * epsilon)),
-                                                            (adjustexVertexPos.z + (vertexNormal.z * epsilon))),
+                                                              (adjustexVertexPos.y + (vertexNormal.y * epsilon)),
+                                                              (adjustexVertexPos.z + (vertexNormal.z * epsilon))),
                                                 sceneBVH,
                                                 epsilon))
                         {
                             const outLight = lightMultiplier *
-                                                vertex.shade *
-                                                scatter_attenuation(vertex, dstVertex, 1);
+                                             vertex.shade *
+                                             scatter_attenuation(vertex, dstVertex, 1);
 
                             dstVertex.shade = ((dstVertex.shade < outLight)? outLight : dstVertex.shade);
                         }
