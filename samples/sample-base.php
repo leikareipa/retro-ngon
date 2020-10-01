@@ -49,7 +49,7 @@
                          }
                          else
                          {
-                            echo "../distributable/old/rngon.cat.js-{$renderer}";
+                            echo "../distributable/old/rngon.{$renderer}.cat.js";
                          }
                      ?>">
         </script>
