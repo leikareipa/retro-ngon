@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (30 September 2020 14:59:21 UTC)
+// VERSION: beta live (01 October 2020 22:00:47 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -1686,12 +1686,12 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
             {
                 for (let l = 1; l < numLeftVerts; l++)
                 {
-                    Rngon.line_draw(leftVerts[l-1], leftVerts[l], material.wireframeColor, n);
+                    Rngon.line_draw(leftVerts[l-1], leftVerts[l], material.wireframeColor, n, true);
                 }
 
                 for (let r = 1; r < numRightVerts; r++)
                 {
-                    Rngon.line_draw(rightVerts[r-1], rightVerts[r], material.wireframeColor, n);
+                    Rngon.line_draw(rightVerts[r-1], rightVerts[r], material.wireframeColor, n, true);
                 }
             }
         }
