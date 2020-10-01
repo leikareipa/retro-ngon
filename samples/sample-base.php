@@ -39,7 +39,20 @@
             </div>
         </div>
         
-        <script src="../distributable/rngon.cat.js"></script>
+        <script src="<?php
+                         $renderer = $_GET["renderer"];
+
+                         if (!isset($renderer) ||
+                             $renderer == "dev")
+                         {
+                             echo "../distributable/rngon.cat.js";
+                         }
+                         else
+                         {
+                            echo "../distributable/old/rngon.cat.js-{$renderer}";
+                         }
+                     ?>">
+        </script>
         <script>
             var renderSettings = {
                 scale: 0.2,
@@ -59,7 +72,7 @@
         <script>
             (async()=>
             {
-                const sampleId = (new URLSearchParams(window.location.search).get("sample") || "rotating-triangle");
+                const sampleId = (new URLSearchParams(window.location.search).get("sample") || "textured-cube-model");
                 const sampleModule = await import(`./${sampleId}/${sampleId}.js`);
 
                 // The renderable assets will have finished loading when we reach this,

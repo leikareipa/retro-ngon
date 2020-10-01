@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (28 September 2020 23:26:11 UTC)
+// VERSION: beta live (30 September 2020 14:59:21 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -1305,18 +1305,6 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                     const startShade = vert1.shade/w1;
                     const deltaShade = ((vert2.shade/w2 - vert1.shade/w1) / edgeHeight);
 
-                    if (usePixelShaders)
-                    {
-                        var startWorldX = vert1.worldX/w1;
-                        var deltaWorldX = ((vert2.worldX/w2 - vert1.worldX/w1) / edgeHeight);
-
-                        var startWorldY = vert1.worldY/w1;
-                        var deltaWorldY = ((vert2.worldY/w2 - vert1.worldY/w1) / edgeHeight);
-
-                        var startWorldZ = vert1.worldZ/w1;
-                        var deltaWorldZ = ((vert2.worldZ/w2 - vert1.worldZ/w1) / edgeHeight);
-                    }
-
                     const u1 = (material.texture? vert1.u : 1);
                     const v1 = (material.texture? vert1.v : 1);
                     const u2 = (material.texture? vert2.u : 1);
@@ -1344,12 +1332,18 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                     edge.deltaV = deltaV;
                     edge.startInvW = startInvW;
                     edge.deltaInvW = deltaInvW;
-                    edge.startWorldX = startWorldX;
-                    edge.deltaWorldX = deltaWorldX;
-                    edge.startWorldY = startWorldY;
-                    edge.deltaWorldY = deltaWorldY;
-                    edge.startWorldZ = startWorldZ;
-                    edge.deltaWorldZ = deltaWorldZ;
+
+                    if (usePixelShaders)
+                    {
+                        edge.startWorldX = vert1.worldX/w1;
+                        edge.deltaWorldX = ((vert2.worldX/w2 - vert1.worldX/w1) / edgeHeight);
+
+                        edge.startWorldY = vert1.worldY/w1;
+                        edge.deltaWorldY = ((vert2.worldY/w2 - vert1.worldY/w1) / edgeHeight);
+
+                        edge.startWorldZ = vert1.worldZ/w1;
+                        edge.deltaWorldZ = ((vert2.worldZ/w2 - vert1.worldZ/w1) / edgeHeight);
+                    }
                 }
             }
 

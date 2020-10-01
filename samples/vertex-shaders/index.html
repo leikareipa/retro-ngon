@@ -9,7 +9,6 @@
     </head>
     <body id="sample-container">
         <iframe id="render-target"
-                src="../sample-base.html?sample=vertex-shaders"
                 style="width: 100vw; height: 100vh; border: none;">
         </iframe>
 
@@ -69,6 +68,12 @@
 
                 return;
             }
+        </script>
+
+        <script>
+            const renderer = (new URLSearchParams(window.location.search).get("renderer") || "dev");
+            const renderTarget = document.getElementById("render-target");
+            renderTarget.src = `../sample-base.php?sample=vertex-shaders&renderer=${renderer}`;
         </script>
     </body>
 </html>

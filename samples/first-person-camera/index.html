@@ -8,7 +8,6 @@
     </head>
     <body id="sample-container">
         <iframe id="render-target"
-                src="../sample-base.html?sample=first-person-camera"
                 style="width: 100vw; height: 100vh; border: none;">
         </iframe>
 
@@ -26,5 +25,11 @@
                 Texture copyright info
             </a>
         </div>
+
+        <script>
+            const renderer = (new URLSearchParams(window.location.search).get("renderer") || "dev");
+            const renderTarget = document.getElementById("render-target");
+            renderTarget.src = `../sample-base.php?sample=first-person-camera&renderer=${renderer}`;
+        </script>
     </body>
 </html>
