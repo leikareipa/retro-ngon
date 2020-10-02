@@ -5,7 +5,7 @@
         <style>
             :root
             {
-                --header-height: 50px;
+                --header-height: 47px;
             }
             body
             {
@@ -85,18 +85,21 @@
                 <select id="sample-selector"
                         style="min-width: 150px;"
                         onchange="set_sample(event.target.value);">
+                    <optgroup label="Features"></optgroup>
                     <option value="async-rendering">Async rendering</option>
                     <option value="builtin-shading">Built-in shading</option>
-                    <option value="first-person-camera">First person camera</option>
-                    <option value="framerate-limiter">Framerate limiter</option>
                     <option value="mipmapping">Mipmapping</option>
                     <option value="pixel-shaders">Pixel shaders</option>
-                    <option value="raytraced-lighting">Ray-traced lighting</option>
                     <option value="rotating-triangle">Rotating triangle</option>
                     <option value="textured-cube-model">Textured cube model</option>
                     <option value="transparency">Transparency #1</option>
                     <option value="transparency-2">Transparency #2</option>
                     <option value="vertex-shaders">Vertex shaders</option>
+                    <optgroup label="Ideas"></optgroup>
+                    <option value="first-person-camera">First person camera</option>
+                    <option value="framerate-limiter">Framerate limiter</option>
+                    <option value="raytraced-lighting">Ray-traced lighting</option>
+                    <?php if (is_file("./extra-samples.php")) include("./extra-samples.php");?>
                 </select>
             </div>
             <div id="renderer-selector-container"
