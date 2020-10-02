@@ -140,19 +140,15 @@ export function apply_shade_maps_to_ngons(shadeMaps = [],
                     {
                         const x = Math.max(0, Math.min((shadeMapX + ox), (shadeMap.width - 1)));
                         const y = Math.max(0, Math.min((shadeMapY + oy), (shadeMap.height - 1)));
-                        return shadeMap[x + y * shadeMap.width].accumulatedLight;
+
+                        const light = shadeMap[x + y * shadeMap.width].accumulatedLight;
+                        const samples = (shadeMap[x + y * shadeMap.width].numSamples || 1);
+                        
+                        return (light / samples);
                     }, remainderX, remainderY);
 
-                    const numSamples = Math.max(1, Math.round(Rngon.bilinear_sample((ox, oy)=>
-                    {
-                        const x = Math.max(0, Math.min((shadeMapX + ox), (shadeMap.width - 1)));
-                        const y = Math.max(0, Math.min((shadeMapY + oy), (shadeMap.height - 1)));
-                        return shadeMap[x + y * shadeMap.width].numSamples;
-                    }, remainderX, remainderY)));
-
                     const texel = texture.pixels[x + y * texture.width];
-                    const shade = Math.max(0,
-                                           (accumulatedLight / numSamples));
+                    const shade = Math.max(ngon.material.ambientLightLevel, accumulatedLight);
     
                     texel.red   = Math.max(0, Math.min(texel.red,   (texel.red   * shade)));
                     texel.green = Math.max(0, Math.min(texel.green, (texel.green * shade)));
