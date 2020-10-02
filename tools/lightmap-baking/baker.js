@@ -12,7 +12,8 @@ import {combined_shade_maps_sets,
         apply_shade_maps_to_ngons,
         load_shade_maps_from_file,
         save_shade_maps_to_file,
-        bilinear_filter_shade_maps} from "./shademap-tools.js";
+        bilinear_filter_shade_maps,
+        duplicate_ngon_textures} from "./shademap-tools.js";
 
 // An interface for lightmap baking. Returns a promise that resolves when the baking
 // has completed. See the bake_lightmap.defaultOptions object for information about
@@ -234,55 +235,5 @@ async function process_shade_maps(ngons = [Rngon.ngon()],
         apply_shade_maps_to_ngons(shadeMaps[0], ngons, "vertices");
     }
 
-    return;
-}
-
-// Creates a deep copy of each n-gon's texture. Untextured n-gons are assigned a deep
-// copy of a blank texture whose color matches the polygon's material color.
-function duplicate_ngon_textures(ngons = [Rngon.ngon()])
-{
-    for (const ngon of ngons)
-    {
-        const texture = (ngon.material.texture || {width:64, height:64});
-        const copiedPixels = new Array(texture.width * texture.height * 4);
-
-        for (let t = 0; t < (texture.width * texture.height); t++)
-        {
-            const texelColor = (texture.pixels? texture.pixels[t] : ngon.material.color);
-
-            copiedPixels[t*4+0] = texelColor.red;
-            copiedPixels[t*4+1] = texelColor.green;
-            copiedPixels[t*4+2] = texelColor.blue;
-            copiedPixels[t*4+3] = texelColor.alpha;
-        }
-
-        const newTexture = Rngon.texture_rgba({
-            width: texture.width,
-            height: texture.height,
-            pixels: copiedPixels,
-            needsFlip: false,
-        });
-        
-        ngon.material.texture = newTexture;
-
-        // The renderer maps power-of-two and non-power-of-two affine texture
-        // coordinates differently, and assumes that affine mapping is by default
-        // applied only to power-of-two textures. So we should mark any non-power-
-        // of-two affine textures as such.
-        if (ngon.material.textureMapping === "affine")
-        {
-            let widthIsPOT = ((newTexture.width & (newTexture.width - 1)) === 0);
-            let heightIsPOT = ((newTexture.height & (newTexture.height - 1)) === 0);
-
-            if (newTexture.width === 0) widthIsPOT = false;
-            if (newTexture.height === 0) heightIsPOT = false;
-
-            if (!widthIsPOT || !heightIsPOT)
-            {
-                ngon.material.textureMapping = "affine-npot";
-            }
-        }
-    }
-    
     return;
 }
