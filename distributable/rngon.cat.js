@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (02 October 2020 15:33:39 UTC)
+// VERSION: beta live (02 October 2020 22:05:24 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -2662,6 +2662,28 @@ Rngon.texture_rgba = function(data = {})
     };
     
     return publicInterface;
+}
+
+
+// Returns a new texture whose data are a deep copy of the given texture.
+Rngon.texture_rgba.deep_copy = function(texture)
+{
+    const copiedPixels = new Array(texture.width * texture.height * 4);
+
+    for (let i = 0; i< (texture.width * texture.height); i++)
+    {
+        copiedPixels[i*4+0] = texture.pixels[i].red;
+        copiedPixels[i*4+1] = texture.pixels[i].green;
+        copiedPixels[i*4+2] = texture.pixels[i].blue;
+        copiedPixels[i*4+3] = texture.pixels[i].alpha;
+    }
+
+    return Rngon.texture_rgba({
+       width: texture.width,
+       height: texture.height,
+       pixels: copiedPixels,
+       needsFlip: false,
+    });
 }
 
 // Returns a Promise of a texture whose data is loaded from the given file. The actual
