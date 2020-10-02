@@ -55,6 +55,24 @@ const Rngon = {};
 // based on settings requested by the user.
 Rngon.internalState =
 {
+    // A function that transforms, clips, and lights the given n-gons. The end
+    // result should be n-gons in screen-space coordinates placed into the internal
+    // n-gon cache.
+    //
+    // For the default implementation, see transform-and-light.js.
+    transform: (ngons = [],
+                objectMatrix = [],
+                cameraMatrix = [],
+                projectionMatrix = [],
+                screenSpaceMatrix = [],
+                cameraPos)=>{},
+
+    // A function that rasterizes the n-gons that're currently in the internal n-gon
+    // cache.
+    //
+    // For the default implementation, see ngon-fill.js.
+    rasterize: ()=>{},
+
     // Whether to require pixels to pass a depth test before being allowed on screen.
     useDepthBuffer: false,
     depthBuffer: {width:1, height:1, data:new Array(1), clearValue:Infinity},

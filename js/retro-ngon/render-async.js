@@ -27,6 +27,11 @@ Rngon.render_async = function(meshes = [Rngon.mesh()],
                               options = {},
                               rngonUrl = null)
 {
+    options = {
+        ...options,
+        ...Rngon.renderShared.asyncRenderOptionOverrides,
+    };
+
     return new Promise((resolve, reject)=>
     {
         // Spawn a new render worker with the render_worker() function as its body.

@@ -610,6 +610,8 @@ Renders one or more n-gon meshes onto an existing canvas element.
 | *array*               | auxiliaryBuffers         | One or more auxiliary render buffers. Each buffer is an object containing the properties *buffer* and *property*; where *buffer* points to an array containing as many elements as there are pixels in the rendering, and *property* names a source property in an n-gon's material. For each pixel rendered, the corresponding element in an auxiliary buffer will be written with the n-gon's material source value. Defaults to *[]*. |
 | *function*            | pixelShaderFunction      | A function that will be called once all of the frame's n-gons have been rasterized but before the rasterized image is drawn on screen. The function takes as its only parameter an object containing the following: {renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache}. The pixel buffer contains the RGBA color values of the rasterized image; the fragment buffer corresponding metadata about each rasterized pixel (like its interpolated texture and world coordinates); and the n-gon cache the transformed n-gons that were rasterized (including e.g. their material properties). With this information, the function can apply shader effects to the RGBA pixel buffer. Setting this property to *null* will fully disable shader functionality. Defaults to *null*.  |
 | *array*              | lights          | An array of **light** objects that defines the scene's light sources. The way in which these lights affect a given n-gon is controlled by the n-gon's 'vertexShading' material property. Defaults to *[]*.  |
+| *function*           | ngonTransformClipLighterFunction | A function called by the renderer to transform, clip, and light the n-gons that were passed to **render()**. This advanced property can be used to override default renderer behavior for e.g. greater performance in specific use cases. For more info, see the default function. Defaults to *Rngon.transform_and_light*.  |
+| *function*           | ngonRasterizerFunction | A function called by the renderer to rasterize the n-gons that were passed to **render()**. This advanced property can be used to override default renderer behavior for e.g. greater performance in specific use cases For more info, see the default function. Defaults to *Rngon.ngon_filler*.  |
 
 *Returns:*
 
@@ -698,9 +700,11 @@ Renders one or more n-gon meshes into a pixel buffer (an ImageData object). Runs
 | --------------------- | ------------------------ | ----------- |
 | *number*              | width                    | The width (in pixels) of the image to be rendered. Defaults to *640*. |
 | *number*              | height                   | The height (in pixels) of the image to be rendered. Defaults to *480*. |
-| *number*              | scale                    | Unlike for **render()**, this property is ignored. Use the 'width' and 'height' properties instead. |
+| *number*              | scale                    | Ignored. Use the 'width' and 'height' properties instead. |
 | *string*              | pixelShaderFunction      | Same as for **render()**, but the function must now be provided as a string (e.g. of the form `"(a)=>{console.log(a)}"`) so that it can be passed to a Web Worker. If *null*, pixel shader functionality will be disabled. Defaults to *null*. |
 | *string*              | vertexShaderFunction      | Same as for **render()**, but the function must now be provided as a string (e.g. of the form `"(a)=>{console.log(a)}"`) so that it can be passed to a Web Worker. If *null*, vertex shader functionality will be disabled. Defaults to *null*. |
+| *function*           | ngonTransformClipLighterFunction | Ignored. |
+| *function*           | ngonRasterizerFunction | Ignored. |
 
 *Returns:*
 

@@ -14,22 +14,24 @@ Rngon.renderShared = {
     {
         const state = Rngon.internalState;
         
-        state.vertex_shader_function = options.vertexShaderFunction;
         state.useDepthBuffer = (options.useDepthBuffer == true);
         state.showGlobalWireframe = (options.globalWireframe == true);
         state.applyViewportClipping = (options.clipToViewport == true);
         state.lights = options.lights;
         state.farPlaneDistance = options.farPlane;
-        state.useVertexShaders = (options.vertexShaderFunction !== null);
 
         state.usePerspectiveCorrectInterpolation = ((options.perspectiveCorrectTexturing || // <- Name in pre-beta.2.
                                                      options.perspectiveCorrectInterpolation) == true);
 
-        state.usePixelShaders = ((options.shaderFunction || // <- Name in pre-beta.3.
-                                  options.pixelShaderFunction) !== null);
+        state.vertex_shader_function = options.vertexShaderFunction;
+        state.useVertexShaders = (options.vertexShaderFunction !== null);
 
         state.pixel_shader_function = (options.shaderFunction || // <- Name in pre-beta.3.
                                        options.pixelShaderFunction);
+        state.usePixelShaders = (state.pixel_shader_function !== null);
+
+        state.rasterizer = (options.ngonRasterizerFunction || Rngon.ngon_filler);
+        state.transform_clip_lighter = (options.ngonTransformClipLighterFunction || Rngon.ngon_transform_and_light);
 
         return;
     },
@@ -135,8 +137,8 @@ Rngon.renderShared = {
         return;
     },
 
-    defaultRenderOptions: Object.freeze(
-    {
+    // (See the root README.md for documentation on these parameters.)
+    defaultRenderOptions: Object.freeze({
         cameraPosition: Rngon.vector3(0, 0, 0),
         cameraDirection: Rngon.vector3(0, 0, 0),
         pixelShaderFunction: null, // If null, all pixel shader functionality will be disabled.
@@ -155,6 +157,15 @@ Rngon.renderShared = {
         lights: [],
         width: 640, // Used by render_async() only.
         height: 480, // Used by render_async() only.
+        ngonRasterizerFunction: null, // If null, defaults to Rngon.ngon_filler.
+        ngonTransformClipLighterFunction: null, // If null, defaults to Rngon.ngon_transform_and_light.
+    }),
+
+    // Options that will be overridden with these values when calling render_async();
+    // i.e. to ignore the values supplied by the user.
+    asyncRenderOptionOverrides: Object.freeze({
+        ngonRasterizerFunction: null, // This feature is not supported by render_async().
+        ngonTransformClipLighterFunction: null, // This feature is not supported by render_async().
     }),
 
     // Returns an object containing the properties - and their defualt starting values -

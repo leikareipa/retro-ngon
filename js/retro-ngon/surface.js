@@ -64,15 +64,14 @@ Rngon.surface = function(canvasElementId = "",  // The DOM id of the target <can
             {
                 Rngon.renderShared.prepare_ngon_cache(meshes);
 
-                // Transform the n-gons into screen space.
                 for (const mesh of meshes)
                 {
-                    Rngon.ngon_transform_and_light(mesh.ngons,
-                                                   Rngon.mesh.object_space_matrix(mesh),
-                                                   cameraMatrix,
-                                                   perspectiveMatrix,
-                                                   screenSpaceMatrix,
-                                                   options.cameraPosition);
+                    Rngon.internalState.transform_clip_lighter(mesh.ngons,
+                                                               Rngon.mesh.object_space_matrix(mesh),
+                                                               cameraMatrix,
+                                                               perspectiveMatrix,
+                                                               screenSpaceMatrix,
+                                                               options.cameraPosition);
                 };
 
                 Rngon.renderShared.mark_npot_textures_in_ngon_cache();
@@ -82,7 +81,7 @@ Rngon.surface = function(canvasElementId = "",  // The DOM id of the target <can
             // Render the n-gons from the n-gon cache. The rendering will go into the
             // renderer's internal pixel buffer, Rngon.internalState.pixelBuffer.
             {
-                Rngon.ngon_filler(options.auxiliaryBuffers);
+                Rngon.internalState.rasterizer(options.auxiliaryBuffers);
 
                 if (Rngon.internalState.usePixelShaders)
                 {
