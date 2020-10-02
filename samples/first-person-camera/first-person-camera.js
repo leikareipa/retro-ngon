@@ -37,4 +37,4 @@ export const sample_scene = ()=>
     });
 };
 
-export const sampleRenderOptions = {}
+export const sampleRenderOptions = {};
