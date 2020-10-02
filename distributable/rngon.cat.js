@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (02 October 2020 14:45:30 UTC)
+// VERSION: beta live (02 October 2020 15:33:39 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -974,8 +974,8 @@ Rngon.line_draw = function(vert1 = Rngon.vertex(),
                 {
                     const fragment = fragmentBuffer[depthBufferIdx];
                     fragment.ngonIdx = ngonIdx;
-                    fragment.textureUScaled = 0;
-                    fragment.textureVScaled = 0;
+                    fragment.textureUScaled = undefined; // We don't support textures on lines.
+                    fragment.textureVScaled = undefined;
                     fragment.depth = (startDepth / startInvW);
                     fragment.shade = (startShade / startInvW);
                     fragment.worldX = (startWorldX / startInvW);

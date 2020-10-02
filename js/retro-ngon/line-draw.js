@@ -126,8 +126,8 @@ Rngon.line_draw = function(vert1 = Rngon.vertex(),
                 {
                     const fragment = fragmentBuffer[depthBufferIdx];
                     fragment.ngonIdx = ngonIdx;
-                    fragment.textureUScaled = 0;
-                    fragment.textureVScaled = 0;
+                    fragment.textureUScaled = undefined; // We don't support textures on lines.
+                    fragment.textureVScaled = undefined;
                     fragment.depth = (startDepth / startInvW);
                     fragment.shade = (startShade / startInvW);
                     fragment.worldX = (startWorldX / startInvW);
