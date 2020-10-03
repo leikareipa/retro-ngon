@@ -54,6 +54,20 @@
                      ?>">
         </script>
         <script>
+            // Polyfill for backwards compatibility with older versions of the renderer
+            // that didn't implement light().
+            if (!Rngon.light)
+            {
+                Rngon.light = (position, settings)=>
+                {
+                    return {
+                        position,
+                        ...settings
+                    }
+                }
+            }
+        </script>
+        <script>
             var renderSettings = {
                 scale: 0.2,
                 cameraDirection: Rngon.rotation_vector(0, 0, 0),
