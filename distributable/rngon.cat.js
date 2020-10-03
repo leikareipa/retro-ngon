@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (02 October 2020 22:05:24 UTC)
+// VERSION: beta live (03 October 2020 12:18:25 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -32,7 +32,9 @@
 "use strict";
 
 // Top-level namespace for the retro n-gon renderer.
-const Rngon = {};
+const Rngon = {
+    version: {family:"beta",major:"4",minor:"0",dev:true}
+};
 
 // Various small utility functions and the like.
 {

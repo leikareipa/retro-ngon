@@ -26,7 +26,9 @@
 "use strict";
 
 // Top-level namespace for the retro n-gon renderer.
-const Rngon = {};
+const Rngon = {
+    version: {family:"alpha",major:"6",minor:"0"}
+};
 
 // Various small utility functions and the like.
 {
