@@ -97,9 +97,9 @@
                     <option value="vertex-shaders">Vertex shaders</option>
                     <optgroup label="Ideas"></optgroup>
                     <option value="first-person-camera">First person camera</option>
-                    <option value="framerate-limiter">Framerate limiter</option>
                     <option value="lightmaps">Lightmaps</option>
                     <option value="raytraced-lighting">Ray-traced lighting</option>
+                    <option value="framerate-limiter">Refresh rate limiter</option>
                     <?php if (is_file("./extra-samples.php")) include("./extra-samples.php");?>
                 </select>
             </div>
