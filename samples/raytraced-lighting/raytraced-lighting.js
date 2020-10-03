@@ -33,7 +33,7 @@
 
 "use strict";
 
-import {first_person_camera} from "./camera.js";
+import {first_person_camera} from "../first-person-camera/camera.js";
 import {scene} from "./assets/scene.rngon-model.js";
 import {bvh} from "./bvh.js";
 import {ray} from "./ray.js";

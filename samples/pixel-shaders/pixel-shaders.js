@@ -11,7 +11,7 @@
 "use strict";
 
 import {scene} from "./assets/scene.rngon-model.js";
-import {first_person_camera} from "./camera.js";
+import {first_person_camera} from "../first-person-camera/camera.js";
 
 const shaderFunctions = {};
 
@@ -24,11 +24,11 @@ const lights = [
 ];
 
 const camera = first_person_camera("canvas",
-                                   {
-                                       position: {x:-70, y:33, z:-7},
-                                       direction: {x:7, y:90, z:0},
-                                       movementSpeed: 0.05,
-                                   });
+{
+    position: {x:-70, y:33, z:-7},
+    direction: {x:7, y:90, z:0},
+    movementSpeed: 0.05,
+});
 
 scene.initialize();
 
