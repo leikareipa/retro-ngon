@@ -54,18 +54,25 @@
                      ?>">
         </script>
         <script>
-            // Polyfill for backwards compatibility with older versions of the renderer
-            // that didn't implement light().
-            if (!Rngon.light)
+            // Implement backwards compatibility with older versions of the renderer.
+            function be_backwards_compatible(renderOptions = {})
             {
-                Rngon.light = (position, settings)=>
+                // Pre-beta.2 didn't implement Rngon.light().
+                if (!Rngon.light)
                 {
-                    return {
-                        position,
-                        ...settings
-                    }
+                    Rngon.light = (position, settings)=>({position, ...settings});
+                }
+
+                // Pre-alpha.8 didn't implement a default case for the depth-sorting
+                // mode and will throw if an unrecognized mode is used.
+                if ((Rngon.version.family == "alpha") &&
+                    (Rngon.version.major < 8))
+                {
+                    renderOptions.depthSort = "painter";
                 }
             }
+
+            be_backwards_compatible();
         </script>
         <script>
             var renderSettings = {
@@ -119,9 +126,7 @@
                     }
             
                     const scene = sampleModule.sample_scene(frameCount);
-
-                    const renderInfo = Rngon.render("canvas", [scene],
-                    {
+                    const options = {
                         clipToViewport: true,
                         depthSort: "painter-reverse",
                         useDepthBuffer: true,
@@ -130,7 +135,11 @@
                         cameraPosition: renderSettings.cameraPosition,
                         scale: renderSettings.scale,
                         ...sampleModule.sampleRenderOptions,
-                    });
+                    };
+
+                    be_backwards_compatible(options);
+
+                    const renderInfo = Rngon.render("canvas", [scene], options);
 
                     if ((uiUpdateTimer += frameTimeMs) >= 1000)
                     {
