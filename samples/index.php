@@ -112,6 +112,7 @@
                     <optgroup label="Supported"></optgroup>
                     <option value="dev">~dev</option>
                     <optgroup label="Deprecated"></optgroup>
+                    <option value="beta.4">beta.4</option>
                     <option value="beta.3">beta.3</option>
                     <option value="beta.2">beta.2</option>
                     <option value="beta.1">beta.1</option>
