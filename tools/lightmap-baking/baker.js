@@ -47,9 +47,7 @@ export function bake_lightmap(ngons = [Rngon.ngon()],
                 }
                 case "textures":
                 {
-                    return options.softShadows
-                           ? "bake-soft-texture-lightmap.js"
-                           : "bake-hard-texture-lightmap.js";
+                    return "bake-texture-lightmap.js";
                 }
                 default:
                 {
@@ -183,7 +181,6 @@ export function bake_lightmap(ngons = [Rngon.ngon()],
 
 bake_lightmap.defaultOptions = {
     target: "vertices",    // | "textures".
-    softShadows: true,     // For target{"textures"}. Soft shadows take longer to converge.
     numMinutesToBake: 1,   // For target{"textures"}. Longer bake time gives better-quality lighting.
     numWorkers: 1,         // In how many concurrent Web Workers to bake.
     epsilon: 0.00001,
