@@ -91,7 +91,7 @@ const SHADE_MAPS = [];
 
 // The name of the polygon material property which defines how much light the polygon
 // emits.
-const LIGHT_EMISSION_PROPERTY_NAME = "lightEmit";
+const LIGHT_EMISSION_PROPERTY = "lightEmit";
 
 // Path-traces light into the scene of n-gons, modifying the n-gons' texture colors
 // according to how much light reaches each texel. Produces soft shadows and indirect
@@ -122,7 +122,7 @@ function insert_light_source_meshes(lights = [Rngon.light()],
     for (const light of lights)
     {
         const lightMaterial = {
-            [LIGHT_EMISSION_PROPERTY_NAME]: light.intensity,
+            [LIGHT_EMISSION_PROPERTY]: light.intensity,
             ambientLightLevel: 1,
             color:Rngon.color_rgba(255,255,255),
         };
@@ -191,7 +191,7 @@ function bake_shade_map(triangles = [Rngon.ngon()],
 
         // We don't need to cast light on light sources.
         if (!randomTriangle.material.shadeMap ||
-            (randomTriangle.material[LIGHT_EMISSION_PROPERTY_NAME] > 0))
+            (randomTriangle.material[LIGHT_EMISSION_PROPERTY] > 0))
         {
             continue;
         }
@@ -255,7 +255,8 @@ function bake_shade_map(triangles = [Rngon.ngon()],
     return;
 }
 
-// Traces the given ray of light into the given scene represented as a BVH tree.
+// Traces the given ray of light into the given BVH tree. Returns the amount
+// of light arriving from the ray's direction.
 function trace_ray(ray, sceneBVH, depth = 0)
 {
     if (depth > 6)
@@ -270,29 +271,44 @@ function trace_ray(ray, sceneBVH, depth = 0)
         return 0;
     }
 
-    if (intersection.triangle.material[LIGHT_EMISSION_PROPERTY_NAME])
+    const triangle = intersection.triangle;
+
+    // If the ray intersected a light source.
+    if (triangle.material[LIGHT_EMISSION_PROPERTY])
     {
-        return intersection.triangle.material[LIGHT_EMISSION_PROPERTY_NAME];
+        return triangle.material[LIGHT_EMISSION_PROPERTY];
     }
 
+    const surfaceNormal = {...triangle.normal};
+
     // If the ray intersected a triangle from behind.
-    if (Rngon.vector3.dot(intersection.triangle.normal, ray.dir) >= 0)
+    if (!triangle.material.isTwoSided &&
+        Rngon.vector3.dot(surfaceNormal, ray.dir) >= 0)
     {
         return 0;
     }
 
+    // If the ray hit a two-sided triangle from 'behind', flip the normal so
+    // that we correctly treat this side of the triangle as a front-facing
+    // side.
+    if (triangle.material.isTwoSided &&
+        Rngon.vector3.dot(surfaceNormal, ray.dir) >= 0)
+    {
+        Rngon.vector3.invert(surfaceNormal);
+    }
+
     // If the ray intersected a texel that contains light.
     {
-        let u = ((intersection.triangle.vertices[0].u * intersection.w) +
-                 (intersection.triangle.vertices[1].u * intersection.u) +
-                 (intersection.triangle.vertices[2].u * intersection.v));
-        let v = ((intersection.triangle.vertices[0].v * intersection.w) +
-                 (intersection.triangle.vertices[1].v * intersection.u) +
-                 (intersection.triangle.vertices[2].v * intersection.v));
+        let u = ((triangle.vertices[0].u * intersection.w) +
+                 (triangle.vertices[1].u * intersection.u) +
+                 (triangle.vertices[2].u * intersection.v));
+        let v = ((triangle.vertices[0].v * intersection.w) +
+                 (triangle.vertices[1].v * intersection.u) +
+                 (triangle.vertices[2].v * intersection.v));
 
-        [u, v] = uv_to_texel_coordinates(u, v, intersection.triangle.material);
+        [u, v] = uv_to_texel_coordinates(u, v, triangle.material);
 
-        const shadeMap = intersection.triangle.material.shadeMap;
+        const shadeMap = triangle.material.shadeMap;
         const texel = shadeMap[Math.floor(u) + Math.floor(v) * shadeMap.width];
 
         if (texel && texel.numSamples)
@@ -302,12 +318,12 @@ function trace_ray(ray, sceneBVH, depth = 0)
     }
 
     ray.step(intersection.distance);
-    ray.step(EPSILON, intersection.triangle.normal);
-    ray.aimAt.random_in_hemisphere_cosine_weighted(intersection.triangle.normal);
+    ray.step(EPSILON, surfaceNormal);
+    ray.aimAt.random_in_hemisphere_cosine_weighted(surfaceNormal);
 
     const surfaceAlbedo = 0.8;
-    const brdf = (Rngon.vector3.dot(intersection.triangle.normal, ray.dir) * (surfaceAlbedo / Math.PI));
-    const pdf = (Rngon.vector3.dot(intersection.triangle.normal, ray.dir) / Math.PI); // For cosine-weighted sampling.
+    const brdf = (Rngon.vector3.dot(surfaceNormal, ray.dir) * (surfaceAlbedo / Math.PI));
+    const pdf = (Rngon.vector3.dot(surfaceNormal, ray.dir) / Math.PI); // For cosine-weighted sampling.
 
     return ((brdf / pdf) * trace_ray(ray, sceneBVH, (depth + 1)));
 }
