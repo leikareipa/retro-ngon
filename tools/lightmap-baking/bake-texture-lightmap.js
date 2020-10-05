@@ -234,7 +234,7 @@ function bake_shade_map(triangles = [Rngon.ngon()],
 
         // Cast random rays from this point out into the scene, and add the light
         // contribution from each ray into the point's corresponding shade map element.
-        const numSamplesPerTexel = 50;
+        const numSamplesPerTexel = 1;
         for (let i = 0; i < numSamplesPerTexel; i++)
         {
             const lightRay = ray({...randomPointOnTriangle});
