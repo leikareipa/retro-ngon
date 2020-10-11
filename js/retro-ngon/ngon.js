@@ -126,8 +126,26 @@ Rngon.ngon.clip_to_viewport = function(ngon)
 
     function clip_on_axis(axis, factor)
     {
-        if (ngon.vertices.length < 2)
+        if (!ngon.vertices.length)
         {
+            return;
+        }
+
+        if (ngon.vertices.length == 1)
+        {
+            // If the point is fully inside the viewport, allow it to stay.
+            if (( ngon.vertices[0].x <= ngon.vertices[0].w) &&
+                (-ngon.vertices[0].x <= ngon.vertices[0].w) &&
+                ( ngon.vertices[0].y <= ngon.vertices[0].w) &&
+                (-ngon.vertices[0].y <= ngon.vertices[0].w) &&
+                ( ngon.vertices[0].z <= ngon.vertices[0].w) &&
+                (-ngon.vertices[0].z <= ngon.vertices[0].w))
+            {
+                return;
+            }
+
+            ngon.vertices.length = 0;
+
             return;
         }
 

@@ -85,7 +85,9 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
         // Rasterize a point.
         if (ngon.vertices.length === 1)
         {
-            const idx = ((Math.round(ngon.vertices[0].x) + Math.round(ngon.vertices[0].y) * renderWidth) * 4);
+            const x = Math.min((renderWidth - 1), Math.max(0, Math.round(ngon.vertices[0].x)));
+            const y = Math.min((renderHeight - 1), Math.max(0, Math.round(ngon.vertices[0].y)));
+            const idx = ((x + y * renderWidth) * 4);
             const depthBufferIdx = (idx / 4);
             
             const depth = (ngon.vertices[0].z / Rngon.internalState.farPlaneDistance);
