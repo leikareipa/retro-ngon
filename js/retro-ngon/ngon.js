@@ -91,6 +91,8 @@ Rngon.ngon.defaultMaterial =
     isTwoSided: true,
     wireframeColor: Rngon.color_rgba(0, 0, 0),
     allowTransform: true,
+    allowAlphaReject: true,
+    allowAlphaBlend: true,
     auxiliary: {},
 };
 

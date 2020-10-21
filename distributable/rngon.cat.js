@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (11 October 2020 21:09:34 UTC)
+// VERSION: beta live (21 October 2020 21:48:27 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -747,6 +747,8 @@ Rngon.ngon.defaultMaterial =
     isTwoSided: true,
     wireframeColor: Rngon.color_rgba(0, 0, 0),
     allowTransform: true,
+    allowAlphaReject: true,
+    allowAlphaBlend: true,
     auxiliary: {},
 };
 
@@ -1483,10 +1485,10 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                             // Solid fill.
                             if (!texture)
                             {
-                                // Alpha-test the polygon. For partial transparency, we'll reject
+                                // Alpha-blend the polygon. For partial transparency, we'll reject
                                 // pixels in a particular pattern to create a see-through stipple
                                 // effect.
-                                if (material.color.alpha < 255)
+                                if (material.allowAlphaBlend && (material.color.alpha < 255))
                                 {
                                     // Full transparency.
                                     if (material.color.alpha <= 0)
@@ -1618,12 +1620,12 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                 if (!texel) continue;
 
                                 // Alpha-test the texture. If the texel isn't fully opaque, skip it.
-                                if (texel.alpha !== 255) continue;
+                                if (material.allowAlphaReject && (texel.alpha !== 255)) continue;
 
-                                // Alpha-test the polygon. For partial transparency, we'll reject
+                                // Alpha-blend the polygon. For partial transparency, we'll reject
                                 // pixels in a particular pattern to create a see-through stipple
                                 // effect.
-                                if (material.color.alpha < 255)
+                                if (material.allowAlphaBlend && (material.color.alpha < 255))
                                 {
                                     // Full transparency.
                                     if (material.color.alpha <= 0)
