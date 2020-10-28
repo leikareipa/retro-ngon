@@ -128,7 +128,7 @@
     </body>
 
     <script>
-        const defaultSample = "textured-cube-model";
+        const defaultSample = "<?php echo (is_file("./extra-samples.php")? "tomb-raider-home" : "textured-cube-model");?>";
         const defaultRenderer = "dev";
 
         const urlParams = new URLSearchParams(window.location.search);
