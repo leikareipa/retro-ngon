@@ -27,9 +27,10 @@ Rngon.render_async = function(meshes = [Rngon.mesh()],
                               options = {},
                               rngonUrl = null)
 {
-    options = {
-        ...options,
-        ...Rngon.renderShared.asyncRenderOptionOverrides,
+    // Modules are not supported by the async renderer.
+    options.modules = {
+        ngonFill: null,
+        transformClipLight: null,
     };
 
     return new Promise((resolve, reject)=>

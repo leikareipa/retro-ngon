@@ -66,12 +66,13 @@ Rngon.surface = function(canvasElementId = "",  // The DOM id of the target <can
 
                 for (const mesh of meshes)
                 {
-                    Rngon.internalState.transform_clip_lighter(mesh.ngons,
-                                                               Rngon.mesh.object_space_matrix(mesh),
-                                                               cameraMatrix,
-                                                               perspectiveMatrix,
-                                                               screenSpaceMatrix,
-                                                               options.cameraPosition);
+                    Rngon.internalState.modules.transform_clip_light(
+                        mesh.ngons,
+                        Rngon.mesh.object_space_matrix(mesh),
+                        cameraMatrix,
+                        perspectiveMatrix,
+                        screenSpaceMatrix,
+                        options.cameraPosition);
                 };
 
                 Rngon.renderShared.mark_npot_textures_in_ngon_cache();
@@ -81,7 +82,7 @@ Rngon.surface = function(canvasElementId = "",  // The DOM id of the target <can
             // Render the n-gons from the n-gon cache. The rendering will go into the
             // renderer's internal pixel buffer, Rngon.internalState.pixelBuffer.
             {
-                Rngon.internalState.rasterizer(options.auxiliaryBuffers);
+                Rngon.internalState.modules.ngon_fill(options.auxiliaryBuffers);
 
                 if (Rngon.internalState.usePixelShaders)
                 {
@@ -214,7 +215,7 @@ Rngon.surface = function(canvasElementId = "",  // The DOM id of the target <can
         const surfaceHeight = Math.floor(parseInt(window.getComputedStyle(canvasElement).getPropertyValue("height")) * scale);
         {
             Rngon.assert && (!isNaN(surfaceWidth) &&
-                            !isNaN(surfaceHeight))
+                             !isNaN(surfaceHeight))
                         || Rngon.throw("Failed to extract the canvas size.");
 
             if ((surfaceWidth <= 0) ||

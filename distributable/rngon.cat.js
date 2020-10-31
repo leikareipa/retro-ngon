@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (21 October 2020 21:48:27 UTC)
+// VERSION: beta live (31 October 2020 01:25:41 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -82,23 +82,19 @@ const Rngon = {
 // based on settings requested by the user.
 Rngon.internalState =
 {
-    // A function that transforms, clips, and lights the given n-gons. The end
-    // result should be n-gons in screen-space coordinates placed into the internal
-    // n-gon cache.
-    //
-    // For the default implementation, see transform-and-light.js.
-    transform: (ngons = [],
-                objectMatrix = [],
-                cameraMatrix = [],
-                projectionMatrix = [],
-                screenSpaceMatrix = [],
-                cameraPos)=>{},
+    // Modules provide core renderer functionality in overridable packages (the
+    // user can provide custom modules to be used in place of the default ones).
+    // Each module is a function that performs a set of tasks.
+    modules: {
+        // Transforms the given n-gons into screen space, placing the transformed
+        // n-gons into the internal n-gon cache. Also applies lighting and viewport
+        // clipping.
+        transform_clip_light: undefined,
 
-    // A function that rasterizes the n-gons that're currently in the internal n-gon
-    // cache.
-    //
-    // For the default implementation, see ngon-fill.js.
-    rasterize: ()=>{},
+        // Rasterizes the n-gons in the internal n-gon cache onto the current
+        // render surface.
+        ngon_fill: undefined,
+    },
 
     // Whether to require pixels to pass a depth test before being allowed on screen.
     useDepthBuffer: false,
@@ -2143,9 +2139,10 @@ Rngon.render_async = function(meshes = [Rngon.mesh()],
                               options = {},
                               rngonUrl = null)
 {
-    options = {
-        ...options,
-        ...Rngon.renderShared.asyncRenderOptionOverrides,
+    // Modules are not supported by the async renderer.
+    options.modules = {
+        ngonFill: null,
+        transformClipLight: null,
     };
 
     return new Promise((resolve, reject)=>
@@ -2373,15 +2370,15 @@ Rngon.renderShared = {
         state.usePerspectiveCorrectInterpolation = ((options.perspectiveCorrectTexturing || // <- Name in pre-beta.2.
                                                      options.perspectiveCorrectInterpolation) == true);
 
-        state.vertex_shader_function = options.vertexShaderFunction;
         state.useVertexShaders = (options.vertexShaderFunction !== null);
+        state.vertex_shader_function = options.vertexShaderFunction;
 
+        state.usePixelShaders = (options.pixelShaderFunction !== null);
         state.pixel_shader_function = (options.shaderFunction || // <- Name in pre-beta.3.
-                                       options.pixelShaderFunction);
-        state.usePixelShaders = (state.pixel_shader_function !== null);
+                                       options.pixelShaderFunction); 
 
-        state.rasterizer = (options.ngonRasterizerFunction || Rngon.ngon_filler);
-        state.transform_clip_lighter = (options.ngonTransformClipLighterFunction || Rngon.ngon_transform_and_light);
+        state.modules.ngon_fill = (options.modules.ngonFill || Rngon.ngon_filler);
+        state.modules.transform_clip_light = (options.modules.transformClipLight || Rngon.ngon_transform_and_light);
 
         return;
     },
@@ -2507,15 +2504,10 @@ Rngon.renderShared = {
         lights: [],
         width: 640, // Used by render_async() only.
         height: 480, // Used by render_async() only.
-        ngonRasterizerFunction: null, // If null, defaults to Rngon.ngon_filler.
-        ngonTransformClipLighterFunction: null, // If null, defaults to Rngon.ngon_transform_and_light.
-    }),
-
-    // Options that will be overridden with these values when calling render_async();
-    // i.e. to ignore the values supplied by the user.
-    asyncRenderOptionOverrides: Object.freeze({
-        ngonRasterizerFunction: null, // This feature is not supported by render_async().
-        ngonTransformClipLighterFunction: null, // This feature is not supported by render_async().
+        modules: {
+            ngonFill: null, // Null defaults to Rngon.ngon_filler.
+            transformClipLight: null, // Null defaults to Rngon.ngon_transform_and_light.
+        },
     }),
 
     // Returns an object containing the properties - and their defualt starting values -
@@ -2795,12 +2787,13 @@ Rngon.surface = function(canvasElementId = "",  // The DOM id of the target <can
 
                 for (const mesh of meshes)
                 {
-                    Rngon.internalState.transform_clip_lighter(mesh.ngons,
-                                                               Rngon.mesh.object_space_matrix(mesh),
-                                                               cameraMatrix,
-                                                               perspectiveMatrix,
-                                                               screenSpaceMatrix,
-                                                               options.cameraPosition);
+                    Rngon.internalState.modules.transform_clip_light(
+                        mesh.ngons,
+                        Rngon.mesh.object_space_matrix(mesh),
+                        cameraMatrix,
+                        perspectiveMatrix,
+                        screenSpaceMatrix,
+                        options.cameraPosition);
                 };
 
                 Rngon.renderShared.mark_npot_textures_in_ngon_cache();
@@ -2810,7 +2803,7 @@ Rngon.surface = function(canvasElementId = "",  // The DOM id of the target <can
             // Render the n-gons from the n-gon cache. The rendering will go into the
             // renderer's internal pixel buffer, Rngon.internalState.pixelBuffer.
             {
-                Rngon.internalState.rasterizer(options.auxiliaryBuffers);
+                Rngon.internalState.modules.ngon_fill(options.auxiliaryBuffers);
 
                 if (Rngon.internalState.usePixelShaders)
                 {
@@ -2943,7 +2936,7 @@ Rngon.surface = function(canvasElementId = "",  // The DOM id of the target <can
         const surfaceHeight = Math.floor(parseInt(window.getComputedStyle(canvasElement).getPropertyValue("height")) * scale);
         {
             Rngon.assert && (!isNaN(surfaceWidth) &&
-                            !isNaN(surfaceHeight))
+                             !isNaN(surfaceHeight))
                         || Rngon.throw("Failed to extract the canvas size.");
 
             if ((surfaceWidth <= 0) ||

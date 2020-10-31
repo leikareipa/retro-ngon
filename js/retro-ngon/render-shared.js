@@ -23,15 +23,15 @@ Rngon.renderShared = {
         state.usePerspectiveCorrectInterpolation = ((options.perspectiveCorrectTexturing || // <- Name in pre-beta.2.
                                                      options.perspectiveCorrectInterpolation) == true);
 
-        state.vertex_shader_function = options.vertexShaderFunction;
         state.useVertexShaders = (options.vertexShaderFunction !== null);
+        state.vertex_shader_function = options.vertexShaderFunction;
 
+        state.usePixelShaders = (options.pixelShaderFunction !== null);
         state.pixel_shader_function = (options.shaderFunction || // <- Name in pre-beta.3.
-                                       options.pixelShaderFunction);
-        state.usePixelShaders = (state.pixel_shader_function !== null);
+                                       options.pixelShaderFunction); 
 
-        state.rasterizer = (options.ngonRasterizerFunction || Rngon.ngon_filler);
-        state.transform_clip_lighter = (options.ngonTransformClipLighterFunction || Rngon.ngon_transform_and_light);
+        state.modules.ngon_fill = (options.modules.ngonFill || Rngon.ngon_filler);
+        state.modules.transform_clip_light = (options.modules.transformClipLight || Rngon.ngon_transform_and_light);
 
         return;
     },
@@ -157,15 +157,10 @@ Rngon.renderShared = {
         lights: [],
         width: 640, // Used by render_async() only.
         height: 480, // Used by render_async() only.
-        ngonRasterizerFunction: null, // If null, defaults to Rngon.ngon_filler.
-        ngonTransformClipLighterFunction: null, // If null, defaults to Rngon.ngon_transform_and_light.
-    }),
-
-    // Options that will be overridden with these values when calling render_async();
-    // i.e. to ignore the values supplied by the user.
-    asyncRenderOptionOverrides: Object.freeze({
-        ngonRasterizerFunction: null, // This feature is not supported by render_async().
-        ngonTransformClipLighterFunction: null, // This feature is not supported by render_async().
+        modules: {
+            ngonFill: null, // Null defaults to Rngon.ngon_filler.
+            transformClipLight: null, // Null defaults to Rngon.ngon_transform_and_light.
+        },
     }),
 
     // Returns an object containing the properties - and their defualt starting values -
