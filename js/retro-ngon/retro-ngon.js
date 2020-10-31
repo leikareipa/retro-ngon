@@ -69,6 +69,9 @@ Rngon.internalState =
         // Rasterizes the n-gons in the internal n-gon cache onto the current
         // render surface.
         ngon_fill: undefined,
+
+        // Removes all rendered pixels from the render surface.
+        surface_wipe: undefined,
     },
 
     // Whether to require pixels to pass a depth test before being allowed on screen.

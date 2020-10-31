@@ -618,6 +618,7 @@ Renders one or more n-gon meshes onto an existing canvas element.
 | --------------------- | ------------------------ | ----------- |
 | *function*            | transformClipLight       | A function called by the renderer to transform, clip, and light the n-gons that were passed to **render()**. For more info, including the list of parameters, see the default function. Defaults to *null*, which is an alias for the default function, *Rngon.transform_and_light*. |
 | *function*            | ngonFill                 | A function called by the renderer to rasterize the n-gons that were passed to **render()**. For more info, including the list of parameters, see the default function. Defaults to *null*, which is an alias for the default function, *Rngon.ngon_filler*. |
+| *function*            | surfaceWipe              | A function called by the renderer to clear the render surface of previous renderings (pixels, depth values, etc.). For more info, including the list of parameters, see the default function. Defaults to *null*, which is an alias for the default function, *Rngon.surface.wipe*. |
 
 *Returns:*
 

@@ -14,24 +14,25 @@ Rngon.renderShared = {
     {
         const state = Rngon.internalState;
         
-        state.useDepthBuffer = (options.useDepthBuffer == true);
-        state.showGlobalWireframe = (options.globalWireframe == true);
-        state.applyViewportClipping = (options.clipToViewport == true);
+        state.useDepthBuffer = Boolean(options.useDepthBuffer);
+        state.showGlobalWireframe = Boolean(options.globalWireframe);
+        state.applyViewportClipping = Boolean(options.clipToViewport);
         state.lights = options.lights;
         state.farPlaneDistance = options.farPlane;
 
-        state.usePerspectiveCorrectInterpolation = ((options.perspectiveCorrectTexturing || // <- Name in pre-beta.2.
-                                                     options.perspectiveCorrectInterpolation) == true);
+        state.usePerspectiveCorrectInterpolation = Boolean((options.perspectiveCorrectTexturing || // <- Name in pre-beta.2.
+                                                            options.perspectiveCorrectInterpolation));
 
-        state.useVertexShader = (options.vertexShader !== null);
+        state.useVertexShader = Boolean(options.vertexShader);
         state.vertex_shader = options.vertexShader;
 
-        state.usePixelShader = (options.pixelShader !== null);
+        state.usePixelShader = Boolean(options.pixelShader);
         state.pixel_shader = (options.shaderFunction || // <- Name in pre-beta.3.
                               options.pixelShader); 
 
         state.modules.ngon_fill = (options.modules.ngonFill || Rngon.ngon_filler);
-        state.modules.transform_clip_light = (options.modules.transformClipLight || Rngon.ngon_transform_and_light);
+        state.modules.transform_clip_light = (options.modules.transformClipLight || Rngon.ngon_transform_and_light)
+        state.modules.surface_wipe = (options.modules.surfaceWipe || Rngon.surface.wipe);
 
         return;
     },

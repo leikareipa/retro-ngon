@@ -57,7 +57,7 @@ Rngon.surface = function(canvasElementId = "",  // The DOM id of the target <can
         // this surface, the rasterized pixels will also be painted onto that canvas.
         display_meshes: function(meshes = [])
         {
-            this.wipe();
+            Rngon.internalState.modules.surface_wipe();
 
             // Prepare the meshes' n-gons for rendering. This will place the transformed
             // n-gons into the internal n-gon cache, Rngon.internalState.ngonCache.
@@ -147,21 +147,6 @@ Rngon.surface = function(canvasElementId = "",  // The DOM id of the target <can
             return Boolean((containerRect.top > -containerRect.height) &&
                            (containerRect.top < viewHeight));
         },
-
-        // Resets the surface's render buffers to their initial contents.
-        wipe: function()
-        {
-            Rngon.internalState.pixelBuffer.data.fill(0);
-
-            /// TODO: Wipe the fragment buffer.
-
-            if (Rngon.internalState.useDepthBuffer)
-            {
-                Rngon.internalState.depthBuffer.data.fill(Rngon.internalState.depthBuffer.clearValue);
-            }
-
-            return;
-        },
     });
 
     return publicInterface;
@@ -246,4 +231,19 @@ Rngon.surface = function(canvasElementId = "",  // The DOM id of the target <can
             surfaceHeight: height,
         };
     }
+}
+
+// Resets the surface's render buffers to their initial contents.
+Rngon.surface.wipe = function()
+{
+    Rngon.internalState.pixelBuffer.data.fill(0);
+
+    /// TODO: Wipe the fragment buffer.
+
+    if (Rngon.internalState.useDepthBuffer)
+    {
+        Rngon.internalState.depthBuffer.data.fill(Rngon.internalState.depthBuffer.clearValue);
+    }
+
+    return;
 }

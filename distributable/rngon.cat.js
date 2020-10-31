@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (31 October 2020 02:08:11 UTC)
+// VERSION: beta live (31 October 2020 04:24:11 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -94,6 +94,9 @@ Rngon.internalState =
         // Rasterizes the n-gons in the internal n-gon cache onto the current
         // render surface.
         ngon_fill: undefined,
+
+        // Removes all rendered pixels from the render surface.
+        surface_wipe: undefined,
     },
 
     // Whether to require pixels to pass a depth test before being allowed on screen.
@@ -2361,24 +2364,25 @@ Rngon.renderShared = {
     {
         const state = Rngon.internalState;
         
-        state.useDepthBuffer = (options.useDepthBuffer == true);
-        state.showGlobalWireframe = (options.globalWireframe == true);
-        state.applyViewportClipping = (options.clipToViewport == true);
+        state.useDepthBuffer = Boolean(options.useDepthBuffer);
+        state.showGlobalWireframe = Boolean(options.globalWireframe);
+        state.applyViewportClipping = Boolean(options.clipToViewport);
         state.lights = options.lights;
         state.farPlaneDistance = options.farPlane;
 
-        state.usePerspectiveCorrectInterpolation = ((options.perspectiveCorrectTexturing || // <- Name in pre-beta.2.
-                                                     options.perspectiveCorrectInterpolation) == true);
+        state.usePerspectiveCorrectInterpolation = Boolean((options.perspectiveCorrectTexturing || // <- Name in pre-beta.2.
+                                                            options.perspectiveCorrectInterpolation));
 
-        state.useVertexShader = (options.vertexShader !== null);
+        state.useVertexShader = Boolean(options.vertexShader);
         state.vertex_shader = options.vertexShader;
 
-        state.usePixelShader = (options.pixelShader !== null);
+        state.usePixelShader = Boolean(options.pixelShader);
         state.pixel_shader = (options.shaderFunction || // <- Name in pre-beta.3.
                               options.pixelShader); 
 
         state.modules.ngon_fill = (options.modules.ngonFill || Rngon.ngon_filler);
-        state.modules.transform_clip_light = (options.modules.transformClipLight || Rngon.ngon_transform_and_light);
+        state.modules.transform_clip_light = (options.modules.transformClipLight || Rngon.ngon_transform_and_light)
+        state.modules.surface_wipe = (options.modules.surfaceWipe || Rngon.surface.wipe);
 
         return;
     },
@@ -2778,7 +2782,7 @@ Rngon.surface = function(canvasElementId = "",  // The DOM id of the target <can
         // this surface, the rasterized pixels will also be painted onto that canvas.
         display_meshes: function(meshes = [])
         {
-            this.wipe();
+            Rngon.internalState.modules.surface_wipe();
 
             // Prepare the meshes' n-gons for rendering. This will place the transformed
             // n-gons into the internal n-gon cache, Rngon.internalState.ngonCache.
@@ -2868,21 +2872,6 @@ Rngon.surface = function(canvasElementId = "",  // The DOM id of the target <can
             return Boolean((containerRect.top > -containerRect.height) &&
                            (containerRect.top < viewHeight));
         },
-
-        // Resets the surface's render buffers to their initial contents.
-        wipe: function()
-        {
-            Rngon.internalState.pixelBuffer.data.fill(0);
-
-            /// TODO: Wipe the fragment buffer.
-
-            if (Rngon.internalState.useDepthBuffer)
-            {
-                Rngon.internalState.depthBuffer.data.fill(Rngon.internalState.depthBuffer.clearValue);
-            }
-
-            return;
-        },
     });
 
     return publicInterface;
@@ -2967,4 +2956,19 @@ Rngon.surface = function(canvasElementId = "",  // The DOM id of the target <can
             surfaceHeight: height,
         };
     }
+}
+
+// Resets the surface's render buffers to their initial contents.
+Rngon.surface.wipe = function()
+{
+    Rngon.internalState.pixelBuffer.data.fill(0);
+
+    /// TODO: Wipe the fragment buffer.
+
+    if (Rngon.internalState.useDepthBuffer)
+    {
+        Rngon.internalState.depthBuffer.data.fill(Rngon.internalState.depthBuffer.clearValue);
+    }
+
+    return;
 }
