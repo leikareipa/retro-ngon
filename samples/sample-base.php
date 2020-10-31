@@ -54,7 +54,9 @@
                      ?>">
         </script>
         <script>
-            // Implement backwards compatibility with older versions of the renderer.
+            // Transform the given render options to be backwards compatible with older
+            // versions of the renderer (while maintaining support for the current version,
+            // as well).
             function be_backwards_compatible(renderOptions = {})
             {
                 // Pre-beta.2 didn't implement Rngon.light().
@@ -70,9 +72,16 @@
                 {
                     renderOptions.depthSort = "painter";
                 }
-            }
 
-            be_backwards_compatible();
+                // Shader-related parameter names were changed in beta.5.
+                {
+                    // We want to take care to replace 'undefined' with 'null', since some
+                    // versions of the renderer do a strict equality comparison for null
+                    // (which would exclude undefined).
+                    renderOptions.vertexShaderFunction = ((renderOptions.vertexShader == undefined)? null : renderOptions.vertexShader);
+                    renderOptions.pixelShaderFunction = ((renderOptions.pixelShader == undefined)? null : renderOptions.pixelShader);
+                }
+            }
         </script>
         <script>
             var renderSettings = {

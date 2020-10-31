@@ -23,12 +23,12 @@ Rngon.renderShared = {
         state.usePerspectiveCorrectInterpolation = ((options.perspectiveCorrectTexturing || // <- Name in pre-beta.2.
                                                      options.perspectiveCorrectInterpolation) == true);
 
-        state.useVertexShader = (options.vertexShaderFunction !== null);
-        state.vertex_shader = options.vertexShaderFunction;
+        state.useVertexShader = (options.vertexShader !== null);
+        state.vertex_shader = options.vertexShader;
 
-        state.usePixelShader = (options.pixelShaderFunction !== null);
+        state.usePixelShader = (options.pixelShader !== null);
         state.pixel_shader = (options.shaderFunction || // <- Name in pre-beta.3.
-                              options.pixelShaderFunction); 
+                              options.pixelShader); 
 
         state.modules.ngon_fill = (options.modules.ngonFill || Rngon.ngon_filler);
         state.modules.transform_clip_light = (options.modules.transformClipLight || Rngon.ngon_transform_and_light);
@@ -141,8 +141,8 @@ Rngon.renderShared = {
     defaultRenderOptions: Object.freeze({
         cameraPosition: Rngon.vector3(0, 0, 0),
         cameraDirection: Rngon.vector3(0, 0, 0),
-        pixelShaderFunction: null, // If null, all pixel shader functionality will be disabled.
-        vertexShaderFunction: null, // If null, all vertex shader functionality will be disabled.
+        pixelShader: null, // If null, all pixel shader functionality will be disabled.
+        vertexShader: null, // If null, all vertex shader functionality will be disabled.
         scale: 1,
         fov: 43,
         nearPlane: 1,

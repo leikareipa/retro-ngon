@@ -25,7 +25,7 @@
                               Rngon.light(Rngon.vector3(409, 115, 758), {reach: 200, intensity: 2}),
                               Rngon.light(Rngon.vector3(481, 182, 113), {reach: 300, intensity: 3}),
                           ],
-                          pixelShaderFunction: perpixel_light_shader,
+                          pixelShader: perpixel_light_shader,
                       });
 
             function perpixel_light_shader({renderWidth, renderHeight, pixelBuffer, fragmentBuffer, ngonCache})

@@ -22,7 +22,7 @@ export const sample_scene = (frameCount = 0)=>
 };
 
 export const sampleRenderOptions = {
-    vertexShaderFunction: (ngon, cameraPosition)=>
+    vertexShader: (ngon, cameraPosition)=>
     {
         if (ngon.material.hasMipmapping)
         {

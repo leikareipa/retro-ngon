@@ -255,12 +255,12 @@ image-rendering: -webkit-crisp-edges; /* For Safari*/
 ### Creating pixel shaders for extra visual effects
 Pixel shaders allow you to add a variety of visual effects to your renderings, from simple 2d pixel manipulation to complex 3D lighting and more.
 
-To enable the renderer's shader functionality, we need to pass a shader function to `render()` via its `pixelShaderFunction` property. Like so:
+To enable the renderer's shader functionality, we need to pass a shader function to `render()` via its `pixelShader` property. Like so:
 
 ```
 Rngon.render("...", [...],
              {
-                 pixelShaderFunction: sample_shader,
+                 pixelShader: sample_shader,
              })
 
 function sample_shader({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache, cameraPosition})
@@ -608,7 +608,7 @@ Renders one or more n-gon meshes onto an existing canvas element.
 | *translation_vector*  | cameraPosition           | The camera's position. Defaults to *vector3(0, 0, 0)*. |
 | *rotation_vector*     | cameraDirection          | The camera's direction. Defaults to *vector3(0, 0, 0)*. |
 | *array*               | auxiliaryBuffers         | One or more auxiliary render buffers. Each buffer is an object containing the properties *buffer* and *property*; where *buffer* points to an array containing as many elements as there are pixels in the rendering, and *property* names a source property in an n-gon's material. For each pixel rendered, the corresponding element in an auxiliary buffer will be written with the n-gon's material source value. Defaults to *[]*. |
-| *function*            | pixelShaderFunction      | A function that will be called once all of the frame's n-gons have been rasterized but before the rasterized image is drawn on screen. The function takes as its only parameter an object containing the following: {renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache}. The pixel buffer contains the RGBA color values of the rasterized image; the fragment buffer corresponding metadata about each rasterized pixel (like its interpolated texture and world coordinates); and the n-gon cache the transformed n-gons that were rasterized (including e.g. their material properties). With this information, the function can apply shader effects to the RGBA pixel buffer. Setting this property to *null* will fully disable shader functionality. Defaults to *null*.  |
+| *function*            | pixelShader              | A function that will be called once all of the frame's n-gons have been rasterized but before the rasterized image is drawn on screen. The function takes as its only parameter an object containing the following: {renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache}. The pixel buffer contains the RGBA color values of the rasterized image; the fragment buffer corresponding metadata about each rasterized pixel (like its interpolated texture and world coordinates); and the n-gon cache the transformed n-gons that were rasterized (including e.g. their material properties). With this information, the function can apply shader effects to the RGBA pixel buffer. Setting this property to *null* will fully disable shader functionality. Defaults to *null*.  |
 | *array*              | lights          | An array of **light** objects that defines the scene's light sources. The way in which these lights affect a given n-gon is controlled by the n-gon's 'vertexShading' material property. Defaults to *[]*.  |
 | *object*             | modules | Modules are an advanced feature providing a way to override default core renderer behavior. For instance, you can provide a custom rasterizer function that will be called by the renderer in place of the default rasterizer. Defaults to all properties being *null* (see below for documentation of the properties).  |
 
@@ -702,15 +702,14 @@ Renders one or more n-gon meshes into a pixel buffer (an ImageData object). Runs
 
 *The **options** parameter object recognizes the same properties as the one for **render()** but with the following additions and exceptions:*
 
-| Type                  | Name                     | Description |
-| --------------------- | ------------------------ | ----------- |
-| *number*              | width                    | The width (in pixels) of the image to be rendered. Defaults to *640*. |
-| *number*              | height                   | The height (in pixels) of the image to be rendered. Defaults to *480*. |
-| *number*              | scale                    | Ignored. Use the 'width' and 'height' properties instead. |
-| *string*              | pixelShaderFunction      | Same as for **render()**, but the function must now be provided as a string (e.g. of the form `"(a)=>{console.log(a)}"`) so that it can be passed to a Web Worker. If *null*, pixel shader functionality will be disabled. Defaults to *null*. |
-| *string*              | vertexShaderFunction      | Same as for **render()**, but the function must now be provided as a string (e.g. of the form `"(a)=>{console.log(a)}"`) so that it can be passed to a Web Worker. If *null*, vertex shader functionality will be disabled. Defaults to *null*. |
-| *function*           | ngonTransformClipLighterFunction | Ignored. |
-| *function*           | ngonRasterizerFunction | Ignored. |
+| Type        | Name          | Description |
+| ----------- | ------------- | ----------- |
+| *number*    | width         | The width (in pixels) of the image to be rendered. Defaults to *640*. |
+| *number*    | height        | The height (in pixels) of the image to be rendered. Defaults to *480*. |
+| *number*    | scale         | Ignored. Use the 'width' and 'height' properties instead. |
+| *string*    | pixelShader   | Same as for **render()**, but the function must now be provided as a string (e.g. of the form `"(a)=>{console.log(a)}"`) so that it can be passed to a Web Worker. If *null*, pixel shader functionality will be disabled. Defaults to *null*. |
+| *string*    | vertexShader  | Same as for **render()**, but the function must now be provided as a string (e.g. of the form `"(a)=>{console.log(a)}"`) so that it can be passed to a Web Worker. If *null*, vertex shader functionality will be disabled. Defaults to *null*. |
+| *object*    | modules       | Ignored. Default parameter values will be used. |
 
 *Returns:*
 

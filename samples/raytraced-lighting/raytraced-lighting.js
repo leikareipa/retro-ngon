@@ -98,11 +98,11 @@ export const sample_scene = (frameCount = 0)=>
 // This scene's custom render options for the retro n-gon renderer.
 export const sampleRenderOptions = {
     lights: lights,
-    get pixelShaderFunction()
+    get pixelShader()
     {
         return (parent.RAYTRACING_ENABLED? ps_raytraced_lighting : null);
     },
-    get vertexShaderFunction()
+    get vertexShader()
     {
         // We'll only copy the scene's polygons once. Once the BVH has been built,
         // we know the polygons have been copied and don't need to do it any more.

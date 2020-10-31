@@ -44,7 +44,7 @@ export const sample_scene = (frameCount = 0)=>
 };
 
 export const sampleRenderOptions = {
-    get vertexShaderFunction()
+    get vertexShader()
     {
         // If the user has selected a shader to be used, return the selected shader.
         // Otherwise, return null to indicate that shader functionality in the

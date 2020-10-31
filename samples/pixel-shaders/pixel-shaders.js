@@ -57,14 +57,14 @@ export const sample_scene = (frameCount = 0)=>
 
 export const sampleRenderOptions = {
     lights: lights,
-    get pixelShaderFunction()
+    get pixelShader()
     {
         // If the user has selected a shader to be used, return the selected shader.
         // Otherwise, return null to indicate that shader functionality in the
         // renderer should be disabled.
         return (shaderFunctions[parent.ACTIVE_SHADER.functionName] || null);
     },
-    get vertexShaderFunction()
+    get vertexShader()
     {
         // For the mip level map shader to work, we need to enable mipmapping.
         // So when that shader is in use, let's set n-gon's mipmap level based
