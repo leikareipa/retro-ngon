@@ -3,34 +3,29 @@ An olden-style software 3D renderer in modern JavaScript.
 
 Provides a simple, streamlined API for rasterizing *n*-sided polygons - as well as points and lines - onto a HTML5 canvas (or into an independent ImageData object).
 
-You can view various interactive render samples at [tarpeeksihyvaesoft.com/experimental/retro-ngon/samples](https://www.tarpeeksihyvaesoft.com/experimental/retro-ngon/samples/). Note that these samples might not work on Apple's operating systems, although the renderer itself does.
+You can view various interactive render samples [here](https://www.tarpeeksihyvaesoft.com/experimental/retro-ngon/samples/). Note that these samples might not work on Apple's operating systems, although the renderer itself does.
+
+### Features
+- Straightforward API
+- Genuine retro aesthetics
+- Optional pixel and vertex shaders
+- Optional async Web Worker rendering
+- Modular design - easily override core renderer functionality
+- Single-file distributable with no external dependencies
 
 ![A textured cube](./images/painting-cube.png)
 
-### Features
-- Easy-to-use API
-- Genuine retro aesthetics
-- Custom pixel and vertex shaders
-- Optional async rendering with Web Workers
-- Vanilla JavaScript with no extra dependencies
-
 ### Projects using the retro n-gon renderer
-- [RallySportED-js](https://github.com/leikareipa/rallysported-js/), a contemporary asset editor for the DOS game Rally-Sport
+- [RallySportED-js](https://github.com/leikareipa/rallysported-js/), the modern asset editor for the cult DOS game Rally-Sport
 
 ### Suggested use cases
-The retro n-gon renderer is not intended as a general-purpose software 3D renderer. It omits many modern features in favor of a legit retro look and feel.
+Being a retro-oriented software 3D renderer for JavaScript, the retro n-gon renderer encourages low resolutions, low polycounts, and general creativity in navigating around technical and/or performance limitations &ndash; like they did in the old days of software rendering.
 
-I have a number of other open-source software renderer projects also, some of which might fit your needs or interests better:
-- [Wray](https://github.com/leikareipa/wray/) for path tracing in JavaScript
-- [Vond](https://github.com/leikareipa/vond/), a low-res hybrid voxel/polygon software renderer in C++
-- [Vond Jr.](https://github.com/leikareipa/vond-jr/) is a Java version of Vond
-- [Kelpo](https://github.com/leikareipa/kelpo/), an up-coming C89-based retro-themed minimalism-oriented 3D API wrapper for Win32 (Windows 95, 98, ...) with support for Direct3D, OpenGL, Glide, and others.
-- [dccb](https://github.com/leikareipa/dccb/)'s is a simple software renderer in C for 16-bit DOS
-
-The retro n-gon renderer encourages low resolutions, very low polycounts, and designing your way around technical limitations &ndash; like in the old days of software rendering. You might use the renderer for some of the following purposes:
-- Engagement in feature minimalism
-- Retro 3D games with sparse, simple environments
-- Visualizing 3D models in an old-fashioned manner
+Here are some of the possible use cases:
+- Retro-themed 3D games and model visualization
+- Engagement in minimalism
+- Async rendering
+- Avoidance of WebGL
 
 # Screenshots
 ![A scene from Tomb Raider, textured](./images/screenshots/beta/tomb-raider-1-texture-lightmap.png)\
