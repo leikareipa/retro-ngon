@@ -130,11 +130,11 @@ Rngon.ngon_transform_and_light = function(ngons = [],
 
                     const paramNamesString = "ngon, cameraPos";
 
-                    switch (typeof Rngon.internalState.vertex_shader_function)
+                    switch (typeof Rngon.internalState.vertex_shader)
                     {
                         case "function":
                         {
-                            Rngon.internalState.vertex_shader_function(...args);
+                            Rngon.internalState.vertex_shader(...args);
                             break;
                         }
                         // Shader functions as strings are supported to allow shaders to be
@@ -142,7 +142,7 @@ Rngon.ngon_transform_and_light = function(ngons = [],
                         // equivalent to - the form "(a)=>{console.log(a)}".
                         case "string":
                         {
-                            Function(paramNamesString, `(${Rngon.internalState.vertex_shader_function})(${paramNamesString})`)(...args);
+                            Function(paramNamesString, `(${Rngon.internalState.vertex_shader})(${paramNamesString})`)(...args);
                             break;
                         }
                         default:

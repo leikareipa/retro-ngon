@@ -97,11 +97,11 @@ Rngon.surface = function(canvasElementId = "",  // The DOM id of the target <can
 
                     const paramNamesString = `{${Object.keys(args).join(",")}}`;
 
-                    switch (typeof Rngon.internalState.pixel_shader_function)
+                    switch (typeof Rngon.internalState.pixel_shader)
                     {
                         case "function":
                         {
-                            Rngon.internalState.pixel_shader_function(args);
+                            Rngon.internalState.pixel_shader(args);
                             break;
                         }
                         // Shader functions as strings are supported to allow shaders to be
@@ -109,7 +109,7 @@ Rngon.surface = function(canvasElementId = "",  // The DOM id of the target <can
                         // equivalent to - the form "(a)=>{console.log(a)}".
                         case "string":
                         {
-                            Function(paramNamesString, `(${Rngon.internalState.pixel_shader_function})(${paramNamesString})`)(args);
+                            Function(paramNamesString, `(${Rngon.internalState.pixel_shader})(${paramNamesString})`)(args);
                             break;
                         }
                         default:

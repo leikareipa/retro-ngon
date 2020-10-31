@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (31 October 2020 01:25:41 UTC)
+// VERSION: beta live (31 October 2020 01:30:52 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -1915,11 +1915,11 @@ Rngon.ngon_transform_and_light = function(ngons = [],
 
                     const paramNamesString = "ngon, cameraPos";
 
-                    switch (typeof Rngon.internalState.vertex_shader_function)
+                    switch (typeof Rngon.internalState.vertex_shader)
                     {
                         case "function":
                         {
-                            Rngon.internalState.vertex_shader_function(...args);
+                            Rngon.internalState.vertex_shader(...args);
                             break;
                         }
                         // Shader functions as strings are supported to allow shaders to be
@@ -1927,7 +1927,7 @@ Rngon.ngon_transform_and_light = function(ngons = [],
                         // equivalent to - the form "(a)=>{console.log(a)}".
                         case "string":
                         {
-                            Function(paramNamesString, `(${Rngon.internalState.vertex_shader_function})(${paramNamesString})`)(...args);
+                            Function(paramNamesString, `(${Rngon.internalState.vertex_shader})(${paramNamesString})`)(...args);
                             break;
                         }
                         default:
@@ -2371,11 +2371,11 @@ Rngon.renderShared = {
                                                      options.perspectiveCorrectInterpolation) == true);
 
         state.useVertexShaders = (options.vertexShaderFunction !== null);
-        state.vertex_shader_function = options.vertexShaderFunction;
+        state.vertex_shader = options.vertexShaderFunction;
 
         state.usePixelShaders = (options.pixelShaderFunction !== null);
-        state.pixel_shader_function = (options.shaderFunction || // <- Name in pre-beta.3.
-                                       options.pixelShaderFunction); 
+        state.pixel_shader = (options.shaderFunction || // <- Name in pre-beta.3.
+                              options.pixelShaderFunction); 
 
         state.modules.ngon_fill = (options.modules.ngonFill || Rngon.ngon_filler);
         state.modules.transform_clip_light = (options.modules.transformClipLight || Rngon.ngon_transform_and_light);
@@ -2818,11 +2818,11 @@ Rngon.surface = function(canvasElementId = "",  // The DOM id of the target <can
 
                     const paramNamesString = `{${Object.keys(args).join(",")}}`;
 
-                    switch (typeof Rngon.internalState.pixel_shader_function)
+                    switch (typeof Rngon.internalState.pixel_shader)
                     {
                         case "function":
                         {
-                            Rngon.internalState.pixel_shader_function(args);
+                            Rngon.internalState.pixel_shader(args);
                             break;
                         }
                         // Shader functions as strings are supported to allow shaders to be
@@ -2830,7 +2830,7 @@ Rngon.surface = function(canvasElementId = "",  // The DOM id of the target <can
                         // equivalent to - the form "(a)=>{console.log(a)}".
                         case "string":
                         {
-                            Function(paramNamesString, `(${Rngon.internalState.pixel_shader_function})(${paramNamesString})`)(args);
+                            Function(paramNamesString, `(${Rngon.internalState.pixel_shader})(${paramNamesString})`)(args);
                             break;
                         }
                         default:

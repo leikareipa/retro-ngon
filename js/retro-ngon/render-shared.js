@@ -24,11 +24,11 @@ Rngon.renderShared = {
                                                      options.perspectiveCorrectInterpolation) == true);
 
         state.useVertexShaders = (options.vertexShaderFunction !== null);
-        state.vertex_shader_function = options.vertexShaderFunction;
+        state.vertex_shader = options.vertexShaderFunction;
 
         state.usePixelShaders = (options.pixelShaderFunction !== null);
-        state.pixel_shader_function = (options.shaderFunction || // <- Name in pre-beta.3.
-                                       options.pixelShaderFunction); 
+        state.pixel_shader = (options.shaderFunction || // <- Name in pre-beta.3.
+                              options.pixelShaderFunction); 
 
         state.modules.ngon_fill = (options.modules.ngonFill || Rngon.ngon_filler);
         state.modules.transform_clip_light = (options.modules.transformClipLight || Rngon.ngon_transform_and_light);
