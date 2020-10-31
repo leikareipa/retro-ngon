@@ -36,7 +36,7 @@ let numRightEdges = 0;
 Rngon.ngon_filler = function(auxiliaryBuffers = [])
 {
     const interpolatePerspective = Rngon.internalState.usePerspectiveCorrectInterpolation;
-    const usePixelShaders = Rngon.internalState.usePixelShaders;
+    const usePixelShader = Rngon.internalState.usePixelShader;
     const fragmentBuffer = Rngon.internalState.fragmentBuffer.data;
     const pixelBuffer = Rngon.internalState.pixelBuffer.data;
     const depthBuffer = (Rngon.internalState.useDepthBuffer? Rngon.internalState.depthBuffer.data : null);
@@ -113,7 +113,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                     depthBuffer[depthBufferIdx] = depth;
                 }
 
-                if (usePixelShaders)
+                if (usePixelShader)
                 {
                     const fragment = fragmentBuffer[depthBufferIdx];
                     fragment.ngonIdx = n;
@@ -236,7 +236,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                     edge.startInvW = startInvW;
                     edge.deltaInvW = deltaInvW;
 
-                    if (usePixelShaders)
+                    if (usePixelShader)
                     {
                         edge.startWorldX = vert1.worldX/w1;
                         edge.deltaWorldX = ((vert2.worldX/w2 - vert1.worldX/w1) / edgeHeight);
@@ -289,7 +289,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                         const deltaInvW = ((rightEdge.startInvW - leftEdge.startInvW) / spanWidth);
                         let iplInvW = (leftEdge.startInvW - deltaInvW);
 
-                        if (usePixelShaders)
+                        if (usePixelShader)
                         {
                             var deltaWorldX = ((rightEdge.startWorldX - leftEdge.startWorldX) / spanWidth);
                             var iplWorldX = (leftEdge.startWorldX - deltaWorldX);
@@ -323,7 +323,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                             pixelBufferIdx += 4;
                             depthBufferIdx++;
 
-                            if (usePixelShaders)
+                            if (usePixelShader)
                             {
                                 iplWorldX += deltaWorldX;
                                 iplWorldY += deltaWorldY;
@@ -532,7 +532,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                     }
                                 }
 
-                                if (usePixelShaders)
+                                if (usePixelShader)
                                 {
                                     const fragment = fragmentBuffer[depthBufferIdx];
                                     fragment.ngonIdx = n;
@@ -565,7 +565,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                         rightEdge.startV     += rightEdge.deltaV;
                         rightEdge.startInvW  += rightEdge.deltaInvW;
 
-                        if (usePixelShaders)
+                        if (usePixelShader)
                         {
                             leftEdge.startWorldX  += leftEdge.deltaWorldX;
                             leftEdge.startWorldY  += leftEdge.deltaWorldY;

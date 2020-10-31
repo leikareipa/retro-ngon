@@ -84,7 +84,7 @@ Rngon.surface = function(canvasElementId = "",  // The DOM id of the target <can
             {
                 Rngon.internalState.modules.ngon_fill(options.auxiliaryBuffers);
 
-                if (Rngon.internalState.usePixelShaders)
+                if (Rngon.internalState.usePixelShader)
                 {
                     const args = {
                         renderWidth: surfaceWidth,
@@ -176,7 +176,7 @@ Rngon.surface = function(canvasElementId = "",  // The DOM id of the target <can
             Rngon.internalState.pixelBuffer = new ImageData(surfaceWidth, surfaceHeight);
         }
 
-        if ( Rngon.internalState.usePixelShaders &&
+        if ( Rngon.internalState.usePixelShader &&
             (Rngon.internalState.fragmentBuffer.width != surfaceWidth) ||
             (Rngon.internalState.fragmentBuffer.height != surfaceHeight))
         {

@@ -57,7 +57,7 @@ Rngon.ngon_transform_and_light = function(ngons = [],
                                                       ngon.vertices[v].w,
                                                       ngon.vertices[v].shade);
 
-                if (Rngon.internalState.useVertexShaders ||
+                if (Rngon.internalState.useVertexShader ||
                     (ngon.material.vertexShading === "gouraud"))
                 {
                     cachedNgon.vertexNormals[v] = Rngon.vector3(ngon.vertexNormals[v].x,
@@ -86,7 +86,7 @@ Rngon.ngon_transform_and_light = function(ngons = [],
 
                 // Interpolated world XYZ coordinates will be made available to shaders,
                 // but aren't needed if shaders are disabled.
-                if (Rngon.internalState.usePixelShaders)
+                if (Rngon.internalState.usePixelShader)
                 {
                     for (let v = 0; v < cachedNgon.vertices.length; v++)
                     {
@@ -98,7 +98,7 @@ Rngon.ngon_transform_and_light = function(ngons = [],
 
                 // If using Gouraud shading, we need to transform all vertex normals; but
                 // the face normal won't be used and so can be ignored.
-                if (Rngon.internalState.useVertexShaders ||
+                if (Rngon.internalState.useVertexShader ||
                     (cachedNgon.material.vertexShading === "gouraud"))
                 {
                     for (let v = 0; v < cachedNgon.vertices.length; v++)
@@ -121,7 +121,7 @@ Rngon.ngon_transform_and_light = function(ngons = [],
                 }
 
                 // Apply an optional, user-defined vertex shader.
-                if (Rngon.internalState.useVertexShaders)
+                if (Rngon.internalState.useVertexShader)
                 {
                     const args = [
                         cachedNgon,

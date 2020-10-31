@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (31 October 2020 01:30:52 UTC)
+// VERSION: beta live (31 October 2020 01:34:00 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -144,9 +144,9 @@ Rngon.internalState =
     // If true, enables the fragment buffer and allows the use of pixel shaders. Note
     // that enabling shaders carries a performance penalty even if you don't actually
     // make use of any pixel shaders.
-    usePixelShaders: false,
+    usePixelShader: false,
 
-    useVertexShaders: false,
+    useVertexShader: false,
 
     usePerspectiveCorrectInterpolation: false,
 
@@ -824,7 +824,7 @@ Rngon.ngon.clip_to_viewport = function(ngon)
                 const lerpStep = (prevVertex.w - prevComponent) /
                                   ((prevVertex.w - prevComponent) - (ngon.vertices[i].w - curComponent));
 
-                if (Rngon.internalState.usePixelShaders)
+                if (Rngon.internalState.usePixelShader)
                 {
                     ngon.vertices[numOriginalVertices + k++] = Rngon.vertex(Rngon.lerp(prevVertex.x, ngon.vertices[i].x, lerpStep),
                                                                             Rngon.lerp(prevVertex.y, ngon.vertices[i].y, lerpStep),
@@ -875,7 +875,7 @@ Rngon.line_draw = function(vert1 = Rngon.vertex(),
 {
     const pixelBuffer = Rngon.internalState.pixelBuffer.data;
     const depthBuffer = (Rngon.internalState.useDepthBuffer? Rngon.internalState.depthBuffer.data : null);
-    const fragmentBuffer = (Rngon.internalState.usePixelShaders? Rngon.internalState.fragmentBuffer.data : null);
+    const fragmentBuffer = (Rngon.internalState.usePixelShader? Rngon.internalState.fragmentBuffer.data : null);
     const renderWidth = Rngon.internalState.pixelBuffer.width;
     const renderHeight = Rngon.internalState.pixelBuffer.height;
     const interpolatePerspective = Rngon.internalState.usePerspectiveCorrectInterpolation;
@@ -1171,7 +1171,7 @@ let numRightEdges = 0;
 Rngon.ngon_filler = function(auxiliaryBuffers = [])
 {
     const interpolatePerspective = Rngon.internalState.usePerspectiveCorrectInterpolation;
-    const usePixelShaders = Rngon.internalState.usePixelShaders;
+    const usePixelShader = Rngon.internalState.usePixelShader;
     const fragmentBuffer = Rngon.internalState.fragmentBuffer.data;
     const pixelBuffer = Rngon.internalState.pixelBuffer.data;
     const depthBuffer = (Rngon.internalState.useDepthBuffer? Rngon.internalState.depthBuffer.data : null);
@@ -1248,7 +1248,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                     depthBuffer[depthBufferIdx] = depth;
                 }
 
-                if (usePixelShaders)
+                if (usePixelShader)
                 {
                     const fragment = fragmentBuffer[depthBufferIdx];
                     fragment.ngonIdx = n;
@@ -1371,7 +1371,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                     edge.startInvW = startInvW;
                     edge.deltaInvW = deltaInvW;
 
-                    if (usePixelShaders)
+                    if (usePixelShader)
                     {
                         edge.startWorldX = vert1.worldX/w1;
                         edge.deltaWorldX = ((vert2.worldX/w2 - vert1.worldX/w1) / edgeHeight);
@@ -1424,7 +1424,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                         const deltaInvW = ((rightEdge.startInvW - leftEdge.startInvW) / spanWidth);
                         let iplInvW = (leftEdge.startInvW - deltaInvW);
 
-                        if (usePixelShaders)
+                        if (usePixelShader)
                         {
                             var deltaWorldX = ((rightEdge.startWorldX - leftEdge.startWorldX) / spanWidth);
                             var iplWorldX = (leftEdge.startWorldX - deltaWorldX);
@@ -1458,7 +1458,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                             pixelBufferIdx += 4;
                             depthBufferIdx++;
 
-                            if (usePixelShaders)
+                            if (usePixelShader)
                             {
                                 iplWorldX += deltaWorldX;
                                 iplWorldY += deltaWorldY;
@@ -1667,7 +1667,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                     }
                                 }
 
-                                if (usePixelShaders)
+                                if (usePixelShader)
                                 {
                                     const fragment = fragmentBuffer[depthBufferIdx];
                                     fragment.ngonIdx = n;
@@ -1700,7 +1700,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                         rightEdge.startV     += rightEdge.deltaV;
                         rightEdge.startInvW  += rightEdge.deltaInvW;
 
-                        if (usePixelShaders)
+                        if (usePixelShader)
                         {
                             leftEdge.startWorldX  += leftEdge.deltaWorldX;
                             leftEdge.startWorldY  += leftEdge.deltaWorldY;
@@ -1842,7 +1842,7 @@ Rngon.ngon_transform_and_light = function(ngons = [],
                                                       ngon.vertices[v].w,
                                                       ngon.vertices[v].shade);
 
-                if (Rngon.internalState.useVertexShaders ||
+                if (Rngon.internalState.useVertexShader ||
                     (ngon.material.vertexShading === "gouraud"))
                 {
                     cachedNgon.vertexNormals[v] = Rngon.vector3(ngon.vertexNormals[v].x,
@@ -1871,7 +1871,7 @@ Rngon.ngon_transform_and_light = function(ngons = [],
 
                 // Interpolated world XYZ coordinates will be made available to shaders,
                 // but aren't needed if shaders are disabled.
-                if (Rngon.internalState.usePixelShaders)
+                if (Rngon.internalState.usePixelShader)
                 {
                     for (let v = 0; v < cachedNgon.vertices.length; v++)
                     {
@@ -1883,7 +1883,7 @@ Rngon.ngon_transform_and_light = function(ngons = [],
 
                 // If using Gouraud shading, we need to transform all vertex normals; but
                 // the face normal won't be used and so can be ignored.
-                if (Rngon.internalState.useVertexShaders ||
+                if (Rngon.internalState.useVertexShader ||
                     (cachedNgon.material.vertexShading === "gouraud"))
                 {
                     for (let v = 0; v < cachedNgon.vertices.length; v++)
@@ -1906,7 +1906,7 @@ Rngon.ngon_transform_and_light = function(ngons = [],
                 }
 
                 // Apply an optional, user-defined vertex shader.
-                if (Rngon.internalState.useVertexShaders)
+                if (Rngon.internalState.useVertexShader)
                 {
                     const args = [
                         cachedNgon,
@@ -2370,10 +2370,10 @@ Rngon.renderShared = {
         state.usePerspectiveCorrectInterpolation = ((options.perspectiveCorrectTexturing || // <- Name in pre-beta.2.
                                                      options.perspectiveCorrectInterpolation) == true);
 
-        state.useVertexShaders = (options.vertexShaderFunction !== null);
+        state.useVertexShader = (options.vertexShaderFunction !== null);
         state.vertex_shader = options.vertexShaderFunction;
 
-        state.usePixelShaders = (options.pixelShaderFunction !== null);
+        state.usePixelShader = (options.pixelShaderFunction !== null);
         state.pixel_shader = (options.shaderFunction || // <- Name in pre-beta.3.
                               options.pixelShaderFunction); 
 
@@ -2805,7 +2805,7 @@ Rngon.surface = function(canvasElementId = "",  // The DOM id of the target <can
             {
                 Rngon.internalState.modules.ngon_fill(options.auxiliaryBuffers);
 
-                if (Rngon.internalState.usePixelShaders)
+                if (Rngon.internalState.usePixelShader)
                 {
                     const args = {
                         renderWidth: surfaceWidth,
@@ -2897,7 +2897,7 @@ Rngon.surface = function(canvasElementId = "",  // The DOM id of the target <can
             Rngon.internalState.pixelBuffer = new ImageData(surfaceWidth, surfaceHeight);
         }
 
-        if ( Rngon.internalState.usePixelShaders &&
+        if ( Rngon.internalState.usePixelShader &&
             (Rngon.internalState.fragmentBuffer.width != surfaceWidth) ||
             (Rngon.internalState.fragmentBuffer.height != surfaceHeight))
         {

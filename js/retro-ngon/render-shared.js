@@ -23,10 +23,10 @@ Rngon.renderShared = {
         state.usePerspectiveCorrectInterpolation = ((options.perspectiveCorrectTexturing || // <- Name in pre-beta.2.
                                                      options.perspectiveCorrectInterpolation) == true);
 
-        state.useVertexShaders = (options.vertexShaderFunction !== null);
+        state.useVertexShader = (options.vertexShaderFunction !== null);
         state.vertex_shader = options.vertexShaderFunction;
 
-        state.usePixelShaders = (options.pixelShaderFunction !== null);
+        state.usePixelShader = (options.pixelShaderFunction !== null);
         state.pixel_shader = (options.shaderFunction || // <- Name in pre-beta.3.
                               options.pixelShaderFunction); 
 
