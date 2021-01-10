@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (31 October 2020 04:24:11 UTC)
+// VERSION: beta live (10 January 2021 03:07:26 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -2077,13 +2077,28 @@ Rngon.ngon_transform_and_light.apply_lighting = function(ngon)
 
 "use strict";
 
-// Renders the given meshes onto a DOM <canvas> element by the given id. The
-// <canvas> element must already exist.
-Rngon.render = function(canvasElementId,
+// Renders the given meshes onto a given DOM <canvas> element. Note that the target element
+// must already exist.
+Rngon.render = function(canvasElement,
                         meshes = [Rngon.mesh()],
                         options = {})
 {
     const renderCallInfo = Rngon.renderShared.setup_render_call_info();
+
+    // The canvas element can be passed in in a couple of ways, e.g. as a string that
+    // identifies the DOM element, or directly as a DOM element object. So let's figure
+    // out what we received, and turn it into a DOM element object for the renderer
+    // to operate on.
+    {
+        if (typeof canvasElement == "string")
+        {
+            canvasElement = document.getElementById(canvasElement);
+        }
+        else if (!(canvasElement instanceof Element))
+        {
+            Rngon.throw("Invalid canvas element.");
+        }
+    }
 
     options = Object.freeze({
         ...Rngon.renderShared.defaultRenderOptions,
@@ -2094,7 +2109,7 @@ Rngon.render = function(canvasElementId,
     
     // Render a single frame onto the target <canvas> element.
     {
-        const renderSurface = Rngon.surface(canvasElementId, options);
+        const renderSurface = Rngon.surface(canvasElement, options);
 
         // We'll render either always or only when the render canvas is in view,
         // depending on whether the user asked us for the latter option.
@@ -2738,10 +2753,10 @@ Rngon.texture_rgba.create_with_data_from_file = function(filename)
 //
 // Note: Throws on unrecoverable errors; returns null if the surface size would be
 // <= 0 in width and/or height.
-Rngon.surface = function(canvasElementId = "",  // The DOM id of the target <canvas> element.
-                         options = {})          // A reference to or copy of the options passed to render().
+Rngon.surface = function(canvasElement,  // The target DOM <canvas> element.
+                         options = {})   // A reference to or copy of the options passed to render().
 {
-    const renderOffscreen = Boolean(canvasElementId === null);
+    const renderOffscreen = Boolean(canvasElement === null);
 
     if (renderOffscreen)
     {
@@ -2753,7 +2768,7 @@ Rngon.surface = function(canvasElementId = "",  // The DOM id of the target <can
         var {surfaceWidth,
              surfaceHeight,
              canvasElement,
-             renderContext} = setup_onscreen(canvasElementId, options.scale);
+             renderContext} = setup_onscreen(canvasElement, options.scale);
     }
     
     initialize_internal_surface_state(surfaceWidth, surfaceHeight);
@@ -2912,11 +2927,10 @@ Rngon.surface = function(canvasElementId = "",  // The DOM id of the target <can
     }
 
     // Initializes the target DOM <canvas> element for rendering into.
-    function setup_onscreen(canvasElementId, scale)
+    function setup_onscreen(canvasElement, scale)
     {
-        const canvasElement = document.getElementById(canvasElementId);
         Rngon.assert && (canvasElement instanceof Element)
-                    || Rngon.throw("Can't find the given canvas element.");
+                     || Rngon.throw("Can't find the given canvas element.");
 
         const renderContext = canvasElement.getContext("2d");
 

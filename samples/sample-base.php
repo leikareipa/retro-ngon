@@ -31,7 +31,7 @@
             </div>
             <div class="infobox polycount">
                 <div class="title">Polys</div>
-                <div class="value"><i  class="fas fa-sm fa-spin fa-spinner"></i></div>
+                <div class="value"><i class="fas fa-sm fa-spin fa-spinner"></i></div>
             </div>
             <div class="infobox fps">
                 <div class="title">FPS</div>
@@ -102,6 +102,7 @@
         <script>
             (async()=>
             {
+                const canvasElement = document.getElementById("canvas");
                 const sampleId = (new URLSearchParams(window.location.search).get("sample") || "textured-cube-model");
                 const sampleModule = await import(`./${sampleId}/${sampleId}.js`);
 
@@ -148,7 +149,7 @@
 
                     be_backwards_compatible(options);
 
-                    const renderInfo = Rngon.render("canvas", [scene], options);
+                    const renderInfo = Rngon.render(canvasElement, [scene], options);
 
                     if ((uiUpdateTimer += frameTimeMs) >= 1000)
                     {

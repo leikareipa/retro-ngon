@@ -85,6 +85,7 @@
                 <select id="sample-selector"
                         style="min-width: 150px;"
                         onchange="set_sample(event.target.value);">
+
                     <optgroup label="Features"></optgroup>
                     <option value="async-rendering">Async rendering</option>
                     <option value="builtin-shading">Built-in shading</option>
@@ -95,12 +96,16 @@
                     <option value="transparency">Transparency #1</option>
                     <option value="transparency-2">Transparency #2</option>
                     <option value="vertex-shaders">Vertex shaders</option>
+
                     <optgroup label="Ideas"></optgroup>
                     <option value="first-person-camera">First person camera</option>
+                    <option value="one-point-perspective">One-point perspective</option>
                     <option value="lightmaps">Lightmaps</option>
                     <option value="raytraced-lighting">Ray-traced lighting</option>
                     <option value="framerate-limiter">Refresh rate limiter</option>
+
                     <?php if (is_file("./extra-samples.php")) include("./extra-samples.php");?>
+
                 </select>
             </div>
             <div id="renderer-selector-container"

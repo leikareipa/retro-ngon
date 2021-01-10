@@ -6,13 +6,28 @@
 
 "use strict";
 
-// Renders the given meshes onto a DOM <canvas> element by the given id. The
-// <canvas> element must already exist.
-Rngon.render = function(canvasElementId,
+// Renders the given meshes onto a given DOM <canvas> element. Note that the target element
+// must already exist.
+Rngon.render = function(canvasElement,
                         meshes = [Rngon.mesh()],
                         options = {})
 {
     const renderCallInfo = Rngon.renderShared.setup_render_call_info();
+
+    // The canvas element can be passed in in a couple of ways, e.g. as a string that
+    // identifies the DOM element, or directly as a DOM element object. So let's figure
+    // out what we received, and turn it into a DOM element object for the renderer
+    // to operate on.
+    {
+        if (typeof canvasElement == "string")
+        {
+            canvasElement = document.getElementById(canvasElement);
+        }
+        else if (!(canvasElement instanceof Element))
+        {
+            Rngon.throw("Invalid canvas element.");
+        }
+    }
 
     options = Object.freeze({
         ...Rngon.renderShared.defaultRenderOptions,
@@ -23,7 +38,7 @@ Rngon.render = function(canvasElementId,
     
     // Render a single frame onto the target <canvas> element.
     {
-        const renderSurface = Rngon.surface(canvasElementId, options);
+        const renderSurface = Rngon.surface(canvasElement, options);
 
         // We'll render either always or only when the render canvas is in view,
         // depending on whether the user asked us for the latter option.

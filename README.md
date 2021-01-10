@@ -566,8 +566,8 @@ The renderer's public API consists of the following objects:
 
 | Object                                          | Brief description                           |
 | ----------------------------------------------- | ------------------------------------------- |
-| [render](#rendercanvaselementid-meshes-options) | Renders n-gon meshes onto a canvas.         |
-| [render_async](#render_async-meshes-options-rngonurl) | Renders n-gon meshes into a pixel buffer. Runs in a Web Worker.  |
+| [render()](#rendercanvaselementid-meshes-options) | Renders n-gon meshes onto a canvas.         |
+| [render_async()](#render_async-meshes-options-rngonurl) | Renders n-gon meshes into a pixel buffer. Runs in a Web Worker.  |
 | [mesh](#meshngons-transform)                    | Collection of thematically-related n-gons.  |
 | [ngon](#ngonvertices-material-normal)           | Polygonal shape defined by *n* vertices.    |
 | [vertex](#vertexx-y-z-u-v-w)                    | Corner of an n-gon.                         |
@@ -576,14 +576,14 @@ The renderer's public API consists of the following objects:
 | [texture_rgba](#texture_rgbadata)               | RGB texture with alpha.                     |
 | light                                           | (A description is coming.)                  |
 
-### render(canvasElementId[, meshes[, options]])
+### render(canvasElement[, meshes[, options]])
 Renders one or more n-gon meshes onto an existing canvas element.
 
 *Parameters:*
 
 | Type      | Name            | Description |
 | --------- | --------------- | ----------- |
-| *string*  | canvasElementId | A string matching the *id* attribute of the DOM canvas element to render into. |
+| *mixed*   | canvasElement   | A value identifying the canvas element to render into. This can be either a string, in which case it should represent the target canvas's *id* property; or a DOM Element object (e.g. from `document.getElementById()`). |
 | *array*   | meshes          | An array of one or more **mesh** objects to be rendered. Defaults to *[Rngon.mesh()]* (one empty mesh). |
 | *object*  | options         | An object providing optional directives (see below). |
 

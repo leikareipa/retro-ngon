@@ -13,10 +13,10 @@
 //
 // Note: Throws on unrecoverable errors; returns null if the surface size would be
 // <= 0 in width and/or height.
-Rngon.surface = function(canvasElementId = "",  // The DOM id of the target <canvas> element.
-                         options = {})          // A reference to or copy of the options passed to render().
+Rngon.surface = function(canvasElement,  // The target DOM <canvas> element.
+                         options = {})   // A reference to or copy of the options passed to render().
 {
-    const renderOffscreen = Boolean(canvasElementId === null);
+    const renderOffscreen = Boolean(canvasElement === null);
 
     if (renderOffscreen)
     {
@@ -28,7 +28,7 @@ Rngon.surface = function(canvasElementId = "",  // The DOM id of the target <can
         var {surfaceWidth,
              surfaceHeight,
              canvasElement,
-             renderContext} = setup_onscreen(canvasElementId, options.scale);
+             renderContext} = setup_onscreen(canvasElement, options.scale);
     }
     
     initialize_internal_surface_state(surfaceWidth, surfaceHeight);
@@ -187,11 +187,10 @@ Rngon.surface = function(canvasElementId = "",  // The DOM id of the target <can
     }
 
     // Initializes the target DOM <canvas> element for rendering into.
-    function setup_onscreen(canvasElementId, scale)
+    function setup_onscreen(canvasElement, scale)
     {
-        const canvasElement = document.getElementById(canvasElementId);
         Rngon.assert && (canvasElement instanceof Element)
-                    || Rngon.throw("Can't find the given canvas element.");
+                     || Rngon.throw("Can't find the given canvas element.");
 
         const renderContext = canvasElement.getContext("2d");
 

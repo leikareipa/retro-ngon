@@ -180,7 +180,6 @@ export function first_person_camera(canvasID = "",
             accumulatedMovement.transform(cameraRotationMatrix);
         }
 
-
         accumulatedMovement.x *= movementSpeed;
         accumulatedMovement.y *= movementSpeed;
         accumulatedMovement.z *= movementSpeed;
