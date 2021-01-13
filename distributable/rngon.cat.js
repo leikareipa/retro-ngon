@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (10 January 2021 03:07:26 UTC)
+// VERSION: beta live (13 January 2021 17:33:35 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -2751,27 +2751,37 @@ Rngon.texture_rgba.create_with_data_from_file = function(filename)
 // element unless the 'canvasElementId' parameter is null, in which case rendering will be
 // to an off-screen buffer only.
 //
-// Note: Throws on unrecoverable errors; returns null if the surface size would be
-// <= 0 in width and/or height.
+// Returns null if the surface could not be created.
 Rngon.surface = function(canvasElement,  // The target DOM <canvas> element.
                          options = {})   // A reference to or copy of the options passed to render().
 {
     const renderOffscreen = Boolean(canvasElement === null);
 
-    if (renderOffscreen)
+    let surfaceWidth = undefined,
+        surfaceHeight = undefined,
+        renderContext = undefined;
+
+    try
     {
-        var {surfaceWidth,
-             surfaceHeight} = setup_offscreen(options.width, options.height);
+        if (renderOffscreen)
+        {
+            ({surfaceWidth, surfaceHeight} = setup_offscreen(options.width, options.height));
+        }
+        else
+        {
+            ({surfaceWidth,
+              surfaceHeight,
+              canvasElement,
+              renderContext} = setup_onscreen(canvasElement, options.scale));
+        }
+        
+        initialize_internal_surface_state(surfaceWidth, surfaceHeight);
     }
-    else
+    catch (error)
     {
-        var {surfaceWidth,
-             surfaceHeight,
-             canvasElement,
-             renderContext} = setup_onscreen(canvasElement, options.scale);
+        Rngon.log(`Failed to create a render surface. ${error}`);
+        return null;
     }
-    
-    initialize_internal_surface_state(surfaceWidth, surfaceHeight);
 
     const cameraMatrix = Rngon.matrix44.multiply(Rngon.matrix44.rotation(options.cameraDirection.x,
                                                                          options.cameraDirection.y,
@@ -2926,7 +2936,7 @@ Rngon.surface = function(canvasElement,  // The target DOM <canvas> element.
         return;
     }
 
-    // Initializes the target DOM <canvas> element for rendering into.
+    // Initializes the target DOM <canvas> element for rendering into. Throws on errors.
     function setup_onscreen(canvasElement, scale)
     {
         Rngon.assert && (canvasElement instanceof Element)
@@ -2934,19 +2944,16 @@ Rngon.surface = function(canvasElement,  // The target DOM <canvas> element.
 
         const renderContext = canvasElement.getContext("2d");
 
+        Rngon.assert && (renderContext instanceof CanvasRenderingContext2D)
+                     || Rngon.throw("Couldn't establish a canvas render context.");
+
         // Size the canvas as per the requested render scale.
         const surfaceWidth = Math.floor(parseInt(window.getComputedStyle(canvasElement).getPropertyValue("width")) * scale);
         const surfaceHeight = Math.floor(parseInt(window.getComputedStyle(canvasElement).getPropertyValue("height")) * scale);
         {
-            Rngon.assert && (!isNaN(surfaceWidth) &&
-                             !isNaN(surfaceHeight))
-                        || Rngon.throw("Failed to extract the canvas size.");
-
-            if ((surfaceWidth <= 0) ||
-                (surfaceHeight <= 0))
-            {
-                return null;
-            }
+            Rngon.assert && ((surfaceWidth > 0) &&
+                             (surfaceHeight > 0))
+                         || Rngon.throw("Couldn't retrieve the canvas's dimensions.");
 
             canvasElement.setAttribute("width", surfaceWidth);
             canvasElement.setAttribute("height", surfaceHeight);
@@ -2963,6 +2970,8 @@ Rngon.surface = function(canvasElement,  // The target DOM <canvas> element.
     // element. Right now, since the renderer by default renders into an off-screen
     // buffer first and then transfers the pixels onto a <canvas>, this function
     // is more about just skipping initialization of the <canvas> element.
+    //
+    // Note: This function should throw on errors.
     function setup_offscreen(width, height)
     {
         return {
