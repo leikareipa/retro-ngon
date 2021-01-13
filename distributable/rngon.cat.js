@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (13 January 2021 17:33:35 UTC)
+// VERSION: beta live (13 January 2021 19:09:54 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -74,6 +74,20 @@ const Rngon = {
     Rngon.log = (string = "Hello there.")=>
     {
         console.log("Retro n-gon: " + string);
+    }
+
+    // Returns the resulting width of an image if it were rendered onto the given canvas element.
+    // The 'scale' parameter corresponds to the 'scale' option of Rngon.render().
+    Rngon.renderable_width_of = function(canvasElement, scale)
+    {
+        return Math.floor(parseInt(window.getComputedStyle(canvasElement).getPropertyValue("width")) * scale);
+    }
+
+    // Returns the resulting height of an image if it were rendered onto the given canvas element.
+    // The 'scale' parameter corresponds to the 'scale' option of Rngon.render().
+    Rngon.renderable_height_of = function(canvasElement, scale)
+    {
+        return Math.floor(parseInt(window.getComputedStyle(canvasElement).getPropertyValue("height")) * scale);
     }
 }
 
@@ -2948,8 +2962,8 @@ Rngon.surface = function(canvasElement,  // The target DOM <canvas> element.
                      || Rngon.throw("Couldn't establish a canvas render context.");
 
         // Size the canvas as per the requested render scale.
-        const surfaceWidth = Math.floor(parseInt(window.getComputedStyle(canvasElement).getPropertyValue("width")) * scale);
-        const surfaceHeight = Math.floor(parseInt(window.getComputedStyle(canvasElement).getPropertyValue("height")) * scale);
+        const surfaceWidth = Rngon.renderable_width_of(canvasElement, scale);
+        const surfaceHeight = Rngon.renderable_height_of(canvasElement, scale);
         {
             Rngon.assert && ((surfaceWidth > 0) &&
                              (surfaceHeight > 0))

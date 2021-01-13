@@ -50,6 +50,20 @@ const Rngon = {
     {
         console.log("Retro n-gon: " + string);
     }
+
+    // Returns the resulting width of an image if it were rendered onto the given canvas element.
+    // The 'scale' parameter corresponds to the 'scale' option of Rngon.render().
+    Rngon.renderable_width_of = function(canvasElement, scale)
+    {
+        return Math.floor(parseInt(window.getComputedStyle(canvasElement).getPropertyValue("width")) * scale);
+    }
+
+    // Returns the resulting height of an image if it were rendered onto the given canvas element.
+    // The 'scale' parameter corresponds to the 'scale' option of Rngon.render().
+    Rngon.renderable_height_of = function(canvasElement, scale)
+    {
+        return Math.floor(parseInt(window.getComputedStyle(canvasElement).getPropertyValue("height")) * scale);
+    }
 }
 
 // Global app state, for internal use by the renderer. Unless otherwise noted, these

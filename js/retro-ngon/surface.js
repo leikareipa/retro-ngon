@@ -208,8 +208,8 @@ Rngon.surface = function(canvasElement,  // The target DOM <canvas> element.
                      || Rngon.throw("Couldn't establish a canvas render context.");
 
         // Size the canvas as per the requested render scale.
-        const surfaceWidth = Math.floor(parseInt(window.getComputedStyle(canvasElement).getPropertyValue("width")) * scale);
-        const surfaceHeight = Math.floor(parseInt(window.getComputedStyle(canvasElement).getPropertyValue("height")) * scale);
+        const surfaceWidth = Rngon.renderable_width_of(canvasElement, scale);
+        const surfaceHeight = Rngon.renderable_height_of(canvasElement, scale);
         {
             Rngon.assert && ((surfaceWidth > 0) &&
                              (surfaceHeight > 0))
