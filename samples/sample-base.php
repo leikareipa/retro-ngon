@@ -72,7 +72,7 @@
                 {
                     renderOptions.depthSort = "painter";
                 }
-
+                
                 // Shader-related parameter names were changed in beta.5.
                 {
                     // We want to take care to replace 'undefined' with 'null', since some
@@ -80,6 +80,14 @@
                     // (which would exclude undefined).
                     renderOptions.vertexShaderFunction = ((renderOptions.vertexShader == undefined)? null : renderOptions.vertexShader);
                     renderOptions.pixelShaderFunction = ((renderOptions.pixelShader == undefined)? null : renderOptions.pixelShader);
+                }
+
+                // The overridable modules object was introduced in beta.5.
+                {
+                    renderOptions.modules = (renderOptions.modules || {});
+
+                    renderOptions.ngonRasterizerFunction = renderOptions.modules.ngonFill;
+                    renderOptions.ngonTransformClipLighterFunction = renderOptions.modules.transformClipLight;
                 }
             }
         </script>
@@ -102,7 +110,7 @@
         <script>
             (async()=>
             {
-                const canvasElement = document.getElementById("canvas");
+                const canvasElement = "canvas" // or "document.getElementById("canvas")" for versions >= beta.5.
                 const sampleId = (new URLSearchParams(window.location.search).get("sample") || "textured-cube-model");
                 const sampleModule = await import(`./${sampleId}/${sampleId}.js`);
 
