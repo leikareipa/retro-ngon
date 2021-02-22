@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width">
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <title>Oblique 2D tile rendering - Render sample - Retro n-gon renderer</title>
+        <link rel="stylesheet" type="text/css" href="../sample-base.css">
+    </head>
+    <body id="sample-container">
+        <iframe id="render-target"
+                style="width: 100vw; height: 100vh; border: none;">
+        </iframe>
+
+        <script>
+            const renderer = (new URLSearchParams(window.location.search).get("renderer") || "dev");
+            const renderTarget = document.getElementById("render-target");
+            renderTarget.src = `../sample-base.php?sample=oblique-2d-tiles&renderer=${renderer}`;
+        </script>
+    </body>
+</html>

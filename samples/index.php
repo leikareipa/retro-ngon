@@ -97,12 +97,12 @@
                     <option value="transparency-2">Transparency #2</option>
                     <option value="vertex-shaders">Vertex shaders</option>
 
-                    <optgroup label="Ideas"></optgroup>
+                    <optgroup label="Ideas & Implementations"></optgroup>
                     <option value="first-person-camera">First person camera</option>
-                    <option value="one-point-perspective">One-point perspective</option>
                     <option value="lightmaps">Lightmaps</option>
                     <option value="raytraced-lighting">Ray-traced lighting</option>
                     <option value="framerate-limiter">Refresh rate limiter</option>
+                    <option value='oblique-2d-tiles'>Oblique 2D tile rendering</option>
 
                     <?php if (is_file("./extra-samples.php")) include("./extra-samples.php");?>
 
