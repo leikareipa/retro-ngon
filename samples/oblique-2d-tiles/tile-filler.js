@@ -35,35 +35,28 @@ export function tile_filler()
 
             function set_edge_properties(edge, vert1, vert2)
             {
-                const startY = vert1.y;
-                const endY = vert2.y;
-                const edgeHeight = (endY - startY);
-                
-                const startX = vert1.x;
-                const endX = vert2.x;
-                const deltaX = ((endX - startX) / edgeHeight);
+                const edgeHeight = (vert2.y - vert1.y);
+                const shade = vert1.shade;
+                const shadeDelta = ((vert2.shade - vert1.shade) / edgeHeight);
 
-                const startShade = vert1.shade;
-                const deltaShade = ((vert2.shade - vert1.shade) / edgeHeight);
-
-                edge.startY = startY;
-                edge.endY = endY;
-                edge.startX = startX;
-                edge.deltaX = deltaX;
-                edge.startShade = startShade;
-                edge.deltaShade = deltaShade;
+                edge.shade = (material.renderVertexShade? (shade - shadeDelta) : 1);
+                edge.shadeDelta = (material.renderVertexShade? shadeDelta : 0);
             }
         }
 
         // Draw the tile as horizontal pixel spans across its left and right edges.
         {
-            const ngonStartY = leftEdge.startY;
-            const ngonEndY = leftEdge.endY;
-            
+            const ngonStartY = ngon.vertices[0].y;
+            const ngonEndY = ngon.vertices[1].y;
+
             for (let y = ngonStartY; y < ngonEndY; y++)
             {
-                const spanStartX = leftEdge.startX;
-                const spanEndX = rightEdge.startX;
+                // Update values that're interpolated vertically along the edges.
+                leftEdge.shade  += leftEdge.shadeDelta;
+                rightEdge.shade += rightEdge.shadeDelta;
+                
+                const spanStartX = ngon.vertices[0].x;
+                const spanEndX = ngon.vertices[3].x;
 
                 const spanWidth = ((spanEndX - spanStartX) + 1);
                 if (spanWidth < 0) continue;
@@ -76,15 +69,15 @@ export function tile_filler()
                 let pixelBufferIdx = (((spanStartX + y * renderWidth) * 4) - 4);
 
                 // Values interpolated horizontally along the span.
-                const deltaShade = ((rightEdge.startShade - leftEdge.startShade) / spanWidth);
-                let iplShade = (leftEdge.startShade - deltaShade);
+                const shadeDelta = ((rightEdge.shade - leftEdge.shade) / spanWidth);
+                let shade = (leftEdge.shade - shadeDelta);
                 let texelIdx = (((y - ngonStartY) * texture.width) - 1);
 
                 // Draw the span into the pixel buffer.
                 for (let x = spanStartX; x < spanEndX; x++)
                 {
                     // Update interpolated values.
-                    iplShade += deltaShade;
+                    shade += shadeDelta;
                     pixelBufferIdx += 4;
                     texelIdx++;
 
@@ -92,7 +85,6 @@ export function tile_filler()
                     if (x < 0) continue;
                     if (x >= renderWidth) break;
 
-                    const shade = (material.renderVertexShade? iplShade : 1);
                     const texel = texture.pixels[texelIdx];
 
                     // Make sure we gracefully exit if accessing the texture out of bounds.
@@ -125,12 +117,6 @@ export function tile_filler()
                     pixelBuffer[pixelBufferIdx + 2] = (texel.blue  * shade);
                     pixelBuffer[pixelBufferIdx + 3] = 255;
                 }
-
-                // Update values that're interpolated vertically along the edges.
-                leftEdge.startX      += leftEdge.deltaX;
-                leftEdge.startShade  += leftEdge.deltaShade;
-                rightEdge.startX     += rightEdge.deltaX;
-                rightEdge.startShade += rightEdge.deltaShade;
             }
         }
     }

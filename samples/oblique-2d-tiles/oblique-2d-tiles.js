@@ -78,7 +78,13 @@ export const sample_scene = (frameCount)=>
         {object:lamp1, x:4, y:15},
         {object:wall1, x:5, y:15, transparent:true},
         {object:wall1, x:4, y:16, transparent:true},
+        {object:lamp1, x:20, y:8},
     ];
+
+    if (0 && !frameCount)
+    {
+        draw_debug_borders_on_textures();
+    }
 
     // Construct the ground tile mesh.
     {
@@ -135,3 +141,40 @@ export const sampleRenderOptions = {
         ngonFill: tile_filler,
     },
 };
+
+function draw_debug_borders_on_textures()
+{
+    const palette = [
+        {red:255, green:0, blue:0},
+        {red:0, green:255, blue:0},
+        {red:0, green:0, blue:255},
+        {red:255, green:255, blue:0},
+        {red:0, green:255, blue:255},
+        {red:255, green:0, blue:255},
+    ];
+    
+    for (const texture of [wall1, gateway1, lamp1, grass1, grass2])
+    {
+        const lineColor = palette[Math.floor(Math.random() * palette.length)];
+
+        for (let x = 0; x < texture.width; x++)
+        {
+            put_border(texture, (x + 0 * texture.width));
+            put_border(texture, (x + (texture.height - 1) * texture.width));
+        }
+
+        for (let y = 0; y < texture.height; y++)
+        {
+            put_border(texture, (0 + y * texture.width));
+            put_border(texture, ((texture.width - 1) + y * texture.width));
+        }
+
+        function put_border(texture, idx)
+        {
+            texture.pixels[idx] = lineColor;
+            texture.pixels[idx].alpha = 255;
+        }
+    }
+
+    return;
+}
