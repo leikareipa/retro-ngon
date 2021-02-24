@@ -10,6 +10,7 @@
 
 "use strict";
 
+// Note: Only supports square polygons.
 export function tile_filler()
 {
     const pixelBuffer = Rngon.internalState.pixelBuffer.data;
@@ -23,6 +24,9 @@ export function tile_filler()
         const ngon = Rngon.internalState.ngonCache.ngons[n];
         const material = ngon.material;
         const texture = material.texture;
+
+        Rngon.assert && (ngon.vertices.length == 4)
+                     || Rngon.throw("Expected four-sided polygons.");
 
         // Define the tile's left and right edges. Later, we'll render the tile
         // as horizontal pixel spans across these edges.
@@ -90,31 +94,27 @@ export function tile_filler()
                     // Make sure we gracefully exit if accessing the texture out of bounds.
                     if (!texel) continue;
 
-                    if (material.allowAlphaReject && (texel.alpha !== 255)) continue;
+                    if (texel.alpha !== 255) continue;
 
-                    if (material.allowAlphaBlend && (material.color.alpha < 255))
+                    let red = (texel.red * shade);
+                    let green = (texel.green * shade);
+                    let blue = (texel.blue * shade);
+
+                    if (material.color.alpha < 255)
                     {
-                        // Full transparency.
-                        if (material.color.alpha <= 0)
-                        {
-                            continue;
-                        }
-                        // Partial transparency.
-                        else
-                        {
-                            const stipplePatternIdx = Math.floor(material.color.alpha / (256 / Rngon.ngon_filler.stipple_patterns.length));
-                            const stipplePattern    = Rngon.ngon_filler.stipple_patterns[stipplePatternIdx];
-                            const stipplePixelIdx   = ((x % stipplePattern.width) + (y % stipplePattern.height) * stipplePattern.width);
+                        const prevRed = pixelBuffer[pixelBufferIdx + 0];
+                        const prevBlue = pixelBuffer[pixelBufferIdx + 1];
+                        const prevGreen = pixelBuffer[pixelBufferIdx + 2];
+                        const factor = (material.color.alpha / 255);
 
-                            // Reject by stipple pattern.
-                            if (stipplePattern.pixels[stipplePixelIdx]) continue;
-                        }   
+                        red = Rngon.lerp(prevRed, red, factor);
+                        green = Rngon.lerp(prevBlue, green, factor);
+                        blue = Rngon.lerp(prevGreen, blue, factor);
                     }
 
-                    // Draw the pixel.
-                    pixelBuffer[pixelBufferIdx + 0] = (texel.red   * shade);
-                    pixelBuffer[pixelBufferIdx + 1] = (texel.green * shade);
-                    pixelBuffer[pixelBufferIdx + 2] = (texel.blue  * shade);
+                    pixelBuffer[pixelBufferIdx + 0] = red;
+                    pixelBuffer[pixelBufferIdx + 1] = green;
+                    pixelBuffer[pixelBufferIdx + 2] = blue;
                     pixelBuffer[pixelBufferIdx + 3] = 255;
                 }
             }
