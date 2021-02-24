@@ -53,17 +53,14 @@ export function tile_filler()
             const ngonStartY = ngon.vertices[0].y;
             const ngonEndY = ngon.vertices[1].y;
 
-            for (let y = ngonStartY; y < ngonEndY; y++)
+            for (let y = ngonStartY; y <= ngonEndY; y++)
             {
                 // Update values that're interpolated vertically along the edges.
                 leftEdge.shade  += leftEdge.shadeDelta;
                 rightEdge.shade += rightEdge.shadeDelta;
                 
                 const spanStartX = ngon.vertices[0].x;
-                const spanEndX = ngon.vertices[3].x;
-
-                const spanWidth = ((spanEndX - spanStartX) + 1);
-                if (spanWidth < 0) continue;
+                const spanWidth = texture.width;
 
                 // Bounds-check, since we don't clip vertices to the viewport.
                 if (y < 0) continue;
@@ -77,8 +74,15 @@ export function tile_filler()
                 let shade = (leftEdge.shade - shadeDelta);
                 let texelIdx = (((y - ngonStartY) * texture.width) - 1);
 
+                // Skip the first n non-solid pixels on this horizontal row.
+                const firstSolidIdx = texture.firstSolidPixelIdx[y - ngonStartY];
+                const lastSolidIdx = texture.lastSolidPixelIdx[y - ngonStartY];
+                shade += (shadeDelta * firstSolidIdx);
+                pixelBufferIdx += (4 * firstSolidIdx);
+                texelIdx += firstSolidIdx;
+
                 // Draw the span into the pixel buffer.
-                for (let x = spanStartX; x < spanEndX; x++)
+                for (let x = (spanStartX + firstSolidIdx); x <= (spanStartX + lastSolidIdx); x++)
                 {
                     // Update interpolated values.
                     shade += shadeDelta;
@@ -90,10 +94,6 @@ export function tile_filler()
                     if (x >= renderWidth) break;
 
                     const texel = texture.pixels[texelIdx];
-
-                    // Make sure we gracefully exit if accessing the texture out of bounds.
-                    if (!texel) continue;
-
                     if (texel.alpha !== 255) continue;
 
                     let red = (texel.red * shade);
