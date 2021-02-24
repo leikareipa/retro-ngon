@@ -57,42 +57,73 @@ const gateway1 = Rngon.texture_rgba({
 const groundTileWidth = 22;
 const groundTileHeight = 22;
 
+const decors = [
+    {object:wall1, x:16, y:4},
+    {object:gateway1, x:15, y:5},
+    {object:wall1, x:14, y:6},
+    {object:lamp1, x:10, y:9},
+    {object:wall1, x:13, y:7},
+    {object:wall1, x:12, y:8},
+    {object:wall1, x:11, y:9},
+    {object:lamp1, x:14, y:8},
+    {object:gateway1, x:10, y:10},
+    {object:wall1, x:9, y:11},
+    {object:wall1, x:7, y:13},
+    {object:lamp1, x:4, y:15},
+    {object:wall1, x:5, y:15, transparent:true},
+    {object:wall1, x:4, y:16, transparent:true},
+    {object:lamp1, x:20, y:8},
+];
+
+const camera = {
+    pos: {x: 0, y: 0},
+    dir: {left:false, right:false, up:false, down:false},
+    speed: 1.5,
+};
+
 // Returns a mesh containing the model's ngons, with incremental rotation added
 // based on the rendered frame count.
 export const sample_scene = (frameCount)=>
 {
     const ngons = [];
 
-    const decors = [
-        {object:wall1, x:16, y:4},
-        {object:gateway1, x:15, y:5},
-        {object:wall1, x:14, y:6},
-        {object:lamp1, x:10, y:9},
-        {object:wall1, x:13, y:7},
-        {object:wall1, x:12, y:8},
-        {object:wall1, x:11, y:9},
-        {object:lamp1, x:14, y:8},
-        {object:gateway1, x:10, y:10},
-        {object:wall1, x:9, y:11},
-        {object:wall1, x:7, y:13},
-        {object:lamp1, x:4, y:15},
-        {object:wall1, x:5, y:15, transparent:true},
-        {object:wall1, x:4, y:16, transparent:true},
-        {object:lamp1, x:20, y:8},
-    ];
-
-    if (0 && !frameCount)
+    // This will be executed once.
+    if (!frameCount)
     {
-        draw_debug_borders_on_textures();
+        window.addEventListener("keydown", (event)=>
+        {
+            switch (event.key.toLowerCase())
+            {
+                case "e": camera.dir.up = true; break;
+                case "d": camera.dir.down = true; break;
+                case "s": camera.dir.left = true; break;
+                case "f": camera.dir.right = true; break;
+            }
+        });
+
+        window.addEventListener("keyup", (event)=>
+        {
+            switch (event.key.toLowerCase())
+            {
+                case "e": camera.dir.up = false; break;
+                case "d": camera.dir.down = false; break;
+                case "s": camera.dir.left = false; break;
+                case "f": camera.dir.right = false; break;
+            }
+        });
     }
+
+    // Move the camera.
+    camera.pos.x += (camera.speed * (camera.dir.left? 1 : camera.dir.right? -1 : 0));
+    camera.pos.y += (camera.speed * (camera.dir.up? 1 : camera.dir.down? -1 : 0));
 
     // Construct the ground tile mesh.
     {
         const numTilesX = 1 + Math.ceil(Rngon.internalState.pixelBuffer.width / groundTileWidth);
         const numTilesY = 1 + Math.ceil(Rngon.internalState.pixelBuffer.height / (groundTileHeight / 2));
         
-        let startX = -(groundTileWidth / 2);
-        let startY = -(groundTileHeight / 2);
+        let startX = Math.floor(camera.pos.x + -(groundTileWidth / 2));
+        let startY = Math.floor(camera.pos.y + -(groundTileHeight / 2));
         let isOddLine = false;
 
         for (let y = 0; y < numTilesY; (y++, isOddLine = !isOddLine))
@@ -105,7 +136,7 @@ export const sample_scene = (frameCount)=>
                                        Rngon.vertex( posX,                    (startY + groundTileHeight)),
                                        Rngon.vertex((posX + groundTileWidth), (startY + groundTileHeight)),
                                        Rngon.vertex((posX + groundTileWidth),  startY)], {
-                    texture: (((posX % 2) == 0)? grass1 : grass2),
+                    texture: (((Math.floor(camera.pos.x - posX) % 2) == 0)? grass1 : grass2),
                     allowTransform: false,  
                 }));
             }
@@ -118,8 +149,8 @@ export const sample_scene = (frameCount)=>
     // Consturct the meshes of decor tiles; e.g. walls.
     for (const decor of decors)
     {
-        const offsX = Math.floor(decor.x * (groundTileWidth / 2));
-        const offsY = Math.floor(decor.y * (groundTileHeight / 2));
+        const offsX = Math.floor(camera.pos.x + (decor.x * (groundTileWidth / 2)));
+        const offsY = Math.floor(camera.pos.y + (decor.y * (groundTileHeight / 2)));
 
         ngons.push(Rngon.ngon([Rngon.vertex( offsX,                    (offsY - decor.object.height)),
                                Rngon.vertex( offsX,                     offsY),
@@ -127,7 +158,7 @@ export const sample_scene = (frameCount)=>
                                Rngon.vertex((offsX + groundTileWidth), (offsY - decor.object.height))], {
             texture: decor.object,
             allowTransform: false,
-            color: Rngon.color_rgba(255, 255, 255, (decor.transparent? 150 : 255)),
+            color: Rngon.color_rgba(255, 255, 255, (decor.transparent? 125 : 255)),
         }));
     }
     
