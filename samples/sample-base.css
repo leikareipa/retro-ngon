@@ -59,6 +59,16 @@ body
     border-radius: 0px;
 }
 
+.notice
+{
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    padding: 25px;
+    background-color: black;
+    color: white;
+}
+
 .infoboxes-container
 {
     position: absolute;
@@ -84,6 +94,7 @@ body
 
 .infobox
 {
+    line-height: 20px;
     pointer-events: initial;
     position: relative;
     display: flex;

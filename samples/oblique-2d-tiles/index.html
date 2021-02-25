@@ -6,27 +6,42 @@
         <title>Oblique 2D tile rendering - Render sample - Retro n-gon renderer</title>
         <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" integrity="sha384-gfdkjb5BdAXd+lj+gudLWI+BXq4IuLW5IT+brZEZsLFm++aCMlF1V92rMkPaX4PP" crossorigin="anonymous">
         <link rel="stylesheet" type="text/css" href="../sample-base.css">
-        <style>
-            .notice
-            {
-                position: absolute;
-                bottom: 10px;
-                right: 10px;
-                padding: 25px;
-                background-color: black;
-                color: white;
-            }
-        </style>
     </head>
     <body id="sample-container">
         <iframe id="render-target"
                 style="width: 100vw; height: 100vh; border: none;">
         </iframe>
 
+        <div class="infoboxes-container additional">
+            <div class="infobox time">
+                <div class="title">Time</div>
+                <div class="value">Day</div>
+                <div class="adjust left" onclick="change_time(-1);"></div>
+                <div class="adjust right" onclick="change_time(1);"></div>
+            </div>
+        </div>
+
         <div class="notice">
             <i class="fas fa-fw fa-keyboard"></i>
             Press ESDF to move the camera
         </div>
+
+        <script>
+            const timeTypes = ["Day", "Night"];
+            let timeTypeIdx = 0;
+
+            var TIME_TYPE = timeTypes[timeTypeIdx];
+
+            function change_time(direction = 1)
+            {
+                timeTypeIdx = Math.max(0, Math.min((timeTypes.length - 1), (timeTypeIdx + direction)));
+                TIME_TYPE = timeTypes[timeTypeIdx];
+
+                document.querySelector(".infobox.time .value").innerHTML = TIME_TYPE;
+
+                return;
+            }
+        </script>
 
         <script>
             const renderer = (new URLSearchParams(window.location.search).get("renderer") || "dev");
