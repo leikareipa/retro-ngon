@@ -33,7 +33,8 @@
                 <div class="title">Polys</div>
                 <div class="value"><i class="fas fa-sm fa-spin fa-spinner"></i></div>
             </div>
-            <div class="infobox fps">
+            <div class="infobox fps"
+                 title="Performance of Rngon.render()">
                 <div class="title">FPS</div>
                 <div class="value"><i class="fas fa-sm fa-spin fa-spinner"></i></div>
             </div>
@@ -72,7 +73,7 @@
                 {
                     renderOptions.depthSort = "painter";
                 }
-                
+
                 // Shader-related parameter names were changed in beta.5.
                 {
                     // We want to take care to replace 'undefined' with 'null', since some
@@ -110,7 +111,7 @@
         <script>
             (async()=>
             {
-                const canvasElement = "canvas" // or "document.getElementById("canvas")" for versions >= beta.5.
+                const canvasElement = "canvas"; // or "document.getElementById("canvas")" for versions >= beta.5.
                 const sampleId = (new URLSearchParams(window.location.search).get("sample") || "textured-cube-model");
                 const sampleModule = await import(`./${sampleId}/${sampleId}.js`);
 
@@ -123,7 +124,7 @@
                 let uiUpdateTimer = 0;
 
                 // Runs the renderer continuously, in sync with the device's refresh rate.
-                (function render_loop(timestamp = 0, frameTimeMs = 0, frameCount = 0)
+                (function render_loop(timestamp = 0, frameTimeDeltaMs = 0, frameCount = 0)
                 {
                     const queue_new_frame = (additionalTimeDelta = 0)=>
                     {
@@ -137,9 +138,9 @@
 
                     // Attempt to limit the renderer's refresh rate, if so requested by the user.
                     if (sampleModule.sampleRenderOptions.targetRefreshRate &&
-                        (frameTimeMs < Math.floor(1000 / sampleModule.sampleRenderOptions.targetRefreshRate)))
+                        (frameTimeDeltaMs < Math.floor(1000 / sampleModule.sampleRenderOptions.targetRefreshRate)))
                     {
-                        queue_new_frame(frameTimeMs);
+                        queue_new_frame(frameTimeDeltaMs);
                         return;
                     }
             
@@ -159,7 +160,7 @@
 
                     const renderInfo = Rngon.render(canvasElement, [scene], options);
 
-                    if ((uiUpdateTimer += frameTimeMs) >= 1000)
+                    if ((uiUpdateTimer += frameTimeDeltaMs) >= 1000)
                     {
                         document.querySelector(".infobox.fps .value").innerHTML = Math.floor(1000 / (renderInfo.totalRenderTimeMs || 1));
                         document.querySelector(".infobox.polycount .value").innerHTML = renderInfo.numNgonsRendered;

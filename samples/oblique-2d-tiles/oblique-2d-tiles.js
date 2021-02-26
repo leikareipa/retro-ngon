@@ -60,6 +60,8 @@ const textures = [wall1, gateway1, lamp1, grass1, grass2];
 const groundTileWidth = 22;
 const groundTileHeight = 22;
 
+let mousePos = {x:0, y:0};
+
 const decors = [
     {object:wall1, x:16, y:4},
     {object:gateway1, x:15, y:5},
@@ -86,7 +88,7 @@ const camera = {
 
 // Returns a mesh containing the model's ngons, with incremental rotation added
 // based on the rendered frame count.
-export const sample_scene = (frameCount, frameTimeDeltaMs)=>
+export const sample_scene = (frameCount)=>
 {
     const ngons = [];
 
@@ -116,6 +118,12 @@ export const sample_scene = (frameCount, frameTimeDeltaMs)=>
                 case "f": camera.dir.right = false; break;
             }
         });
+
+        window.addEventListener("mousemove", (event=>
+        {
+            mousePos.x = event.clientX;
+            mousePos.y = event.clientY;
+        }));
     }
 
     // Move the camera.
@@ -183,15 +191,26 @@ export const sampleRenderOptions = {
     get lights()
     {
         return [
-            Rngon.light(Rngon.translation_vector(Math.floor(camera.pos.x + (21 * (groundTileWidth / 2))),
-                                                 Math.floor(camera.pos.y + (7 * (groundTileHeight / 2)))),{
+            Rngon.light(Rngon.translation_vector(...tile_pos_to_world_pos(21, 7)),{
                 intensity: 20,
             }),
-            Rngon.light(Rngon.translation_vector(Math.floor(camera.pos.x + (15 * (groundTileWidth / 2))),
-                                                 Math.floor(camera.pos.y + (7 * (groundTileHeight / 2)))),{
-                intensity: 19,
+            Rngon.light(Rngon.translation_vector(...tile_pos_to_world_pos(15, 7)),{
+                intensity: 20,
+            }),
+            // A light that follows the mouse cursor.
+            Rngon.light(Rngon.translation_vector((mousePos.x * renderSettings.scale),
+                                                 (mousePos.y * renderSettings.scale)),{
+                intensity: 20,
             }),
         ];
+
+        function tile_pos_to_world_pos(tileX, tileY)
+        {
+            return [
+                Math.floor(camera.pos.x + (tileX * (groundTileWidth / 2))),
+                Math.floor(camera.pos.y + (tileY * (groundTileHeight / 2)))
+            ];
+        }
     },
 };
 
