@@ -30,7 +30,7 @@ Rngon.renderShared = {
         state.pixel_shader = (options.shaderFunction || // <- Name in pre-beta.3.
                               options.pixelShader); 
 
-        state.modules.ngon_fill = (options.modules.ngonFill || Rngon.ngon_filler);
+        state.modules.ngon_fill = (options.modules.ngonFill || Rngon.rasterize_ngon_cache);
         state.modules.transform_clip_light = (options.modules.transformClipLight || Rngon.ngon_transform_and_light)
         state.modules.surface_wipe = (options.modules.surfaceWipe || Rngon.surface.wipe);
 
@@ -159,7 +159,7 @@ Rngon.renderShared = {
         width: 640, // Used by render_async() only.
         height: 480, // Used by render_async() only.
         modules: {
-            ngonFill: null, // Null defaults to Rngon.ngon_filler.
+            ngonFill: null, // Null defaults to Rngon.rasterize_ngon_cache.
             transformClipLight: null, // Null defaults to Rngon.ngon_transform_and_light.
         },
     }),

@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (13 January 2021 19:09:54 UTC)
+// VERSION: beta live (27 February 2021 17:34:49 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -1185,7 +1185,7 @@ let numRightEdges = 0;
 // code, please benchmark its effects on performance first - maintaining or
 // improving performance would be great, losing performance would be bad.
 //
-Rngon.ngon_filler = function(auxiliaryBuffers = [])
+Rngon.rasterize_ngon_cache = function(auxiliaryBuffers = [])
 {
     const interpolatePerspective = Rngon.internalState.usePerspectiveCorrectInterpolation;
     const usePixelShader = Rngon.internalState.usePixelShader;
@@ -1511,8 +1511,8 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                     // Partial transparency.
                                     else
                                     {
-                                        const stipplePatternIdx = Math.floor(material.color.alpha / (256 / Rngon.ngon_filler.stipple_patterns.length));
-                                        const stipplePattern    = Rngon.ngon_filler.stipple_patterns[stipplePatternIdx];
+                                        const stipplePatternIdx = Math.floor(material.color.alpha / (256 / Rngon.rasterize_ngon_cache.stipple_patterns.length));
+                                        const stipplePattern    = Rngon.rasterize_ngon_cache.stipple_patterns[stipplePatternIdx];
                                         const stipplePixelIdx   = ((x % stipplePattern.width) + (y % stipplePattern.height) * stipplePattern.width);
 
                                         // Reject by stipple pattern.
@@ -1648,8 +1648,8 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
                                     // Partial transparency.
                                     else
                                     {
-                                        const stipplePatternIdx = Math.floor(material.color.alpha / (256 / Rngon.ngon_filler.stipple_patterns.length));
-                                        const stipplePattern    = Rngon.ngon_filler.stipple_patterns[stipplePatternIdx];
+                                        const stipplePatternIdx = Math.floor(material.color.alpha / (256 / Rngon.rasterize_ngon_cache.stipple_patterns.length));
+                                        const stipplePattern    = Rngon.rasterize_ngon_cache.stipple_patterns[stipplePatternIdx];
                                         const stipplePixelIdx   = ((x % stipplePattern.width) + (y % stipplePattern.height) * stipplePattern.width);
 
                                         // Reject by stipple pattern.
@@ -1757,7 +1757,7 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
 
 // Create a set of stipple patterns for emulating transparency.
 {
-    Rngon.ngon_filler.stipple_patterns = [
+    Rngon.rasterize_ngon_cache.stipple_patterns = [
         // ~1% transparent.
         {
             width: 8,
@@ -1789,12 +1789,12 @@ Rngon.ngon_filler = function(auxiliaryBuffers = [])
     ];
 
     // Append a reverse set of patterns to go from 50% to ~99% transparent.
-    for (let i = (Rngon.ngon_filler.stipple_patterns.length - 2); i >= 0; i--)
+    for (let i = (Rngon.rasterize_ngon_cache.stipple_patterns.length - 2); i >= 0; i--)
     {
-        Rngon.ngon_filler.stipple_patterns.push({
-                width: Rngon.ngon_filler.stipple_patterns[i].width,
-                height: Rngon.ngon_filler.stipple_patterns[i].height,
-                pixels: Rngon.ngon_filler.stipple_patterns[i].pixels.map(p=>Number(!p)),
+        Rngon.rasterize_ngon_cache.stipple_patterns.push({
+                width: Rngon.rasterize_ngon_cache.stipple_patterns[i].width,
+                height: Rngon.rasterize_ngon_cache.stipple_patterns[i].height,
+                pixels: Rngon.rasterize_ngon_cache.stipple_patterns[i].pixels.map(p=>Number(!p)),
             });
     }
 }
@@ -2409,7 +2409,7 @@ Rngon.renderShared = {
         state.pixel_shader = (options.shaderFunction || // <- Name in pre-beta.3.
                               options.pixelShader); 
 
-        state.modules.ngon_fill = (options.modules.ngonFill || Rngon.ngon_filler);
+        state.modules.ngon_fill = (options.modules.ngonFill || Rngon.rasterize_ngon_cache);
         state.modules.transform_clip_light = (options.modules.transformClipLight || Rngon.ngon_transform_and_light)
         state.modules.surface_wipe = (options.modules.surfaceWipe || Rngon.surface.wipe);
 
@@ -2538,7 +2538,7 @@ Rngon.renderShared = {
         width: 640, // Used by render_async() only.
         height: 480, // Used by render_async() only.
         modules: {
-            ngonFill: null, // Null defaults to Rngon.ngon_filler.
+            ngonFill: null, // Null defaults to Rngon.rasterize_ngon_cache.
             transformClipLight: null, // Null defaults to Rngon.ngon_transform_and_light.
         },
     }),
