@@ -654,6 +654,49 @@ Rngon.render("canvas", [mesh],
 ```
 
 ```
+// Create and use a custom rasterizer function (ngonFill).
+
+Rngon.render(canvas, [meshes],
+             {
+                modules: {
+                    ngonFill: custom_rasterizer
+                }
+             });
+
+// This function will be called when Rngon.render() wants to rasterize
+// the n-gons it's been given (after they've been e.g. transformed into
+// screen space). The n-gons to be rasterized are in the n-gon cache,
+// Rngon.internalState.ngonCache.ngons; only the first 'count' n-gons
+// should be rasterized, the rest are stale cache filler. The pixel
+// array to render into is Rngon.internalState.pixelBuffer.data.
+//
+// For more info on how the rasterizer operates, see the default
+// rasterizer, Rngon.ngon_filler().
+//
+function custom_rasterizer()
+{
+    console.log("I've been asked to rasterize some n-gons.");
+
+    for (let n = 0; n < Rngon.internalState.ngonCache.count; n++)
+    {
+        const ngon = Rngon.internalState.ngonCache.ngons[n];
+        const pixelBuffer = Rngon.internalState.pixelBuffer.data;
+
+        ...
+
+        // Draw a pixel (1 byte per color channel).
+        pixelBuffer[pixelIdx + 0] = red;
+        pixelBuffer[pixelIdx + 1] = green;
+        pixelBuffer[pixelIdx + 2] = blue;
+        pixelBuffer[pixelIdx + 3] = 255;
+    }
+
+    // Optional: we could also evoke the renderer's default rasterizer.
+    Rngon.ngon_filler();
+}
+```
+
+```
 // Employ an auxiliary render buffer for mouse picking.
 
 const ngon = Rngon.ngon([Rngon.vertex(0, 0, 0)],
