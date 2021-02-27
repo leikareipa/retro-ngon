@@ -8,7 +8,7 @@
 "use strict";
 
 import {tile_filler} from "./tile-filler.js";
-import {tile_lighter} from "./tile-lighter.js";
+import {apply_lighting_to_tile} from "./tile-lighter.js";
 
 const grass1 = Rngon.texture_rgba({
     "needsFlip": false,
@@ -176,8 +176,6 @@ export const sample_scene = (frameCount)=>
             color: Rngon.color_rgba(255, 255, 255, (decor.transparent? 125 : 255)),
         }));
     }
-
-    ngons.forEach(n=>tile_lighter(n));
     
     return Rngon.mesh(ngons);
 };
@@ -187,6 +185,14 @@ export const sampleRenderOptions = {
     useDepthBuffer: false,
     modules: {
         ngonFill: tile_filler,
+        transformClipLight: (ngons)=>{
+            ngons.forEach(n=>apply_lighting_to_tile(n));
+
+            // The n-gons don't need transforming, so we can just assign them directly
+            // to the renderer's n-gon cache; from which they'll be picked up for rasterization.
+            Rngon.internalState.ngonCache.ngons = ngons;
+            Rngon.internalState.ngonCache.count = ngons.length;
+        },
     },
     get lights()
     {
@@ -252,6 +258,20 @@ function precompute_texture_parameters()
     return;
 }
 
+// For debugging.
+function make_textures_solid()
+{
+    for (const texture of textures)
+    {
+        let idx = 0;
+        while (texture.pixels[idx].alpha < 255) idx++;
+        texture.pixels.fill(texture.pixels[idx]);
+    }
+
+    return;
+}
+
+// For debugging.
 function draw_debug_borders_on_textures()
 {
     const palette = [

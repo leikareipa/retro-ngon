@@ -13,7 +13,7 @@
 const groundTileWidth = 22;
 const groundTileHeight = 22;
 
-export function tile_lighter(ngon)
+export function apply_lighting_to_tile(ngon)
 {
     if (ngon.material.vertexShading !== "gouraud")
     {
