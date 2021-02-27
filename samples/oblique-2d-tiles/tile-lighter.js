@@ -34,22 +34,21 @@ export function tile_lighter(ngon)
             let vX = vertex.x;
             let vY = vertex.y;
 
-            // Rotate the vertex positions we'll use for calculating light rays.
-            // We do this since the tile graphics are rotated 45 degrees but the
-            // n-gons on which the graphics are displayed are squares interleaved
-            // to create the seamless tiled look - so tiles surrounding a tile on
-            // which a light source is placed would be brighter than the source
-            // tile as their vertex corners are closer to the light source.
+            // Transform the vertex positions to occur toward the (diamond-shaped) tile's
+            // edges rather than at the transparent corners of its (square) polygon.
+            // The polygon corners overlap other tiles' polygons, so lighting values
+            // would be incorrect if computed at the corners.
             //
             // We also modify the top (#0 and #3) vertices' Y values to create a
             // unit tile, i.e. a tile as tall as wide, so that lighting tall tiles
             // (e.g. walls) is uniform with how ground tiles (unit size) are lit.
+            const offset = (groundTileWidth / 8);
             switch (v)
             {
-                case 0: vY = (ngon.vertices[1].y - groundTileHeight); vX += 5; break;
-                case 1: vY -= 5; break;
-                case 2: vX -= 5; break;
-                case 3: vY = (ngon.vertices[1].y - groundTileHeight); vY += 5; break;
+                case 0: vY = (ngon.vertices[1].y - groundTileHeight); vX += offset; vY += offset; break;
+                case 1: vX += offset; vY -= offset; break;
+                case 2: vX -= offset; vY -= offset; break;
+                case 3: vY = (ngon.vertices[1].y - groundTileHeight); vX -= offset; vY += offset; break;
             }
 
             const distance = Math.sqrt(((vX - light.position.x) * (vX - light.position.x)) +
