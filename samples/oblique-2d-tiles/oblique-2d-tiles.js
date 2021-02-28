@@ -184,7 +184,7 @@ export const sampleRenderOptions = {
     depthSort: "none",
     useDepthBuffer: false,
     modules: {
-        ngonFill: tile_filler,
+        rasterize: tile_filler,
         transformClipLight: (ngons)=>{
             ngons.forEach(n=>apply_lighting_to_tile(n));
 

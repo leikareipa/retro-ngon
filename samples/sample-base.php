@@ -87,7 +87,7 @@
                 {
                     renderOptions.modules = (renderOptions.modules || {});
 
-                    renderOptions.ngonRasterizerFunction = renderOptions.modules.ngonFill;
+                    renderOptions.ngonRasterizerFunction = (renderOptions.modules.rasterize || renderOptions.modules.ngonFill);
                     renderOptions.ngonTransformClipLighterFunction = renderOptions.modules.transformClipLight;
                 }
             }

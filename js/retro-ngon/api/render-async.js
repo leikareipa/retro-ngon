@@ -29,7 +29,7 @@ Rngon.render_async = function(meshes = [Rngon.mesh()],
 {
     // Modules are not supported by the async renderer.
     options.modules = {
-        ngonFill: null,
+        rasterize: null,
         transformClipLight: null,
     };
 

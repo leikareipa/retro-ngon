@@ -92,7 +92,7 @@ Rngon.surface = function(canvasElement,  // The target DOM <canvas> element.
             // Render the n-gons from the n-gon cache. The rendering will go into the
             // renderer's internal pixel buffer, Rngon.internalState.pixelBuffer.
             {
-                Rngon.internalState.modules.ngon_fill(options.auxiliaryBuffers);
+                Rngon.internalState.modules.rasterize(options.auxiliaryBuffers);
 
                 if (Rngon.internalState.usePixelShader)
                 {

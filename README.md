@@ -612,7 +612,7 @@ Renders one or more n-gon meshes onto an existing canvas element.
 | Type                  | Name                     | Description |
 | --------------------- | ------------------------ | ----------- |
 | *function*            | transformClipLight       | A function called by the renderer to transform, clip, and light the n-gons that were passed to **render()**. For more info, including the list of parameters, see the default function. Defaults to *null*, which is an alias for the default function, *Rngon.transform_and_light*. |
-| *function*            | ngonFill                 | A function called by the renderer to rasterize the n-gons that were passed to **render()**. For more info, including the list of parameters, see the default function. Defaults to *null*, which is an alias for the default function, *Rngon.baseModules.rasterize*. |
+| *function*            | rasterize                 | A function called by the renderer to rasterize the n-gons that were passed to **render()**. For more info, including the list of parameters, see the default function. Defaults to *null*, which is an alias for the default function, *Rngon.baseModules.rasterize*. |
 | *function*            | surfaceWipe              | A function called by the renderer to clear the render surface of previous renderings (pixels, depth values, etc.). For more info, including the list of parameters, see the default function. Defaults to *null*, which is an alias for the default function, *Rngon.baseModules.surface_wipe*. |
 
 *Returns:*
@@ -654,12 +654,12 @@ Rngon.render("canvas", [mesh],
 ```
 
 ```
-// Create and use a custom rasterizer function (ngonFill).
+// Create and use a custom rasterizer function.
 
 Rngon.render(canvas, [meshes],
              {
                 modules: {
-                    ngonFill: custom_rasterizer
+                    rasterize: custom_rasterizer
                 }
              });
 

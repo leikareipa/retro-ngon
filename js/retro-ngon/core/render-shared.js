@@ -30,7 +30,7 @@ Rngon.renderShared = {
         state.pixel_shader = (options.shaderFunction || // <- Name in pre-beta.3.
                               options.pixelShader); 
 
-        state.modules.ngon_fill = (options.modules.ngonFill ||
+        state.modules.rasterize = (options.modules.rasterize ||
                                    Rngon.baseModules.rasterize);
                                    
         state.modules.transform_clip_light = (options.modules.transformClipLight ||
@@ -164,7 +164,7 @@ Rngon.renderShared = {
         width: 640, // Used by render_async() only.
         height: 480, // Used by render_async() only.
         modules: {
-            ngonFill: null, // Null defaults to Rngon.baseModules.rasterize.
+            rasterize: null, // Null defaults to Rngon.baseModules.rasterize.
             transformClipLight: null, // Null defaults to Rngon.baseModules.transform_clip_light.
         },
     }),

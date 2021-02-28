@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (28 February 2021 02:34:19 UTC)
+// VERSION: beta live (28 February 2021 02:41:17 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -2219,7 +2219,7 @@ Rngon.render_async = function(meshes = [Rngon.mesh()],
 {
     // Modules are not supported by the async renderer.
     options.modules = {
-        ngonFill: null,
+        rasterize: null,
         transformClipLight: null,
     };
 
@@ -2455,7 +2455,7 @@ Rngon.renderShared = {
         state.pixel_shader = (options.shaderFunction || // <- Name in pre-beta.3.
                               options.pixelShader); 
 
-        state.modules.ngon_fill = (options.modules.ngonFill ||
+        state.modules.rasterize = (options.modules.rasterize ||
                                    Rngon.baseModules.rasterize);
                                    
         state.modules.transform_clip_light = (options.modules.transformClipLight ||
@@ -2589,7 +2589,7 @@ Rngon.renderShared = {
         width: 640, // Used by render_async() only.
         height: 480, // Used by render_async() only.
         modules: {
-            ngonFill: null, // Null defaults to Rngon.baseModules.rasterize.
+            rasterize: null, // Null defaults to Rngon.baseModules.rasterize.
             transformClipLight: null, // Null defaults to Rngon.baseModules.transform_clip_light.
         },
     }),
@@ -2897,7 +2897,7 @@ Rngon.surface = function(canvasElement,  // The target DOM <canvas> element.
             // Render the n-gons from the n-gon cache. The rendering will go into the
             // renderer's internal pixel buffer, Rngon.internalState.pixelBuffer.
             {
-                Rngon.internalState.modules.ngon_fill(options.auxiliaryBuffers);
+                Rngon.internalState.modules.rasterize(options.auxiliaryBuffers);
 
                 if (Rngon.internalState.usePixelShader)
                 {
