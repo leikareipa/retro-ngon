@@ -8,7 +8,6 @@
 "use strict";
 
 // A collection of ngons, with shared translation and rotation.
-// NOTE: Expects to remain immutable.
 Rngon.mesh = function(ngons = [Rngon.ngon()], transform = {})
 {
     Rngon.assert && (ngons instanceof Array) || Rngon.throw("Expected a list of ngons for creating an ngon mesh.");

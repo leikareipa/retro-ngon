@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (28 February 2021 17:31:29 UTC)
+// VERSION: beta live (28 February 2021 18:00:25 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -12,6 +12,7 @@
 //	./js/retro-ngon/core/color.js
 //	./js/retro-ngon/core/vector3.js
 //	./js/retro-ngon/core/vertex.js
+//	./js/retro-ngon/core/material.js
 //	./js/retro-ngon/core/mesh.js
 //	./js/retro-ngon/core/ngon.js
 //	./js/retro-ngon/core/matrix44.js
@@ -623,6 +624,43 @@ Rngon.vertex.perspective_divide = function(v)
     v.y /= v.w;
 }
 /*
+ * 2021 Tarpeeksi Hyvae Soft
+ * 
+ * Software: Retro n-gon renderer
+ *
+ */
+
+"use strict";
+
+// Material for n-gons.
+Rngon.material = function(properties = {})
+{
+    const publicInterface = {
+        ...Rngon.material.default,
+        ...properties,
+    };
+
+    return publicInterface;
+}
+
+Rngon.material.default = {
+    color: Rngon.color_rgba(255, 255, 255, 255),
+    texture: null,
+    textureMapping: "ortho",
+    uvWrapping: "repeat",
+    vertexShading: "none",
+    renderVertexShade: true,
+    ambientLightLevel: 0,
+    hasWireframe: false,
+    hasFill: true,
+    isTwoSided: true,
+    wireframeColor: Rngon.color_rgba(0, 0, 0),
+    allowTransform: true,
+    allowAlphaReject: true,
+    allowAlphaBlend: true,
+    auxiliary: {},
+};
+/*
  * 2019 Tarpeeksi Hyvae Soft
  * 
  * Software: Retro n-gon renderer
@@ -632,7 +670,6 @@ Rngon.vertex.perspective_divide = function(v)
 "use strict";
 
 // A collection of ngons, with shared translation and rotation.
-// NOTE: Expects to remain immutable.
 Rngon.mesh = function(ngons = [Rngon.ngon()], transform = {})
 {
     Rngon.assert && (ngons instanceof Array) || Rngon.throw("Expected a list of ngons for creating an ngon mesh.");
@@ -695,16 +732,15 @@ Rngon.mesh.object_space_matrix = function(m)
 
 // A single n-sided ngon.
 // NOTE: The return object is not immutable.
-Rngon.ngon = function(vertices = [Rngon.vertex()], material = {}, vertexNormals = Rngon.vector3(0, 1, 0))
+Rngon.ngon = function(vertices = [Rngon.vertex()],
+                      material = Rngon.material(), // or {}
+                      vertexNormals = Rngon.vector3(0, 1, 0))
 {
     Rngon.assert && (vertices instanceof Array) || Rngon.throw("Expected an array of vertices to make an ngon.");
     Rngon.assert && (material instanceof Object) || Rngon.throw("Expected an object containing user-supplied options.");
 
-    Rngon.assert && (typeof Rngon.ngon.defaultMaterial.color !== "undefined" &&
-                     typeof Rngon.ngon.defaultMaterial.texture !== "undefined" &&
-                     typeof Rngon.ngon.defaultMaterial.hasWireframe !== "undefined" &&
-                     typeof Rngon.ngon.defaultMaterial.wireframeColor !== "undefined")
-                 || Rngon.throw("The default material object for ngon() is missing required properties.");
+    // Combine default material options with the user-supplied ones.
+    material = Rngon.material(material);
 
     // Assuming that only a single normal vector was provided, in which case, let's
     // duplicate that normal for all vertices.
@@ -722,13 +758,6 @@ Rngon.ngon = function(vertices = [Rngon.vertex()], material = {}, vertexNormals 
         return faceNormal;
     }, Rngon.vector3(0, 0, 0));
     Rngon.vector3.normalize(faceNormal);
-
-    // Combine default material options with the user-supplied ones.
-    material =
-    {
-        ...Rngon.ngon.defaultMaterial,
-        ...material
-    };
 
     // If we get vertex U or V coordinates in the range [0,-x], we want to change 0 to
     // -eps to avoid incorrect rounding during texture-mapping.
@@ -762,25 +791,6 @@ Rngon.ngon = function(vertices = [Rngon.vertex()], material = {}, vertexNormals 
 
     return returnObject;
 }
-
-Rngon.ngon.defaultMaterial = 
-{
-    color: Rngon.color_rgba(255, 255, 255, 255),
-    texture: null,
-    textureMapping: "ortho",
-    uvWrapping: "repeat",
-    vertexShading: "none",
-    renderVertexShade: true,
-    ambientLightLevel: 0,
-    hasWireframe: false,
-    hasFill: true,
-    isTwoSided: true,
-    wireframeColor: Rngon.color_rgba(0, 0, 0),
-    allowTransform: true,
-    allowAlphaReject: true,
-    allowAlphaBlend: true,
-    auxiliary: {},
-};
 
 Rngon.ngon.perspective_divide = function(ngon)
 {
