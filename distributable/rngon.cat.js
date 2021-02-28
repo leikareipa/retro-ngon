@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (28 February 2021 18:20:17 UTC)
+// VERSION: beta live (28 February 2021 23:21:21 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -1058,22 +1058,6 @@ const rightVerts = new Array(500);
 const leftEdges = new Array(500).fill().map(e=>({}));
 const rightEdges = new Array(500).fill().map(e=>({}));
 
-let numLeftVerts = 0;
-let numRightVerts = 0;
-let numLeftEdges = 0;
-let numRightEdges = 0;
-
-const settings = {
-    interpolatePerspective: undefined,
-    usePixelShader: undefined,
-    fragmentBuffer: undefined,
-    pixelBuffer: undefined,
-    depthBuffer: undefined,
-    renderWidth: undefined,
-    renderHeight: undefined,
-    auxiliaryBuffers: undefined,
-};
-
 const vertexSorters = {
     verticalAscending: (vertA, vertB)=>((vertA.y === vertB.y)? 0 : ((vertA.y < vertB.y)? -1 : 1)),
     verticalDescending: (vertA, vertB)=>((vertA.y === vertB.y)? 0 : ((vertA.y > vertB.y)? -1 : 1))
@@ -1089,15 +1073,6 @@ const vertexSorters = {
 //
 Rngon.baseModules.rasterize = function(auxiliaryBuffers = [])
 {
-    settings.interpolatePerspective = Rngon.internalState.usePerspectiveCorrectInterpolation;
-    settings.usePixelShader = Rngon.internalState.usePixelShader;
-    settings.fragmentBuffer = Rngon.internalState.fragmentBuffer.data;
-    settings.pixelBuffer = Rngon.internalState.pixelBuffer.data;
-    settings.depthBuffer = (Rngon.internalState.useDepthBuffer? Rngon.internalState.depthBuffer.data : null);
-    settings.renderWidth = Rngon.internalState.pixelBuffer.width;
-    settings.renderHeight = Rngon.internalState.pixelBuffer.height;
-    settings.auxiliaryBuffers = auxiliaryBuffers;
-
     for (let n = 0; n < Rngon.internalState.ngonCache.count; n++)
     {
         const ngon = Rngon.internalState.ngonCache.ngons[n];
@@ -1122,7 +1097,7 @@ Rngon.baseModules.rasterize = function(auxiliaryBuffers = [])
         }
         else
         {
-            Rngon.baseModules.rasterize.polygon(ngon, n);
+            Rngon.baseModules.rasterize.polygon(ngon, n, auxiliaryBuffers);
 
             continue;
         }
@@ -1132,15 +1107,24 @@ Rngon.baseModules.rasterize = function(auxiliaryBuffers = [])
 }
 
 Rngon.baseModules.rasterize.polygon = function(ngon = Rngon.ngon(),
-                                               ngonIdx = 0)
+                                               ngonIdx = 0,
+                                               auxiliaryBuffers = [])
 {
     Rngon.assert && (ngon.vertices.length < leftVerts.length)
                  || Rngon.throw("Overflowing the vertex buffer");
 
-    numLeftVerts = 0;
-    numRightVerts = 0;
-    numLeftEdges = 0;
-    numRightEdges = 0;
+    const interpolatePerspective = Rngon.internalState.usePerspectiveCorrectInterpolation;
+    const usePixelShader = Rngon.internalState.usePixelShader;
+    const fragmentBuffer = Rngon.internalState.fragmentBuffer.data;
+    const pixelBuffer = Rngon.internalState.pixelBuffer.data;
+    const depthBuffer = (Rngon.internalState.useDepthBuffer? Rngon.internalState.depthBuffer.data : null);
+    const renderWidth = Rngon.internalState.pixelBuffer.width;
+    const renderHeight = Rngon.internalState.pixelBuffer.height;
+
+    let numLeftVerts = 0;
+    let numRightVerts = 0;
+    let numLeftEdges = 0;
+    let numRightEdges = 0;
 
     const material = ngon.material;
     let texture = (material.texture || null);
@@ -1194,18 +1178,18 @@ Rngon.baseModules.rasterize.polygon = function(ngon = Rngon.ngon(),
 
         function add_edge(vert1, vert2, isLeftEdge)
         {
-            const startY = Math.min(settings.renderHeight, Math.max(0, Math.round(vert1.y)));
-            const endY = Math.min(settings.renderHeight, Math.max(0, Math.round(vert2.y)));
+            const startY = Math.min(renderHeight, Math.max(0, Math.round(vert1.y)));
+            const endY = Math.min(renderHeight, Math.max(0, Math.round(vert2.y)));
             const edgeHeight = (endY - startY);
             
             // Ignore horizontal edges.
             if (edgeHeight === 0) return;
 
-            const w1 = settings.interpolatePerspective? vert1.w : 1;
-            const w2 = settings.interpolatePerspective? vert2.w : 1;
+            const w1 = interpolatePerspective? vert1.w : 1;
+            const w2 = interpolatePerspective? vert2.w : 1;
 
-            const startX = Math.min(settings.renderWidth, Math.max(0, Math.round(vert1.x)));
-            const endX = Math.min(settings.renderWidth, Math.max(0, Math.ceil(vert2.x)));
+            const startX = Math.min(renderWidth, Math.max(0, Math.round(vert1.x)));
+            const endX = Math.min(renderWidth, Math.max(0, Math.ceil(vert2.x)));
             const deltaX = ((endX - startX) / edgeHeight);
 
             const depth1 = (vert1.z / Rngon.internalState.farPlaneDistance);
@@ -1244,7 +1228,7 @@ Rngon.baseModules.rasterize.polygon = function(ngon = Rngon.ngon(),
             edge.startInvW = startInvW;
             edge.deltaInvW = deltaInvW;
 
-            if (settings.usePixelShader)
+            if (usePixelShader)
             {
                 edge.startWorldX = vert1.worldX/w1;
                 edge.deltaWorldX = ((vert2.worldX/w2 - vert1.worldX/w1) / edgeHeight);
@@ -1276,8 +1260,8 @@ Rngon.baseModules.rasterize.polygon = function(ngon = Rngon.ngon(),
         // Rasterize the n-gon in horizontal pixel spans over its height.
         for (let y = ngonStartY; y < ngonEndY; y++)
         {
-            const spanStartX = Math.min(settings.renderWidth, Math.max(0, Math.round(leftEdge.startX)));
-            const spanEndX = Math.min(settings.renderWidth, Math.max(0, Math.round(rightEdge.startX)));
+            const spanStartX = Math.min(renderWidth, Math.max(0, Math.round(leftEdge.startX)));
+            const spanEndX = Math.min(renderWidth, Math.max(0, Math.round(rightEdge.startX)));
             const spanWidth = ((spanEndX - spanStartX) + 1);
 
             if (spanWidth > 0)
@@ -1297,7 +1281,7 @@ Rngon.baseModules.rasterize.polygon = function(ngon = Rngon.ngon(),
                 const deltaInvW = ((rightEdge.startInvW - leftEdge.startInvW) / spanWidth);
                 let iplInvW = (leftEdge.startInvW - deltaInvW);
 
-                if (settings.usePixelShader)
+                if (usePixelShader)
                 {
                     var deltaWorldX = ((rightEdge.startWorldX - leftEdge.startWorldX) / spanWidth);
                     var iplWorldX = (leftEdge.startWorldX - deltaWorldX);
@@ -1310,7 +1294,7 @@ Rngon.baseModules.rasterize.polygon = function(ngon = Rngon.ngon(),
                 }
 
                 // Assumes the pixel buffer consists of 4 elements per pixel (e.g. RGBA).
-                let pixelBufferIdx = (((spanStartX + y * settings.renderWidth) * 4) - 4);
+                let pixelBufferIdx = (((spanStartX + y * renderWidth) * 4) - 4);
 
                 // Assumes the depth buffer consists of 1 element per pixel.
                 let depthBufferIdx = (pixelBufferIdx / 4);
@@ -1331,7 +1315,7 @@ Rngon.baseModules.rasterize.polygon = function(ngon = Rngon.ngon(),
                     pixelBufferIdx += 4;
                     depthBufferIdx++;
 
-                    if (settings.usePixelShader)
+                    if (usePixelShader)
                     {
                         iplWorldX += deltaWorldX;
                         iplWorldY += deltaWorldY;
@@ -1341,7 +1325,7 @@ Rngon.baseModules.rasterize.polygon = function(ngon = Rngon.ngon(),
                     const depth = (iplDepth / iplInvW);
 
                     // Depth test.
-                    if (settings.depthBuffer && (settings.depthBuffer[depthBufferIdx] <= depth)) continue;
+                    if (depthBuffer && (depthBuffer[depthBufferIdx] <= depth)) continue;
 
                     const shade = (material.renderVertexShade? (iplShade / iplInvW) : 1);
 
@@ -1499,28 +1483,28 @@ Rngon.baseModules.rasterize.polygon = function(ngon = Rngon.ngon(),
                     // The pixel passed its alpha test, depth test, etc., and should be drawn
                     // on screen.
                     {
-                        settings.pixelBuffer[pixelBufferIdx + 0] = red;
-                        settings.pixelBuffer[pixelBufferIdx + 1] = green;
-                        settings.pixelBuffer[pixelBufferIdx + 2] = blue;
-                        settings.pixelBuffer[pixelBufferIdx + 3] = 255;
+                        pixelBuffer[pixelBufferIdx + 0] = red;
+                        pixelBuffer[pixelBufferIdx + 1] = green;
+                        pixelBuffer[pixelBufferIdx + 2] = blue;
+                        pixelBuffer[pixelBufferIdx + 3] = 255;
 
-                        if (settings.depthBuffer)
+                        if (depthBuffer)
                         {
-                            settings.depthBuffer[depthBufferIdx] = depth;
+                            depthBuffer[depthBufferIdx] = depth;
                         }
 
-                        for (let b = 0; b < settings.auxiliaryBuffers.length; b++)
+                        for (let b = 0; b < auxiliaryBuffers.length; b++)
                         {
-                            if (material.auxiliary[settings.auxiliaryBuffers[b].property] !== null)
+                            if (material.auxiliary[auxiliaryBuffers[b].property] !== null)
                             {
                                 // Buffers are expected to consist of one element per pixel.
-                                settings.auxiliaryBuffers[b].buffer[depthBufferIdx] = material.auxiliary[settings.auxiliaryBuffers[b].property];
+                                auxiliaryBuffers[b].buffer[depthBufferIdx] = material.auxiliary[auxiliaryBuffers[b].property];
                             }
                         }
 
-                        if (settings.usePixelShader)
+                        if (usePixelShader)
                         {
-                            const fragment = settings.fragmentBuffer[depthBufferIdx];
+                            const fragment = fragmentBuffer[depthBufferIdx];
                             fragment.ngonIdx = ngonIdx;
                             fragment.textureUScaled = ~~u;
                             fragment.textureVScaled = ~~v;
@@ -1551,7 +1535,7 @@ Rngon.baseModules.rasterize.polygon = function(ngon = Rngon.ngon(),
                 rightEdge.startV     += rightEdge.deltaV;
                 rightEdge.startInvW  += rightEdge.deltaInvW;
 
-                if (settings.usePixelShader)
+                if (usePixelShader)
                 {
                     leftEdge.startWorldX  += leftEdge.deltaWorldX;
                     leftEdge.startWorldY  += leftEdge.deltaWorldY;
@@ -1594,6 +1578,14 @@ Rngon.baseModules.rasterize.line = function(vert1 = Rngon.vertex(),
                                             ngonIdx = 0,
                                             ignoreDepthBuffer = false)
 {
+    const interpolatePerspective = Rngon.internalState.usePerspectiveCorrectInterpolation;
+    const farPlane = Rngon.internalState.farPlaneDistance;
+    const usePixelShader = Rngon.internalState.usePixelShader;
+    const depthBuffer = (Rngon.internalState.useDepthBuffer? Rngon.internalState.depthBuffer.data : null);
+    const pixelBuffer = Rngon.internalState.pixelBuffer.data;
+    const renderWidth = Rngon.internalState.pixelBuffer.width;
+    const renderHeight = Rngon.internalState.pixelBuffer.height;
+    
     let x0 = Math.round(vert1.x);
     let y0 = Math.round(vert1.y);
     const x1 = Math.round(vert2.x);
@@ -1601,17 +1593,17 @@ Rngon.baseModules.rasterize.line = function(vert1 = Rngon.vertex(),
     const lineLength = Math.sqrt((x1 - x0) * (x1 - x0) + (y1 - y0) * (y1 - y0));
 
     // Establish interpolation parameters.
-    const w1 = (settings.interpolatePerspective? vert1.w : 1);
-    const w2 = (settings.interpolatePerspective? vert2.w : 1);
-    const depth1 = (vert1.z / Rngon.internalState.farPlaneDistance);
-    const depth2 = (vert2.z / Rngon.internalState.farPlaneDistance);
+    const w1 = (interpolatePerspective? vert1.w : 1);
+    const w2 = (interpolatePerspective? vert2.w : 1);
+    const depth1 = (vert1.z / farPlane);
+    const depth2 = (vert2.z / farPlane);
     let startDepth = depth1/w1;
     const deltaDepth = ((depth2/w2 - depth1/w1) / lineLength);
     let startShade = vert1.shade/w1;
     const deltaShade = ((vert2.shade/w2 - vert1.shade/w1) / lineLength);
     let startInvW = 1/w1;
     const deltaInvW = ((1/w2 - 1/w1) / lineLength);
-    if (settings.fragmentBuffer)
+    if (usePixelShader)
     {
         var startWorldX = vert1.worldX/w1;
         var deltaWorldX = ((vert2.worldX/w2 - vert1.worldX/w1) / lineLength);
@@ -1631,7 +1623,7 @@ Rngon.baseModules.rasterize.line = function(vert1 = Rngon.vertex(),
         const sy = ((y0 < y1)? 1 : -1); 
         let err = (((dx > dy)? dx : -dy) / 2);
 
-        const maxNumSteps = (settings.renderWidth + settings.renderHeight);
+        const maxNumSteps = (renderWidth + renderHeight);
         let numSteps = 0;
         
         while (++numSteps < maxNumSteps)
@@ -1649,7 +1641,7 @@ Rngon.baseModules.rasterize.line = function(vert1 = Rngon.vertex(),
                 startShade += deltaShade;
                 startInvW += deltaInvW;
 
-                if (settings.fragmentBuffer)
+                if (usePixelShader)
                 {
                     startWorldX += deltaWorldX;
                     startWorldY += deltaWorldY;
@@ -1672,11 +1664,13 @@ Rngon.baseModules.rasterize.line = function(vert1 = Rngon.vertex(),
 
         function put_pixel(x, y)
         {
-            const idx = ((x + y * settings.renderWidth) * 4);
+            const idx = ((x + y * renderWidth) * 4);
             const depthBufferIdx = (idx / 4);
 
-            if ((x < 0) || (x >= settings.renderWidth) ||
-                (y < 0) || (y >= settings.renderHeight))
+            if ((x < 0) ||
+                (y < 0) ||
+                (x >= renderWidth) ||
+                (y >= renderHeight))
             {
                 return;
             }
@@ -1684,27 +1678,33 @@ Rngon.baseModules.rasterize.line = function(vert1 = Rngon.vertex(),
             const depth = (startDepth / startInvW);
             const shade = (startShade / startInvW);
 
-            // Depth test.
-            if (!ignoreDepthBuffer && settings.depthBuffer && (settings.depthBuffer[depthBufferIdx] <= depth)) return;
+            if (!ignoreDepthBuffer &&
+                depthBuffer &&
+                (depthBuffer[depthBufferIdx] <= depth))
+            {
+                return;
+            }
 
-            // Alpha test.
-            if (color.alpha !== 255) return;
+            if (color.alpha !== 255)
+            {
+                return;
+            }
 
             // Draw the pixel.
             {
-                settings.pixelBuffer[idx + 0] = (shade * color.red);
-                settings.pixelBuffer[idx + 1] = (shade * color.green);
-                settings.pixelBuffer[idx + 2] = (shade * color.blue);
-                settings.pixelBuffer[idx + 3] = 255;
+                pixelBuffer[idx + 0] = (shade * color.red);
+                pixelBuffer[idx + 1] = (shade * color.green);
+                pixelBuffer[idx + 2] = (shade * color.blue);
+                pixelBuffer[idx + 3] = 255;
 
-                if (settings.depthBuffer)
+                if (depthBuffer)
                 {
-                    settings.depthBuffer[depthBufferIdx] = depth;
+                    depthBuffer[depthBufferIdx] = depth;
                 }
 
-                if (settings.fragmentBuffer)
+                if (usePixelShader)
                 {
-                    const fragment = settings.fragmentBuffer[depthBufferIdx];
+                    const fragment = Rngon.internalState.fragmentBuffer.data[depthBufferIdx];
                     fragment.ngonIdx = ngonIdx;
                     fragment.textureUScaled = undefined; // We don't support textures on lines.
                     fragment.textureVScaled = undefined;
@@ -1726,37 +1726,54 @@ Rngon.baseModules.rasterize.point = function(vertex = Rngon.vertex(),
                                              material = {},
                                              ngonIdx = 0)
 {
-    const x = Math.min((settings.renderWidth - 1), Math.max(0, Math.round(vertex.x)));
-    const y = Math.min((settings.renderHeight - 1), Math.max(0, Math.round(vertex.y)));
-    const idx = ((x + y * settings.renderWidth) * 4);
+    if (material.color.alpha != 255)
+    {
+        return;
+    }
+
+    const usePixelShader = Rngon.internalState.usePixelShader;
+    const depthBuffer = (Rngon.internalState.useDepthBuffer? Rngon.internalState.depthBuffer.data : null);
+    const pixelBuffer = Rngon.internalState.pixelBuffer.data;
+    const renderWidth = Rngon.internalState.pixelBuffer.width;
+    const renderHeight = Rngon.internalState.pixelBuffer.height;
+
+    const x = Math.round(vertex.x);
+    const y = Math.round(vertex.y);
+    const idx = ((x + y * renderWidth) * 4);
     const depthBufferIdx = (idx / 4);
-    
+
+    if ((x < 0) ||
+        (y < 0) ||
+        (x >= renderWidth) ||
+        (y >= renderHeight))
+    {
+        return;
+    }
+
     const depth = (vertex.z / Rngon.internalState.farPlaneDistance);
     const shade = (material.renderVertexShade? vertex.shade : 1);
-
-    // Alpha test.
-    if (material.color.alpha !== 255) return;
-
-    // Depth test.
-    if (settings.depthBuffer && (settings.depthBuffer[depthBufferIdx] <= depth)) return;
-
     const color = (material.texture? material.texture.pixels[0] : material.color);
+
+    if (depthBuffer && (depthBuffer[depthBufferIdx] <= depth))
+    {
+        return;
+    }
     
     // Write the pixel.
     {
-        settings.pixelBuffer[idx + 0] = (shade * color.red);
-        settings.pixelBuffer[idx + 1] = (shade * color.green);
-        settings.pixelBuffer[idx + 2] = (shade * color.blue);
-        settings.pixelBuffer[idx + 3] = 255;
+        pixelBuffer[idx + 0] = (shade * color.red);
+        pixelBuffer[idx + 1] = (shade * color.green);
+        pixelBuffer[idx + 2] = (shade * color.blue);
+        pixelBuffer[idx + 3] = 255;
 
-        if (settings.depthBuffer)
+        if (depthBuffer)
         {
-            settings.depthBuffer[depthBufferIdx] = depth;
+            depthBuffer[depthBufferIdx] = depth;
         }
 
-        if (settings.usePixelShader)
+        if (usePixelShader)
         {
-            const fragment = settings.fragmentBuffer[depthBufferIdx];
+            const fragment = Rngon.internalState.fragmentBuffer.data[depthBufferIdx];
             fragment.ngonIdx = ngonIdx;
             fragment.textureUScaled = 0;
             fragment.textureVScaled = 0;
