@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (28 February 2021 02:04:37 UTC)
+// VERSION: beta live (28 February 2021 02:12:39 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -13,7 +13,7 @@
 //	./js/retro-ngon/mesh.js
 //	./js/retro-ngon/ngon.js
 //	./js/retro-ngon/matrix44.js
-//	./js/retro-ngon/ngon-fill.js
+//	./js/retro-ngon/rasterize.js
 //	./js/retro-ngon/transform-and-light.js
 //	./js/retro-ngon/render.js
 //	./js/retro-ngon/render-async.js
@@ -1041,7 +1041,7 @@ let numRightEdges = 0;
 // code, please benchmark its effects on performance first - maintaining or
 // improving performance would be great, losing performance would be bad.
 //
-Rngon.rasterize_ngon_cache = function(auxiliaryBuffers = [])
+Rngon.rasterize = function(auxiliaryBuffers = [])
 {
     const interpolatePerspective = Rngon.internalState.usePerspectiveCorrectInterpolation;
     const usePixelShader = Rngon.internalState.usePixelShader;
@@ -1141,7 +1141,7 @@ Rngon.rasterize_ngon_cache = function(auxiliaryBuffers = [])
         // Rasterize a line.
         else if (ngon.vertices.length === 2)
         {
-            Rngon.rasterize_ngon_cache.line(ngon.vertices[0], ngon.vertices[1], material.color, n, false);
+            Rngon.rasterize.line(ngon.vertices[0], ngon.vertices[1], material.color, n, false);
 
             continue;
         }
@@ -1367,8 +1367,8 @@ Rngon.rasterize_ngon_cache = function(auxiliaryBuffers = [])
                                     // Partial transparency.
                                     else
                                     {
-                                        const stipplePatternIdx = Math.floor(material.color.alpha / (256 / Rngon.rasterize_ngon_cache.stipple_patterns.length));
-                                        const stipplePattern    = Rngon.rasterize_ngon_cache.stipple_patterns[stipplePatternIdx];
+                                        const stipplePatternIdx = Math.floor(material.color.alpha / (256 / Rngon.rasterize.stipple_patterns.length));
+                                        const stipplePattern    = Rngon.rasterize.stipple_patterns[stipplePatternIdx];
                                         const stipplePixelIdx   = ((x % stipplePattern.width) + (y % stipplePattern.height) * stipplePattern.width);
 
                                         // Reject by stipple pattern.
@@ -1504,8 +1504,8 @@ Rngon.rasterize_ngon_cache = function(auxiliaryBuffers = [])
                                     // Partial transparency.
                                     else
                                     {
-                                        const stipplePatternIdx = Math.floor(material.color.alpha / (256 / Rngon.rasterize_ngon_cache.stipple_patterns.length));
-                                        const stipplePattern    = Rngon.rasterize_ngon_cache.stipple_patterns[stipplePatternIdx];
+                                        const stipplePatternIdx = Math.floor(material.color.alpha / (256 / Rngon.rasterize.stipple_patterns.length));
+                                        const stipplePattern    = Rngon.rasterize.stipple_patterns[stipplePatternIdx];
                                         const stipplePixelIdx   = ((x % stipplePattern.width) + (y % stipplePattern.height) * stipplePattern.width);
 
                                         // Reject by stipple pattern.
@@ -1597,12 +1597,12 @@ Rngon.rasterize_ngon_cache = function(auxiliaryBuffers = [])
             {
                 for (let l = 1; l < numLeftVerts; l++)
                 {
-                    Rngon.rasterize_ngon_cache.line(leftVerts[l-1], leftVerts[l], material.wireframeColor, n, true);
+                    Rngon.rasterize.line(leftVerts[l-1], leftVerts[l], material.wireframeColor, n, true);
                 }
 
                 for (let r = 1; r < numRightVerts; r++)
                 {
-                    Rngon.rasterize_ngon_cache.line(rightVerts[r-1], rightVerts[r], material.wireframeColor, n, true);
+                    Rngon.rasterize.line(rightVerts[r-1], rightVerts[r], material.wireframeColor, n, true);
                 }
             }
         }
@@ -1612,11 +1612,11 @@ Rngon.rasterize_ngon_cache = function(auxiliaryBuffers = [])
 }
 
 // Draws a line between the two given vertices into the render's pixel buffer.
-Rngon.rasterize_ngon_cache.line = function(vert1 = Rngon.vertex(),
-                                           vert2 = Rngon.vertex(),
-                                           lineColor = null,
-                                           ngonIdx = 0,
-                                           ignoreDepthBuffer = false)
+Rngon.rasterize.line = function(vert1 = Rngon.vertex(),
+                                vert2 = Rngon.vertex(),
+                                lineColor = null,
+                                ngonIdx = 0,
+                                ignoreDepthBuffer = false)
 {
     const pixelBuffer = Rngon.internalState.pixelBuffer.data;
     const depthBuffer = (Rngon.internalState.useDepthBuffer? Rngon.internalState.depthBuffer.data : null);
@@ -1756,7 +1756,7 @@ Rngon.rasterize_ngon_cache.line = function(vert1 = Rngon.vertex(),
 
 // Create a set of stipple patterns for emulating transparency.
 {
-    Rngon.rasterize_ngon_cache.stipple_patterns = [
+    Rngon.rasterize.stipple_patterns = [
         // ~1% transparent.
         {
             width: 8,
@@ -1788,13 +1788,13 @@ Rngon.rasterize_ngon_cache.line = function(vert1 = Rngon.vertex(),
     ];
 
     // Append a reverse set of patterns to go from 50% to ~99% transparent.
-    for (let i = (Rngon.rasterize_ngon_cache.stipple_patterns.length - 2); i >= 0; i--)
+    for (let i = (Rngon.rasterize.stipple_patterns.length - 2); i >= 0; i--)
     {
-        Rngon.rasterize_ngon_cache.stipple_patterns.push({
-                width: Rngon.rasterize_ngon_cache.stipple_patterns[i].width,
-                height: Rngon.rasterize_ngon_cache.stipple_patterns[i].height,
-                pixels: Rngon.rasterize_ngon_cache.stipple_patterns[i].pixels.map(p=>Number(!p)),
-            });
+        Rngon.rasterize.stipple_patterns.push({
+            width: Rngon.rasterize.stipple_patterns[i].width,
+            height: Rngon.rasterize.stipple_patterns[i].height,
+            pixels: Rngon.rasterize.stipple_patterns[i].pixels.map(p=>Number(!p)),
+        });
     }
 }
 
@@ -2408,7 +2408,7 @@ Rngon.renderShared = {
         state.pixel_shader = (options.shaderFunction || // <- Name in pre-beta.3.
                               options.pixelShader); 
 
-        state.modules.ngon_fill = (options.modules.ngonFill || Rngon.rasterize_ngon_cache);
+        state.modules.ngon_fill = (options.modules.ngonFill || Rngon.rasterize);
         state.modules.transform_clip_light = (options.modules.transformClipLight || Rngon.ngon_transform_and_light)
         state.modules.surface_wipe = (options.modules.surfaceWipe || Rngon.surface.wipe);
 
@@ -2537,7 +2537,7 @@ Rngon.renderShared = {
         width: 640, // Used by render_async() only.
         height: 480, // Used by render_async() only.
         modules: {
-            ngonFill: null, // Null defaults to Rngon.rasterize_ngon_cache.
+            ngonFill: null, // Null defaults to Rngon.rasterize.
             transformClipLight: null, // Null defaults to Rngon.ngon_transform_and_light.
         },
     }),

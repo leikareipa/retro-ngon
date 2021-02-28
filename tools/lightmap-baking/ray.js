@@ -239,7 +239,7 @@ function ray(pos = Rngon.vector3(0, 0, 0), dir = Rngon.vector3(0, 0, 1))
 }
 
 // Maps the given UV coordinates into the material's texel coordinates.
-// (The code here should match that in ngon-fill.js.)
+// (The code here should match that in rasterize.js.)
 function uv_to_texel_coordinates(u, v, material)
 {
     const texture = material.texture;
