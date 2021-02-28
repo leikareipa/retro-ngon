@@ -1,26 +1,28 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (28 February 2021 02:24:15 UTC)
+// VERSION: beta live (28 February 2021 02:34:19 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
 //	./js/retro-ngon/retro-ngon.js
-//	./js/retro-ngon/trig.js
-//	./js/retro-ngon/light.js
-//	./js/retro-ngon/color.js
-//	./js/retro-ngon/vector3.js
-//	./js/retro-ngon/vertex.js
-//	./js/retro-ngon/mesh.js
-//	./js/retro-ngon/ngon.js
-//	./js/retro-ngon/matrix44.js
+//	./js/retro-ngon/core/util.js
+//	./js/retro-ngon/core/internal-state.js
+//	./js/retro-ngon/core/trig.js
+//	./js/retro-ngon/core/light.js
+//	./js/retro-ngon/core/color.js
+//	./js/retro-ngon/core/vector3.js
+//	./js/retro-ngon/core/vertex.js
+//	./js/retro-ngon/core/mesh.js
+//	./js/retro-ngon/core/ngon.js
+//	./js/retro-ngon/core/matrix44.js
 //	./js/retro-ngon/base-modules/rasterize.js
 //	./js/retro-ngon/base-modules/transform-clip-light.js
 //	./js/retro-ngon/base-modules/surface-wipe.js
-//	./js/retro-ngon/render.js
-//	./js/retro-ngon/render-async.js
-//	./js/retro-ngon/render-shared.js
-//	./js/retro-ngon/texture.js
-//	./js/retro-ngon/surface.js
+//	./js/retro-ngon/api/render.js
+//	./js/retro-ngon/api/render-async.js
+//	./js/retro-ngon/core/render-shared.js
+//	./js/retro-ngon/core/texture.js
+//	./js/retro-ngon/core/surface.js
 /////////////////////////////////////////////////
 
 /*
@@ -35,61 +37,76 @@
 const Rngon = {
     version: {family:"beta",major:"5",minor:"0",dev:true}
 };
+/*
+ * 2019 Tarpeeksi Hyvae Soft
+ * 
+ * Software: Retro n-gon renderer
+ * 
+ * Various small utility functions and the like.
+ *
+ */
 
-// Various small utility functions and the like.
+"use strict";
+
+// Defined 'true' to allow for the conveniency of named in-place assertions,
+// e.g. Rngon.assert && (x === 1) || Rngon.throw("X wasn't 1.").
+// Note that setting this to 'false' won't disable assertions - for that,
+// you'll want to search/replace "Rngon.assert &&" with "Rngon.assert ||"
+// and keep this set to 'true'. The comparison against Rngon.assert may still
+// be done, though (I guess depending on the JS engine's ability to optimize).
+Object.defineProperty(Rngon, "assert", {value:true, writable:false});
+
+Rngon.lerp = (x, y, interval)=>(x + (interval * (y - x)));
+
+// Returns a bilinearly sampled value from a one-channel 2D image (or other
+// such array of data). Expects the 'sampler' argument to be a function of
+// the form (a, b)=>image[(x + a) + (y + b) * width], i.e. a function that
+// returns the relevant image source value at XY, offset respectively by the
+// two arguments to the function (the absolute XY coordinates are baked into
+// the sampler function's body).
+Rngon.bilinear_sample = (sampler, biasX = 0.5, biasY = biasX)=>
 {
-    // Defined 'true' to allow for the conveniency of named in-place assertions,
-    // e.g. Rngon.assert && (x === 1) || Rngon.throw("X wasn't 1.").
-    // Note that setting this to 'false' won't disable assertions - for that,
-    // you'll want to search/replace "Rngon.assert &&" with "Rngon.assert ||"
-    // and keep this set to 'true'. The comparison against Rngon.assert may still
-    // be done, though (I guess depending on the JS engine's ability to optimize).
-    Object.defineProperty(Rngon, "assert", {value:true, writable:false});
+    const px1 = Rngon.lerp(sampler(0, 0), sampler(0, 1), biasY);
+    const px2 = Rngon.lerp(sampler(1, 0), sampler(1, 1), biasY);
+    return Rngon.lerp(px1, px2, biasX);
+};
 
-    Rngon.lerp = (x, y, interval)=>(x + (interval * (y - x)));
-
-    // Returns a bilinearly sampled value from a one-channel 2D image (or other
-    // such array of data). Expects the 'sampler' argument to be a function of
-    // the form (a, b)=>image[(x + a) + (y + b) * width], i.e. a function that
-    // returns the relevant image source value at XY, offset respectively by the
-    // two arguments to the function (the absolute XY coordinates are baked into
-    // the sampler function's body).
-    Rngon.bilinear_sample = (sampler, biasX = 0.5, biasY = biasX)=>
+Rngon.throw = (errMessage = "")=>
+{
+    if (Rngon.internalState.allowWindowAlert)
     {
-        const px1 = Rngon.lerp(sampler(0, 0), sampler(0, 1), biasY);
-        const px2 = Rngon.lerp(sampler(1, 0), sampler(1, 1), biasY);
-        return Rngon.lerp(px1, px2, biasX);
-    };
-
-    Rngon.throw = (errMessage = "")=>
-    {
-        if (Rngon.internalState.allowWindowAlert)
-        {
-            window.alert("Retro n-gon error: " + errMessage);
-        }
-
-        throw Error("Retro n-gon error: " + errMessage);
+        window.alert("Retro n-gon error: " + errMessage);
     }
 
-    Rngon.log = (string = "Hello there.")=>
-    {
-        console.log("Retro n-gon: " + string);
-    }
-
-    // Returns the resulting width of an image if it were rendered onto the given canvas element.
-    // The 'scale' parameter corresponds to the 'scale' option of Rngon.render().
-    Rngon.renderable_width_of = function(canvasElement, scale)
-    {
-        return Math.floor(parseInt(window.getComputedStyle(canvasElement).getPropertyValue("width")) * scale);
-    }
-
-    // Returns the resulting height of an image if it were rendered onto the given canvas element.
-    // The 'scale' parameter corresponds to the 'scale' option of Rngon.render().
-    Rngon.renderable_height_of = function(canvasElement, scale)
-    {
-        return Math.floor(parseInt(window.getComputedStyle(canvasElement).getPropertyValue("height")) * scale);
-    }
+    throw Error("Retro n-gon error: " + errMessage);
 }
+
+Rngon.log = (string = "Hello there.")=>
+{
+    console.log("Retro n-gon: " + string);
+}
+
+// Returns the resulting width of an image if it were rendered onto the given canvas element.
+// The 'scale' parameter corresponds to the 'scale' option of Rngon.render().
+Rngon.renderable_width_of = function(canvasElement, scale)
+{
+    return Math.floor(parseInt(window.getComputedStyle(canvasElement).getPropertyValue("width")) * scale);
+}
+
+// Returns the resulting height of an image if it were rendered onto the given canvas element.
+// The 'scale' parameter corresponds to the 'scale' option of Rngon.render().
+Rngon.renderable_height_of = function(canvasElement, scale)
+{
+    return Math.floor(parseInt(window.getComputedStyle(canvasElement).getPropertyValue("height")) * scale);
+}
+/*
+ * 2020 Tarpeeksi Hyvae Soft
+ *
+ * Software: Retro n-gon renderer
+ *
+ */
+
+"use strict";
 
 // Global app state, for internal use by the renderer. Unless otherwise noted, these
 // parameters should not be modified directly; they're instead set by the renderer
