@@ -102,9 +102,8 @@ body
     padding: 0 20px;
     width: 90px;
     height: 65px;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: black;
     color: white;
-    border-radius: 4px;
     justify-content: center;
     align-items: center;
 }
@@ -117,7 +116,7 @@ body
 
 .infobox > .title
 {
-    color: lightgray;
+    color: white;
     font-size: 90%;
     text-align: center;
 }

@@ -5,8 +5,9 @@
         <style>
             :root
             {
-                --header-height: 47px;
+                --header-height: 40px;
             }
+
             body
             {
                 background-color: rgb(228, 228, 228);
@@ -28,7 +29,7 @@
                 height: var(--header-height);
                 background-color: black;
                 color: lightgray;
-                box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2);
+                box-shadow: 0 1px 0 rgba(0, 0, 0, 1);
             }
 
             .selector-container
@@ -52,16 +53,19 @@
                 flex-basis: 100%;
                 font-family: sans-serif;
                 font-size: 100%;
+                appearance: none;
             }
 
             .selector-container .selector-tag
             {
-                padding: 14px;
-                background-color: transparent;
+                padding: 0 14px;
+                background-color: black;
                 border: none;
-                color: black;
                 white-space: nowrap;
-                font-weight: bold;
+                color: white;
+                height: 100%;
+                display: flex;
+                align-items: inherit;
             }
 
             #content
@@ -81,7 +85,7 @@
             <div id="sample-selector-container"
                  class="selector-container"
                  style="width: 75%;">
-                <div class="selector-tag">Sample</div>
+                <div class="selector-tag">Sample:</div>
                 <select id="sample-selector"
                         style="min-width: 150px;"
                         onchange="set_sample(event.target.value);">
@@ -110,7 +114,7 @@
             </div>
             <div id="renderer-selector-container"
                  class="selector-container">
-                <div class="selector-tag">Renderer</div>
+                <div class="selector-tag">Renderer:</div>
                 <select id="renderer-selector"
                         style="min-width: 150px;"
                         onchange="set_version(event.target.value);">
