@@ -38,8 +38,7 @@ const settings = {
     auxiliaryBuffers: undefined,
 };
 
-const vertexSorters =
-{
+const vertexSorters = {
     verticalAscending: (vertA, vertB)=>((vertA.y === vertB.y)? 0 : ((vertA.y < vertB.y)? -1 : 1)),
     verticalDescending: (vertA, vertB)=>((vertA.y === vertB.y)? 0 : ((vertA.y > vertB.y)? -1 : 1))
 }
@@ -319,26 +318,14 @@ Rngon.baseModules.rasterize.polygon = function(ngon = Rngon.ngon(),
                     // Solid fill.
                     if (!texture)
                     {
-                        // Alpha-blend the polygon. For partial transparency, we'll reject
-                        // pixels in a particular pattern to create a see-through stipple
-                        // effect.
-                        if (material.allowAlphaBlend && (material.color.alpha < 255))
-                        {
-                            // Full transparency.
-                            if (material.color.alpha <= 0)
-                            {
-                                continue;
-                            }
-                            // Partial transparency.
-                            else
-                            {
-                                const stipplePatternIdx = Math.floor(material.color.alpha / (256 / Rngon.baseModules.rasterize.stipple_patterns.length));
-                                const stipplePattern    = Rngon.baseModules.rasterize.stipple_patterns[stipplePatternIdx];
-                                const stipplePixelIdx   = ((x % stipplePattern.width) + (y % stipplePattern.height) * stipplePattern.width);
+                        // Note: We assume that the triangle transformer has already culled away
+                        // n-gons whose base color alpha is less than 255; so we don't test for
+                        // material.allowAlphaReject.
 
-                                // Reject by stipple pattern.
-                                if (stipplePattern.pixels[stipplePixelIdx]) continue;
-                            }   
+                        if (material.allowAlphaBlend &&
+                            Rngon.baseModules.rasterize.stipple(material.color.alpha, x, y))
+                        {
+                            continue;
                         }
 
                         red   = (material.color.red   * shade);
@@ -451,31 +438,21 @@ Rngon.baseModules.rasterize.polygon = function(ngon = Rngon.ngon(),
                         const texel = textureMipLevel.pixels[(~~u) + (~~v) * textureMipLevel.width];
 
                         // Make sure we gracefully exit if accessing the texture out of bounds.
-                        if (!texel) continue;
-
-                        // Alpha-test the texture. If the texel isn't fully opaque, skip it.
-                        if (material.allowAlphaReject && (texel.alpha !== 255)) continue;
-
-                        // Alpha-blend the polygon. For partial transparency, we'll reject
-                        // pixels in a particular pattern to create a see-through stipple
-                        // effect.
-                        if (material.allowAlphaBlend && (material.color.alpha < 255))
+                        if (!texel)
                         {
-                            // Full transparency.
-                            if (material.color.alpha <= 0)
-                            {
-                                continue;
-                            }
-                            // Partial transparency.
-                            else
-                            {
-                                const stipplePatternIdx = Math.floor(material.color.alpha / (256 / Rngon.baseModules.rasterize.stipple_patterns.length));
-                                const stipplePattern    = Rngon.baseModules.rasterize.stipple_patterns[stipplePatternIdx];
-                                const stipplePixelIdx   = ((x % stipplePattern.width) + (y % stipplePattern.height) * stipplePattern.width);
+                            continue;
+                        }
 
-                                // Reject by stipple pattern.
-                                if (stipplePattern.pixels[stipplePixelIdx]) continue;
-                            }   
+                        if (material.allowAlphaReject &&
+                            (texel.alpha !== 255))
+                        {
+                            continue;
+                        }
+
+                        if (material.allowAlphaBlend &&
+                            Rngon.baseModules.rasterize.stipple(material.color.alpha, x, y))
+                        {
+                            continue;
                         }
 
                         red   = (texel.red   * material.color.unitRange.red   * shade);
@@ -759,10 +736,11 @@ Rngon.baseModules.rasterize.point = function(vertex = Rngon.vertex(),
     return;
 }
 
-// Create a set of stipple patterns for emulating transparency.
+// For emulating pixel transparency with stipple patterns.
+Rngon.baseModules.rasterize.stipple = (function()
 {
-    Rngon.baseModules.rasterize.stipple_patterns = [
-        // ~1% transparent.
+    const patterns = [
+        // ~99% transparent.
         {
             width: 8,
             height: 6,
@@ -774,6 +752,7 @@ Rngon.baseModules.rasterize.point = function(vertex = Rngon.vertex(),
                      1,1,1,1,1,1,1,1],
         },
 
+        // ~70% transparent.
         {
             width: 4,
             height: 4,
@@ -792,15 +771,45 @@ Rngon.baseModules.rasterize.point = function(vertex = Rngon.vertex(),
         },
     ];
 
-    // Append a reverse set of patterns to go from 50% to ~99% transparent.
-    for (let i = (Rngon.baseModules.rasterize.stipple_patterns.length - 2); i >= 0; i--)
+    // Append a reverse set of patterns to go from 50% to 0% transparent.
+    for (let i = (patterns.length - 2); i >= 0; i--)
     {
-        Rngon.baseModules.rasterize.stipple_patterns.push({
-            width: Rngon.baseModules.rasterize.stipple_patterns[i].width,
-            height: Rngon.baseModules.rasterize.stipple_patterns[i].height,
-            pixels: Rngon.baseModules.rasterize.stipple_patterns[i].pixels.map(p=>Number(!p)),
+        patterns.push({
+            width: patterns[i].width,
+            height: patterns[i].height,
+            pixels: patterns[i].pixels.map(p=>Number(!p)),
         });
     }
-}
+
+    // Returns a function that returns true if the given screen pixel coordinate
+    // should be transparent at the given alpha level (0-255); false otherwise.
+    return function(alpha, screenX, screenY)
+    {
+        // Full transparency.
+        if (alpha <= 0)
+        {
+            return true;
+        }
+        // Full opaqueness.
+        else if (alpha >= 255)
+        {
+            return false;
+        }
+        // Partial transparency.
+        else
+        {
+            const patternIdx = Math.floor(alpha / (256 / patterns.length));
+            const pattern = patterns[patternIdx];
+            const pixelIdx = ((screenX % pattern.width) + (screenY % pattern.height) * pattern.width);
+
+            if (pattern.pixels[pixelIdx])
+            {
+                return true;
+            }
+        }
+
+        return false;
+    };
+})();
 
 }
