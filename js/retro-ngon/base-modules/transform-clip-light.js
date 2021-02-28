@@ -6,14 +6,16 @@
 
 "use strict";
 
+Rngon.baseModules = (Rngon.baseModules || {});
+
 // Applies lighting to the given n-gons, and transforms them into screen space
 // for rendering. The processed n-gons are stored in the internal n-gon cache.
-Rngon.ngon_transform_and_light = function(ngons = [],
-                                          objectMatrix = [],
-                                          cameraMatrix = [],
-                                          projectionMatrix = [],
-                                          screenSpaceMatrix = [],
-                                          cameraPos)
+Rngon.baseModules.transform_clip_light = function(ngons = [],
+                                                  objectMatrix = [],
+                                                  cameraMatrix = [],
+                                                  projectionMatrix = [],
+                                                  screenSpaceMatrix = [],
+                                                  cameraPos)
 {
     const viewVector = {x:0.0, y:0.0, z:0.0};
     const ngonCache = Rngon.internalState.ngonCache;
@@ -117,7 +119,7 @@ Rngon.ngon_transform_and_light = function(ngons = [],
 
                 if (cachedNgon.material.vertexShading !== "none")
                 {
-                    Rngon.ngon_transform_and_light.apply_lighting(cachedNgon);
+                    Rngon.baseModules.transform_clip_light.apply_lighting(cachedNgon);
                 }
 
                 // Apply an optional, user-defined vertex shader.
@@ -193,7 +195,7 @@ Rngon.ngon_transform_and_light = function(ngons = [],
     return;
 }
 
-Rngon.ngon_transform_and_light.apply_lighting = function(ngon)
+Rngon.baseModules.transform_clip_light.apply_lighting = function(ngon)
 {
     // Pre-allocate a vector object to operate on, so we don't need to create one repeatedly.
     const lightDirection = Rngon.vector3();

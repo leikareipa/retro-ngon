@@ -7,6 +7,8 @@
 
 "use strict";
 
+Rngon.baseModules = (Rngon.baseModules || {});
+
 { // A block to limit the scope of the unit-global variables we set up, below.
 
 // We'll sort the n-gon's vertices into those on its left side and those on its
@@ -33,7 +35,7 @@ let numRightEdges = 0;
 // code, please benchmark its effects on performance first - maintaining or
 // improving performance would be great, losing performance would be bad.
 //
-Rngon.rasterize = function(auxiliaryBuffers = [])
+Rngon.baseModules.rasterize = function(auxiliaryBuffers = [])
 {
     const interpolatePerspective = Rngon.internalState.usePerspectiveCorrectInterpolation;
     const usePixelShader = Rngon.internalState.usePixelShader;
@@ -133,7 +135,7 @@ Rngon.rasterize = function(auxiliaryBuffers = [])
         // Rasterize a line.
         else if (ngon.vertices.length === 2)
         {
-            Rngon.rasterize.line(ngon.vertices[0], ngon.vertices[1], material.color, n, false);
+            Rngon.baseModules.rasterize.line(ngon.vertices[0], ngon.vertices[1], material.color, n, false);
 
             continue;
         }
@@ -359,8 +361,8 @@ Rngon.rasterize = function(auxiliaryBuffers = [])
                                     // Partial transparency.
                                     else
                                     {
-                                        const stipplePatternIdx = Math.floor(material.color.alpha / (256 / Rngon.rasterize.stipple_patterns.length));
-                                        const stipplePattern    = Rngon.rasterize.stipple_patterns[stipplePatternIdx];
+                                        const stipplePatternIdx = Math.floor(material.color.alpha / (256 / Rngon.baseModules.rasterize.stipple_patterns.length));
+                                        const stipplePattern    = Rngon.baseModules.rasterize.stipple_patterns[stipplePatternIdx];
                                         const stipplePixelIdx   = ((x % stipplePattern.width) + (y % stipplePattern.height) * stipplePattern.width);
 
                                         // Reject by stipple pattern.
@@ -496,8 +498,8 @@ Rngon.rasterize = function(auxiliaryBuffers = [])
                                     // Partial transparency.
                                     else
                                     {
-                                        const stipplePatternIdx = Math.floor(material.color.alpha / (256 / Rngon.rasterize.stipple_patterns.length));
-                                        const stipplePattern    = Rngon.rasterize.stipple_patterns[stipplePatternIdx];
+                                        const stipplePatternIdx = Math.floor(material.color.alpha / (256 / Rngon.baseModules.rasterize.stipple_patterns.length));
+                                        const stipplePattern    = Rngon.baseModules.rasterize.stipple_patterns[stipplePatternIdx];
                                         const stipplePixelIdx   = ((x % stipplePattern.width) + (y % stipplePattern.height) * stipplePattern.width);
 
                                         // Reject by stipple pattern.
@@ -589,12 +591,12 @@ Rngon.rasterize = function(auxiliaryBuffers = [])
             {
                 for (let l = 1; l < numLeftVerts; l++)
                 {
-                    Rngon.rasterize.line(leftVerts[l-1], leftVerts[l], material.wireframeColor, n, true);
+                    Rngon.baseModules.rasterize.line(leftVerts[l-1], leftVerts[l], material.wireframeColor, n, true);
                 }
 
                 for (let r = 1; r < numRightVerts; r++)
                 {
-                    Rngon.rasterize.line(rightVerts[r-1], rightVerts[r], material.wireframeColor, n, true);
+                    Rngon.baseModules.rasterize.line(rightVerts[r-1], rightVerts[r], material.wireframeColor, n, true);
                 }
             }
         }
@@ -604,7 +606,7 @@ Rngon.rasterize = function(auxiliaryBuffers = [])
 }
 
 // Draws a line between the two given vertices into the render's pixel buffer.
-Rngon.rasterize.line = function(vert1 = Rngon.vertex(),
+Rngon.baseModules.rasterize.line = function(vert1 = Rngon.vertex(),
                                 vert2 = Rngon.vertex(),
                                 lineColor = null,
                                 ngonIdx = 0,
@@ -748,7 +750,7 @@ Rngon.rasterize.line = function(vert1 = Rngon.vertex(),
 
 // Create a set of stipple patterns for emulating transparency.
 {
-    Rngon.rasterize.stipple_patterns = [
+    Rngon.baseModules.rasterize.stipple_patterns = [
         // ~1% transparent.
         {
             width: 8,
@@ -780,12 +782,12 @@ Rngon.rasterize.line = function(vert1 = Rngon.vertex(),
     ];
 
     // Append a reverse set of patterns to go from 50% to ~99% transparent.
-    for (let i = (Rngon.rasterize.stipple_patterns.length - 2); i >= 0; i--)
+    for (let i = (Rngon.baseModules.rasterize.stipple_patterns.length - 2); i >= 0; i--)
     {
-        Rngon.rasterize.stipple_patterns.push({
-            width: Rngon.rasterize.stipple_patterns[i].width,
-            height: Rngon.rasterize.stipple_patterns[i].height,
-            pixels: Rngon.rasterize.stipple_patterns[i].pixels.map(p=>Number(!p)),
+        Rngon.baseModules.rasterize.stipple_patterns.push({
+            width: Rngon.baseModules.rasterize.stipple_patterns[i].width,
+            height: Rngon.baseModules.rasterize.stipple_patterns[i].height,
+            pixels: Rngon.baseModules.rasterize.stipple_patterns[i].pixels.map(p=>Number(!p)),
         });
     }
 }

@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (28 February 2021 02:12:39 UTC)
+// VERSION: beta live (28 February 2021 02:24:15 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -13,8 +13,9 @@
 //	./js/retro-ngon/mesh.js
 //	./js/retro-ngon/ngon.js
 //	./js/retro-ngon/matrix44.js
-//	./js/retro-ngon/rasterize.js
-//	./js/retro-ngon/transform-and-light.js
+//	./js/retro-ngon/base-modules/rasterize.js
+//	./js/retro-ngon/base-modules/transform-clip-light.js
+//	./js/retro-ngon/base-modules/surface-wipe.js
 //	./js/retro-ngon/render.js
 //	./js/retro-ngon/render-async.js
 //	./js/retro-ngon/render-shared.js
@@ -1015,6 +1016,8 @@ Rngon.matrix44 = (()=>
 
 "use strict";
 
+Rngon.baseModules = (Rngon.baseModules || {});
+
 { // A block to limit the scope of the unit-global variables we set up, below.
 
 // We'll sort the n-gon's vertices into those on its left side and those on its
@@ -1041,7 +1044,7 @@ let numRightEdges = 0;
 // code, please benchmark its effects on performance first - maintaining or
 // improving performance would be great, losing performance would be bad.
 //
-Rngon.rasterize = function(auxiliaryBuffers = [])
+Rngon.baseModules.rasterize = function(auxiliaryBuffers = [])
 {
     const interpolatePerspective = Rngon.internalState.usePerspectiveCorrectInterpolation;
     const usePixelShader = Rngon.internalState.usePixelShader;
@@ -1141,7 +1144,7 @@ Rngon.rasterize = function(auxiliaryBuffers = [])
         // Rasterize a line.
         else if (ngon.vertices.length === 2)
         {
-            Rngon.rasterize.line(ngon.vertices[0], ngon.vertices[1], material.color, n, false);
+            Rngon.baseModules.rasterize.line(ngon.vertices[0], ngon.vertices[1], material.color, n, false);
 
             continue;
         }
@@ -1367,8 +1370,8 @@ Rngon.rasterize = function(auxiliaryBuffers = [])
                                     // Partial transparency.
                                     else
                                     {
-                                        const stipplePatternIdx = Math.floor(material.color.alpha / (256 / Rngon.rasterize.stipple_patterns.length));
-                                        const stipplePattern    = Rngon.rasterize.stipple_patterns[stipplePatternIdx];
+                                        const stipplePatternIdx = Math.floor(material.color.alpha / (256 / Rngon.baseModules.rasterize.stipple_patterns.length));
+                                        const stipplePattern    = Rngon.baseModules.rasterize.stipple_patterns[stipplePatternIdx];
                                         const stipplePixelIdx   = ((x % stipplePattern.width) + (y % stipplePattern.height) * stipplePattern.width);
 
                                         // Reject by stipple pattern.
@@ -1504,8 +1507,8 @@ Rngon.rasterize = function(auxiliaryBuffers = [])
                                     // Partial transparency.
                                     else
                                     {
-                                        const stipplePatternIdx = Math.floor(material.color.alpha / (256 / Rngon.rasterize.stipple_patterns.length));
-                                        const stipplePattern    = Rngon.rasterize.stipple_patterns[stipplePatternIdx];
+                                        const stipplePatternIdx = Math.floor(material.color.alpha / (256 / Rngon.baseModules.rasterize.stipple_patterns.length));
+                                        const stipplePattern    = Rngon.baseModules.rasterize.stipple_patterns[stipplePatternIdx];
                                         const stipplePixelIdx   = ((x % stipplePattern.width) + (y % stipplePattern.height) * stipplePattern.width);
 
                                         // Reject by stipple pattern.
@@ -1597,12 +1600,12 @@ Rngon.rasterize = function(auxiliaryBuffers = [])
             {
                 for (let l = 1; l < numLeftVerts; l++)
                 {
-                    Rngon.rasterize.line(leftVerts[l-1], leftVerts[l], material.wireframeColor, n, true);
+                    Rngon.baseModules.rasterize.line(leftVerts[l-1], leftVerts[l], material.wireframeColor, n, true);
                 }
 
                 for (let r = 1; r < numRightVerts; r++)
                 {
-                    Rngon.rasterize.line(rightVerts[r-1], rightVerts[r], material.wireframeColor, n, true);
+                    Rngon.baseModules.rasterize.line(rightVerts[r-1], rightVerts[r], material.wireframeColor, n, true);
                 }
             }
         }
@@ -1612,7 +1615,7 @@ Rngon.rasterize = function(auxiliaryBuffers = [])
 }
 
 // Draws a line between the two given vertices into the render's pixel buffer.
-Rngon.rasterize.line = function(vert1 = Rngon.vertex(),
+Rngon.baseModules.rasterize.line = function(vert1 = Rngon.vertex(),
                                 vert2 = Rngon.vertex(),
                                 lineColor = null,
                                 ngonIdx = 0,
@@ -1756,7 +1759,7 @@ Rngon.rasterize.line = function(vert1 = Rngon.vertex(),
 
 // Create a set of stipple patterns for emulating transparency.
 {
-    Rngon.rasterize.stipple_patterns = [
+    Rngon.baseModules.rasterize.stipple_patterns = [
         // ~1% transparent.
         {
             width: 8,
@@ -1788,12 +1791,12 @@ Rngon.rasterize.line = function(vert1 = Rngon.vertex(),
     ];
 
     // Append a reverse set of patterns to go from 50% to ~99% transparent.
-    for (let i = (Rngon.rasterize.stipple_patterns.length - 2); i >= 0; i--)
+    for (let i = (Rngon.baseModules.rasterize.stipple_patterns.length - 2); i >= 0; i--)
     {
-        Rngon.rasterize.stipple_patterns.push({
-            width: Rngon.rasterize.stipple_patterns[i].width,
-            height: Rngon.rasterize.stipple_patterns[i].height,
-            pixels: Rngon.rasterize.stipple_patterns[i].pixels.map(p=>Number(!p)),
+        Rngon.baseModules.rasterize.stipple_patterns.push({
+            width: Rngon.baseModules.rasterize.stipple_patterns[i].width,
+            height: Rngon.baseModules.rasterize.stipple_patterns[i].height,
+            pixels: Rngon.baseModules.rasterize.stipple_patterns[i].pixels.map(p=>Number(!p)),
         });
     }
 }
@@ -1807,14 +1810,16 @@ Rngon.rasterize.line = function(vert1 = Rngon.vertex(),
 
 "use strict";
 
+Rngon.baseModules = (Rngon.baseModules || {});
+
 // Applies lighting to the given n-gons, and transforms them into screen space
 // for rendering. The processed n-gons are stored in the internal n-gon cache.
-Rngon.ngon_transform_and_light = function(ngons = [],
-                                          objectMatrix = [],
-                                          cameraMatrix = [],
-                                          projectionMatrix = [],
-                                          screenSpaceMatrix = [],
-                                          cameraPos)
+Rngon.baseModules.transform_clip_light = function(ngons = [],
+                                                  objectMatrix = [],
+                                                  cameraMatrix = [],
+                                                  projectionMatrix = [],
+                                                  screenSpaceMatrix = [],
+                                                  cameraPos)
 {
     const viewVector = {x:0.0, y:0.0, z:0.0};
     const ngonCache = Rngon.internalState.ngonCache;
@@ -1918,7 +1923,7 @@ Rngon.ngon_transform_and_light = function(ngons = [],
 
                 if (cachedNgon.material.vertexShading !== "none")
                 {
-                    Rngon.ngon_transform_and_light.apply_lighting(cachedNgon);
+                    Rngon.baseModules.transform_clip_light.apply_lighting(cachedNgon);
                 }
 
                 // Apply an optional, user-defined vertex shader.
@@ -1994,7 +1999,7 @@ Rngon.ngon_transform_and_light = function(ngons = [],
     return;
 }
 
-Rngon.ngon_transform_and_light.apply_lighting = function(ngon)
+Rngon.baseModules.transform_clip_light.apply_lighting = function(ngon)
 {
     // Pre-allocate a vector object to operate on, so we don't need to create one repeatedly.
     const lightDirection = Rngon.vector3();
@@ -2078,6 +2083,31 @@ Rngon.ngon_transform_and_light.apply_lighting = function(ngon)
         {
             ngon.vertices[v].shade = faceShade;
         }
+    }
+
+    return;
+}
+/*
+ * 2019, 2020 Tarpeeksi Hyvae Soft
+ * 
+ * Software: Retro n-gon renderer
+ * 
+ */
+
+"use strict";
+
+Rngon.baseModules = (Rngon.baseModules || {});
+
+// Resets the render surface's buffers to their initial contents.
+Rngon.baseModules.surface_wipe = function()
+{
+    Rngon.internalState.pixelBuffer.data.fill(0);
+
+    /// TODO: Wipe the fragment buffer.
+
+    if (Rngon.internalState.useDepthBuffer)
+    {
+        Rngon.internalState.depthBuffer.data.fill(Rngon.internalState.depthBuffer.clearValue);
     }
 
     return;
@@ -2408,9 +2438,14 @@ Rngon.renderShared = {
         state.pixel_shader = (options.shaderFunction || // <- Name in pre-beta.3.
                               options.pixelShader); 
 
-        state.modules.ngon_fill = (options.modules.ngonFill || Rngon.rasterize);
-        state.modules.transform_clip_light = (options.modules.transformClipLight || Rngon.ngon_transform_and_light)
-        state.modules.surface_wipe = (options.modules.surfaceWipe || Rngon.surface.wipe);
+        state.modules.ngon_fill = (options.modules.ngonFill ||
+                                   Rngon.baseModules.rasterize);
+                                   
+        state.modules.transform_clip_light = (options.modules.transformClipLight ||
+                                              Rngon.baseModules.transform_clip_light);
+
+        state.modules.surface_wipe = (options.modules.surfaceWipe ||
+                                      Rngon.baseModules.surface_wipe);
 
         return;
     },
@@ -2537,8 +2572,8 @@ Rngon.renderShared = {
         width: 640, // Used by render_async() only.
         height: 480, // Used by render_async() only.
         modules: {
-            ngonFill: null, // Null defaults to Rngon.rasterize.
-            transformClipLight: null, // Null defaults to Rngon.ngon_transform_and_light.
+            ngonFill: null, // Null defaults to Rngon.baseModules.rasterize.
+            transformClipLight: null, // Null defaults to Rngon.baseModules.transform_clip_light.
         },
     }),
 
@@ -2992,19 +3027,4 @@ Rngon.surface = function(canvasElement,  // The target DOM <canvas> element.
             surfaceHeight: height,
         };
     }
-}
-
-// Resets the surface's render buffers to their initial contents.
-Rngon.surface.wipe = function()
-{
-    Rngon.internalState.pixelBuffer.data.fill(0);
-
-    /// TODO: Wipe the fragment buffer.
-
-    if (Rngon.internalState.useDepthBuffer)
-    {
-        Rngon.internalState.depthBuffer.data.fill(Rngon.internalState.depthBuffer.clearValue);
-    }
-
-    return;
 }

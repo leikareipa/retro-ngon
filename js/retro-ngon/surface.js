@@ -240,18 +240,3 @@ Rngon.surface = function(canvasElement,  // The target DOM <canvas> element.
         };
     }
 }
-
-// Resets the surface's render buffers to their initial contents.
-Rngon.surface.wipe = function()
-{
-    Rngon.internalState.pixelBuffer.data.fill(0);
-
-    /// TODO: Wipe the fragment buffer.
-
-    if (Rngon.internalState.useDepthBuffer)
-    {
-        Rngon.internalState.depthBuffer.data.fill(Rngon.internalState.depthBuffer.clearValue);
-    }
-
-    return;
-}
