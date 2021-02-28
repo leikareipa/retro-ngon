@@ -28,11 +28,8 @@ Here are some of the possible use cases:
 - Avoidance of WebGL
 
 # Screenshots
-![A scene from Tomb Raider, textured](./images/screenshots/beta/tomb-raider-1-texture-lightmap.png)\
+![A scene from Tomb Raider, textured](./images/screenshots/beta/tomb-raider-1-texture-lightmap-2.png)\
 **A scene** from Tomb Raider 1 as rendered by the retro n-gon renderer and consisting of textured quads. A custom lightmap has been baked onto the textures. (Based on assets produced by Core Design for *Tomb Raider*. Core Design is not associated with the retro n-gon renderer.)
-
-![A scene from RallySportED-js](./images/screenshots/beta/rallysported.png)\
-**The track editor view** in RallySportED-js, with geometry built from texture-mapped, wireframed quads. (Based on textures and 3D models produced by Jukka Jäkälä for *Rally-Sport*. Jukka Jäkälä is not associated with the retro n-gon renderer.)
 
 ![A scene from Tomb Raider, vertex-lit](./images/screenshots/beta/tomb-raider-1-vertex-shade.png)\
 **Vertex lighting** with Gouraud interpolation in a scene from Tomb Raider 1. (Based on assets produced by Core Design for *Tomb Raider*. Core Design is not associated with the retro n-gon renderer.)
