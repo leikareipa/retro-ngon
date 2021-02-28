@@ -176,11 +176,6 @@ const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
                      ()=>(texture.pixels[0].alpha === 255),
                      ()=>(textureSeethrough.pixels[0].alpha === 1)]);
 
-        // Immutability.
-        expect_fail([()=>{texture.width = 0},
-                     ()=>{texture.height = 0},
-                     ()=>{texture.pixels = 0}]);
-
         // Invalid values.
         expect_fail([()=>{Rngon.texture_rgba({width: 1, height: 1, encoding: "none", pixels: [255, 0, 0, 0, 255, 0, 0, 0]})}, // Too many pixels for given resolution.
                      ()=>{Rngon.texture_rgba({width: 2, height: 1, encoding: "none", pixels: [255, 0, 0, 0]})}, // Not enough pixels for given resolution.
@@ -206,7 +201,7 @@ const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
         {
             expect_true([()=>(document.getElementById(testCanvasId) !== null)]);
 
-            const renderSurface = Rngon.surface(testCanvasId,
+            const renderSurface = Rngon.surface(canvas,
                                                 {
                                                     scale: 1,
                                                     cameraDirection: Rngon.vector3(),
