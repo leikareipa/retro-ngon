@@ -24,8 +24,9 @@ Rngon.baseModules.transform_clip_light = function(ngons = [],
     for (const ngon of ngons)
     {
         // Ignore fully transparent polygons.
-        if (!ngon.material.color.alpha &&
-            !ngon.material.hasWireframe)
+        if (!ngon.material.hasWireframe &&
+            ngon.material.allowAlphaReject &&
+            (ngon.material.color.alpha <= 0))
         {
             continue;
         }
