@@ -12,7 +12,7 @@ body
 {
     box-sizing: border-box;
     width: 100%;
-    background-color: rgba(0, 0, 0, 0.1);
+    background-color: whitesmoke;
     padding: 0;
     margin: 0;
     border-radius: 0;
@@ -62,15 +62,15 @@ body
     position: absolute;
     z-index: 10;
     text-align: left;
-    padding: 12px;
+    padding: 8px;
+    font-size: 90%;
     border-radius: 0;
-    box-shadow: 0 6px 5px -4px rgba(0, 0, 0, 0.4);
     pointer-events: none;
     user-select: none;
     white-space: nowrap;
     display: none;
-    transform: translateX(20px) translateY(20px);
-    border-radius: 0 10px 10px 10px ;
+    transform: translateX(10px) translateY(10px);
+    border-radius: 2px;
 }
 
 #benchmark-graph-container
