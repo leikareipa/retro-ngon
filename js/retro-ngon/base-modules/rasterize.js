@@ -542,6 +542,11 @@ Rngon.baseModules.rasterize.line = function(vert1 = Rngon.vertex(),
                                             ngonIdx = 0,
                                             ignoreDepthBuffer = false)
 {
+    if (color.alpha !== 255)
+    {
+        return;
+    }
+    
     const interpolatePerspective = Rngon.internalState.usePerspectiveCorrectInterpolation;
     const farPlane = Rngon.internalState.farPlaneDistance;
     const usePixelShader = Rngon.internalState.usePixelShader;
@@ -550,10 +555,10 @@ Rngon.baseModules.rasterize.line = function(vert1 = Rngon.vertex(),
     const renderWidth = Rngon.internalState.pixelBuffer.width;
     const renderHeight = Rngon.internalState.pixelBuffer.height;
     
-    let x0 = Math.round(vert1.x);
-    let y0 = Math.round(vert1.y);
-    const x1 = Math.round(vert2.x);
-    const y1 = Math.round(vert2.y);
+    let x0 = Math.floor(vert1.x);
+    let y0 = Math.floor(vert1.y);
+    const x1 = Math.floor(vert2.x);
+    const y1 = Math.floor(vert2.y);
     const lineLength = Math.sqrt((x1 - x0) * (x1 - x0) + (y1 - y0) * (y1 - y0));
 
     // Establish interpolation parameters.
@@ -587,14 +592,13 @@ Rngon.baseModules.rasterize.line = function(vert1 = Rngon.vertex(),
         const sy = ((y0 < y1)? 1 : -1); 
         let err = (((dx > dy)? dx : -dy) / 2);
 
-        const maxNumSteps = (renderWidth + renderHeight);
-        let numSteps = 0;
-        
-        while (++numSteps < maxNumSteps)
+        let maxNumSteps = (renderWidth + renderHeight);
+        while (maxNumSteps--)
         {
             put_pixel(x0, y0);
 
-            if ((x0 === x1) && (y0 === y1))
+            if ((x0 == x1) &&
+                (y0 == y1))
             {
                 break;
             }
@@ -649,11 +653,6 @@ Rngon.baseModules.rasterize.line = function(vert1 = Rngon.vertex(),
                 return;
             }
 
-            if (color.alpha !== 255)
-            {
-                return;
-            }
-
             // Draw the pixel.
             {
                 pixelBuffer[idx + 0] = (shade * color.red);
@@ -661,7 +660,7 @@ Rngon.baseModules.rasterize.line = function(vert1 = Rngon.vertex(),
                 pixelBuffer[idx + 2] = (shade * color.blue);
                 pixelBuffer[idx + 3] = 255;
 
-                if (depthBuffer)
+                if (depthBuffer && !ignoreDepthBuffer)
                 {
                     depthBuffer[depthBufferIdx] = depth;
                 }
