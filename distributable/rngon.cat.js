@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (01 March 2021 06:58:04 UTC)
+// VERSION: beta live (02 March 2021 01:52:09 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -1178,8 +1178,8 @@ Rngon.baseModules.rasterize.polygon = function(ngon = Rngon.ngon(),
 
         function add_edge(vert1, vert2, isLeftEdge)
         {
-            const startY = Math.min(renderHeight, Math.max(0, Math.round(vert1.y)));
-            const endY = Math.min(renderHeight, Math.max(0, Math.round(vert2.y)));
+            const startY = Math.min(renderHeight, Math.max(0, Math.floor(vert1.y)));
+            const endY = Math.min(renderHeight, Math.max(0, Math.floor(vert2.y)));
             const edgeHeight = (endY - startY);
             
             // Ignore horizontal edges.
@@ -1188,8 +1188,8 @@ Rngon.baseModules.rasterize.polygon = function(ngon = Rngon.ngon(),
             const w1 = interpolatePerspective? vert1.w : 1;
             const w2 = interpolatePerspective? vert2.w : 1;
 
-            const startX = Math.min(renderWidth, Math.max(0, Math.round(vert1.x)));
-            const endX = Math.min(renderWidth, Math.max(0, Math.ceil(vert2.x)));
+            const startX = Math.min(renderWidth, Math.max(0, Math.floor(vert1.x)));
+            const endX = Math.min(renderWidth, Math.max(0, Math.floor(vert2.x)));
             const deltaX = ((endX - startX) / edgeHeight);
 
             const depth1 = (vert1.z / Rngon.internalState.farPlaneDistance);
@@ -1260,8 +1260,8 @@ Rngon.baseModules.rasterize.polygon = function(ngon = Rngon.ngon(),
         // Rasterize the n-gon in horizontal pixel spans over its height.
         for (let y = ngonStartY; y < ngonEndY; y++)
         {
-            const spanStartX = Math.min(renderWidth, Math.max(0, Math.round(leftEdge.startX)));
-            const spanEndX = Math.min(renderWidth, Math.max(0, Math.round(rightEdge.startX)));
+            const spanStartX = Math.min(renderWidth, Math.max(0, Math.floor(leftEdge.startX)));
+            const spanEndX = Math.min(renderWidth, Math.max(0, Math.floor(rightEdge.startX)));
             const spanWidth = ((spanEndX - spanStartX) + 1);
 
             if (spanWidth > 0)
@@ -1736,8 +1736,8 @@ Rngon.baseModules.rasterize.point = function(vertex = Rngon.vertex(),
     const renderWidth = Rngon.internalState.pixelBuffer.width;
     const renderHeight = Rngon.internalState.pixelBuffer.height;
 
-    const x = Math.round(vertex.x);
-    const y = Math.round(vertex.y);
+    const x = Math.floor(vertex.x);
+    const y = Math.floor(vertex.y);
     const idx = ((x + y * renderWidth) * 4);
     const depthBufferIdx = (idx / 4);
 
