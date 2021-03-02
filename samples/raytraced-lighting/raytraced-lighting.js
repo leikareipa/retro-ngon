@@ -41,8 +41,8 @@ import {ray} from "./ray.js";
 const lights = [
     // The light source we'll trace rays toward.
     Rngon.light(Rngon.translation_vector(11, 45, -35), {
-        intensity: 100,
-        clip: 2,
+        intensity: 20,
+        clip: 1,
         attenuation: 1,
     }),
 ];
@@ -208,9 +208,9 @@ function ps_raytraced_lighting({renderWidth, renderHeight, fragmentBuffer, pixel
         if (!intersection ||
             (intersection.distance < lightDistance))
         {
-            pixelBuffer[(i * 4) + 0] = 0;
-            pixelBuffer[(i * 4) + 1] = 0;
-            pixelBuffer[(i * 4) + 2] = 0;
+            pixelBuffer[(i * 4) + 0] *= 0;
+            pixelBuffer[(i * 4) + 1] *= 0;
+            pixelBuffer[(i * 4) + 2] *= 0;
         }
         // Otherwise, at least some light is falling on this pixel, dependent on the
         // light's distance and incident angle.

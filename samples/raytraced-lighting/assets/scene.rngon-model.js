@@ -10,12 +10,9 @@
 
 "use strict";
 
-import {textures as textureAtlas} from "./scene.rngon-texture-atlas.js";
-
 export const scene =
 {
 	ngons:[],
-	textures:{},
 	materials:{},
 	initialize: async function()
 	{
@@ -24,22 +21,13 @@ export const scene =
 		const no = Rngon.vector3; // Normal vector.
 		const v = Rngon.vertex;
 		const c = Rngon.color_rgba;
-		const ct = Rngon.texture_rgba.create_with_data_from_file;
-		let t; // Will point to this.textures.
 		let m; // Will point to this.materials.
 
-		// Load texture data.
-		t = this.textures = {
-			"shrub":Rngon.texture_rgba(textureAtlas["shrub"]),
-			"bark":Rngon.texture_rgba(textureAtlas["bark"]),
-			"ground":Rngon.texture_rgba(textureAtlas["ground"]),
-		};
-
 		m = this.materials = {
-			"Floor":{color:c(60,41,20),texture:t["ground"],textureMapping:"affine",isTwoSided:true,vertexShading:"flat",},
-			"Object":{color:c(204,204,204),texture:t["bark"],textureMapping:"affine",isTwoSided:true,vertexShading:"flat",},
-			"Pillar":{color:c(163,126,88),texture:t["bark"],textureMapping:"affine",isTwoSided:true,vertexShading:"flat",},
-			"Wall":{color:c(163,72,27),texture:t["shrub"],textureMapping:"affine",isTwoSided:true,vertexShading:"flat",},
+			"Floor":{color:c(255,255,255),isTwoSided:true,vertexShading:"flat",},
+			"Object":{color:c(255,255,255),isTwoSided:true,vertexShading:"flat",},
+			"Pillar":{color:c(255,255,255),isTwoSided:true,vertexShading:"flat",},
+			"Wall":{color:c(255,255,255),isTwoSided:true,vertexShading:"flat",},
 		};
 
 		// Create the n-gons.

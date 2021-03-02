@@ -83,7 +83,7 @@ body
 {
     width: 100%;
     justify-content: center;
-    top: calc(100% - 45px - 70px);
+    top: calc(100% - 45px - 75px);
     pointer-events: none;
 }
 
@@ -111,7 +111,8 @@ body
 .infoboxes-container.additional .infobox
 {
     width: 150px;
-    height: 70px;
+    height: 75px;
+    line-height: 21px;
 }
 
 .infobox > .title
