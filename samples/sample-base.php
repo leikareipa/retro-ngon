@@ -38,6 +38,11 @@
                 <div class="title">FPS</div>
                 <div class="value"><i class="fas fa-sm fa-spin fa-spinner"></i></div>
             </div>
+            <div class="infobox refresh-rate"
+                 title="Performance of Rngon.render()">
+                <div class="title">Hz</div>
+                <div class="value"><i class="fas fa-sm fa-spin fa-spinner"></i></div>
+            </div>
         </div>
         
         <script src="<?php
@@ -160,10 +165,11 @@
 
                     const renderInfo = Rngon.render(canvasElement, [scene], options);
 
-                    if ((uiUpdateTimer += frameTimeDeltaMs) >= 1000)
+                    if ((uiUpdateTimer += frameTimeDeltaMs) >= 500)
                     {
                         document.querySelector(".infobox.fps .value").innerHTML = Math.floor(1000 / (renderInfo.totalRenderTimeMs || 1));
                         document.querySelector(".infobox.polycount .value").innerHTML = renderInfo.numNgonsRendered;
+                        document.querySelector(".infobox.refresh-rate .value").innerHTML = Math.floor(1000 / (frameTimeDeltaMs || 1));
 
                         uiUpdateTimer = 0;
                     }
