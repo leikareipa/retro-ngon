@@ -554,12 +554,16 @@ Rngon.baseModules.rasterize.line = function(vert1 = Rngon.vertex(),
     const pixelBuffer = Rngon.internalState.pixelBuffer.data;
     const renderWidth = Rngon.internalState.pixelBuffer.width;
     const renderHeight = Rngon.internalState.pixelBuffer.height;
-    
-    let x0 = Math.floor(vert1.x);
-    let y0 = Math.floor(vert1.y);
-    const x1 = Math.floor(vert2.x);
-    const y1 = Math.floor(vert2.y);
-    const lineLength = Math.sqrt((x1 - x0) * (x1 - x0) + (y1 - y0) * (y1 - y0));
+ 
+    const startX = Math.floor(vert1.x);
+    const startY = Math.floor(vert1.y);
+    const endX = Math.floor(vert2.x);
+    const endY = Math.floor(vert2.y);
+    let lineLength = Math.floor(Math.sqrt((endX - startX) * (endX - startX) + (endY - startY) * (endY - startY)));
+    const deltaX = ((endX - startX) / lineLength);
+    const deltaY = ((endY - startY) / lineLength);
+    let curX = startX;
+    let curY = startY;
 
     // Establish interpolation parameters.
     const w1 = (interpolatePerspective? vert1.w : 1);
@@ -584,104 +588,76 @@ Rngon.baseModules.rasterize.line = function(vert1 = Rngon.vertex(),
         var deltaWorldZ = ((vert2.worldZ/w2 - vert1.worldZ/w1) / lineLength);
     }
 
-    // Bresenham line algo. Adapted from https://stackoverflow.com/a/4672319.
+    while (lineLength--)
     {
-        let dx = Math.abs(x1 - x0);
-        let dy = Math.abs(y1 - y0);
-        const sx = ((x0 < x1)? 1 : -1);
-        const sy = ((y0 < y1)? 1 : -1); 
-        let err = (((dx > dy)? dx : -dy) / 2);
+        const x = Math.floor(curX);
+        const y = Math.floor(curY);
 
-        let maxNumSteps = (renderWidth + renderHeight);
-        while (maxNumSteps--)
+        put_pixel(x, y);
+
+        // Increment interpolated values.
         {
-            put_pixel(x0, y0);
+            curX += deltaX;
+            curY += deltaY;
+            startDepth += deltaDepth;
+            startShade += deltaShade;
+            startInvW += deltaInvW;
 
-            if ((x0 == x1) &&
-                (y0 == y1))
+            if (usePixelShader)
             {
-                break;
-            }
-
-            // Increment interpolated values.
-            {
-                startDepth += deltaDepth;
-                startShade += deltaShade;
-                startInvW += deltaInvW;
-
-                if (usePixelShader)
-                {
-                    startWorldX += deltaWorldX;
-                    startWorldY += deltaWorldY;
-                    startWorldZ += deltaWorldZ;
-                }
-            }
-
-            const e2 = err;
-            if (e2 > -dx)
-            {
-                err -= dy;
-                x0 += sx;
-            }
-            if (e2 < dy)
-            {
-                err += dx;
-                y0 += sy;
+                startWorldX += deltaWorldX;
+                startWorldY += deltaWorldY;
+                startWorldZ += deltaWorldZ;
             }
         }
+    }
 
-        function put_pixel(x, y)
+    function put_pixel(x, y)
+    {
+        if ((x < 0) ||
+            (y < 0) ||
+            (x >= renderWidth) ||
+            (y >= renderHeight))
         {
-            const idx = ((x + y * renderWidth) * 4);
-            const depthBufferIdx = (idx / 4);
-
-            if ((x < 0) ||
-                (y < 0) ||
-                (x >= renderWidth) ||
-                (y >= renderHeight))
-            {
-                return;
-            }
-            
-            const depth = (startDepth / startInvW);
-            const shade = (startShade / startInvW);
-
-            if (!ignoreDepthBuffer &&
-                depthBuffer &&
-                (depthBuffer[depthBufferIdx] <= depth))
-            {
-                return;
-            }
-
-            // Draw the pixel.
-            {
-                pixelBuffer[idx + 0] = (shade * color.red);
-                pixelBuffer[idx + 1] = (shade * color.green);
-                pixelBuffer[idx + 2] = (shade * color.blue);
-                pixelBuffer[idx + 3] = 255;
-
-                if (depthBuffer && !ignoreDepthBuffer)
-                {
-                    depthBuffer[depthBufferIdx] = depth;
-                }
-
-                if (usePixelShader)
-                {
-                    const fragment = Rngon.internalState.fragmentBuffer.data[depthBufferIdx];
-                    fragment.ngonIdx = ngonIdx;
-                    fragment.textureUScaled = undefined; // We don't support textures on lines.
-                    fragment.textureVScaled = undefined;
-                    fragment.depth = (startDepth / startInvW);
-                    fragment.shade = (startShade / startInvW);
-                    fragment.worldX = (startWorldX / startInvW);
-                    fragment.worldY = (startWorldY / startInvW);
-                    fragment.worldZ = (startWorldZ / startInvW);
-                    fragment.w = (1 / startInvW);
-                }
-            }
-
             return;
         }
+
+        const idx = ((x + y * renderWidth) * 4);
+        const depthBufferIdx = (idx / 4);
+        const depth = (startDepth / startInvW);
+        const shade = (startShade / startInvW);
+
+        // Draw the pixel.
+        if (ignoreDepthBuffer ||
+            !depthBuffer ||
+            (depthBuffer[depthBufferIdx] > depth))
+        {
+            pixelBuffer[idx + 0] = (shade * color.red);
+            pixelBuffer[idx + 1] = (shade * color.green);
+            pixelBuffer[idx + 2] = (shade * color.blue);
+            pixelBuffer[idx + 3] = 255;
+
+            if (depthBuffer && !ignoreDepthBuffer)
+            {
+                depthBuffer[depthBufferIdx] = depth;
+            }
+
+            if (usePixelShader)
+            {
+                const fragment = Rngon.internalState.fragmentBuffer.data[depthBufferIdx];
+                fragment.ngonIdx = ngonIdx;
+                fragment.textureUScaled = undefined; // We don't support textures on lines.
+                fragment.textureVScaled = undefined;
+                fragment.depth = (startDepth / startInvW);
+                fragment.shade = (startShade / startInvW);
+                fragment.worldX = (startWorldX / startInvW);
+                fragment.worldY = (startWorldY / startInvW);
+                fragment.worldZ = (startWorldZ / startInvW);
+                fragment.w = (1 / startInvW);
+            }
+        }
+
+        return;
     }
 };
 
