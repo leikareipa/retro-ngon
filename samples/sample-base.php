@@ -25,7 +25,7 @@
         <div class="infoboxes-container">
             <div class="infobox scale">
                 <div class="title">Scale</div>
-                <div class="value">0.20</div>
+                <div class="value"><i class="fas fa-sm fa-spin fa-spinner"></i></div>
                 <div class="adjust left" onclick="change_scale(-1);"></div>
                 <div class="adjust right" onclick="change_scale(1);"></div>
             </div>
@@ -99,14 +99,17 @@
         </script>
         <script>
             var renderSettings = {
-                scale: 0.2,
+                scale: 0.25,
                 cameraDirection: Rngon.rotation_vector(0, 0, 0),
                 cameraPosition: Rngon.translation_vector(0, 0, -170),
             };
 
+            // Force the scale to initialize to the value set in renderSettings.scale.
+            change_scale(0);
+
             function change_scale(dir)
             {
-                const scales = [0.05, 0.10, 0.15, 0.2, 0.3, 0.5, 0.75, 1];
+                const scales = [0.05, 0.10, 0.15, 0.20, 0.25, 0.5, 1];
                 const newScaleIdx = Math.max(0, Math.min((scales.length - 1), (scales.indexOf(renderSettings.scale) + Math.sign(dir))));
 
                 renderSettings.scale = (scales[newScaleIdx] || scales[0]);
