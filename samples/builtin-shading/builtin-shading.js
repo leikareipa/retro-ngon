@@ -45,5 +45,6 @@ export const sampleRenderOptions = {
             clip: 1.5,
             attenuation: 1,
             intensity: 150,
-        })],
+        }),
+    ],
 }

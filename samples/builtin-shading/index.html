@@ -13,14 +13,14 @@
         </iframe>
 
         <div class="infoboxes-container additional">
-            <div class="infobox shading">
+            <div class="infobox shading" style="width: 170px;">
                 <div class="title">Shading</div>
                 <div class="value">Flat</div>
                 <div class="adjust left" onclick="change_shading(-1);"></div>
                 <div class="adjust right" onclick="change_shading(1);"></div>
             </div>
 
-            <div class="infobox ambient">
+            <div class="infobox ambient" style="width: 130px;">
                 <div class="title">Ambient</div>
                 <div class="value">0.3</div>
                 <div class="adjust left" onclick="change_ambient(-0.1);"></div>
@@ -29,7 +29,7 @@
         </div>
 
         <script>
-            const shadingTypes = ["None", "Flat", "Gouraud"];
+            const shadingTypes = ["None", "Flat", "Gouraud", "Phong"];
             let shadingTypeIdx = 1;
 
             var MODEL_SHADING = shadingTypes[shadingTypeIdx];
