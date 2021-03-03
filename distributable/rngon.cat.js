@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (03 March 2021 16:29:06 UTC)
+// VERSION: beta live (03 March 2021 16:33:17 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -1430,7 +1430,7 @@ Rngon.baseModules.rasterize.polygon = function(ngon = Rngon.ngon(),
                             Rngon.vector3.normalize(R);
 
                             const Kd = (Math.max(0, dotNL) * distanceMul * light.intensity);
-                            const Ks = Math.pow(Math.max(0, Math.min(1, Rngon.vector3.dot(V, R))), material.specularity);
+                            const Ks = (material.specularity? Math.pow(Math.max(0, Math.min(1, Rngon.vector3.dot(V, R))), material.specularity) : 0);
 
                             shade = Math.max(shade, Math.min(light.clip, Kd));
                             shadeHighlight = Math.max(shadeHighlight, (Ks * 255));

@@ -364,7 +364,7 @@ Rngon.baseModules.rasterize.polygon = function(ngon = Rngon.ngon(),
                             Rngon.vector3.normalize(R);
 
                             const Kd = (Math.max(0, dotNL) * distanceMul * light.intensity);
-                            const Ks = Math.pow(Math.max(0, Math.min(1, Rngon.vector3.dot(V, R))), material.specularity);
+                            const Ks = (material.specularity? Math.pow(Math.max(0, Math.min(1, Rngon.vector3.dot(V, R))), material.specularity) : 0);
 
                             shade = Math.max(shade, Math.min(light.clip, Kd));
                             shadeHighlight = Math.max(shadeHighlight, (Ks * 255));
