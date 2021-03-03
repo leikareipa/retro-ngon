@@ -79,6 +79,7 @@ Rngon.baseModules.rasterize.polygon = function(ngon = Rngon.ngon(),
 
     const interpolatePerspective = Rngon.internalState.usePerspectiveCorrectInterpolation;
     const usePixelShader = Rngon.internalState.usePixelShader;
+    const usePhongShading = Rngon.internalState.usePhongShading;
     const fragmentBuffer = Rngon.internalState.fragmentBuffer.data;
     const pixelBuffer = Rngon.internalState.pixelBuffer.data;
     const depthBuffer = (Rngon.internalState.useDepthBuffer? Rngon.internalState.depthBuffer.data : null);
@@ -192,7 +193,17 @@ Rngon.baseModules.rasterize.polygon = function(ngon = Rngon.ngon(),
             edge.startInvW = startInvW;
             edge.deltaInvW = deltaInvW;
 
-            if (usePixelShader)
+            if (usePhongShading)
+            {
+                edge.startNx = vert1.normalX/w1;
+                edge.deltaNx = ((vert2.normalX/w2 - vert1.normalX/w1) / edgeHeight);
+                edge.startNy = vert1.normalY/w1;
+                edge.deltaNy = ((vert2.normalY/w2 - vert1.normalY/w1) / edgeHeight);
+                edge.startNz = vert1.normalZ/w1;
+                edge.deltaNz = ((vert2.normalZ/w2 - vert1.normalZ/w1) / edgeHeight);
+            }
+
+            if (usePixelShader || usePhongShading)
             {
                 edge.startWorldX = vert1.worldX/w1;
                 edge.deltaWorldX = ((vert2.worldX/w2 - vert1.worldX/w1) / edgeHeight);
@@ -245,7 +256,19 @@ Rngon.baseModules.rasterize.polygon = function(ngon = Rngon.ngon(),
                 const deltaInvW = ((rightEdge.startInvW - leftEdge.startInvW) / spanWidth);
                 let iplInvW = (leftEdge.startInvW - deltaInvW);
 
-                if (usePixelShader)
+                if (usePhongShading)
+                {
+                    var deltaNx = ((rightEdge.startNx - leftEdge.startNx) / spanWidth);
+                    var iplNx = (leftEdge.startNx - deltaNx);
+
+                    var deltaNy = ((rightEdge.startNy - leftEdge.startNy) / spanWidth);
+                    var iplNy = (leftEdge.startNy - deltaNy);
+
+                    var deltaNz = ((rightEdge.startNz - leftEdge.startNz) / spanWidth);
+                    var iplNz = (leftEdge.startNz - deltaNz);
+                }
+
+                if (usePixelShader || usePhongShading)
                 {
                     var deltaWorldX = ((rightEdge.startWorldX - leftEdge.startWorldX) / spanWidth);
                     var iplWorldX = (leftEdge.startWorldX - deltaWorldX);
@@ -279,7 +302,14 @@ Rngon.baseModules.rasterize.polygon = function(ngon = Rngon.ngon(),
                     pixelBufferIdx += 4;
                     depthBufferIdx++;
 
-                    if (usePixelShader)
+                    if (usePhongShading)
+                    {
+                        iplNx += deltaNx;
+                        iplNy += deltaNy;
+                        iplNz += deltaNz;
+                    }
+
+                    if (usePixelShader || usePhongShading)
                     {
                         iplWorldX += deltaWorldX;
                         iplWorldY += deltaWorldY;
@@ -291,7 +321,53 @@ Rngon.baseModules.rasterize.polygon = function(ngon = Rngon.ngon(),
                     // Depth test.
                     if (depthBuffer && (depthBuffer[depthBufferIdx] <= depth)) continue;
 
-                    const shade = (material.renderVertexShade? (iplShade / iplInvW) : 1);
+                    let shade = (material.renderVertexShade? (iplShade / iplInvW) : 1);
+
+                    if (usePhongShading)
+                    {
+                        shade = material.ambientLightLevel;
+
+                        const worldPosX = (iplWorldX / iplInvW);
+                        const worldPosY = (iplWorldY / iplInvW);
+                        const worldPosZ = (iplWorldZ / iplInvW);
+
+                        const N = Rngon.vector3((iplNx / iplInvW), (iplNy / iplInvW), (iplNz / iplInvW));
+                        Rngon.vector3.normalize(N)
+                        
+                        const V = Rngon.vector3((Rngon.internalState.cameraPosition.x - worldPosX),
+                                                (Rngon.internalState.cameraPosition.y - worldPosY),
+                                                (Rngon.internalState.cameraPosition.z - worldPosZ));
+                        Rngon.vector3.normalize(V);
+
+                        for (const light of Rngon.internalState.lights)
+                        {
+                            if (shade >= light.clip)
+                            {
+                                continue;
+                            }
+
+                            const distance = Math.sqrt(((worldPosX - light.position.x) * (worldPosX - light.position.x)) +
+                                                       ((worldPosY - light.position.y) * (worldPosY - light.position.y)) +
+                                                       ((worldPosZ - light.position.z) * (worldPosZ - light.position.z)));
+
+                            const distanceMul = (1 / (1 + (light.attenuation * distance)));
+
+                            const L = Rngon.vector3((light.position.x - worldPosX),
+                                                    (light.position.y - worldPosY),
+                                                    (light.position.z - worldPosZ));
+                            Rngon.vector3.normalize(L);
+
+                            const dotNL = Math.max(0, Math.min(1, Rngon.vector3.dot(N, L)));
+
+                            const R = Rngon.vector3.sub(Rngon.vector3.mul_scalar(N, (2 * dotNL)), L);
+                            Rngon.vector3.normalize(R);
+
+                            const Kd = (Math.max(0, dotNL) * distanceMul * light.intensity);
+                            const Ks = Math.pow(Math.max(0, Math.min(1, Rngon.vector3.dot(V, R))), material.specularity);
+
+                            shade = Math.max(shade, Math.min(light.clip, (Kd + Ks)));
+                        }
+                    }
 
                     // The color we'll write into the pixel buffer for this pixel; assuming
                     // it passes the alpha test, the depth test, etc.
@@ -311,7 +387,7 @@ Rngon.baseModules.rasterize.polygon = function(ngon = Rngon.ngon(),
                         {
                             continue;
                         }
-
+                        
                         red   = (material.color.red   * shade);
                         green = (material.color.green * shade);
                         blue  = (material.color.blue  * shade);
@@ -499,7 +575,18 @@ Rngon.baseModules.rasterize.polygon = function(ngon = Rngon.ngon(),
                 rightEdge.startV     += rightEdge.deltaV;
                 rightEdge.startInvW  += rightEdge.deltaInvW;
 
-                if (usePixelShader)
+                if (usePhongShading)
+                {
+                    leftEdge.startNx     += leftEdge.deltaNx;
+                    leftEdge.startNy     += leftEdge.deltaNy;
+                    leftEdge.startNz     += leftEdge.deltaNz;
+
+                    rightEdge.startNx    += rightEdge.deltaNx;
+                    rightEdge.startNy    += rightEdge.deltaNy;
+                    rightEdge.startNz    += rightEdge.deltaNz;
+                }
+
+                if (usePixelShader || usePhongShading)
                 {
                     leftEdge.startWorldX  += leftEdge.deltaWorldX;
                     leftEdge.startWorldY  += leftEdge.deltaWorldY;

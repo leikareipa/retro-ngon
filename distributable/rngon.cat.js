@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (02 March 2021 19:52:34 UTC)
+// VERSION: beta live (03 March 2021 06:21:41 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -130,6 +130,10 @@ Rngon.internalState =
         // Removes all rendered pixels from the render surface.
         surface_wipe: undefined,
     },
+
+    cameraPosition: undefined,
+
+    usePhongShading: undefined,
 
     // Whether to require pixels to pass a depth test before being allowed on screen.
     useDepthBuffer: false,
@@ -540,6 +544,36 @@ Rngon.vector3.dot = function(v, other)
     return ((v.x * other.x) + (v.y * other.y) + (v.z * other.z));
 }
 
+Rngon.vector3.mul_scalar = function(v, scalar)
+{
+    return Rngon.vector3((v.x * scalar), (v.y * scalar), (v.z * scalar));
+}
+
+Rngon.vector3.add_scalar = function(v, scalar)
+{
+    return Rngon.vector3((v.x + scalar), (v.y + scalar), (v.z + scalar));
+}
+
+Rngon.vector3.sub_scalar = function(v, scalar)
+{
+    return Rngon.vector3((v.x - scalar), (v.y - scalar), (v.z - scalar));
+}
+
+Rngon.vector3.mul = function(v, other)
+{
+    return Rngon.vector3((v.x * other.x), (v.y * other.y), (v.z * other.z));
+}
+
+Rngon.vector3.add = function(v, other)
+{
+    return Rngon.vector3((v.x + other.x), (v.y + other.y), (v.z + other.z));
+}
+
+Rngon.vector3.sub = function(v, other)
+{
+    return Rngon.vector3((v.x - other.x), (v.y - other.y), (v.z - other.z));
+}
+
 Rngon.vector3.cross = function(v, other)
 {
     const c = Rngon.vector3();
@@ -571,7 +605,8 @@ Rngon.vertex = function(x = 0, y = 0, z = 0,
                         u = 0, v = 0,
                         w = 1,
                         shade = 1,
-                        worldX = x, worldY = y, worldZ = z)
+                        worldX = x, worldY = y, worldZ = z,
+                        normalX = 0, normalY = 1, normalZ = 0)
 {
     Rngon.assert && (typeof x === "number" && typeof y === "number" && typeof z === "number" &&
                      typeof w === "number" && typeof u === "number" && typeof v === "number" &&
@@ -595,6 +630,10 @@ Rngon.vertex = function(x = 0, y = 0, z = 0,
         worldX,
         worldY,
         worldZ,
+
+        normalX,
+        normalY,
+        normalZ,
     };
 
     return returnObject;
@@ -649,6 +688,7 @@ Rngon.material.default = {
     textureMapping: "ortho",
     uvWrapping: "repeat",
     vertexShading: "none",
+    specularity: 150,
     renderVertexShade: true,
     ambientLightLevel: 0,
     hasWireframe: false,
@@ -868,29 +908,19 @@ Rngon.ngon.clip_to_viewport = function(ngon)
                 const lerpStep = (prevVertex.w - prevComponent) /
                                   ((prevVertex.w - prevComponent) - (ngon.vertices[i].w - curComponent));
 
-                if (Rngon.internalState.usePixelShader)
-                {
-                    ngon.vertices[numOriginalVertices + k++] = Rngon.vertex(Rngon.lerp(prevVertex.x, ngon.vertices[i].x, lerpStep),
-                                                                            Rngon.lerp(prevVertex.y, ngon.vertices[i].y, lerpStep),
-                                                                            Rngon.lerp(prevVertex.z, ngon.vertices[i].z, lerpStep),
-                                                                            Rngon.lerp(prevVertex.u, ngon.vertices[i].u, lerpStep),
-                                                                            Rngon.lerp(prevVertex.v, ngon.vertices[i].v, lerpStep),
-                                                                            Rngon.lerp(prevVertex.w, ngon.vertices[i].w, lerpStep),
-                                                                            Rngon.lerp(prevVertex.shade, ngon.vertices[i].shade, lerpStep),
-                                                                            Rngon.lerp(prevVertex.worldX, ngon.vertices[i].worldX, lerpStep),
-                                                                            Rngon.lerp(prevVertex.worldY, ngon.vertices[i].worldY, lerpStep),
-                                                                            Rngon.lerp(prevVertex.worldZ, ngon.vertices[i].worldZ, lerpStep));
-                }
-                else
-                {
-                    ngon.vertices[numOriginalVertices + k++] = Rngon.vertex(Rngon.lerp(prevVertex.x, ngon.vertices[i].x, lerpStep),
-                                                                            Rngon.lerp(prevVertex.y, ngon.vertices[i].y, lerpStep),
-                                                                            Rngon.lerp(prevVertex.z, ngon.vertices[i].z, lerpStep),
-                                                                            Rngon.lerp(prevVertex.u, ngon.vertices[i].u, lerpStep),
-                                                                            Rngon.lerp(prevVertex.v, ngon.vertices[i].v, lerpStep),
-                                                                            Rngon.lerp(prevVertex.w, ngon.vertices[i].w, lerpStep),
-                                                                            Rngon.lerp(prevVertex.shade, ngon.vertices[i].shade, lerpStep));
-                }
+                ngon.vertices[numOriginalVertices + k++] = Rngon.vertex(Rngon.lerp(prevVertex.x, ngon.vertices[i].x, lerpStep),
+                                                                        Rngon.lerp(prevVertex.y, ngon.vertices[i].y, lerpStep),
+                                                                        Rngon.lerp(prevVertex.z, ngon.vertices[i].z, lerpStep),
+                                                                        Rngon.lerp(prevVertex.u, ngon.vertices[i].u, lerpStep),
+                                                                        Rngon.lerp(prevVertex.v, ngon.vertices[i].v, lerpStep),
+                                                                        Rngon.lerp(prevVertex.w, ngon.vertices[i].w, lerpStep),
+                                                                        Rngon.lerp(prevVertex.shade, ngon.vertices[i].shade, lerpStep),
+                                                                        Rngon.lerp(prevVertex.worldX, ngon.vertices[i].worldX, lerpStep),
+                                                                        Rngon.lerp(prevVertex.worldY, ngon.vertices[i].worldY, lerpStep),
+                                                                        Rngon.lerp(prevVertex.worldZ, ngon.vertices[i].worldZ, lerpStep),
+                                                                        Rngon.lerp(prevVertex.normalX, ngon.vertices[i].normalX, lerpStep),
+                                                                        Rngon.lerp(prevVertex.normalY, ngon.vertices[i].normalY, lerpStep),
+                                                                        Rngon.lerp(prevVertex.normalZ, ngon.vertices[i].normalZ, lerpStep));
             }
             
             if (thisVertexIsInside)
@@ -1115,6 +1145,7 @@ Rngon.baseModules.rasterize.polygon = function(ngon = Rngon.ngon(),
 
     const interpolatePerspective = Rngon.internalState.usePerspectiveCorrectInterpolation;
     const usePixelShader = Rngon.internalState.usePixelShader;
+    const usePhongShading = Rngon.internalState.usePhongShading;
     const fragmentBuffer = Rngon.internalState.fragmentBuffer.data;
     const pixelBuffer = Rngon.internalState.pixelBuffer.data;
     const depthBuffer = (Rngon.internalState.useDepthBuffer? Rngon.internalState.depthBuffer.data : null);
@@ -1228,7 +1259,17 @@ Rngon.baseModules.rasterize.polygon = function(ngon = Rngon.ngon(),
             edge.startInvW = startInvW;
             edge.deltaInvW = deltaInvW;
 
-            if (usePixelShader)
+            if (usePhongShading)
+            {
+                edge.startNx = vert1.normalX/w1;
+                edge.deltaNx = ((vert2.normalX/w2 - vert1.normalX/w1) / edgeHeight);
+                edge.startNy = vert1.normalY/w1;
+                edge.deltaNy = ((vert2.normalY/w2 - vert1.normalY/w1) / edgeHeight);
+                edge.startNz = vert1.normalZ/w1;
+                edge.deltaNz = ((vert2.normalZ/w2 - vert1.normalZ/w1) / edgeHeight);
+            }
+
+            if (usePixelShader || usePhongShading)
             {
                 edge.startWorldX = vert1.worldX/w1;
                 edge.deltaWorldX = ((vert2.worldX/w2 - vert1.worldX/w1) / edgeHeight);
@@ -1281,7 +1322,19 @@ Rngon.baseModules.rasterize.polygon = function(ngon = Rngon.ngon(),
                 const deltaInvW = ((rightEdge.startInvW - leftEdge.startInvW) / spanWidth);
                 let iplInvW = (leftEdge.startInvW - deltaInvW);
 
-                if (usePixelShader)
+                if (usePhongShading)
+                {
+                    var deltaNx = ((rightEdge.startNx - leftEdge.startNx) / spanWidth);
+                    var iplNx = (leftEdge.startNx - deltaNx);
+
+                    var deltaNy = ((rightEdge.startNy - leftEdge.startNy) / spanWidth);
+                    var iplNy = (leftEdge.startNy - deltaNy);
+
+                    var deltaNz = ((rightEdge.startNz - leftEdge.startNz) / spanWidth);
+                    var iplNz = (leftEdge.startNz - deltaNz);
+                }
+
+                if (usePixelShader || usePhongShading)
                 {
                     var deltaWorldX = ((rightEdge.startWorldX - leftEdge.startWorldX) / spanWidth);
                     var iplWorldX = (leftEdge.startWorldX - deltaWorldX);
@@ -1315,7 +1368,14 @@ Rngon.baseModules.rasterize.polygon = function(ngon = Rngon.ngon(),
                     pixelBufferIdx += 4;
                     depthBufferIdx++;
 
-                    if (usePixelShader)
+                    if (usePhongShading)
+                    {
+                        iplNx += deltaNx;
+                        iplNy += deltaNy;
+                        iplNz += deltaNz;
+                    }
+
+                    if (usePixelShader || usePhongShading)
                     {
                         iplWorldX += deltaWorldX;
                         iplWorldY += deltaWorldY;
@@ -1327,7 +1387,53 @@ Rngon.baseModules.rasterize.polygon = function(ngon = Rngon.ngon(),
                     // Depth test.
                     if (depthBuffer && (depthBuffer[depthBufferIdx] <= depth)) continue;
 
-                    const shade = (material.renderVertexShade? (iplShade / iplInvW) : 1);
+                    let shade = (material.renderVertexShade? (iplShade / iplInvW) : 1);
+
+                    if (usePhongShading)
+                    {
+                        shade = material.ambientLightLevel;
+
+                        const worldPosX = (iplWorldX / iplInvW);
+                        const worldPosY = (iplWorldY / iplInvW);
+                        const worldPosZ = (iplWorldZ / iplInvW);
+
+                        const N = Rngon.vector3((iplNx / iplInvW), (iplNy / iplInvW), (iplNz / iplInvW));
+                        Rngon.vector3.normalize(N)
+                        
+                        const V = Rngon.vector3((Rngon.internalState.cameraPosition.x - worldPosX),
+                                                (Rngon.internalState.cameraPosition.y - worldPosY),
+                                                (Rngon.internalState.cameraPosition.z - worldPosZ));
+                        Rngon.vector3.normalize(V);
+
+                        for (const light of Rngon.internalState.lights)
+                        {
+                            if (shade >= light.clip)
+                            {
+                                continue;
+                            }
+
+                            const distance = Math.sqrt(((worldPosX - light.position.x) * (worldPosX - light.position.x)) +
+                                                       ((worldPosY - light.position.y) * (worldPosY - light.position.y)) +
+                                                       ((worldPosZ - light.position.z) * (worldPosZ - light.position.z)));
+
+                            const distanceMul = (1 / (1 + (light.attenuation * distance)));
+
+                            const L = Rngon.vector3((light.position.x - worldPosX),
+                                                    (light.position.y - worldPosY),
+                                                    (light.position.z - worldPosZ));
+                            Rngon.vector3.normalize(L);
+
+                            const dotNL = Math.max(0, Math.min(1, Rngon.vector3.dot(N, L)));
+
+                            const R = Rngon.vector3.sub(Rngon.vector3.mul_scalar(N, (2 * dotNL)), L);
+                            Rngon.vector3.normalize(R);
+
+                            const Kd = (Math.max(0, dotNL) * distanceMul * light.intensity);
+                            const Ks = Math.pow(Math.max(0, Math.min(1, Rngon.vector3.dot(V, R))), material.specularity);
+
+                            shade = Math.max(shade, Math.min(light.clip, (Kd + Ks)));
+                        }
+                    }
 
                     // The color we'll write into the pixel buffer for this pixel; assuming
                     // it passes the alpha test, the depth test, etc.
@@ -1347,7 +1453,7 @@ Rngon.baseModules.rasterize.polygon = function(ngon = Rngon.ngon(),
                         {
                             continue;
                         }
-
+                        
                         red   = (material.color.red   * shade);
                         green = (material.color.green * shade);
                         blue  = (material.color.blue  * shade);
@@ -1535,7 +1641,18 @@ Rngon.baseModules.rasterize.polygon = function(ngon = Rngon.ngon(),
                 rightEdge.startV     += rightEdge.deltaV;
                 rightEdge.startInvW  += rightEdge.deltaInvW;
 
-                if (usePixelShader)
+                if (usePhongShading)
+                {
+                    leftEdge.startNx     += leftEdge.deltaNx;
+                    leftEdge.startNy     += leftEdge.deltaNy;
+                    leftEdge.startNz     += leftEdge.deltaNz;
+
+                    rightEdge.startNx    += rightEdge.deltaNx;
+                    rightEdge.startNy    += rightEdge.deltaNy;
+                    rightEdge.startNz    += rightEdge.deltaNz;
+                }
+
+                if (usePixelShader || usePhongShading)
                 {
                     leftEdge.startWorldX  += leftEdge.deltaWorldX;
                     leftEdge.startWorldY  += leftEdge.deltaWorldY;
@@ -1904,7 +2021,8 @@ Rngon.baseModules.transform_clip_light = function(ngons = [],
                                                       ngon.vertices[v].shade);
 
                 if (Rngon.internalState.useVertexShader ||
-                    (ngon.material.vertexShading === "gouraud"))
+                    (ngon.material.vertexShading === "gouraud") ||
+                    (ngon.material.vertexShading === "phong"))
                 {
                     cachedNgon.vertexNormals[v] = Rngon.vector3(ngon.vertexNormals[v].x,
                                                                 ngon.vertexNormals[v].y,
@@ -1945,12 +2063,17 @@ Rngon.baseModules.transform_clip_light = function(ngons = [],
                 // If using Gouraud shading, we need to transform all vertex normals; but
                 // the face normal won't be used and so can be ignored.
                 if (Rngon.internalState.useVertexShader ||
-                    (cachedNgon.material.vertexShading === "gouraud"))
+                    (cachedNgon.material.vertexShading === "gouraud") ||
+                    (cachedNgon.material.vertexShading === "phong"))
                 {
                     for (let v = 0; v < cachedNgon.vertices.length; v++)
                     {
                         Rngon.vector3.transform(cachedNgon.vertexNormals[v], objectMatrix);
                         Rngon.vector3.normalize(cachedNgon.vertexNormals[v]);
+
+                        cachedNgon.vertices[v].normalX = cachedNgon.vertexNormals[v].x;
+                        cachedNgon.vertices[v].normalY = cachedNgon.vertexNormals[v].y;
+                        cachedNgon.vertices[v].normalZ = cachedNgon.vertexNormals[v].z;
                     }
                 }
                 // With shading other than Gouraud, only the face normal will be used, and
@@ -2041,6 +2164,14 @@ Rngon.baseModules.transform_clip_light = function(ngons = [],
 
 Rngon.baseModules.transform_clip_light.apply_lighting = function(ngon)
 {
+    // Phong shading will be computed by the rasterizer.
+    if (ngon.material.vertexShading === "phong")
+    {
+        Rngon.internalState.usePhongShading = true;
+        
+        return;
+    }
+    
     // Pre-allocate a vector object to operate on, so we don't need to create one repeatedly.
     const lightDirection = Rngon.vector3();
 
@@ -2461,6 +2592,9 @@ Rngon.renderShared = {
     initialize_internal_render_state: function(options = {})
     {
         const state = Rngon.internalState;
+
+        // This will be modified by the render system if any n-gon has Phong shading.
+        state.usePhongShading = false;
         
         state.useDepthBuffer = Boolean(options.useDepthBuffer);
         state.showGlobalWireframe = Boolean(options.globalWireframe);
@@ -2486,6 +2620,8 @@ Rngon.renderShared = {
 
         state.modules.surface_wipe = (options.modules.surfaceWipe ||
                                       Rngon.baseModules.surface_wipe);
+
+        state.cameraPosition = options.cameraPosition;
 
         return;
     },

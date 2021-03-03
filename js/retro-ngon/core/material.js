@@ -24,6 +24,7 @@ Rngon.material.default = {
     textureMapping: "ortho",
     uvWrapping: "repeat",
     vertexShading: "none",
+    specularity: 150,
     renderVertexShade: true,
     ambientLightLevel: 0,
     hasWireframe: false,

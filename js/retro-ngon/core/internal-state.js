@@ -29,6 +29,10 @@ Rngon.internalState =
         surface_wipe: undefined,
     },
 
+    cameraPosition: undefined,
+
+    usePhongShading: undefined,
+
     // Whether to require pixels to pass a depth test before being allowed on screen.
     useDepthBuffer: false,
     depthBuffer: {width:1, height:1, data:new Array(1), clearValue:Infinity},
