@@ -31,11 +31,14 @@ Here are some of the possible use cases:
 ![A scene from Tomb Raider, textured](./images/screenshots/beta/tomb-raider-1-texture-lightmap-2.png)\
 **A scene** from Tomb Raider 1 as rendered by the retro n-gon renderer and consisting of textured quads. A custom lightmap has been baked onto the textures. (Based on assets produced by Core Design for *Tomb Raider*. Core Design is not associated with the retro n-gon renderer.)
 
+![Utah teapot](./images/screenshots/beta/teapt.png)\
+**The Utah teapot** with Phong shading.
+
 ![A scene from Tomb Raider, vertex-lit](./images/screenshots/beta/tomb-raider-1-vertex-shade.png)\
 **Vertex lighting** with Gouraud interpolation in a scene from Tomb Raider 1. (Based on assets produced by Core Design for *Tomb Raider*. Core Design is not associated with the retro n-gon renderer.)
 
 ![Ray-traced lighting with a pixel shader](./images/screenshots/beta/shader-ray-trace.png)
-**Ray-traced lighting** applied with a pixel shader. (See [here](./samples/raytraced-lighting/assets/copying.txt) for texture copyright information.)
+**Ray-traced lighting** applied with a pixel shader.
 
 ![A view from Grand Prix Legends](./images/screenshots/beta/grand-prix-legends-rouen.png)\
 **A view** of the race track at Rouen in Grand Prix Legends. Note the low FPS due to a lack of visibility culling in the scene. (Based on textures and 3D models produced by Papyrus Design Group for *Grand Prix Legends*. Papyrus Design Group is not associated with the retro n-gon renderer.)
