@@ -322,6 +322,7 @@ Rngon.baseModules.rasterize.polygon = function(ngon = Rngon.ngon(),
                     if (depthBuffer && (depthBuffer[depthBufferIdx] <= depth)) continue;
 
                     let shade = (material.renderVertexShade? (iplShade / iplInvW) : 1);
+                    let shadeHighlight = 0;
 
                     if (usePhongShading)
                     {
@@ -365,7 +366,8 @@ Rngon.baseModules.rasterize.polygon = function(ngon = Rngon.ngon(),
                             const Kd = (Math.max(0, dotNL) * distanceMul * light.intensity);
                             const Ks = Math.pow(Math.max(0, Math.min(1, Rngon.vector3.dot(V, R))), material.specularity);
 
-                            shade = Math.max(shade, Math.min(light.clip, (Kd + Ks)));
+                            shade = Math.max(shade, Math.min(light.clip, Kd));
+                            shadeHighlight = Math.max(shadeHighlight, (Ks * 255));
                         }
                     }
 
@@ -388,9 +390,9 @@ Rngon.baseModules.rasterize.polygon = function(ngon = Rngon.ngon(),
                             continue;
                         }
                         
-                        red   = (material.color.red   * shade);
-                        green = (material.color.green * shade);
-                        blue  = (material.color.blue  * shade);
+                        red   = ((material.color.red   * shade) + shadeHighlight);
+                        green = ((material.color.green * shade) + shadeHighlight);
+                        blue  = ((material.color.blue  * shade) + shadeHighlight);
                     }
                     // Textured fill.
                     else
