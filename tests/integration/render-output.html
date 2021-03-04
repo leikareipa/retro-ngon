@@ -70,6 +70,11 @@
                                Rngon.vertex( 1,  1, 0, 1, 1),
                                Rngon.vertex(-1,  1, 0, 0, 1)];
 
+            const bgQuadVerts = [Rngon.vertex(-0.5, -0.5,  1, 0, 0),
+                                 Rngon.vertex( 1.5, -0.5,  1, 1, 0),
+                                 Rngon.vertex( 1.5,  1.5,  1, 1, 1),
+                                 Rngon.vertex(-0.5,  1.5,  1, 0, 1)];
+
             const meshSettings = {
                 rotation: Rngon.rotation_vector(0, 0, 45),
             };
@@ -99,6 +104,96 @@
                                                                   color: Rngon.color_rgba(200, 180, 100)
                                                               });
                                       const quadMesh = Rngon.mesh([quad], meshSettings);
+                                      Rngon.render(canvasId, [quadMesh], renderSettings);
+                                  }),
+                    await compare("Plain solid-filled quad with alpha blending (255/255) (ca79d6a2084d)",
+                                  "./render-output/reference-ca79d6a2084d.png",
+                                  (canvasId)=>
+                                  {
+                                      const quad = Rngon.ngon(quadVerts,
+                                                              {
+                                                                  color: Rngon.color_rgba(255, 255, 255, 255),
+                                                              });
+                                      const bgQuad = Rngon.ngon(bgQuadVerts,
+                                                                {
+                                                                    color: Rngon.color_rgba(255, 150, 150, 255),
+                                                                });
+                                      const quadMesh = Rngon.mesh([quad, bgQuad], meshSettings);
+                                      Rngon.render(canvasId, [quadMesh], renderSettings);
+                                  }),
+                    await compare("Plain solid-filled quad with alpha blending (254/255) (e9cc0efd5a37)",
+                                  "./render-output/reference-e9cc0efd5a37.png",
+                                  (canvasId)=>
+                                  {
+                                      const quad = Rngon.ngon(quadVerts,
+                                                              {
+                                                                  color: Rngon.color_rgba(255, 255, 255, 254),
+                                                              });
+                                      const bgQuad = Rngon.ngon(bgQuadVerts,
+                                                                {
+                                                                    color: Rngon.color_rgba(255, 150, 150, 255),
+                                                                });
+                                      const quadMesh = Rngon.mesh([quad, bgQuad], meshSettings);
+                                      Rngon.render(canvasId, [quadMesh], renderSettings);
+                                  }),
+                    await compare("Plain solid-filled quad with alpha blending (200/255) (0789e2f45ce1)",
+                                  "./render-output/reference-0789e2f45ce1.png",
+                                  (canvasId)=>
+                                  {
+                                      const quad = Rngon.ngon(quadVerts,
+                                                              {
+                                                                  color: Rngon.color_rgba(255, 255, 255, 200),
+                                                              });
+                                      const bgQuad = Rngon.ngon(bgQuadVerts,
+                                                                {
+                                                                    color: Rngon.color_rgba(255, 150, 150, 255),
+                                                                });
+                                      const quadMesh = Rngon.mesh([quad, bgQuad], meshSettings);
+                                      Rngon.render(canvasId, [quadMesh], renderSettings);
+                                  }),
+                    await compare("Plain solid-filled quad with alpha blending (100/255) (75df14ff9418)",
+                                  "./render-output/reference-75df14ff9418.png",
+                                  (canvasId)=>
+                                  {
+                                      const quad = Rngon.ngon(quadVerts,
+                                                              {
+                                                                  color: Rngon.color_rgba(255, 255, 255, 100),
+                                                              });
+                                      const bgQuad = Rngon.ngon(bgQuadVerts,
+                                                                {
+                                                                    color: Rngon.color_rgba(255, 150, 150, 255),
+                                                                });
+                                      const quadMesh = Rngon.mesh([quad, bgQuad], meshSettings);
+                                      Rngon.render(canvasId, [quadMesh], renderSettings);
+                                  }),
+                    await compare("Plain solid-filled quad with alpha blending (1/255) (b3cc193759a3)",
+                                  "./render-output/reference-b3cc193759a3.png",
+                                  (canvasId)=>
+                                  {
+                                      const quad = Rngon.ngon(quadVerts,
+                                                              {
+                                                                  color: Rngon.color_rgba(255, 255, 255, 1),
+                                                              });
+                                      const bgQuad = Rngon.ngon(bgQuadVerts,
+                                                                {
+                                                                    color: Rngon.color_rgba(255, 150, 150, 255),
+                                                                });
+                                      const quadMesh = Rngon.mesh([quad, bgQuad], meshSettings);
+                                      Rngon.render(canvasId, [quadMesh], renderSettings);
+                                  }),
+                    await compare("Plain solid-filled quad with alpha blending (0/255) (9ccc2f1d2fe3)",
+                                  "./render-output/reference-9ccc2f1d2fe3.png",
+                                  (canvasId)=>
+                                  {
+                                      const quad = Rngon.ngon(quadVerts,
+                                                              {
+                                                                  color: Rngon.color_rgba(255, 255, 255, 0),
+                                                              });
+                                      const bgQuad = Rngon.ngon(bgQuadVerts,
+                                                                {
+                                                                    color: Rngon.color_rgba(255, 150, 150, 255),
+                                                                });
+                                      const quadMesh = Rngon.mesh([quad, bgQuad], meshSettings);
                                       Rngon.render(canvasId, [quadMesh], renderSettings);
                                   }),
                     await compare("Plain solid-filled quad with wireframe (8b10e6a750b6)",
