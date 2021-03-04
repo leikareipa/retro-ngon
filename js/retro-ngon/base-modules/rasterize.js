@@ -235,7 +235,7 @@ Rngon.baseModules.rasterize.polygon = function(ngon = Rngon.ngon(),
         // Rasterize the n-gon in horizontal pixel spans over its height.
         for (let y = ngonStartY; y < ngonEndY; y++)
         {
-            const spanStartX = Math.min(renderWidth, Math.max(0, Math.floor(leftEdge.startX)));
+            const spanStartX = Math.min(renderWidth, Math.max(0, Math.round(leftEdge.startX)));
             const spanEndX = Math.min(renderWidth, Math.max(0, Math.ceil(rightEdge.startX)));
             const spanWidth = ((spanEndX - spanStartX) + 1);
 

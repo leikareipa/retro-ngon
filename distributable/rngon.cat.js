@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (04 March 2021 07:49:52 UTC)
+// VERSION: beta live (04 March 2021 17:36:37 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -1299,7 +1299,7 @@ Rngon.baseModules.rasterize.polygon = function(ngon = Rngon.ngon(),
         // Rasterize the n-gon in horizontal pixel spans over its height.
         for (let y = ngonStartY; y < ngonEndY; y++)
         {
-            const spanStartX = Math.min(renderWidth, Math.max(0, Math.floor(leftEdge.startX)));
+            const spanStartX = Math.min(renderWidth, Math.max(0, Math.round(leftEdge.startX)));
             const spanEndX = Math.min(renderWidth, Math.max(0, Math.ceil(rightEdge.startX)));
             const spanWidth = ((spanEndX - spanStartX) + 1);
 
