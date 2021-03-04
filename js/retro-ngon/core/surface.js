@@ -72,6 +72,7 @@ Rngon.surface = function(canvasElement,  // The target DOM <canvas> element.
             // Prepare the meshes' n-gons for rendering. This will place the transformed
             // n-gons into the internal n-gon cache, Rngon.internalState.ngonCache.
             {
+                Rngon.renderShared.prepare_vertex_cache(meshes);
                 Rngon.renderShared.prepare_ngon_cache(meshes);
 
                 for (const mesh of meshes)

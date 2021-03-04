@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (04 March 2021 17:36:37 UTC)
+// VERSION: beta live (04 March 2021 23:39:41 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -201,9 +201,13 @@ Rngon.internalState =
     // expose a way to toggle it otherwise.
     allowWindowAlert: false,
 
-    // All of the n-gons that were most recently passed to render(), transformed into
-    // screen space.
+    // Pre-allocated memory; stores the n-gons that were most recently passed to render()
+    // and then transformed into screen space. In other words, these are the n-gons that
+    // were rendered into the most recent frame.
     ngonCache: {count:0, ngons:[]},
+
+    // Pre-allocated memory; stores the vertices of the n-gon cache's n-gons.
+    vertexCache: {count:0, vertices:[]},
 
     // All light sources that should currently apply to n-gons passed to render().
     lights: [],
@@ -1979,6 +1983,7 @@ Rngon.baseModules.transform_clip_light = function(ngons = [],
 {
     const viewVector = {x:0.0, y:0.0, z:0.0};
     const ngonCache = Rngon.internalState.ngonCache;
+    const vertexCache = Rngon.internalState.vertexCache;
     const clipSpaceMatrix = Rngon.matrix44.multiply(projectionMatrix, cameraMatrix);
 
     for (const ngon of ngons)
@@ -2012,13 +2017,16 @@ Rngon.baseModules.transform_clip_light = function(ngons = [],
 
             for (let v = 0; v < ngon.vertices.length; v++)
             {
-                cachedNgon.vertices[v] = Rngon.vertex(ngon.vertices[v].x,
-                                                      ngon.vertices[v].y,
-                                                      ngon.vertices[v].z,
-                                                      ngon.vertices[v].u,
-                                                      ngon.vertices[v].v,
-                                                      ngon.vertices[v].w,
-                                                      ngon.vertices[v].shade);
+                const srcVertex = ngon.vertices[v];
+                const dstVertex = cachedNgon.vertices[v] = vertexCache.vertices[vertexCache.count++];
+
+                dstVertex.x = srcVertex.x;
+                dstVertex.y = srcVertex.y;
+                dstVertex.z = srcVertex.z;
+                dstVertex.u = srcVertex.u;
+                dstVertex.v = srcVertex.v;
+                dstVertex.w = srcVertex.w;
+                dstVertex.shade = srcVertex.shade;
 
                 if (Rngon.internalState.useVertexShader ||
                     (ngon.material.vertexShading === "gouraud") ||
@@ -2623,24 +2631,56 @@ Rngon.renderShared = {
 
     // Creates or resizes the n-gon cache to fit at least the number of n-gons contained
     // in the given array of meshes.
-    prepare_ngon_cache: function(meshes = [])
+    prepare_ngon_cache: function(meshes = [Rngon.ngon()])
     {
         Rngon.assert && (meshes instanceof Array)
                      || Rngon.throw("Invalid arguments to n-gon cache initialization.");
 
         const ngonCache = Rngon.internalState.ngonCache;
-        const sceneNgonCount = meshes.reduce((totalCount, mesh)=>(totalCount + mesh.ngons.length), 0);
+        const totalNgonCount = meshes.reduce((totalCount, mesh)=>(totalCount + mesh.ngons.length), 0);
 
         if (!ngonCache ||
             !ngonCache.ngons.length ||
-            (ngonCache.ngons.length < sceneNgonCount))
+            (ngonCache.ngons.length < totalNgonCount))
         {
-            const lengthDelta = (sceneNgonCount - ngonCache.ngons.length);
+            const lengthDelta = (totalNgonCount - ngonCache.ngons.length);
 
             ngonCache.ngons.push(...new Array(lengthDelta).fill().map(e=>Rngon.ngon()));
         }
 
         ngonCache.count = 0;
+
+        return;
+    },
+
+    // Creates or resizes the vertex cache to fit at least the number of vertices contained
+    // in the given array of meshes.
+    prepare_vertex_cache: function(meshes = [Rngon.ngon()])
+    {
+        Rngon.assert && (meshes instanceof Array)
+                     || Rngon.throw("Invalid arguments to n-gon cache initialization.");
+
+        const vertexCache = Rngon.internalState.vertexCache;
+        let totalVertexCount = 0;
+
+        for (const mesh of meshes)
+        {
+            for (const ngon of mesh.ngons)
+            {
+                totalVertexCount += ngon.vertices.length;
+            }
+        }
+
+        if (!vertexCache ||
+            !vertexCache.vertices.length ||
+            (vertexCache.vertices.length < totalVertexCount))
+        {
+            const lengthDelta = (totalVertexCount - vertexCache.vertices.length);
+
+            vertexCache.vertices.push(...new Array(lengthDelta).fill().map(e=>Rngon.vertex()));
+        }
+
+        vertexCache.count = 0;
 
         return;
     },
@@ -3031,6 +3071,7 @@ Rngon.surface = function(canvasElement,  // The target DOM <canvas> element.
             // Prepare the meshes' n-gons for rendering. This will place the transformed
             // n-gons into the internal n-gon cache, Rngon.internalState.ngonCache.
             {
+                Rngon.renderShared.prepare_vertex_cache(meshes);
                 Rngon.renderShared.prepare_ngon_cache(meshes);
 
                 for (const mesh of meshes)

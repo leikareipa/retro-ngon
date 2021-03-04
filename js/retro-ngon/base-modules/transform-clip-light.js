@@ -19,6 +19,7 @@ Rngon.baseModules.transform_clip_light = function(ngons = [],
 {
     const viewVector = {x:0.0, y:0.0, z:0.0};
     const ngonCache = Rngon.internalState.ngonCache;
+    const vertexCache = Rngon.internalState.vertexCache;
     const clipSpaceMatrix = Rngon.matrix44.multiply(projectionMatrix, cameraMatrix);
 
     for (const ngon of ngons)
@@ -52,13 +53,16 @@ Rngon.baseModules.transform_clip_light = function(ngons = [],
 
             for (let v = 0; v < ngon.vertices.length; v++)
             {
-                cachedNgon.vertices[v] = Rngon.vertex(ngon.vertices[v].x,
-                                                      ngon.vertices[v].y,
-                                                      ngon.vertices[v].z,
-                                                      ngon.vertices[v].u,
-                                                      ngon.vertices[v].v,
-                                                      ngon.vertices[v].w,
-                                                      ngon.vertices[v].shade);
+                const srcVertex = ngon.vertices[v];
+                const dstVertex = cachedNgon.vertices[v] = vertexCache.vertices[vertexCache.count++];
+
+                dstVertex.x = srcVertex.x;
+                dstVertex.y = srcVertex.y;
+                dstVertex.z = srcVertex.z;
+                dstVertex.u = srcVertex.u;
+                dstVertex.v = srcVertex.v;
+                dstVertex.w = srcVertex.w;
+                dstVertex.shade = srcVertex.shade;
 
                 if (Rngon.internalState.useVertexShader ||
                     (ngon.material.vertexShading === "gouraud") ||

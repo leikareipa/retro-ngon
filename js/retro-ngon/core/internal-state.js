@@ -99,9 +99,13 @@ Rngon.internalState =
     // expose a way to toggle it otherwise.
     allowWindowAlert: false,
 
-    // All of the n-gons that were most recently passed to render(), transformed into
-    // screen space.
+    // Pre-allocated memory; stores the n-gons that were most recently passed to render()
+    // and then transformed into screen space. In other words, these are the n-gons that
+    // were rendered into the most recent frame.
     ngonCache: {count:0, ngons:[]},
+
+    // Pre-allocated memory; stores the vertices of the n-gon cache's n-gons.
+    vertexCache: {count:0, vertices:[]},
 
     // All light sources that should currently apply to n-gons passed to render().
     lights: [],

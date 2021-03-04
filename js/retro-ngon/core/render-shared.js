@@ -46,24 +46,56 @@ Rngon.renderShared = {
 
     // Creates or resizes the n-gon cache to fit at least the number of n-gons contained
     // in the given array of meshes.
-    prepare_ngon_cache: function(meshes = [])
+    prepare_ngon_cache: function(meshes = [Rngon.ngon()])
     {
         Rngon.assert && (meshes instanceof Array)
                      || Rngon.throw("Invalid arguments to n-gon cache initialization.");
 
         const ngonCache = Rngon.internalState.ngonCache;
-        const sceneNgonCount = meshes.reduce((totalCount, mesh)=>(totalCount + mesh.ngons.length), 0);
+        const totalNgonCount = meshes.reduce((totalCount, mesh)=>(totalCount + mesh.ngons.length), 0);
 
         if (!ngonCache ||
             !ngonCache.ngons.length ||
-            (ngonCache.ngons.length < sceneNgonCount))
+            (ngonCache.ngons.length < totalNgonCount))
         {
-            const lengthDelta = (sceneNgonCount - ngonCache.ngons.length);
+            const lengthDelta = (totalNgonCount - ngonCache.ngons.length);
 
             ngonCache.ngons.push(...new Array(lengthDelta).fill().map(e=>Rngon.ngon()));
         }
 
         ngonCache.count = 0;
+
+        return;
+    },
+
+    // Creates or resizes the vertex cache to fit at least the number of vertices contained
+    // in the given array of meshes.
+    prepare_vertex_cache: function(meshes = [Rngon.ngon()])
+    {
+        Rngon.assert && (meshes instanceof Array)
+                     || Rngon.throw("Invalid arguments to n-gon cache initialization.");
+
+        const vertexCache = Rngon.internalState.vertexCache;
+        let totalVertexCount = 0;
+
+        for (const mesh of meshes)
+        {
+            for (const ngon of mesh.ngons)
+            {
+                totalVertexCount += ngon.vertices.length;
+            }
+        }
+
+        if (!vertexCache ||
+            !vertexCache.vertices.length ||
+            (vertexCache.vertices.length < totalVertexCount))
+        {
+            const lengthDelta = (totalVertexCount - vertexCache.vertices.length);
+
+            vertexCache.vertices.push(...new Array(lengthDelta).fill().map(e=>Rngon.vertex()));
+        }
+
+        vertexCache.count = 0;
 
         return;
     },
