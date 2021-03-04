@@ -104,9 +104,9 @@
                     <optgroup label="Ideas & Implementations"></optgroup>
                     <option value="first-person-camera">First person camera</option>
                     <option value="lightmaps">Lightmaps</option>
+                    <option value='oblique-2d-tiles'>Oblique 2D tile rendering</option>
                     <option value="raytraced-lighting">Ray-traced lighting</option>
                     <option value="framerate-limiter">Refresh rate limiter</option>
-                    <option value='oblique-2d-tiles'>Oblique 2D tile rendering</option>
 
                     <?php if (is_file("./extra-samples.php")) include("./extra-samples.php");?>
 
