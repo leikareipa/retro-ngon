@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (03 March 2021 16:33:17 UTC)
+// VERSION: beta live (04 March 2021 03:07:02 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -132,8 +132,6 @@ Rngon.internalState =
     },
 
     cameraPosition: undefined,
-
-    usePhongShading: undefined,
 
     // Whether to require pixels to pass a depth test before being allowed on screen.
     useDepthBuffer: false,
@@ -1145,7 +1143,7 @@ Rngon.baseModules.rasterize.polygon = function(ngon = Rngon.ngon(),
 
     const interpolatePerspective = Rngon.internalState.usePerspectiveCorrectInterpolation;
     const usePixelShader = Rngon.internalState.usePixelShader;
-    const usePhongShading = Rngon.internalState.usePhongShading;
+    const usePhongShading = (ngon.material.vertexShading === "phong");
     const fragmentBuffer = Rngon.internalState.fragmentBuffer.data;
     const pixelBuffer = Rngon.internalState.pixelBuffer.data;
     const depthBuffer = (Rngon.internalState.useDepthBuffer? Rngon.internalState.depthBuffer.data : null);
@@ -2169,8 +2167,6 @@ Rngon.baseModules.transform_clip_light.apply_lighting = function(ngon)
     // Phong shading will be computed by the rasterizer.
     if (ngon.material.vertexShading === "phong")
     {
-        Rngon.internalState.usePhongShading = true;
-        
         return;
     }
     
@@ -2594,9 +2590,6 @@ Rngon.renderShared = {
     initialize_internal_render_state: function(options = {})
     {
         const state = Rngon.internalState;
-
-        // This will be modified by the render system if any n-gon has Phong shading.
-        state.usePhongShading = false;
         
         state.useDepthBuffer = Boolean(options.useDepthBuffer);
         state.showGlobalWireframe = Boolean(options.globalWireframe);

@@ -207,8 +207,6 @@ Rngon.baseModules.transform_clip_light.apply_lighting = function(ngon)
     // Phong shading will be computed by the rasterizer.
     if (ngon.material.vertexShading === "phong")
     {
-        Rngon.internalState.usePhongShading = true;
-        
         return;
     }
     

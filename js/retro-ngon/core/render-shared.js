@@ -13,9 +13,6 @@ Rngon.renderShared = {
     initialize_internal_render_state: function(options = {})
     {
         const state = Rngon.internalState;
-
-        // This will be modified by the render system if any n-gon has Phong shading.
-        state.usePhongShading = false;
         
         state.useDepthBuffer = Boolean(options.useDepthBuffer);
         state.showGlobalWireframe = Boolean(options.globalWireframe);

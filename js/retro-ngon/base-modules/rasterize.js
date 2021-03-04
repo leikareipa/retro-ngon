@@ -79,7 +79,7 @@ Rngon.baseModules.rasterize.polygon = function(ngon = Rngon.ngon(),
 
     const interpolatePerspective = Rngon.internalState.usePerspectiveCorrectInterpolation;
     const usePixelShader = Rngon.internalState.usePixelShader;
-    const usePhongShading = Rngon.internalState.usePhongShading;
+    const usePhongShading = (ngon.material.vertexShading === "phong");
     const fragmentBuffer = Rngon.internalState.fragmentBuffer.data;
     const pixelBuffer = Rngon.internalState.pixelBuffer.data;
     const depthBuffer = (Rngon.internalState.useDepthBuffer? Rngon.internalState.depthBuffer.data : null);
