@@ -96,6 +96,7 @@
                     <option value="builtin-shading">Built-in shading</option>
                     <option value="mipmapping">Mipmapping</option>
                     <option value="pixel-shaders">Pixel shaders</option>
+                    <option value="point-rendering">Point rendering</option>
                     <option value="textured-cube-model">Textured cube model</option>
                     <option value="transparency">Transparency #1</option>
                     <option value="transparency-2">Transparency #2</option>
