@@ -92,10 +92,10 @@
 
                     <optgroup label="Features"></optgroup>
                     <option value="async-rendering">Async rendering</option>
+                    <option value="rotating-triangle">Barebones triangle</option>
                     <option value="builtin-shading">Built-in shading</option>
                     <option value="mipmapping">Mipmapping</option>
                     <option value="pixel-shaders">Pixel shaders</option>
-                    <option value="rotating-triangle">Rotating triangle</option>
                     <option value="textured-cube-model">Textured cube model</option>
                     <option value="transparency">Transparency #1</option>
                     <option value="transparency-2">Transparency #2</option>
