@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (04 March 2021 03:07:02 UTC)
+// VERSION: beta live (04 March 2021 07:49:52 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -1300,7 +1300,7 @@ Rngon.baseModules.rasterize.polygon = function(ngon = Rngon.ngon(),
         for (let y = ngonStartY; y < ngonEndY; y++)
         {
             const spanStartX = Math.min(renderWidth, Math.max(0, Math.floor(leftEdge.startX)));
-            const spanEndX = Math.min(renderWidth, Math.max(0, Math.floor(rightEdge.startX)));
+            const spanEndX = Math.min(renderWidth, Math.max(0, Math.ceil(rightEdge.startX)));
             const spanWidth = ((spanEndX - spanStartX) + 1);
 
             if (spanWidth > 0)
@@ -1711,7 +1711,7 @@ Rngon.baseModules.rasterize.line = function(vert1 = Rngon.vertex(),
     const startX = Math.floor(vert1.x);
     const startY = Math.floor(vert1.y);
     const endX = Math.floor(vert2.x);
-    const endY = Math.floor(vert2.y);
+    const endY = Math.ceil(vert2.y);
     let lineLength = Math.floor(Math.sqrt((endX - startX) * (endX - startX) + (endY - startY) * (endY - startY)));
     const deltaX = ((endX - startX) / lineLength);
     const deltaY = ((endY - startY) / lineLength);
