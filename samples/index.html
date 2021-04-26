@@ -45,7 +45,7 @@
             {
                 height: var(--header-height);
                 border: none;
-                background-color: white;
+                background-color: whitesmoke;
                 color: black;
                 border-radius: 0;
                 padding: 6px;
@@ -62,7 +62,7 @@
                 background-color: black;
                 border: none;
                 white-space: nowrap;
-                color: white;
+                color: whitesmoke;
                 height: 100%;
                 display: flex;
                 align-items: inherit;
@@ -109,7 +109,8 @@
                     <option value="raytraced-lighting">Ray-traced lighting</option>
                     <option value="framerate-limiter">Refresh rate limiter</option>
 
-                    <?php if (is_file("./extra-samples.php")) include("./extra-samples.php");?>
+                    <optgroup label='Scenes from games'></optgroup>
+                    <option value='tomb-raider-home'>Tomb Raider &ndash; Lara's Home</option>
 
                 </select>
             </div>
@@ -138,7 +139,7 @@
     </body>
 
     <script>
-        const defaultSample = "<?php echo (is_file("./extra-samples.php")? "tomb-raider-home" : "textured-cube-model");?>";
+        const defaultSample = "tomb-raider-home";
         const defaultRenderer = "dev";
 
         const urlParams = new URLSearchParams(window.location.search);

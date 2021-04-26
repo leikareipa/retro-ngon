@@ -44,20 +44,22 @@
                 <div class="value"><i class="fas fa-sm fa-spin fa-spinner"></i></div>
             </div>
         </div>
-        
-        <script src="<?php
-                         $renderer = $_GET["renderer"];
 
-                         if (!isset($renderer) ||
-                             $renderer == "dev")
-                         {
-                             echo "../distributable/rngon.cat.js";
-                         }
-                         else
-                         {
-                            echo "../distributable/old/rngon.{$renderer}.cat.js";
-                         }
-                     ?>">
+        <script>
+            const rendererName = (new URLSearchParams(window.location.search).get("renderer") || null);
+            const rngonScriptElement = document.createElement("script");
+
+            if (!rendererName ||
+                (rendererName == "dev"))
+            {
+                rngonScriptElement.src = "../distributable/rngon.cat.js"
+            }
+            else
+            {
+                rngonScriptElement.src = `../distributable/old/rngon.${rendererName}.cat.js`;
+            }
+
+            document.body.appendChild(rngonScriptElement);
         </script>
         <script>
             // Transform the given render options to be backwards compatible with older
@@ -100,8 +102,8 @@
         <script>
             var renderSettings = {
                 scale: 0.25,
-                cameraDirection: Rngon.rotation_vector(0, 0, 0),
-                cameraPosition: Rngon.translation_vector(0, 0, -170),
+                cameraDirection: {x:0, y:0, z:0},
+                cameraPosition: {x:0, y:0, z:-170},
             };
 
             // Force the scale to initialize to the value set in renderSettings.scale.
@@ -117,7 +119,9 @@
             }
         </script>
         <script>
-            (async()=>
+            window.addEventListener("load", run);
+
+            async function run()
             {
                 const canvasElement = "canvas"; // or "document.getElementById("canvas")" for versions >= beta.5.
                 const sampleId = (new URLSearchParams(window.location.search).get("sample") || "textured-cube-model");
@@ -179,7 +183,7 @@
 
                     queue_new_frame();
                 })();
-        })();
+        };
         </script>
     </body>
 </html>
