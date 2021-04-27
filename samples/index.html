@@ -90,27 +90,26 @@
                         style="min-width: 150px;"
                         onchange="set_sample(event.target.value);">
 
-                    <optgroup label="Features"></optgroup>
+                    <optgroup label='Sample scenes'></optgroup>
+                    <option value='tomb-raider-home'>Tomb Raider &ndash; Lara's Home</option>
+
+                    <optgroup label="Feature samples"></optgroup>
                     <option value="async-rendering">Async rendering</option>
+                    <option value="textured-cube-model">Barebones textured model</option>
                     <option value="rotating-triangle">Barebones triangle</option>
-                    <option value="builtin-shading">Built-in shading</option>
                     <option value="mipmapping">Mipmapping</option>
-                    <option value="pixel-shaders">Pixel shaders</option>
                     <option value="point-rendering">Point rendering</option>
-                    <option value="textured-cube-model">Textured cube model</option>
-                    <option value="transparency">Transparency #1</option>
-                    <option value="transparency-2">Transparency #2</option>
-                    <option value="vertex-shaders">Vertex shaders</option>
+                    <option value="builtin-shading">Shading</option>
+                    <option value="pixel-shaders">Shaders, pixel</option>
+                    <option value="vertex-shaders">Shaders, vertex</option>
+                    <option value="transparency">Transparency</option>
 
                     <optgroup label="Ideas & Implementations"></optgroup>
-                    <option value="first-person-camera">First person camera</option>
-                    <option value="lightmaps">Lightmaps</option>
-                    <option value='oblique-2d-tiles'>Oblique 2D tile rendering</option>
+                    <option value="first-person-camera">First-person camera</option>
+                    <option value="lightmaps">Lightmapping</option>
+                    <option value='oblique-2d-tiles'>Oblique 2D tiles</option>
                     <option value="raytraced-lighting">Ray-traced lighting</option>
                     <option value="framerate-limiter">Refresh rate limiter</option>
-
-                    <optgroup label='Scenes from games'></optgroup>
-                    <option value='tomb-raider-home'>Tomb Raider &ndash; Lara's Home</option>
 
                 </select>
             </div>
@@ -139,7 +138,7 @@
     </body>
 
     <script>
-        const defaultSample = "tomb-raider-home";
+        const defaultSample = "point-rendering";
         const defaultRenderer = "dev";
 
         const urlParams = new URLSearchParams(window.location.search);

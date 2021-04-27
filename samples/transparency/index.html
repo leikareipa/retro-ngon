@@ -3,13 +3,37 @@
     <head>
         <meta name="viewport" content="width=device-width">
         <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-        <title>Transparency #1 - Render sample - Retro n-gon renderer</title>
+        <title>Transparency #2 - Render sample - Retro n-gon renderer</title>
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" integrity="sha384-gfdkjb5BdAXd+lj+gudLWI+BXq4IuLW5IT+brZEZsLFm++aCMlF1V92rMkPaX4PP" crossorigin="anonymous">
         <link rel="stylesheet" type="text/css" href="../sample-base.css">
     </head>
     <body id="sample-container">
+        <script>
+            // Color transparency, in the range 0 (fully transparent) to 255 (fully opaque).
+            var MODEL_ALPHA = 180;
+
+            function change_alpha(delta = 0)
+            {
+                MODEL_ALPHA = Math.max(0, Math.min(255, (MODEL_ALPHA + delta)));
+
+                document.querySelector(".infobox.alpha .value").innerHTML = MODEL_ALPHA;
+
+                return;
+            }
+        </script>
+
         <iframe id="render-target"
                 style="width: 100vw; height: 100vh; border: none;">
         </iframe>
+
+        <div class="infoboxes-container additional">
+            <div class="infobox alpha">
+                <div class="title">Alpha</div>
+                <div class="value">180</div>
+                <div class="adjust left" onclick="change_alpha(-15);"></div>
+                <div class="adjust right" onclick="change_alpha(15);"></div>
+            </div>
+        </div>
 
         <script>
             const renderer = (new URLSearchParams(window.location.search).get("renderer") || "dev");
