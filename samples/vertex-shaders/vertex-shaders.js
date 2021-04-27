@@ -13,6 +13,8 @@
 import {scene} from "./assets/scene.rngon-model.js";
 import {first_person_camera} from "../first-person-camera/camera.js";
 
+scene.initialize();
+
 const shaderFunctions = {};
 
 const camera = first_person_camera("canvas",
@@ -21,8 +23,6 @@ const camera = first_person_camera("canvas",
     direction: {x:7, y:90, z:0},
     movementSpeed: 0.05,
 });
-
-scene.initialize();
 
 let numFramesRendered = 0;
 
@@ -54,7 +54,7 @@ export const sampleRenderOptions = {
 }
 
 // Darkens the shade of vertices based on their distance to the camera.
-shaderFunctions["shader_depth_fog"] = function(ngon, cameraPosition)
+shaderFunctions["vs_depth_fog"] = function(ngon, cameraPosition)
 {
     const maxDistance = (200 * 200);
 
@@ -69,7 +69,7 @@ shaderFunctions["shader_depth_fog"] = function(ngon, cameraPosition)
 }
 
 // Moves each vertex in the direction of its normal, causing the mesh to grow.
-shaderFunctions["shader_grow"] = function(ngon)
+shaderFunctions["vs_grow"] = function(ngon)
 {
     if (ngon.material.isGrowing)
     {
@@ -85,7 +85,7 @@ shaderFunctions["shader_grow"] = function(ngon)
 }
 
 // Moves vertices back and forth in a sine pattern.
-shaderFunctions["shader_wavy"] = function(ngon)
+shaderFunctions["vs_wavy"] = function(ngon)
 {
     //if (ngon.material.isWavy)
     {
@@ -96,7 +96,7 @@ shaderFunctions["shader_wavy"] = function(ngon)
     }
 }
 
-shaderFunctions["shader_vertex_points"] = function(ngon)
+shaderFunctions["vs_vertex_points"] = function(ngon)
 {
     if (ngon.material.isPointCloud)
     {
@@ -119,10 +119,18 @@ shaderFunctions["shader_vertex_points"] = function(ngon)
     }
 }
 
-shaderFunctions["shader_fade_in_out"] = function(ngon)
+shaderFunctions["vs_fade_in_out"] = function(ngon)
 {
     for (let v = 0; v < ngon.vertices.length; v++)
     {
         ngon.vertices[v].shade = (Math.sin(numFramesRendered / 64) + 1);
+    }
+}
+
+shaderFunctions["vs_uv_shift"] = function(ngon)
+{
+    for (let v = 0; v < ngon.vertices.length; v++)
+    {
+        ngon.vertices[v].v += (numFramesRendered / 1500);
     }
 }

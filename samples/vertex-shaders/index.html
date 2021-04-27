@@ -39,11 +39,12 @@
         <script>
             const shaders = [
                 {title:"None",               functionName:null},
-                {title:"Distance fog",       functionName:"shader_depth_fog"},
-                {title:"Grow",               functionName:"shader_grow"},
-                {title:"Wave",               functionName:"shader_wavy"},
-                {title:"Fade in/out",        functionName:"shader_fade_in_out"},
-                {title:"Vertex points",      functionName:"shader_vertex_points"},
+                {title:"Distance fog",       functionName:"vs_depth_fog"},
+                {title:"Grow",               functionName:"vs_grow"},
+                {title:"Wave",               functionName:"vs_wavy"},
+                {title:"UV shift",           functionName:"vs_uv_shift"},
+                {title:"Fade in/out",        functionName:"vs_fade_in_out"},
+                {title:"Vertex points",      functionName:"vs_vertex_points"},
             ];
 
             let activeShaderIdx = 0;
