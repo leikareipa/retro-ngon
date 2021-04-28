@@ -38,77 +38,75 @@ import {scene} from "./assets/scene.rngon-model.js";
 import {bvh} from "./bvh.js";
 import {ray} from "./ray.js";
 
-const lights = [
-    // The light source we'll trace rays toward.
-    Rngon.light(Rngon.translation_vector(11, 45, -35), {
-        intensity: 20,
-        clip: 1,
-        attenuation: 1,
-    }),
-];
-
-const camera = first_person_camera("canvas",
-{
-    position: {x:-70, y:33, z:-7},
-    direction: {x:7, y:90, z:0},
-    movementSpeed: 0.05,
-});
-
-scene.initialize();
-
-// The world-space polygons - and their BVH tree - that we'll use for ray-tracing.
-const worldSpacePolys = [];
-let sceneBVH = null;
-
-// Returns the n-gons of the scene to be rendered by the retro n-gon renderer.
-// This function gets called by the renderer once per frame.
-export const sample_scene = (frameCount = 0)=>
-{
-    // Once the vertex shader has finished building a list of the scene's world-space
-    // polygons, we can build a BVH tree for the ray tracer.
-    if (!sceneBVH && worldSpacePolys.length)
+export const sample = {
+    initialize: async function()
     {
-        sceneBVH = bvh(worldSpacePolys);
-    }
+        this.camera = first_person_camera("canvas", {
+            position: {x:-70, y:33, z:-7},
+            direction: {x:7, y:90, z:0},
+            movementSpeed: 0.05,
+        });
 
-    // While ray tracing is disabled, we'll let the retro n-gon renderer use its
-    // built-in vertex shading.
-    for (const ngon of scene.ngons)
+        this.lights = [
+            Rngon.light(Rngon.translation_vector(11, 45, -35), {
+                intensity: 20,
+                clip: 1,
+                attenuation: 1,
+            }),
+        ];
+
+        // To allow shader functions access to the Rngon namespace.
+        this.Rngon = Rngon;
+
+        scene.initialize();
+    },
+    tick: function()
     {
-        ngon.material.renderVertexShade = (parent.RAYTRACING_ENABLED? false : true);
-    }
+        this.numTicks++;
+        this.camera.update();
 
-    camera.update();
+        // Once the vertex shader has finished building a list of the scene's world-space
+        // polygons, we can build a BVH tree for the ray tracer.
+        if (!this.sceneBVH && this.worldSpacePolys.length)
+        {
+            this.sceneBVH = bvh(this.worldSpacePolys);
+        }
 
-    // Assumes 'renderSettings' is a pre-defined global object from which the
-    // renderer will pick up its settings.
-    renderSettings.cameraDirection = camera.direction;
-    renderSettings.cameraPosition = camera.position;
+        // While ray tracing is disabled, we'll let the retro n-gon renderer use its
+        // built-in vertex shading.
+        for (const ngon of scene.ngons)
+        {
+            ngon.material.renderVertexShade = !parent.RAYTRACING_ENABLED;
+        }
 
-    // Move the light source around in a circle.
-    lights[0].position.x += Math.cos(frameCount / 35);
-    lights[0].position.z += Math.sin(frameCount / 35);
-
-    return Rngon.mesh(scene.ngons,
-    {
-        scaling: Rngon.scaling_vector(25, 25, 25)
-    });
+        // Move the light source around in a circle.
+        this.lights[0].position.x += Math.cos(this.numTicks / 35);
+        this.lights[0].position.z += Math.sin(this.numTicks / 35);
+    
+        return {
+            renderOptions: {
+                lights: this.lights,
+                pixelShader: parent.RAYTRACING_ENABLED
+                             ? ps_raytraced_lighting.bind(this)
+                             : null, 
+                // We'll only copy the scene's polygons once. Once the BVH has been built,
+                // we know the polygons have been copied and don't need to do it any more.
+                vertexShader: this.sceneBVH? null : vs_copy_ngons.bind(this),
+                cameraDirection: this.camera.direction,
+                cameraPosition: this.camera.position,
+            },
+            mesh: Rngon.mesh(scene.ngons, {
+                scaling: Rngon.scaling_vector(25, 25, 25)
+            }),
+        };
+    },
+    worldSpacePolys: [],
+    sceneBVH: undefined,
+    lights: undefined,
+    camera: undefined,
+    Rngon: undefined,
+    numTicks: 0,
 };
-
-// This scene's custom render options for the retro n-gon renderer.
-export const sampleRenderOptions = {
-    lights: lights,
-    get pixelShader()
-    {
-        return (parent.RAYTRACING_ENABLED? ps_raytraced_lighting : null);
-    },
-    get vertexShader()
-    {
-        // We'll only copy the scene's polygons once. Once the BVH has been built,
-        // we know the polygons have been copied and don't need to do it any more.
-        return (sceneBVH? null : vs_copy_ngons);
-    },
-}
 
 // A vertex shader that copies, one by one, the scene's world-space polygons into
 // a list. This function gets called for each of the scene's n-gons.
@@ -139,7 +137,7 @@ function vs_copy_ngons(ngon)
     newNgon.isActive = true;
     newNgon.mipLevel = ngon.mipLevel;
 
-    worldSpacePolys.push(newNgon);
+    this.worldSpacePolys.push(newNgon);
 
     return;
 }
@@ -149,17 +147,17 @@ function vs_copy_ngons(ngon)
 function ps_raytraced_lighting({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
 {
     // Defer shading until the scene's BVH has been built.
-    if (!sceneBVH)
+    if (!this.sceneBVH)
     {
         return;
     }
 
-    const light = Rngon.internalState.lights[0];
+    const light = this.Rngon.internalState.lights[0];
 
     // Pre-create storage objects, so we don't need to keep re-creating them in the
     // render loop.
-    const lightDirection = Rngon.vector3();
-    const pixelWorldPosition = Rngon.vector3();
+    const lightDirection = this.Rngon.vector3();
+    const pixelWorldPosition = this.Rngon.vector3();
 
     for (let i = 0; i < (renderWidth * renderHeight); i++)
     {
@@ -184,7 +182,7 @@ function ps_raytraced_lighting({renderWidth, renderHeight, fragmentBuffer, pixel
         lightDirection.x = (light.position.x - thisFragment.worldX);
         lightDirection.y = (light.position.y - thisFragment.worldY);
         lightDirection.z = (light.position.z - thisFragment.worldZ);
-        Rngon.vector3.normalize(lightDirection);
+        this.Rngon.vector3.normalize(lightDirection);
 
         const lightDistance = Math.sqrt(((pixelWorldPosition.x - light.position.x) * (pixelWorldPosition.x - light.position.x)) +
                                         ((pixelWorldPosition.y - light.position.y) * (pixelWorldPosition.y - light.position.y)) +
@@ -192,13 +190,13 @@ function ps_raytraced_lighting({renderWidth, renderHeight, fragmentBuffer, pixel
         
         const distanceMul = (1 / (1 + (light.attenuation * lightDistance)));
 
-        const shadeMul = Math.max(0, Math.min(1, Rngon.vector3.dot(thisNgon.normal, lightDirection)));
+        const shadeMul = Math.max(0, Math.min(1, this.Rngon.vector3.dot(thisNgon.normal, lightDirection)));
 
         // If distanceMul * shadeMul is <= 0, it means there's no light falling on this
         // pixel from the light source, and so we don't need to cast a light ray. Otherwise,
         // we cast a ray from this pixel toward the light's direction.
         const intersection = ((distanceMul * shadeMul > 0) &&
-                              ray(pixelWorldPosition, lightDirection).intersect_bvh(sceneBVH, 1));
+                              ray(pixelWorldPosition, lightDirection).intersect_bvh(this.sceneBVH, 1));
 
         // If the light ray intersects nothing or intersects something that's closer
         // than the light, it means light is prevented from reaching on this pixel.

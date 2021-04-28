@@ -3,85 +3,94 @@
  *
  * Software: Retro n-gon renderer / render sample
  * 
- * Provides a sample 3d scene in which the user can move around using the mouse
- * and keyboard.
- * 
  */
 
 "use strict";
 
 import {laraHome} from "./assets/home.rngon-model.js";
-import * as lightmapCache from "./assets/lightmaps-textures.js"; // Pre-load the lightmap data.
 import {first_person_camera} from "../first-person-camera/camera.js";
-import {load_shade_maps_from_file,
-        apply_shade_maps_to_ngons,
-        duplicate_ngon_textures} from "../../tools/lightmap-baking/shademap-tools.js";
+import * as lightmapTools from "../../tools/lightmap-baking/shademap-tools.js";
 
-const camera = first_person_camera("canvas",
-{
-    position: {x: 49500, y: 1549, z: -32675},
-    direction: {x: 0, y: 90, z: 0},
-    movementSpeed: 1.8,
-});
+// Pre-load the lightmap data.
+import * as lightmapCache from "./assets/texture-lightmaps.js";
 
-// The scene's textures prior to the application of any lightmaps.
-const ORIGINAL_TEXTURES = [];
-
-let CURRENT_LIGHTMAP_MODE = null;
-let CURRENT_TEXTURING_MODE = null;
-
-let SCENE_INITIALIZED = false;
-(async()=>
-{
-    await laraHome.initialize();
-
-    duplicate_ngon_textures(laraHome.ngons);
-
-    for (const ngon of laraHome.ngons)
+export const sample = {
+    initialize: async function()
     {
-        ORIGINAL_TEXTURES.push(Rngon.texture_rgba.deep_copy(ngon.material.texture));
-    }
+        this.camera = first_person_camera("canvas", {
+            position: {x: 49500, y: 1549, z: -32675},
+            direction: {x: 0, y: 90, z: 0},
+            movementSpeed: 1.8,
+        });
 
-    SCENE_INITIALIZED = true;
-})();
+        await laraHome.initialize();
 
-export const sample_scene = (frameCount = 0)=>
-{
-    if (!SCENE_INITIALIZED)
+        lightmapTools.duplicate_ngon_textures(laraHome.ngons);
+
+        for (const ngon of laraHome.ngons)
+        {
+            this.originalTextures.push(Rngon.texture_rgba.deep_copy(ngon.material.texture));
+        }
+
+        this.isSceneInitialized = true;
+    },
+    tick: function()
     {
-        return Rngon.mesh([]);
-    }
+        if (!this.isSceneInitialized)
+        {
+            return {
+                renderOptions: {},
+                mesh: Rngon.mesh([])
+            };
+        }
 
-    // If the lightmapping mode has changed.
-    if ((CURRENT_LIGHTMAP_MODE != parent.LIGHTMAP_MODE) ||
-        (CURRENT_TEXTURING_MODE != parent.TEXTURING_MODE))
-    {
-        change_lightmap_mode(parent.LIGHTMAP_MODE, parent.TEXTURING_MODE);
-    }
+        this.numTicks++;
+        this.camera.update();
 
-    camera.update();
-
-    // Assumes 'renderSettings' is a pre-defined global object from which the
-    // renderer will pick up its settings.
-    renderSettings.cameraDirection = camera.direction;
-    renderSettings.cameraPosition = camera.position;
-
-    return Rngon.mesh(SCENE_INITIALIZED? laraHome.ngons : []);
+        apply_current_lightmapping_mode.call(
+            this,
+            parent.LIGHTMAP_MODE,
+            parent.TEXTURING_MODE
+        );
+    
+        return {
+            renderOptions: {
+                nearPlane: 100,
+                farPlane: 25000,
+                fov: 55,
+                cameraDirection: this.camera.direction,
+                cameraPosition: this.camera.position,
+            },
+            mesh: Rngon.mesh(this.isSceneInitialized? laraHome.ngons : [])
+        };
+    },
+    camera: undefined,
+    numTicks: 0,
+    lightmappingModes: ["None", "Vertex", "Texture"],
+    texturingModes: ["Off", "On"],
+    curLightmappingMode: undefined,
+    curTexturingMode: undefined,
+    originalTextures: [], // The scene's textures prior to the application of any lightmaps.
+    isSceneInitialized: false,
 };
 
-export const sampleRenderOptions = {
-    nearPlane: 100,
-    farPlane: 25000,
-    fov: 55,
-};
-
-async function change_lightmap_mode(newLightmapMode, newTexturingMode)
+// Assumes that 'this' points to the exported sample object.
+async function apply_current_lightmapping_mode(newLightmapMode, newTexturingMode)
 {
+    // If no changes are needed.
+    if ((this.curLightmappingMode === parent.LIGHTMAP_MODE) &&
+        (this.curTexturingMode === parent.TEXTURING_MODE))
+    {
+        return;
+    }
+
+    const originalTextures = this.originalTextures;
+
     function reset_ngons()
     {
         for (const [idx, ngon] of laraHome.ngons.entries())
         {
-            ngon.material.texture = Rngon.texture_rgba.deep_copy(ORIGINAL_TEXTURES[idx]);
+            ngon.material.texture = Rngon.texture_rgba.deep_copy(originalTextures[idx]);
 
             if (newTexturingMode == "Off")
             {
@@ -93,7 +102,7 @@ async function change_lightmap_mode(newLightmapMode, newTexturingMode)
                 });
             }
 
-            ngon.material.renderVertexShade = ((newLightmapMode == "Textures (soft)")? false : true);
+            ngon.material.renderVertexShade = ((newLightmapMode == "Texture")? false : true);
     
             for (const vertex of ngon.vertices)
             {
@@ -110,7 +119,7 @@ async function change_lightmap_mode(newLightmapMode, newTexturingMode)
 
             break;
         }
-        case "Vertices":   
+        case "Vertex":   
         {
             reset_ngons();
 
@@ -126,22 +135,25 @@ async function change_lightmap_mode(newLightmapMode, newTexturingMode)
             
             break;
         }
-        case "Textures":
+        case "Texture":
         {
-            const shadeMaps = await load_shade_maps_from_file("../../samples/lightmaps/assets/lightmaps-textures.js",
-                                                              laraHome.ngons,
-                                                              32, 32);
+            const shadeMaps = await lightmapTools.load_shade_maps_from_file(
+                "../../samples/lightmaps/assets/texture-lightmaps.js",
+                laraHome.ngons,
+                32,
+                32
+            );
 
             reset_ngons();
 
-            apply_shade_maps_to_ngons(shadeMaps, laraHome.ngons, "textures");
+            lightmapTools.apply_shade_maps_to_ngons(shadeMaps, laraHome.ngons, "textures");
             
             break;
         }
     }
 
-    CURRENT_LIGHTMAP_MODE = newLightmapMode;
-    CURRENT_TEXTURING_MODE = newTexturingMode;
+    this.curLightmappingMode = newLightmapMode;
+    this.curTexturingMode = newTexturingMode;
 
     return;
 }

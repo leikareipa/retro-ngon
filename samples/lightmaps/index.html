@@ -15,13 +15,13 @@
         <div class="infoboxes-container additional">
             <div class="infobox lightmap-mode" style="width: 180px;">
                 <div class="title">Lightmap</div>
-                <div class="value">-</div>
+                <div class="value"><i class="fas fa-sm fa-spin fa-spinner"></i></div>
                 <div class="adjust left" onclick="change_lightmap_mode(-1);"></div>
                 <div class="adjust right" onclick="change_lightmap_mode(1);"></div>
             </div>
             <div class="infobox texturing-mode" style="width: 180px;">
                 <div class="title">Texturing</div>
-                <div class="value">-</div>
+                <div class="value"><i class="fas fa-sm fa-spin fa-spinner"></i></div>
                 <div class="adjust left" onclick="toggle_texturing();"></div>
                 <div class="adjust right" onclick="toggle_texturing();"></div>
             </div>
@@ -39,39 +39,41 @@
             &#9888; Textures and models from Tomb Raider (1996, Core Design / Eidos)
         </div>
 
-        <script>
-            const lightmapModes = ["None", "Vertices", "Textures"];
-            const texturingModes = ["Off", "On"];
+        <script type="module">
+            import {sample} from "./lightmaps.js";
 
-            // Select the "None" shading option by default.
-            change_lightmap_mode(0);
+            const lightmapModes = sample.lightmappingModes;
+            const texturingModes = sample.texturingModes;
 
-            // Select the "On" texturing option by default.
-            toggle_texturing(0);
+            window.LIGHTMAP_MODE = sample.curLightmappingMode;
+            window.TEXTURING_MODE = sample.curTexturingMode;
 
-            function change_lightmap_mode(direction = 1)
+            window.change_lightmap_mode = function(direction = 1)
             {
                 // Rotate the current shading mode (array element #0) left or right.
-                if (direction == 1) lightmapModes.push(lightmapModes.shift());
-                else if (direction == -1) lightmapModes.unshift(lightmapModes.pop());
+                if (direction > 0) lightmapModes.push(lightmapModes.shift());
+                else if (direction < 0) lightmapModes.unshift(lightmapModes.pop());
 
                 LIGHTMAP_MODE = lightmapModes[0];
-
                 document.querySelector(".infobox.lightmap-mode .value").innerHTML = LIGHTMAP_MODE;
 
                 return;
             }
 
-            function toggle_texturing()
+            window.toggle_texturing = function()
             {
                 texturingModes.push(texturingModes.shift());
-
                 TEXTURING_MODE = texturingModes[0];
-
                 document.querySelector(".infobox.texturing-mode .value").innerHTML = TEXTURING_MODE;
 
                 return;
             }
+
+            // Select the "None" shading option by default.
+            window.change_lightmap_mode(0);
+
+            // Select the "On" texturing option by default.
+            window.toggle_texturing(0);
         </script>
 
         <script>

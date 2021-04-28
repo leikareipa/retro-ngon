@@ -21,18 +21,16 @@
             </div>
         </div>
 
-        <script>
-            const levels = ["Auto", "0.0", "0.1", "0.2", "0.3", "0.4",
-                            "0.5", "0.6", "0.7", "0.8", "0.9", "1.0"];
+        <script type="module">
+            import {sample} from "./mipmapping.js";
 
             let mipLevelIdx = 0;
+            window.MIPMAP_LEVEL = sample.mipmapLevels[0];
 
-            var MIPMAP_LEVEL = levels[mipLevelIdx];
-
-            function change_level(direction = 1)
+            window.change_level = function(direction = 1)
             {
-                mipLevelIdx = Math.max(0, Math.min((levels.length - 1), (mipLevelIdx + direction)));
-                MIPMAP_LEVEL = levels[mipLevelIdx];
+                mipLevelIdx = Math.max(0, Math.min((sample.mipmapLevels.length - 1), (mipLevelIdx + direction)));
+                MIPMAP_LEVEL = sample.mipmapLevels[mipLevelIdx];
 
                 document.querySelector(".infobox.mip-level .value").innerHTML = MIPMAP_LEVEL;
 

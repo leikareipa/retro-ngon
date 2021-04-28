@@ -28,27 +28,27 @@
             </div>
         </div>
 
-        <script>
-            const shadingTypes = ["None", "Flat", "Gouraud", "Phong"];
+        <script type="module">
+            import {sample} from "./builtin-shading.js";
+
+            const shadingTypes = sample.shadingTypes;
             let shadingTypeIdx = 1;
+            
+            window.MODEL_SHADING = shadingTypes[shadingTypeIdx];
+            window.MODEL_AMBIENT = 0.3;
 
-            var MODEL_SHADING = shadingTypes[shadingTypeIdx];
-            var MODEL_AMBIENT = 0.3;
-
-            function change_shading(direction = 1)
+            window.change_shading = function(direction = 1)
             {
                 shadingTypeIdx = Math.max(0, Math.min((shadingTypes.length - 1), (shadingTypeIdx + direction)));
                 MODEL_SHADING = shadingTypes[shadingTypeIdx];
-
                 document.querySelector(".infobox.shading .value").innerHTML = MODEL_SHADING;
 
                 return;
             }
 
-            function change_ambient(delta = 1)
+            window.change_ambient = function(delta = 1)
             {
-                MODEL_AMBIENT = Math.max(0, Math.min(1, (MODEL_AMBIENT + delta)));
-
+                MODEL_AMBIENT = Math.max(0, Math.min(1, (window.MODEL_AMBIENT + delta)));
                 document.querySelector(".infobox.ambient .value").innerHTML = MODEL_AMBIENT.toFixed(1);
 
                 return;

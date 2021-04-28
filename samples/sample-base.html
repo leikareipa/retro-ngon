@@ -125,7 +125,9 @@
             {
                 const canvasElement = "canvas"; // or "document.getElementById("canvas")" for versions >= beta.5.
                 const sampleId = (new URLSearchParams(window.location.search).get("sample") || "textured-cube-model");
-                const sampleModule = await import(`./${sampleId}/${sampleId}.js`);
+                const {sample} = await import(`./${sampleId}/${sampleId}.js`);
+
+                sample.initialize();
 
                 // The renderable assets will have finished loading when we reach this,
                 // so it's safe to remove the loading indicator.
@@ -148,15 +150,8 @@
                         });
                     };
 
-                    // Attempt to limit the renderer's refresh rate, if so requested by the user.
-                    if (sampleModule.sampleRenderOptions.targetRefreshRate &&
-                        (frameTimeDeltaMs < Math.floor(1000 / sampleModule.sampleRenderOptions.targetRefreshRate)))
-                    {
-                        queue_new_frame(frameTimeDeltaMs);
-                        return;
-                    }
-            
-                    const scene = sampleModule.sample_scene(frameCount);
+                    const scene = sample.tick();
+
                     const options = {
                         clipToViewport: true,
                         depthSort: "painter-reverse",
@@ -165,12 +160,20 @@
                         cameraDirection: renderSettings.cameraDirection,
                         cameraPosition: renderSettings.cameraPosition,
                         scale: renderSettings.scale,
-                        ...sampleModule.sampleRenderOptions,
+                        ...(scene.renderOptions || {}),
                     };
+
+                    // Attempt to limit the renderer's refresh rate, if so requested by the user.
+                    if (options.targetRefreshRate &&
+                        (frameTimeDeltaMs < Math.floor(1000 / options.targetRefreshRate)))
+                    {
+                        queue_new_frame(frameTimeDeltaMs);
+                        return;
+                    }
 
                     be_backwards_compatible(options);
 
-                    const renderInfo = Rngon.render(canvasElement, [scene], options);
+                    const renderInfo = Rngon.render(canvasElement, [scene.mesh], options);
 
                     if ((uiUpdateTimer += frameTimeDeltaMs) >= 500)
                     {

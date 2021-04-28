@@ -10,6 +10,9 @@
 import {tile_filler} from "./tile-filler.js";
 import {apply_lighting_to_tile} from "./tile-lighter.js";
 
+const groundTileWidth = 22;
+const groundTileHeight = 22;
+
 const grass1 = Rngon.texture_rgba({
     "needsFlip": false,
 	"width":22,
@@ -57,11 +60,6 @@ const gateway1 = Rngon.texture_rgba({
 
 const textures = [wall1, gateway1, lamp1, grass1, grass2];
 
-const groundTileWidth = 22;
-const groundTileHeight = 22;
-
-let mousePos = {x:0, y:0};
-
 const decors = [
     {object:wall1, x:16, y:4},
     {object:gateway1, x:15, y:5},
@@ -80,31 +78,25 @@ const decors = [
     {object:lamp1, x:20, y:8, lightEmitting:true},
 ];
 
-const camera = {
-    pos: {x: 0, y: 0},
-    dir: {left:false, right:false, up:false, down:false},
-    speed: 1.5,
-};
-
-// Returns a mesh containing the model's ngons, with incremental rotation added
-// based on the rendered frame count.
-export const sample_scene = (frameCount)=>
-{
-    const ngons = [];
-
-    // This will be executed once.
-    if (!frameCount)
+export const sample = {
+    initialize: function()
     {
+        this.camera = {
+            pos: {x: 0, y: 0},
+            dir: {left:false, right:false, up:false, down:false},
+            speed: 1.5,
+        };
+
         precompute_texture_parameters();
 
         window.addEventListener("keydown", (event)=>
         {
             switch (event.key.toLowerCase())
             {
-                case "e": camera.dir.up = true; break;
-                case "d": camera.dir.down = true; break;
-                case "s": camera.dir.left = true; break;
-                case "f": camera.dir.right = true; break;
+                case "e": this.camera.dir.up = true; break;
+                case "d": this.camera.dir.down = true; break;
+                case "s": this.camera.dir.left = true; break;
+                case "f": this.camera.dir.right = true; break;
             }
         });
 
@@ -112,112 +104,128 @@ export const sample_scene = (frameCount)=>
         {
             switch (event.key.toLowerCase())
             {
-                case "e": camera.dir.up = false; break;
-                case "d": camera.dir.down = false; break;
-                case "s": camera.dir.left = false; break;
-                case "f": camera.dir.right = false; break;
+                case "e": this.camera.dir.up = false; break;
+                case "d": this.camera.dir.down = false; break;
+                case "s": this.camera.dir.left = false; break;
+                case "f": this.camera.dir.right = false; break;
             }
         });
 
         window.addEventListener("mousemove", (event=>
         {
-            mousePos.x = event.clientX;
-            mousePos.y = event.clientY;
+            this.mousePos.x = event.clientX;
+            this.mousePos.y = event.clientY;
         }));
-    }
-
-    // Move the camera.
-    camera.pos.x += (camera.speed * (camera.dir.left? 1 : camera.dir.right? -1 : 0));
-    camera.pos.y += (camera.speed * (camera.dir.up? 1 : camera.dir.down? -1 : 0));
-
-    // Construct the ground tile mesh.
+    },
+    tick: function()
     {
-        const numTilesX = 1 + Math.ceil(Rngon.internalState.pixelBuffer.width / groundTileWidth);
-        const numTilesY = 1 + Math.ceil(Rngon.internalState.pixelBuffer.height / (groundTileHeight / 2));
-        
-        let startX = Math.floor(camera.pos.x + -(groundTileWidth / 2));
-        let startY = Math.floor(camera.pos.y + -(groundTileHeight / 2));
-        let isOddLine = false;
+        this.numTicks++;
 
-        for (let y = 0; y < numTilesY; (y++, isOddLine = !isOddLine))
+        const mousePos = this.mousePos;
+        const camera = this.camera;
+
+        // Move the camera.
+        camera.pos.x += (camera.speed * (camera.dir.left? 1 : camera.dir.right? -1 : 0));
+        camera.pos.y += (camera.speed * (camera.dir.up? 1 : camera.dir.down? -1 : 0));
+
+        const ngons = [];
+
+        // Construct the ground tile mesh.
         {
-            for (let x = 0; x < numTilesX; x++)
+            const numTilesX = 1 + Math.ceil(Rngon.internalState.pixelBuffer.width / groundTileWidth);
+            const numTilesY = 1 + Math.ceil(Rngon.internalState.pixelBuffer.height / (groundTileHeight / 2));
+            
+            let startX = Math.floor(this.camera.pos.x + -(groundTileWidth / 2));
+            let startY = Math.floor(this.camera.pos.y + -(groundTileHeight / 2));
+            let isOddLine = false;
+
+            for (let y = 0; y < numTilesY; (y++, isOddLine = !isOddLine))
             {
-                let posX = (startX + (x * groundTileWidth));
+                for (let x = 0; x < numTilesX; x++)
+                {
+                    let posX = (startX + (x * groundTileWidth));
 
-                ngons.push(Rngon.ngon([Rngon.vertex( posX,                     startY),
-                                       Rngon.vertex( posX,                    (startY + groundTileHeight)),
-                                       Rngon.vertex((posX + groundTileWidth), (startY + groundTileHeight)),
-                                       Rngon.vertex((posX + groundTileWidth),  startY)], {
-                    texture: (((Math.floor(camera.pos.x - posX) % 2) == 0)? grass1 : grass2),
-                    allowTransform: false,
-                    vertexShading: ((parent.TIME_TYPE == "Night")? "gouraud" : "none"),
-                }));
+                    ngons.push(Rngon.ngon([Rngon.vertex( posX,                     startY),
+                                           Rngon.vertex( posX,                    (startY + groundTileHeight)),
+                                           Rngon.vertex((posX + groundTileWidth), (startY + groundTileHeight)),
+                                           Rngon.vertex((posX + groundTileWidth),  startY)], {
+                        texture: (((Math.floor(this.camera.pos.x - posX) % 2) == 0)? grass1 : grass2),
+                        allowTransform: false,
+                        vertexShading: ((parent.TIME_TYPE == "Night")? "gouraud" : "none"),
+                    }));
+                }
+
+                startX += ((groundTileWidth / 2) * (isOddLine? -1 : 1));
+                startY += (groundTileHeight / 2);
             }
-
-            startX += ((groundTileWidth / 2) * (isOddLine? -1 : 1));
-            startY += (groundTileHeight / 2);
         }
-    }
 
-    // Consturct the meshes of decor tiles; e.g. walls.
-    for (const decor of decors)
-    {
-        const offsX = Math.floor(camera.pos.x + (decor.x * (groundTileWidth / 2)));
-        const offsY = Math.floor(camera.pos.y + (decor.y * (groundTileHeight / 2)));
-
-        ngons.push(Rngon.ngon([Rngon.vertex( offsX,                    (offsY - decor.object.height)),
-                               Rngon.vertex( offsX,                     offsY),
-                               Rngon.vertex((offsX + groundTileWidth),  offsY),
-                               Rngon.vertex((offsX + groundTileWidth), (offsY - decor.object.height))], {
-            texture: decor.object,
-            allowTransform: false,
-            vertexShading: (((parent.TIME_TYPE == "Night") && !decor.lightEmitting)? "gouraud" : "none"),
-            color: Rngon.color_rgba(255, 255, 255, (decor.transparent? 125 : 255)),
-        }));
-    }
-    
-    return Rngon.mesh(ngons);
-};
-
-export const sampleRenderOptions = {
-    depthSort: "none",
-    useDepthBuffer: false,
-    modules: {
-        rasterize: tile_filler,
-        transformClipLight: (ngons)=>{
-            ngons.forEach(n=>apply_lighting_to_tile(n));
-
-            // The n-gons don't need transforming, so we can just assign them directly
-            // to the renderer's n-gon cache; from which they'll be picked up for rasterization.
-            Rngon.internalState.ngonCache.ngons = ngons;
-            Rngon.internalState.ngonCache.count = ngons.length;
-        },
-    },
-    get lights()
-    {
-        return [
-            Rngon.light(Rngon.translation_vector(...tile_pos_to_world_pos(21, 7)),{
-                intensity: 20,
-            }),
-            Rngon.light(Rngon.translation_vector(...tile_pos_to_world_pos(15, 7)),{
-                intensity: 20,
-            }),
-            // A light that follows the mouse cursor.
-            Rngon.light(Rngon.translation_vector((mousePos.x * renderSettings.scale),
-                                                 (mousePos.y * renderSettings.scale)),{
-                intensity: 20,
-            }),
-        ];
-
-        function tile_pos_to_world_pos(tileX, tileY)
+        // Consturct the meshes of decor tiles; e.g. walls.
+        for (const decor of decors)
         {
-            return [
-                Math.floor(camera.pos.x + (tileX * (groundTileWidth / 2))),
-                Math.floor(camera.pos.y + (tileY * (groundTileHeight / 2)))
-            ];
+            const offsX = Math.floor(this.camera.pos.x + (decor.x * (groundTileWidth / 2)));
+            const offsY = Math.floor(this.camera.pos.y + (decor.y * (groundTileHeight / 2)));
+
+            ngons.push(Rngon.ngon([Rngon.vertex( offsX,                    (offsY - decor.object.height)),
+                                   Rngon.vertex( offsX,                     offsY),
+                                   Rngon.vertex((offsX + groundTileWidth),  offsY),
+                                   Rngon.vertex((offsX + groundTileWidth), (offsY - decor.object.height))], {
+                texture: decor.object,
+                allowTransform: false,
+                vertexShading: (((parent.TIME_TYPE == "Night") && !decor.lightEmitting)? "gouraud" : "none"),
+                color: Rngon.color_rgba(255, 255, 255, (decor.transparent? 125 : 255)),
+            }));
         }
+    
+        return {
+            renderOptions: {
+                depthSort: "none",
+                useDepthBuffer: false,
+                modules: {
+                    rasterize: tile_filler,
+                    transformClipLight: (ngons)=>
+                    {
+                        ngons.forEach(n=>apply_lighting_to_tile(n));
+
+                        // The n-gons don't need transforming, so we can just assign them directly
+                        // to the renderer's n-gon cache; from which they'll be picked up for rasterization.
+                        Rngon.internalState.ngonCache.ngons = ngons;
+                        Rngon.internalState.ngonCache.count = ngons.length;
+                    },
+                },
+                get lights()
+                {
+                    return [
+                        Rngon.light(Rngon.translation_vector(...tile_pos_to_world_pos(21, 7)),{
+                            intensity: 20,
+                        }),
+
+                        Rngon.light(Rngon.translation_vector(...tile_pos_to_world_pos(15, 7)),{
+                            intensity: 20,
+                        }),
+
+                        // A light that follows the mouse cursor.
+                        Rngon.light(Rngon.translation_vector((mousePos.x * renderSettings.scale),
+                                                             (mousePos.y * renderSettings.scale)),{
+                            intensity: 20,
+                        }),
+                    ];
+
+                    function tile_pos_to_world_pos(tileX, tileY)
+                    {
+                        return [
+                            Math.floor(camera.pos.x + (tileX * (groundTileWidth / 2))),
+                            Math.floor(camera.pos.y + (tileY * (groundTileHeight / 2)))
+                        ];
+                    }
+                },
+            },
+            mesh: Rngon.mesh(ngons),
+        };
     },
+    camera: undefined,
+    numTicks: 0,
+    mousePos: {x:0, y:0},
 };
 
 function precompute_texture_parameters()

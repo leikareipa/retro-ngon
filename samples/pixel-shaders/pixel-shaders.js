@@ -3,9 +3,6 @@
  *
  * Software: Retro n-gon renderer / render sample
  * 
- * Provides a sample 3d scene in which the user can move around using the mouse
- * and keyboard.
- * 
  */
 
 "use strict";
@@ -13,85 +10,99 @@
 import {scene} from "./assets/scene.rngon-model.js";
 import {first_person_camera} from "../first-person-camera/camera.js";
 
-const shaderFunctions = {};
-
-const lights = [
-    Rngon.light(Rngon.translation_vector(11, 45, -35), {
-        intensity: 70,
-        clip: 1,
-        attenuation: 1,
-    }),
-];
-
-const camera = first_person_camera("canvas",
-{
-    position: {x:-70, y:33, z:-7},
-    direction: {x:7, y:90, z:0},
-    movementSpeed: 0.05,
-});
-
-scene.initialize();
-
-let numFramesRendered = 0;
-
-export const sample_scene = (frameCount = 0)=>
-{
-    numFramesRendered = frameCount;
-
-    camera.update();
-
-    // Assumes 'renderSettings' is a pre-defined global object from which the
-    // renderer will pick up its settings.
-    renderSettings.cameraDirection = camera.direction;
-    renderSettings.cameraPosition = camera.position;
-
-    // Move the light around in a circle.
-    lights[0].position.x += (Math.cos(frameCount / 70) * 0.5);
-    lights[0].position.z += (Math.sin(frameCount / 70) * 0.5);
-
-    return Rngon.mesh(scene.ngons,
+export const sample = {
+    initialize: function()
     {
-        scaling: Rngon.scaling_vector(25, 25, 25)
-    });
+        this.camera = first_person_camera("canvas", {
+            position: {x:-70, y:33, z:-7},
+            direction: {x:7, y:90, z:0},
+            movementSpeed: 0.05,
+        });
+
+        this.lights = [
+            Rngon.light(Rngon.translation_vector(11, 45, -35), {
+                intensity: 70,
+                clip: 1,
+                attenuation: 1,
+            }),
+        ];
+
+        // To allow the pixel shader functions access to the Rngon namespace.
+        this.Rngon = Rngon;
+
+        scene.initialize();
+    },
+    tick: function()
+    {
+        this.numTicks++;
+        this.camera.update();
+
+        // Move the light around in a circle.
+        this.lights[0].position.x += (Math.cos(this.numTicks / 70) * 0.5);
+        this.lights[0].position.z += (Math.sin(this.numTicks / 70) * 0.5);
+
+        return {
+            renderOptions: {
+                lights: this.lights,
+                pixelShader: parent.ACTIVE_SHADER.function
+                             ? parent.ACTIVE_SHADER.function.bind(this)
+                             : null,
+                // For the mip level map shader to work, we need to enable mipmapping.
+                // So when that shader is in use, let's set n-gon's mipmap level based
+                // on its distance to the camera.
+                vertexShader: parent.ACTIVE_SHADER.title !== "Mip level map"
+                              ? null
+                              : (ngon, cameraPosition)=>
+                              {
+                                  const maxDistance = (300 * 300);
+      
+                                  const distance = (((ngon.vertices[0].x - cameraPosition.x) * (ngon.vertices[0].x - cameraPosition.x)) +
+                                                  ((ngon.vertices[0].y - cameraPosition.y) * (ngon.vertices[0].y - cameraPosition.y)) +
+                                                  ((ngon.vertices[0].z - cameraPosition.z) * (ngon.vertices[0].z - cameraPosition.z)));
+      
+                                  ngon.mipLevel = Math.max(0, Math.min(0.25, (distance / maxDistance)));
+                              },
+                cameraDirection: this.camera.direction,
+                cameraPosition: this.camera.position,
+            },
+            mesh: this.Rngon.mesh(scene.ngons, {
+                scaling: this.Rngon.scaling_vector(25, 25, 25)
+            }),
+        };
+    },
+    shaders: [
+        {title:"None",                   function:null},
+        {title:"Backlight",              function:ps_backlight},
+        {title:"Depth desaturation",     function:ps_depth_desaturate},
+        {title:"Distance fog",           function:ps_distance_fog},
+        {title:"Reduced color fidelity", function:ps_reduce_color_fidelity},
+        {title:"Aberration",             function:ps_aberration},
+        {title:"Grid pattern",           function:ps_grid_pattern},
+        {title:"Waviness",               function:ps_waviness},
+        {title:"Selective outline",      function:ps_selective_outline},
+        {title:"Selective blur",         function:ps_selective_blur},
+        {title:"Selective grayscale",    function:ps_selective_grayscale},
+        {title:"Selective scanlines",    function:ps_selective_scanlines},
+        {title:"Per-pixel lighting",     function:ps_per_pixel_light},
+        {title:"Wireframe",              function:ps_wireframe},
+        {title:"Texture blend",          function:ps_texture_blend},
+        {title:"Vertex positions",       function:ps_vertex_positions_map},
+        {title:"Normal map",             function:ps_normal_map},
+        {title:"UV map",                 function:ps_uv_map},
+        {title:"Coordinate map",         function:ps_world_position_map},
+        {title:"Depth map",              function:ps_depth_map},
+        {title:"Shade map",              function:ps_shade_map},
+        {title:"Mip level map",          function:ps_mip_level_map},
+    ],
+    lights: undefined,
+    camera: undefined,
+    Rngon: undefined,
+    numTicks: 0,
 };
 
-export const sampleRenderOptions = {
-    lights: lights,
-    get pixelShader()
-    {
-        // If the user has selected a shader to be used, return the selected shader.
-        // Otherwise, return null to indicate that shader functionality in the
-        // renderer should be disabled.
-        return (shaderFunctions[parent.ACTIVE_SHADER.functionName] || null);
-    },
-    get vertexShader()
-    {
-        // For the mip level map shader to work, we need to enable mipmapping.
-        // So when that shader is in use, let's set n-gon's mipmap level based
-        // on its distance to the camera.
-        if (parent.ACTIVE_SHADER.title === "Mip level map")
-        {
-            return (ngon, cameraPosition)=>
-            {
-                const maxDistance = (300 * 300);
-
-                const distance = (((ngon.vertices[0].x - cameraPosition.x) * (ngon.vertices[0].x - cameraPosition.x)) +
-                                  ((ngon.vertices[0].y - cameraPosition.y) * (ngon.vertices[0].y - cameraPosition.y)) +
-                                  ((ngon.vertices[0].z - cameraPosition.z) * (ngon.vertices[0].z - cameraPosition.z)));
-
-                ngon.mipLevel = Math.max(0, Math.min(0.25, (distance / maxDistance)));
-            }
-        }
-        else
-        {
-            return null;
-        }
-    },
-}
-
-// Blurs every pixel whose n-gon doesn't have the material property 'isInFocus'
+// Pixel shader. Blurs every pixel whose n-gon doesn't have the material property 'isInFocus'
 // set to true.
-shaderFunctions["shader_selective_blur"] = function({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
+function ps_selective_blur({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
 {
     // We'll loop a couple of times to increase the level of blurring.
     for (let loop = 0; loop < 3; loop++)
@@ -167,10 +178,10 @@ shaderFunctions["shader_selective_blur"] = function({renderWidth, renderHeight, 
     }
 }
 
-// Draws a 1-pixel-thin outline over any pixel that lies on the edge of
-// an n-gon whose material has the 'hasHalo' property set to true and
-// which does not border another n-gon that has that property set.
-shaderFunctions["shader_selective_outline"] = function({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
+// Pixel shader. Draws a 1-pixel-thin outline over any pixel that lies on the edge of
+// an n-gon whose material has the 'hasHalo' property set to true and which does not
+// border another n-gon that has that property set.
+function ps_selective_outline({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
 {
     for (let y = 0; y < renderHeight; y++)
     {
@@ -213,8 +224,8 @@ shaderFunctions["shader_selective_outline"] = function({renderWidth, renderHeigh
     }
 }
 
-// Converts into grayscale every pixel in the pixel buffer.
-shaderFunctions["shader_selective_grayscale"] = function({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
+// Pixel shader. Converts into grayscale every pixel in the pixel buffer.
+function ps_selective_grayscale({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
 {
     for (let i = 0; i < (renderWidth * renderHeight); i++)
     {
@@ -236,7 +247,8 @@ shaderFunctions["shader_selective_grayscale"] = function({renderWidth, renderHei
     }
 }
 
-shaderFunctions["shader_shade_map"] = function({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
+// Pixel shader.
+function ps_shade_map({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
 {
     for (let i = 0; i < (renderWidth * renderHeight); i++)
     {
@@ -248,7 +260,8 @@ shaderFunctions["shader_shade_map"] = function({renderWidth, renderHeight, fragm
     }
 }
 
-shaderFunctions["shader_normal_map"] = function({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
+// Pixel shader.
+function ps_normal_map({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
 {
     for (let i = 0; i < (renderWidth * renderHeight); i++)
     {
@@ -266,7 +279,8 @@ shaderFunctions["shader_normal_map"] = function({renderWidth, renderHeight, frag
     }
 }
 
-shaderFunctions["shader_world_position_map"] = function({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
+// Pixel shader.
+function ps_world_position_map({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
 {
     for (let i = 0; i < (renderWidth * renderHeight); i++)
     {
@@ -280,7 +294,8 @@ shaderFunctions["shader_world_position_map"] = function({renderWidth, renderHeig
     }
 }
 
-shaderFunctions["shader_uv_map"] = function({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
+// Pixel shader.
+function ps_uv_map({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
 {
     for (let i = 0; i < (renderWidth * renderHeight); i++)
     {
@@ -309,7 +324,8 @@ shaderFunctions["shader_uv_map"] = function({renderWidth, renderHeight, fragment
     }
 }
 
-shaderFunctions["shader_depth_map"] = function({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
+// Pixel shader.
+function ps_depth_map({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
 {
     const {minDepth, maxDepth} = fragmentBuffer.reduce((minmax, fragment)=>
     {
@@ -329,11 +345,12 @@ shaderFunctions["shader_depth_map"] = function({renderWidth, renderHeight, fragm
     }
 }
 
-shaderFunctions["shader_reduce_color_fidelity"] = function({renderWidth, renderHeight, pixelBuffer})
+// Pixel shader.
+function ps_reduce_color_fidelity({renderWidth, renderHeight, pixelBuffer})
 {
     for (let i = 0; i < (renderWidth * renderHeight); i++)
     {
-        const reductionFactor = 50;
+        const reductionFactor = 30;
 
         pixelBuffer[(i * 4) + 0] = (~~(pixelBuffer[(i * 4) + 0] / reductionFactor) * reductionFactor);
         pixelBuffer[(i * 4) + 1] = (~~(pixelBuffer[(i * 4) + 1] / reductionFactor) * reductionFactor);
@@ -341,9 +358,9 @@ shaderFunctions["shader_reduce_color_fidelity"] = function({renderWidth, renderH
     }
 }
 
-// Draws black all pixels on scanlines divisible by 2; except for pixels whose
-// ngon has the material property 'hasNoScanlines' set to true.
-shaderFunctions["shader_selective_scanlines"] = function({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
+// Pixel shader.  Draws black all pixels on scanlines divisible by 2; except for pixels
+// whose ngon has the material property 'hasNoScanlines' set to true.
+function ps_selective_scanlines({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
 {
     for (let i = 0; i < (renderWidth * renderHeight); i++)
     {
@@ -364,8 +381,8 @@ shaderFunctions["shader_selective_scanlines"] = function({renderWidth, renderHei
     }
 }
 
-// Draws a wireframe (outline) around each visible n-gon.
-shaderFunctions["shader_wireframe"] = function({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
+// Pixel shader. Draws a wireframe (outline) around each visible n-gon.
+function ps_wireframe({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
 {
     for (let y = 0; y < renderHeight; y++)
     {
@@ -397,11 +414,11 @@ shaderFunctions["shader_wireframe"] = function({renderWidth, renderHeight, fragm
     }
 }
 
-// Lightens grazing angles wrt. the viewing direction on any n-gons whose material
-// has the 'isBacklit' property set to true.
-shaderFunctions["shader_backlight"] = function({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, cameraPosition, ngonCache})
+// Pixel shader.  Lightens grazing angles wrt. the viewing direction on any n-gons whose
+// material has the 'isBacklit' property set to true.
+function ps_backlight({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, cameraPosition, ngonCache})
 {
-    const viewVector = Rngon.vector3();
+    const viewVector = this.Rngon.vector3();
 
     for (let i = 0; i < (renderWidth * renderHeight); i++)
     {
@@ -416,9 +433,9 @@ shaderFunctions["shader_backlight"] = function({renderWidth, renderHeight, fragm
         viewVector.x = (thisFragment.worldX - cameraPosition.x);
         viewVector.y = (thisFragment.worldY - cameraPosition.y);
         viewVector.z = (thisFragment.worldZ - cameraPosition.z);
-        Rngon.vector3.normalize(viewVector);
+        this.Rngon.vector3.normalize(viewVector);
 
-        const dot = Rngon.vector3.dot(thisNgon.normal, viewVector);
+        const dot = this.Rngon.vector3.dot(thisNgon.normal, viewVector);
 
         pixelBuffer[(i * 4) + 0] *= (2 + dot);
         pixelBuffer[(i * 4) + 1] *= (2 + dot);
@@ -426,12 +443,13 @@ shaderFunctions["shader_backlight"] = function({renderWidth, renderHeight, fragm
     }
 }
 
-shaderFunctions["shader_per_pixel_light"] = function({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
+// Pixel shader.
+function ps_per_pixel_light({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
 {
-    const light = Rngon.internalState.lights[0];
+    const light = this.Rngon.internalState.lights[0];
     const lightReach = (100 * 100);
     const lightIntensity = 2.5;
-    const lightDirection = Rngon.vector3();
+    const lightDirection = this.Rngon.vector3();
 
     for (let i = 0; i < (renderWidth * renderHeight); i++)
     {
@@ -458,9 +476,9 @@ shaderFunctions["shader_per_pixel_light"] = function({renderWidth, renderHeight,
                     lightDirection.x = (light.position.x - thisFragment.worldX);
                     lightDirection.y = (light.position.y - thisFragment.worldY);
                     lightDirection.z = (light.position.z - thisFragment.worldZ);
-                    Rngon.vector3.normalize(lightDirection);
+                    this.Rngon.vector3.normalize(lightDirection);
 
-                    shadeMul = Math.max(0, Math.min(1, Rngon.vector3.dot(thisNgon.normal, lightDirection)));
+                    shadeMul = Math.max(0, Math.min(1, this.Rngon.vector3.dot(thisNgon.normal, lightDirection)));
                 }
             }
 
@@ -479,10 +497,10 @@ shaderFunctions["shader_per_pixel_light"] = function({renderWidth, renderHeight,
     }
 }
 
-// Desatures pixel colors based on their distance to the camera - pixels that
-// are further away are desatured to a greater extent. The desaturation algo
-// is adapted from http://alienryderflex.com/saturation.html.
-shaderFunctions["shader_depth_desaturate"] = function({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
+// Pixel shader. Desatures pixel colors based on their distance to the camera - pixels
+// that are further away are desatured to a greater extent. The desaturation algo is
+// adapted from http://alienryderflex.com/saturation.html.
+function ps_depth_desaturate({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
 {
     const Pr = .299;
     const Pg = .587;
@@ -512,7 +530,8 @@ shaderFunctions["shader_depth_desaturate"] = function({renderWidth, renderHeight
     }
 }
 
-shaderFunctions["shader_aberration"] = function({renderWidth, renderHeight, pixelBuffer})
+// Pixel shader.
+function ps_aberration({renderWidth, renderHeight, pixelBuffer})
 {
     for (let y = 0; y < renderHeight; y++)
     {
@@ -526,8 +545,8 @@ shaderFunctions["shader_aberration"] = function({renderWidth, renderHeight, pixe
     }
 }
 
-// Lightens every xth pixel to create a perspective-correct grid pattern.
-shaderFunctions["shader_grid_pattern"] = function({renderWidth, renderHeight, pixelBuffer, fragmentBuffer})
+// Pixel shader. Lightens every xth pixel to create a perspective-correct grid pattern.
+function ps_grid_pattern({renderWidth, renderHeight, pixelBuffer, fragmentBuffer})
 {
     for (let i = 0; i < (renderWidth * renderHeight); i++)
     {
@@ -546,8 +565,8 @@ shaderFunctions["shader_grid_pattern"] = function({renderWidth, renderHeight, pi
     }
 }
 
-// Draws a marker over each visible vertex.
-shaderFunctions["shader_vertex_positions_map"] = function({renderWidth, renderHeight, pixelBuffer, fragmentBuffer, ngonCache})
+// Pixel shader. Draws a marker over each visible vertex.
+function ps_vertex_positions_map({renderWidth, renderHeight, pixelBuffer, fragmentBuffer, ngonCache})
 {
     for (let y = 0; y < renderHeight; y++)
     {
@@ -585,8 +604,8 @@ shaderFunctions["shader_vertex_positions_map"] = function({renderWidth, renderHe
     }
 }
 
-// Applies a wavy distortion to the pixel buffer.
-shaderFunctions["shader_waviness"] = function({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
+// Pixel shader. Applies a wavy distortion to the pixel buffer.
+function ps_waviness({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
 {
     const timer = (new Date().getTime() / 150);
     const startDepth = 20;
@@ -612,7 +631,8 @@ shaderFunctions["shader_waviness"] = function({renderWidth, renderHeight, fragme
     }
 }
 
-shaderFunctions["shader_mip_level_map"] = function({renderWidth, renderHeight, fragmentBuffer, ngonCache, pixelBuffer})
+// Pixel shader.
+function ps_mip_level_map({renderWidth, renderHeight, fragmentBuffer, ngonCache, pixelBuffer})
 {
     for (let i = 0; i < (renderWidth * renderHeight); i++)
     {
@@ -624,13 +644,14 @@ shaderFunctions["shader_mip_level_map"] = function({renderWidth, renderHeight, f
             continue;
         }
 
-        pixelBuffer[(i * 4) + 0] = Rngon.lerp(0, 255, (1 - thisNgon.mipLevel));
-        pixelBuffer[(i * 4) + 1] = Rngon.lerp(0, 255, (1 - thisNgon.mipLevel));
-        pixelBuffer[(i * 4) + 2] = Rngon.lerp(0, 255, (1 - thisNgon.mipLevel));
+        pixelBuffer[(i * 4) + 0] = this.Rngon.lerp(0, 255, (1 - thisNgon.mipLevel));
+        pixelBuffer[(i * 4) + 1] = this.Rngon.lerp(0, 255, (1 - thisNgon.mipLevel));
+        pixelBuffer[(i * 4) + 2] = this.Rngon.lerp(0, 255, (1 - thisNgon.mipLevel));
     }
 }
 
-shaderFunctions["shader_distance_fog"] = function({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
+// Pixel shader.
+function ps_distance_fog({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
 {
     const maxDepth = 200;
 
@@ -640,15 +661,15 @@ shaderFunctions["shader_distance_fog"] = function({renderWidth, renderHeight, fr
 
         const depth = Math.max(0, Math.min(1, (thisFragment.w / maxDepth)));
 
-        pixelBuffer[(i * 4) + 0] = Rngon.lerp(pixelBuffer[(i * 4) + 0], 127, depth);
-        pixelBuffer[(i * 4) + 1] = Rngon.lerp(pixelBuffer[(i * 4) + 1], 127, depth);
-        pixelBuffer[(i * 4) + 2] = Rngon.lerp(pixelBuffer[(i * 4) + 2], 127, depth);
+        pixelBuffer[(i * 4) + 0] = this.Rngon.lerp(pixelBuffer[(i * 4) + 0], 127, depth);
+        pixelBuffer[(i * 4) + 1] = this.Rngon.lerp(pixelBuffer[(i * 4) + 1], 127, depth);
+        pixelBuffer[(i * 4) + 2] = this.Rngon.lerp(pixelBuffer[(i * 4) + 2], 127, depth);
     }
 }
 
-// Blends with a second texture the base texture of any n-gon whose material specifies
-// such a second texture via the 'blendTexture' material property.
-shaderFunctions["shader_texture_blend"] = function({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
+// Pixel shader. Blends with a second texture the base texture of any n-gon whose material
+// specifies such a second texture via the 'blendTexture' material property.
+function ps_texture_blend({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
 {
     for (let i = 0; i < (renderWidth * renderHeight); i++)
     {
@@ -665,9 +686,9 @@ shaderFunctions["shader_texture_blend"] = function({renderWidth, renderHeight, f
         const texel = texture.pixels[texelIdx];
 
         // Linearly interpolate a time-animated blending between the two textures.
-        const lerpAmt = ((Math.sin(numFramesRendered / 50) / 2) + 0.5);
-        pixelBuffer[(i * 4) + 0] = Rngon.lerp(pixelBuffer[(i * 4) + 0], (texel.red   * thisNgon.material.color.unitRange.red),   lerpAmt);
-        pixelBuffer[(i * 4) + 1] = Rngon.lerp(pixelBuffer[(i * 4) + 1], (texel.green * thisNgon.material.color.unitRange.green), lerpAmt);
-        pixelBuffer[(i * 4) + 2] = Rngon.lerp(pixelBuffer[(i * 4) + 2], (texel.blue  * thisNgon.material.color.unitRange.blue),  lerpAmt);
+        const lerpAmt = ((Math.sin(this.numTicks / 50) / 2) + 0.5);
+        pixelBuffer[(i * 4) + 0] = this.Rngon.lerp(pixelBuffer[(i * 4) + 0], (texel.red   * thisNgon.material.color.unitRange.red),   lerpAmt);
+        pixelBuffer[(i * 4) + 1] = this.Rngon.lerp(pixelBuffer[(i * 4) + 1], (texel.green * thisNgon.material.color.unitRange.green), lerpAmt);
+        pixelBuffer[(i * 4) + 2] = this.Rngon.lerp(pixelBuffer[(i * 4) + 2], (texel.blue  * thisNgon.material.color.unitRange.blue),  lerpAmt);
     }
 }

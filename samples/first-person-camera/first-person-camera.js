@@ -13,30 +13,33 @@
 import {scene} from "./assets/scene.rngon-model.js";
 import {first_person_camera} from "./camera.js";
 
-const camera = first_person_camera("canvas",
-                                   {
-                                       position: {x:-70, y:33, z:-7},
-                                       direction: {x:7, y:90, z:0},
-                                       movementSpeed: 0.05,
-                                   });
-
-scene.initialize();
-
-export const sample_scene = ()=>
-{
-    camera.update();
-
-    // Assumes 'renderSettings' is a pre-defined global object from which the
-    // renderer will pick up its settings.
-    renderSettings.cameraDirection = camera.direction;
-    renderSettings.cameraPosition = camera.position;
-
-    return Rngon.mesh(scene.ngons,
+export const sample = {
+    initialize: function()
     {
-        scaling: Rngon.scaling_vector(25, 25, 25)
-    });
-};
+        this.camera = first_person_camera("canvas", {
+            position: {x:-70, y:33, z:-7},
+            direction: {x:7, y:90, z:0},
+            movementSpeed: 0.05,
+        });
 
-export const sampleRenderOptions = {
-    fov:65,
+        scene.initialize();
+    },
+    tick: function()
+    {
+        this.numTicks++;
+        this.camera.update();
+    
+        return {
+            renderOptions: {
+                fov: 65,
+                cameraDirection: this.camera.direction,
+                cameraPosition: this.camera.position,
+            },
+            mesh: Rngon.mesh(scene.ngons, {
+                scaling: Rngon.scaling_vector(25, 25, 25)
+            })
+        };
+    },
+    camera: undefined,
+    numTicks: 0,
 };
