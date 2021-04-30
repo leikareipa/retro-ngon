@@ -548,20 +548,31 @@ function ps_aberration({renderWidth, renderHeight, pixelBuffer})
 // Pixel shader. Lightens every xth pixel to create a perspective-correct grid pattern.
 function ps_grid_pattern({renderWidth, renderHeight, pixelBuffer, fragmentBuffer})
 {
+    const maxDepth = 200;
+
     for (let i = 0; i < (renderWidth * renderHeight); i++)
     {
         const thisFragment = fragmentBuffer[i];
 
+        const depth = (1 - Math.max(0, Math.min(0.8, (thisFragment.w / maxDepth))));
+        let pixelColor = 0;
+
         // Note: we slightly offset some of the coordinate values to prevent flat
         // axis-aligned polygons in this particular scene from being entirely lit.
-        if (((~~thisFragment.worldX)     % 4 == 0) ||
-            ((~~thisFragment.worldY + 2) % 4 == 0) ||
-            ((~~thisFragment.worldZ - 3) % 4 == 0))
+        if (((~~thisFragment.worldX)     % 8 == 0) ||
+            ((~~thisFragment.worldY + 2) % 8 == 0) ||
+            ((~~thisFragment.worldZ - 3) % 8 == 0))
         {
-            pixelBuffer[(i * 4) + 0] *= 2;
-            pixelBuffer[(i * 4) + 1] *= 2;
-            pixelBuffer[(i * 4) + 2] *= 2;
+            pixelColor = (190 * depth);
         }
+        else
+        {
+            pixelColor = (220 * depth);
+        }
+
+        pixelBuffer[(i * 4) + 0] = pixelColor;
+        pixelBuffer[(i * 4) + 1] = pixelColor;
+        pixelBuffer[(i * 4) + 2] = pixelColor;
     }
 }
 
