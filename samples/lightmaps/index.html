@@ -74,9 +74,7 @@
 
             // Select the "On" texturing option by default.
             window.toggle_texturing(0);
-        </script>
 
-        <script>
             const renderer = (new URLSearchParams(window.location.search).get("renderer") || "dev");
             const renderTarget = document.getElementById("render-target");
             renderTarget.src = `../sample-base.html?sample=lightmaps&renderer=${renderer}`;

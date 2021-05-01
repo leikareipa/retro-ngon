@@ -53,9 +53,7 @@
 
                 return;
             }
-        </script>
 
-        <script>
             const renderer = (new URLSearchParams(window.location.search).get("renderer") || "dev");
             const renderTarget = document.getElementById("render-target");
             renderTarget.src = `../sample-base.html?sample=pixel-shaders&renderer=${renderer}`;
