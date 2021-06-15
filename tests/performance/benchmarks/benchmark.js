@@ -101,7 +101,7 @@ function print_results(results)
             const infoLabel = document.getElementById("benchmark-graph-info-label");
             infoLabel.style.left = `${event.clientX}px`;
             infoLabel.style.top = `${event.clientY}px`;
-            infoLabel.innerHTML = `${Math.floor(hoverFPS)} FPS<br>@ ${Math.floor(hoverTimeMs)} ms`;
+            infoLabel.innerHTML = `<span class="primary">${Math.floor(hoverFPS)} FPS</span><span class="secondary">${Math.floor(hoverTimeMs)} ms</span>`;
         }
 
         graphContainer.style.width = `${renderWidth + 2}px`; // +2 to account for border.

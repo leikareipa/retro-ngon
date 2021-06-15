@@ -62,15 +62,27 @@ body
     position: absolute;
     z-index: 10;
     text-align: left;
-    padding: 8px;
+    padding: 5px;
     font-size: 90%;
     border-radius: 0;
     pointer-events: none;
     user-select: none;
     white-space: nowrap;
     display: none;
-    transform: translateX(10px) translateY(10px);
+    transform: translateX(-50%) translateY(calc(-50% + 35px));
+    border: 1px solid dimgray;
     border-radius: 2px;
+}
+
+#benchmark-graph-info-label .primary
+{
+    color: black;
+    margin-right: 6px;
+}
+
+#benchmark-graph-info-label .secondary
+{
+    color: gray;
 }
 
 #benchmark-graph-container
