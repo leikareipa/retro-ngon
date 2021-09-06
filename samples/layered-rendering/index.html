@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width">
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <title>Layered rendering - Render sample - Retro n-gon renderer</title>
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" integrity="sha384-gfdkjb5BdAXd+lj+gudLWI+BXq4IuLW5IT+brZEZsLFm++aCMlF1V92rMkPaX4PP" crossorigin="anonymous">
+        <link rel="stylesheet" type="text/css" href="../sample-base.css">
+        <style>
+            .layer-canvas
+            {
+
+                pointer-events: none;
+                position: absolute;
+                top: 0;
+                left: 0;
+            }
+
+            .filter-none
+            {
+                filter: none;
+            }
+
+            .filter-grayscale
+            {
+                filter: saturate(0) contrast(0.5);
+            }
+
+            .filter-hot-coal
+            {
+                filter: contrast(1.5) brightness(5) blur(1px);
+            }
+
+            .filter-glow
+            {
+                filter: drop-shadow(0 0 40px red) brightness(4) contrast(4);
+            }
+
+            .filter-blur
+            {
+                filter: blur(10px) brightness(1.5);
+            }
+
+            .filter-drop-shadow
+            {
+                filter: drop-shadow(0 0 16px black) brightness(1.5);
+            }
+
+            #layer-1
+            {
+                z-index: 1;
+            }
+
+            #layer-2
+            {
+                z-index: 2;
+            }
+        </style>
+    </head>
+    <body id="sample-container">
+        
+        <div id="layer-container"
+             class="rngon-canvas">
+
+            <canvas id="layer-1"
+                    class="layer-canvas rngon-canvas rngon-pixelated-upscale">
+            </canvas>
+
+            <canvas id="layer-2"
+                    class="layer-canvas rngon-canvas rngon-pixelated-upscale">
+            </canvas>
+
+        </div>
+
+        <div class="infoboxes-container"
+             style="position: absolute; bottom: 0; z-index: 9999999;">
+
+            <div class="infobox fps"
+                 title="Performance of Rngon.render()">
+                <div class="title">Hz</div>
+                <div class="value"><i class="fas fa-sm fa-spin fa-spinner"></i></div>
+            </div>
+            
+        </div>
+
+        <div class="infoboxes-container additional"
+             style="position: absolute; bottom: 0; z-index: 9999999;">
+
+            <div class="infobox layer-setup" style="width: 160px;">
+                <div class="title">Layers</div>
+                <div class="value">All</div>
+                <div class="adjust left" onclick="change_canvas_setup(-1);"></div>
+                <div class="adjust right" onclick="change_canvas_setup(1);"></div>
+            </div>
+
+            <div class="infobox layer-1-filter" style="width: 160px;">
+                <div class="title">CSS filter #1</div>
+                <div class="value">None</div>
+                <div class="adjust left" onclick="change_filter(0, -1);"></div>
+                <div class="adjust right" onclick="change_filter(0, 1);"></div>
+            </div>
+
+            <div class="infobox layer-2-filter" style="width: 160px;">
+                <div class="title">CSS filter #2</div>
+                <div class="value">None</div>
+                <div class="adjust left" onclick="change_filter(1, -1);"></div>
+                <div class="adjust right" onclick="change_filter(1, 1);"></div>
+            </div>
+
+        </div>
+
+        <script src="../../distributable/rngon.cat.js"></script>
+        <script type="module">
+            import {room} from "./assets/room.rngon-model.js";
+            import {object} from "./assets/object.rngon-model.js";
+            import {first_person_camera} from "../first-person-camera/camera.js";
+
+            const canvases = [
+                document.querySelector("#layer-1"),
+                document.querySelector("#layer-2"),
+            ];
+
+            room.initialize();
+            object.initialize();
+
+            const camera = first_person_camera("layer-container", {
+                position: {x:-70, y:33, z:-7},
+                direction: {x:7, y:90, z:0},
+                movementSpeed: 0.05,
+            });
+
+            const filters = [
+                ["None", "Grayscale", "Hot coal", "Blur"],
+                ["None", "Blur", "Glow", "Drop shadow"],
+            ];
+
+            window.change_filter = function(layerIdx = 0, direction = 1)
+            {
+                if (direction > 0) filters[layerIdx].push(filters[layerIdx].shift());
+                else if (direction < 0) filters[layerIdx].unshift(filters[layerIdx].pop());
+
+                canvases[layerIdx].className = `filter-${filters[layerIdx][0].toLowerCase().replace(" ", "-")}`;
+                canvases[layerIdx].className += " layer-canvas rngon-canvas rngon-pixelated-upscale";
+
+                document.querySelector(`.infobox.layer-${layerIdx+1}-filter .value`).innerHTML = filters[layerIdx][0];
+
+                return;
+            }
+
+            const layerVisibilityOptions = ["All", "#1", "#2"];
+            let layerVisibility = layerVisibilityOptions[0];
+            window.change_canvas_setup = function(direction = 1)
+            {
+                if (direction > 0) layerVisibilityOptions.push(layerVisibilityOptions.shift());
+                else if (direction < 0) layerVisibilityOptions.unshift(layerVisibilityOptions.pop());
+
+                switch (layerVisibilityOptions[0])
+                {
+                    case "All":
+                    {
+                        canvases.forEach(c=>c.style.display = "initial");
+                        break;
+                    }
+                    case "#1":
+                    {
+                        canvases[0].style.display = "initial";
+                        canvases[1].style.display = "none";
+                        break;
+                    }
+                    case "#2":
+                    {
+                        canvases[0].style.display = "none";
+                        canvases[1].style.display = "initial";
+                        break;
+                    }
+                }
+
+                layerVisibility = layerVisibilityOptions[0];
+                document.querySelector(".infobox.layer-setup .value").innerHTML = layerVisibility;
+
+                return;
+            }
+
+            let uiUpdateTimer = 0;
+
+            ;(function render_loop(timestamp = 0, frameTimeDeltaMs = 0, frameCount = 0)
+            {
+                camera.update();
+
+                const roomMesh = Rngon.mesh(room.ngons, {
+                    scaling: Rngon.scaling_vector(25, 25, 25)
+                });
+
+                const objectMesh = Rngon.mesh(object.ngons, {
+                    scaling: Rngon.scaling_vector(65, 65, 65),
+                    translation: Rngon.translation_vector(0, -40, 0),
+                });
+
+                const options = {
+                    scale: 0.25,
+                    fov: 75,
+                    cameraDirection: camera.direction,
+                    cameraPosition: camera.position,
+                    clipToViewport: true,
+                    depthSort: "painter-reverse",
+                    useDepthBuffer: true,
+                    perspectiveCorrectInterpolation: true,
+                };
+
+                let totalRenderTimeMs = 0;
+
+                totalRenderTimeMs += Rngon.render("layer-1", [roomMesh], options).totalRenderTimeMs;
+                
+                totalRenderTimeMs += Rngon.render("layer-2", [objectMesh], {
+                    ...options,
+                    modules: {
+                        surfaceWipe: ((layerVisibility !== "#2")? pixel_only_wiper : undefined),
+                    }
+                }).totalRenderTimeMs;
+
+                if ((uiUpdateTimer += frameTimeDeltaMs) >= 500)
+                {
+                    document.querySelector(".infobox.fps .value").innerHTML = Math.floor(1000 / (frameTimeDeltaMs || 1));
+                    uiUpdateTimer = 0;
+                }
+
+                window.requestAnimationFrame((newTimestamp)=>
+                {
+                    render_loop(newTimestamp,
+                                (newTimestamp - timestamp),
+                                (frameCount + 1));
+                });
+
+                // A surface wiper that leaves the depth buffer untouched, allowing
+                // the rendering to use the existing depth buffer.
+                function pixel_only_wiper()
+                {
+                    Rngon.internalState.pixelBuffer.data.fill(0);
+                }
+            })();
+        </script>
+    </body>
+</html>
