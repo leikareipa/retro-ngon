@@ -46,8 +46,8 @@ Here are some of the possible use cases:
 ![Depth blur with a pixel shader](./images/screenshots/beta/shader-distance-blur.png)
 **Depth blur** applied with a pixel shader. (See [here](./samples/pixel-shaders/assets/copying.txt) for texture copyright information.)
 
-![Point-rendering sample](./images/screenshots/beta/tea-sample.png)
-**Viewing one of the included render samples**, showcasing point rendering.
+![Lightmapping sample](./images/screenshots/beta/lightmap-sample.png)
+**Viewing one of the included render samples**, showcasing lightmapping.
 
 # User's manual
 In this section, you'll find both theoretical and practical guidance on using the retro n-gon renderer; including a reference manual for the renderer's API.
