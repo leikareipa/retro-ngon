@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (04 March 2021 23:39:41 UTC)
+// VERSION: beta live (05 September 2021 16:40:56 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -1603,15 +1603,6 @@ Rngon.baseModules.rasterize.polygon = function(ngon = Rngon.ngon(),
                             depthBuffer[depthBufferIdx] = depth;
                         }
 
-                        for (let b = 0; b < auxiliaryBuffers.length; b++)
-                        {
-                            if (material.auxiliary[auxiliaryBuffers[b].property] !== null)
-                            {
-                                // Buffers are expected to consist of one element per pixel.
-                                auxiliaryBuffers[b].buffer[depthBufferIdx] = material.auxiliary[auxiliaryBuffers[b].property];
-                            }
-                        }
-
                         if (usePixelShader)
                         {
                             const fragment = fragmentBuffer[depthBufferIdx];
@@ -1624,6 +1615,15 @@ Rngon.baseModules.rasterize.polygon = function(ngon = Rngon.ngon(),
                             fragment.worldY = (iplWorldY / iplInvW);
                             fragment.worldZ = (iplWorldZ / iplInvW);
                             fragment.w = (1 / iplInvW);
+                        }
+
+                        for (let b = 0; b < auxiliaryBuffers.length; b++)
+                        {
+                            if (material.auxiliary[auxiliaryBuffers[b].property] !== null)
+                            {
+                                // Buffers are expected to consist of one element per pixel.
+                                auxiliaryBuffers[b].buffer[depthBufferIdx] = material.auxiliary[auxiliaryBuffers[b].property];
+                            }
                         }
                     }
                 }
@@ -1647,13 +1647,13 @@ Rngon.baseModules.rasterize.polygon = function(ngon = Rngon.ngon(),
 
                 if (usePhongShading)
                 {
-                    leftEdge.startNx     += leftEdge.deltaNx;
-                    leftEdge.startNy     += leftEdge.deltaNy;
-                    leftEdge.startNz     += leftEdge.deltaNz;
+                    leftEdge.startNx += leftEdge.deltaNx;
+                    leftEdge.startNy += leftEdge.deltaNy;
+                    leftEdge.startNz += leftEdge.deltaNz;
 
-                    rightEdge.startNx    += rightEdge.deltaNx;
-                    rightEdge.startNy    += rightEdge.deltaNy;
-                    rightEdge.startNz    += rightEdge.deltaNz;
+                    rightEdge.startNx += rightEdge.deltaNx;
+                    rightEdge.startNy += rightEdge.deltaNy;
+                    rightEdge.startNz += rightEdge.deltaNz;
                 }
 
                 if (usePixelShader || usePhongShading)
@@ -2047,11 +2047,11 @@ Rngon.baseModules.transform_clip_light = function(ngons = [],
         }
 
         // Transform vertices into screen space and apply clipping. We'll do the transforming
-        // in steps: first into object space, then into clip space, and finally into screen
+        // in steps: first into world space, then into clip space, and finally into screen
         // space.
         if (cachedNgon.material.allowTransform)
         {
-            // Object space. Any built-in lighting is applied, if requested by the n-gon's
+            // world space. Any built-in lighting is applied, if requested by the n-gon's
             // material.
             {
                 Rngon.ngon.transform(cachedNgon, objectMatrix);

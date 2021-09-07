@@ -535,15 +535,6 @@ Rngon.baseModules.rasterize.polygon = function(ngon = Rngon.ngon(),
                             depthBuffer[depthBufferIdx] = depth;
                         }
 
-                        for (let b = 0; b < auxiliaryBuffers.length; b++)
-                        {
-                            if (material.auxiliary[auxiliaryBuffers[b].property] !== null)
-                            {
-                                // Buffers are expected to consist of one element per pixel.
-                                auxiliaryBuffers[b].buffer[depthBufferIdx] = material.auxiliary[auxiliaryBuffers[b].property];
-                            }
-                        }
-
                         if (usePixelShader)
                         {
                             const fragment = fragmentBuffer[depthBufferIdx];
@@ -556,6 +547,15 @@ Rngon.baseModules.rasterize.polygon = function(ngon = Rngon.ngon(),
                             fragment.worldY = (iplWorldY / iplInvW);
                             fragment.worldZ = (iplWorldZ / iplInvW);
                             fragment.w = (1 / iplInvW);
+                        }
+
+                        for (let b = 0; b < auxiliaryBuffers.length; b++)
+                        {
+                            if (material.auxiliary[auxiliaryBuffers[b].property] !== null)
+                            {
+                                // Buffers are expected to consist of one element per pixel.
+                                auxiliaryBuffers[b].buffer[depthBufferIdx] = material.auxiliary[auxiliaryBuffers[b].property];
+                            }
                         }
                     }
                 }
@@ -579,13 +579,13 @@ Rngon.baseModules.rasterize.polygon = function(ngon = Rngon.ngon(),
 
                 if (usePhongShading)
                 {
-                    leftEdge.startNx     += leftEdge.deltaNx;
-                    leftEdge.startNy     += leftEdge.deltaNy;
-                    leftEdge.startNz     += leftEdge.deltaNz;
+                    leftEdge.startNx += leftEdge.deltaNx;
+                    leftEdge.startNy += leftEdge.deltaNy;
+                    leftEdge.startNz += leftEdge.deltaNz;
 
-                    rightEdge.startNx    += rightEdge.deltaNx;
-                    rightEdge.startNy    += rightEdge.deltaNy;
-                    rightEdge.startNz    += rightEdge.deltaNz;
+                    rightEdge.startNx += rightEdge.deltaNx;
+                    rightEdge.startNy += rightEdge.deltaNy;
+                    rightEdge.startNz += rightEdge.deltaNz;
                 }
 
                 if (usePixelShader || usePhongShading)

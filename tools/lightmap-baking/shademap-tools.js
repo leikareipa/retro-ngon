@@ -148,7 +148,7 @@ export function apply_shade_maps_to_ngons(shadeMaps = [],
                     }, remainderX, remainderY);
 
                     const texel = texture.pixels[x + y * texture.width];
-                    const shade = Math.max(ngon.material.ambientLightLevel, accumulatedLight);
+                    const shade = Math.max(0, accumulatedLight);
     
                     texel.red   = Math.max(0, Math.min(texel.red,   (texel.red   * shade)));
                     texel.green = Math.max(0, Math.min(texel.green, (texel.green * shade)));

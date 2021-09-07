@@ -118,7 +118,7 @@ body
 
 .infobox > .title
 {
-    font-size: 90%;
+    color: #242424;
     text-align: center;
 }
 
@@ -131,12 +131,23 @@ body
 
 .infobox > .adjust
 {
+    font-size: 75%;
     cursor: pointer;
     padding: 5px 15px;
     font-weight: bold;
     position: absolute;
     transform: translateY(-50%);
     color: white;
+}
+
+.infoboxes-container.additional > .infobox > .adjust
+{
+    font-size: 100%;
+}
+
+.infoboxes-container.additional > .infobox > .title
+{
+    margin-bottom: 2px;
 }
 
 .infobox > .adjust.left
@@ -159,16 +170,10 @@ body
 
 .infobox > .adjust.left::before
 {
-    content: "\f0d9";
+    content: "\f053";
 }
 
 .infobox > .adjust.right::before
 {
-    content: "\f0da";
-}
-
-.infoboxes-container.additional .infobox > .adjust.left::before,
-.infoboxes-container.additional .infobox > .adjust.right::before
-{
-    font-size: 140%;
+    content: "\f054";
 }

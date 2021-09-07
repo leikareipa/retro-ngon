@@ -18,7 +18,7 @@
  *    Although pixel shaders - which we'll use for the ray-tracing - also receive a list
  *    of the scene's polygons, the polygons will at that point have been clipped and
  *    culled against the viewport and so they don't represent the world outside of the
- *    viewport. Vertex shaders, on the other hand, receive polygons in object space and
+ *    viewport. Vertex shaders, on the other hand, receive polygons in world space and
  *    prior to clipping, so the entire scene is represented and compatible with
  *    world-space ray-tracing.
  * 

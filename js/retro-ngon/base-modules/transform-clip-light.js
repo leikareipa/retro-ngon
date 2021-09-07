@@ -83,11 +83,11 @@ Rngon.baseModules.transform_clip_light = function(ngons = [],
         }
 
         // Transform vertices into screen space and apply clipping. We'll do the transforming
-        // in steps: first into object space, then into clip space, and finally into screen
+        // in steps: first into world space, then into clip space, and finally into screen
         // space.
         if (cachedNgon.material.allowTransform)
         {
-            // Object space. Any built-in lighting is applied, if requested by the n-gon's
+            // world space. Any built-in lighting is applied, if requested by the n-gon's
             // material.
             {
                 Rngon.ngon.transform(cachedNgon, objectMatrix);
