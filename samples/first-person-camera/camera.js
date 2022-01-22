@@ -37,14 +37,14 @@
 //      render(..., {position: camera.position, direction: camera.direction});
 //
 //
-export function first_person_camera(canvasID = "",
-                                    {
-                                        position = {x:0, y:0, z:0},
-                                        direction = {x:0, y:0, z:0},
-                                        movementSpeed = 0.1,
-                                        callback_pointer_lock_acquired = ()=>{},
-                                        callback_pointer_lock_released = ()=>{},
-                                    })
+export function first_person_camera(canvasID = "", {
+        position = {x:0, y:0, z:0},
+        direction = {x:0, y:0, z:0},
+        movementSpeed = 0.1,
+        allowMoving = true,
+        callback_pointer_lock_acquired = ()=>{},
+        callback_pointer_lock_released = ()=>{},
+    } = {})
 {
     const targetDOMCanvas = document.getElementById(canvasID);
     if (!targetDOMCanvas)
@@ -67,30 +67,33 @@ export function first_person_camera(canvasID = "",
         down:     false,
     };
 
-    targetDOMCanvas.onclick = ()=>
+    if (allowMoving)
     {
-        targetDOMCanvas.requestPointerLock();
-    };
-
-    document.addEventListener('pointerlockchange', ()=>
-    {
-        if (document.pointerLockElement == targetDOMCanvas)
+        targetDOMCanvas.onclick = ()=>
         {
-            document.addEventListener("mousemove", listener_mouse_move, false);
-            document.addEventListener("keydown",   listener_key_down,   false);
-            document.addEventListener("keyup",     listener_key_up,     false);
+            targetDOMCanvas.requestPointerLock();
+        };
 
-            callback_pointer_lock_acquired();
-        }
-        else
+        document.addEventListener('pointerlockchange', ()=>
         {
-            document.removeEventListener("mousemove", listener_mouse_move, false);
-            document.removeEventListener("keydown",   listener_key_down,   false);
-            document.removeEventListener("keyup",     listener_key_up,     false);
+            if (document.pointerLockElement == targetDOMCanvas)
+            {
+                document.addEventListener("mousemove", listener_mouse_move, false);
+                document.addEventListener("keydown",   listener_key_down,   false);
+                document.addEventListener("keyup",     listener_key_up,     false);
 
-            callback_pointer_lock_released();
-        }
-    }, false);
+                callback_pointer_lock_acquired();
+            }
+            else
+            {
+                document.removeEventListener("mousemove", listener_mouse_move, false);
+                document.removeEventListener("keydown",   listener_key_down,   false);
+                document.removeEventListener("keyup",     listener_key_up,     false);
+
+                callback_pointer_lock_released();
+            }
+        }, false);
+    }
 
     return {
         get position()
