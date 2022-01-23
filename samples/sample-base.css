@@ -31,7 +31,7 @@
 
 body
 {
-    background-color: rgb(143, 143, 143);
+    background-color: rgb(110, 110, 110);
     margin: 0px;
     text-align: center;
     overflow: hidden;
@@ -83,7 +83,8 @@ body
 {
     width: 100%;
     justify-content: center;
-    top: calc(100% - 45px - 75px);
+    top: unset;
+    bottom: 35px;
     pointer-events: none;
 }
 
@@ -118,7 +119,6 @@ body
 
 .infobox > .title
 {
-    color: #242424;
     text-align: center;
 }
 
@@ -176,4 +176,22 @@ body
 .infobox > .adjust.right::before
 {
     content: "\f054";
+}
+
+@media only screen and (max-width: 1200px)
+{
+    .infoboxes-container.additional
+    {
+        bottom: 25px;
+    }
+}
+
+@media only screen and (max-width: 1000px)
+{
+    .infoboxes-container.additional
+    {
+        bottom: 10px;
+        right: 10px;
+        width: unset;
+    }
 }
