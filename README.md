@@ -569,14 +569,14 @@ The renderer's public API consists of the following objects:
 
 | Object                                          | Brief description                           |
 | ----------------------------------------------- | ------------------------------------------- |
-| [render()](#rendercanvaselementid-meshes-options) | Renders n-gon meshes onto a canvas.         |
+| [render()](#rendercanvaselement-meshes-options) | Renders n-gon meshes onto a canvas.         |
 | [render_async()](#render_async-meshes-options-rngonurl) | Renders n-gon meshes into a pixel buffer. Runs in a Web Worker.  |
 | [mesh](#meshngons-transform)                    | Collection of thematically-related n-gons.  |
 | [ngon](#ngonvertices-material-normal)           | Polygonal shape defined by *n* vertices.    |
 | [vertex](#vertexx-y-z-u-v-w)                    | Corner of an n-gon.                         |
 | [vector3](#vector3x-y-z)                        | Three-component vector. Aliases: *translation_vector*, *rotation_vector*, *scaling_vector*. |
-| [color_rgba](#color_rgbared-green-blue-alpha)   | RGB color with alpha.                       |
-| [texture_rgba](#texture_rgbadata)               | RGB texture with alpha.                     |
+| [color_rgba](#color_rgbared-green-blue-alpha)   | RGB color with transparency.                |
+| [texture_rgba](#texture_rgbadata)               | RGB texture with transparency.              |
 | light                                           | (A description is coming.)                  |
 
 ### render(canvasElement[, meshes[, options]])
@@ -1014,7 +1014,7 @@ const vector = Rngon.vector3(1, 2, 3);
 ```
 
 ### color_rgba([red[, green[, blue[, alpha]]]])
-RGB color with alpha. The alpha channel is either fully transparent or fully opaque.
+RGB color with transparency (alpha channel). The alpha channel is either fully transparent or fully opaque.
 
 *Parameters:*
 
