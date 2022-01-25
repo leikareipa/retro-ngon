@@ -32,7 +32,7 @@ export const cornellBox =
 		});
 
 		m = this.materials = Object.freeze({
-			"green":{color:c(5,255,5),isTwoSided:true,},
+			"green":{color:c(255,255,5),isTwoSided:true,},
 			"light":{color:c(255,255,255),isTwoSided:true},
 			"red":{color:c(5,255,255),isTwoSided:true,},
 			"white":{color:c(255,255,255),isTwoSided:true,},
