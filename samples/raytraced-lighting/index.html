@@ -6,19 +6,28 @@
         <title>Ray-traced lighting - Render sample - Retro n-gon renderer</title>
         <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" integrity="sha384-gfdkjb5BdAXd+lj+gudLWI+BXq4IuLW5IT+brZEZsLFm++aCMlF1V92rMkPaX4PP" crossorigin="anonymous">
         <link rel="stylesheet" type="text/css" href="../sample-base.css">
+        <style>
+            body
+            {
+                background-color: #6e6e6e;
+            }
+        </style>
     </head>
     <body id="sample-container">
-        <iframe id="render-target"
-                style="width: 100vw; height: 100vh; border: none;">
-        </iframe>
+        <div class="content">
+            
+            <iframe id="render-target">
+            </iframe>
 
-        <div class="infoboxes-container additional">
-            <div class="infobox raytracing-enabled" style="width: 185px;">
-                <div class="title">Ray tracing</div>
-                <div class="value">Off</div>
-                <div class="adjust left" onclick="toggle_raytracing_enabled();"></div>
-                <div class="adjust right" onclick="toggle_raytracing_enabled();"></div>
+            <div class="infoboxes-container additional">
+                <div class="infobox raytracing-enabled" style="width: 185px;">
+                    <div class="title">Ray tracing</div>
+                    <div class="value">Off</div>
+                    <div class="adjust left" onclick="toggle_raytracing_enabled();"></div>
+                    <div class="adjust right" onclick="toggle_raytracing_enabled();"></div>
+                </div>
             </div>
+
         </div>
 
         <script>

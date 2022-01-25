@@ -6,26 +6,35 @@
         <title>Inbuilt shading - Render sample - Retro n-gon renderer</title>
         <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" integrity="sha384-gfdkjb5BdAXd+lj+gudLWI+BXq4IuLW5IT+brZEZsLFm++aCMlF1V92rMkPaX4PP" crossorigin="anonymous">
         <link rel="stylesheet" type="text/css" href="../sample-base.css">
+        <style>
+            body
+            {
+                background-color: #6e6e6e;
+            }
+        </style>
     </head>
     <body id="sample-container">
-        <iframe id="render-target"
-                style="width: 100vw; height: 100vh; border: none;">
-        </iframe>
+        <div class="content">
 
-        <div class="infoboxes-container additional">
-            <div class="infobox shading" style="width: 170px;">
-                <div class="title">Shading</div>
-                <div class="value">Flat</div>
-                <div class="adjust left" onclick="change_shading(-1);"></div>
-                <div class="adjust right" onclick="change_shading(1);"></div>
+            <iframe id="render-target">
+            </iframe>
+
+            <div class="infoboxes-container additional">
+                <div class="infobox shading" style="width: 170px;">
+                    <div class="title">Shading</div>
+                    <div class="value">Flat</div>
+                    <div class="adjust left" onclick="change_shading(-1);"></div>
+                    <div class="adjust right" onclick="change_shading(1);"></div>
+                </div>
+
+                <div class="infobox ambient" style="width: 130px;">
+                    <div class="title">Ambient</div>
+                    <div class="value">0.3</div>
+                    <div class="adjust left" onclick="change_ambient(-0.1);"></div>
+                    <div class="adjust right" onclick="change_ambient(0.1);"></div>
+                </div>
             </div>
 
-            <div class="infobox ambient" style="width: 130px;">
-                <div class="title">Ambient</div>
-                <div class="value">0.3</div>
-                <div class="adjust left" onclick="change_ambient(-0.1);"></div>
-                <div class="adjust right" onclick="change_ambient(0.1);"></div>
-            </div>
         </div>
 
         <script type="module">

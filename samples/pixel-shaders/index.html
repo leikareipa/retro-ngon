@@ -6,32 +6,32 @@
         <title>Pixel shaders - Render sample - Retro n-gon renderer</title>
         <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" integrity="sha384-gfdkjb5BdAXd+lj+gudLWI+BXq4IuLW5IT+brZEZsLFm++aCMlF1V92rMkPaX4PP" crossorigin="anonymous">
         <link rel="stylesheet" type="text/css" href="../sample-base.css">
+        <style>
+            body
+            {
+                background-color: #6e6e6e;
+            }
+        </style>
     </head>
     <body id="sample-container">
-        <iframe id="render-target"
-                style="width: 100vw; height: 100vh; border: none;">
-        </iframe>
+        <div class="content">
+            
+            <iframe id="render-target">
+            </iframe>
 
-        <div class="infoboxes-container additional">
-            <div class="infobox shader" style="width: 260px;">
-                <div class="title">Pixel shader</div>
-                <div class="value">None</div>
-                <div class="adjust left" onclick="change_shader(-1);"></div>
-                <div class="adjust right" onclick="change_shader(1);"></div>
+            <div class="infoboxes-container additional">
+                <div class="infobox shader" style="width: 260px;">
+                    <div class="title">Pixel shader</div>
+                    <div class="value">None</div>
+                    <div class="adjust left" onclick="change_shader(-1);"></div>
+                    <div class="adjust right" onclick="change_shader(1);"></div>
+                </div>
             </div>
+            
         </div>
 
-        <div id="copyright-notice"
-             style="position: absolute;
-                    z-index: 1000;
-                    color: white;
-                    background-color: black;
-                    bottom: 5px;
-                    left: 5px;
-                    padding: 7px;
-                    font-family: sans-serif;">
-            &#9888;
-            <a href="./assets/copying.txt" style="text-decoration: none; color: white;">
+        <div class="notification copyright">
+            <a href="./assets/copying.txt">
                 Texture copyright info
             </a>
         </div>

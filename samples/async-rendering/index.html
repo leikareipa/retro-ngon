@@ -8,6 +8,14 @@
               integrity="sha384-gfdkjb5BdAXd+lj+gudLWI+BXq4IuLW5IT+brZEZsLFm++aCMlF1V92rMkPaX4PP"
               crossorigin="anonymous">
         <title>Async rendering in a Web Worker - Render sample - Retro n-gon renderer</title>
+        <style>
+            body
+            {
+                background-color: #6e6e6e;
+                color: whitesmoke;
+                font-style: italic;
+            }
+        </style>
     </head>
     <body style="text-align: center;">
         <div style="margin: 10px 0 10px 0;">
@@ -18,15 +26,14 @@
         </div>
 
         <canvas id="canvas"
-                style="visibility: hidden;
-                       background-color: black;">
+                style="width: 1280px; height: 720px; border: 1px solid black; border-radius: 4px;">
         </canvas>
         
         <script src="../../distributable/rngon.cat.js"></script>
         <script defer>
             // Set up a bunch of random rectangles for us to render.
             const rectangles = [];
-            for (let i = 0; i < 6000; i++)
+            for (let i = 0; i < 15000; i++)
             {
                 const offsetX = ((Math.random() * 10) - (Math.random() * 10));
                 const offsetY = ((Math.random() * 10) - (Math.random() * 10));
@@ -151,8 +158,7 @@
         
             // Render the image. Once rendering finishes, we'll copy the pixel data
             // into the target canvas element.
-            Rngon.render_async([Rngon.mesh(rectangles)],
-            {
+            Rngon.render_async([Rngon.mesh(rectangles)], {
                 width: 1280,
                 height: 720,
                 pixelShader,

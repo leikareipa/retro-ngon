@@ -1,94 +1,23 @@
 <!DOCTYPE html>
 <html>
     <head>
+        <meta name="viewport" content="width=device-width">
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <link rel="stylesheet" type="text/css" href="./index.css">
         <title>Render samples - Retro n-gon renderer</title>
         <style>
-            :root
+            html
             {
-                --header-height: 34px;
-            }
-
-            body
-            {
-                background-color: rgb(228, 228, 228);
-                color: black;
-                overflow-y: hidden;
-                margin: 0;
-                padding: 0;
-                height: 100vh;
-                font-family: sans-serif;
-            }
-
-            #header
-            {
-                display: flex;
-                box-sizing: border-box;
-                position: relative;
-                z-index: 1;
-                width: 100%;
-                height: var(--header-height);
-                background-color: black;
-                color: lightgray;
-                box-shadow: 0 1px 0 rgba(0, 0, 0, 1);
-            }
-
-            .selector-container
-            {
-                height: 100%;
-                display: flex;
-                align-items: center;
-                background-color: lightgray;
-                width: 50%;
-            }
-
-            .selector-container select
-            {
-                height: 100%;
-                border: none;
-                background-color: #8f8f8f;
-                color: whitesmoke;
-                border-radius: 0;
-                padding: 6px;
-                outline: none;
-                flex-basis: 100%;
-                font-family: sans-serif;
-                font-size: 100%;
-                appearance: none;
-                cursor: pointer;
-            }
-
-            .selector-container .selector-tag
-            {
-                padding-left: 10px;
-                background-color: #8f8f8f;
-                border: none;
-                white-space: nowrap;
-                color: black;
-                height: 100%;
-                display: flex;
-                align-items: inherit;
-            }
-
-            #content
-            {
-                position: relative;
-                z-index: 0;
-                margin: 0;
-                padding: 0;
-                border: none;
-                width: 100%;
-                height: calc(100% - var(--header-height));
+                background-color: #6e6e6e;
             }
         </style>
     </head>
     <body>
         <div id="header">
             <div id="sample-selector-container"
-                 class="selector-container"
-                 style="width: 75%;">
-                <div class="selector-tag">Sample:</div>
+                 class="selector-container">
+                <div class="selector-tag">Sample</div>
                 <select id="sample-selector"
-                        style="min-width: 150px;"
                         onchange="set_sample(event.target.value);">
 
                     <optgroup label='Sample scenes'></optgroup>
@@ -110,7 +39,7 @@
                     <option value="layered-rendering">Layered rendering</option>
                     <option value="lightmaps">Lightmapping</option>
                     <option value='oblique-2d-tiles'>Oblique 2D tiles</option>
-                    <option value="path-tracing">Path tracing</option>
+                    <option value="path-tracing">Path-traced global illumination</option>
                     <option value="raytraced-lighting">Ray-traced lighting</option>
                     <option value="framerate-limiter">Refresh rate limiter</option>
 
@@ -118,9 +47,8 @@
             </div>
             <div id="renderer-selector-container"
                  class="selector-container">
-                <div class="selector-tag">Renderer:</div>
+                <div class="selector-tag">Renderer</div>
                 <select id="renderer-selector"
-                        style="min-width: 150px;"
                         onchange="set_version(event.target.value);">
                     <optgroup label="Supported"></optgroup>
                     <option value="dev">~dev</option>

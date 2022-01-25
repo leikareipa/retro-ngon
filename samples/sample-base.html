@@ -6,6 +6,12 @@
         <link rel="stylesheet" type="text/css" href="./sample-base.css">
         <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" integrity="sha384-gfdkjb5BdAXd+lj+gudLWI+BXq4IuLW5IT+brZEZsLFm++aCMlF1V92rMkPaX4PP" crossorigin="anonymous">
         <title>Sample template - Retro n-gon renderer</title>
+        <style>
+            html
+            {
+                background-color: #6e6e6e;
+            }
+        </style>
     </head>
     <body>
         <div id="loading-bar">
@@ -30,7 +36,7 @@
                 <div class="adjust right" onclick="change_scale(1);"></div>
             </div>
             <div class="infobox polycount">
-                <div class="title">Polys</div>
+                <div class="title">Polygons</div>
                 <div class="value"><i class="fas fa-sm fa-spin fa-spinner"></i></div>
             </div>
             <div class="infobox fps">
@@ -38,7 +44,7 @@
                 <div class="value"><i class="fas fa-sm fa-spin fa-spinner"></i></div>
             </div>
             <div class="infobox refresh-rate">
-                <div class="title">Hz</div>
+                <div class="title">Refresh</div>
                 <div class="value"><i class="fas fa-sm fa-spin fa-spinner"></i></div>
             </div>
         </div>
@@ -175,9 +181,9 @@
 
                     if ((uiUpdateTimer += frameTimeDeltaMs) >= 500)
                     {
-                        document.querySelector(".infobox.fps .value").innerHTML = Math.floor(1000 / (renderInfo.totalRenderTimeMs || 1));
-                        document.querySelector(".infobox.polycount .value").innerHTML = renderInfo.numNgonsRendered;
-                        document.querySelector(".infobox.refresh-rate .value").innerHTML = Math.floor(1000 / (frameTimeDeltaMs || 1));
+                        document.querySelector(".infobox.fps .value").textContent = Math.floor(1000 / (renderInfo.totalRenderTimeMs || 1));
+                        document.querySelector(".infobox.polycount .value").textContent = renderInfo.numNgonsRendered;
+                        document.querySelector(".infobox.refresh-rate .value").textContent = `${Math.floor(1000 / (frameTimeDeltaMs || 1))} Hz`;
 
                         uiUpdateTimer = 0;
                     }
