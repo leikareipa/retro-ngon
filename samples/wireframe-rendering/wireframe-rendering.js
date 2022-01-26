@@ -8,33 +8,35 @@
 "use strict";
 
 import {first_person_camera} from "../first-person-camera/camera.js";
-import {scene} from "./assets/scene.rngon-model.js";
+import {scene} from "./assets/home.rngon-model.js";
 
-const camera = first_person_camera("canvas",
-{
-    position: {x:-70, y:33, z:-7},
-    direction: {x:7, y:90, z:0},
-    movementSpeed: 0.05,
-});
-
-scene.initialize();
-
-// Returns the n-gons of the scene to be rendered by the retro n-gon renderer.
-// This function gets called by the renderer once per frame.
-export const sample_scene = (frameCount = 0)=>
-{
-    camera.update();
-
-    // Assumes 'renderSettings' is a pre-defined global object from which the
-    // renderer will pick up its settings.
-    renderSettings.cameraDirection = camera.direction;
-    renderSettings.cameraPosition = camera.position;
-
-    return Rngon.mesh(scene.ngons,
+export const sample = {
+    initialize: function()
     {
-        scaling: Rngon.scaling_vector(25, 25, 25)
-    });
-};
+        this.camera = first_person_camera("canvas", {
+            position: {x: 40000, y: 2450, z: -32229},
+            direction: {x:5, y:180, z:0},
+            movementSpeed: 1.8,
+        });
 
-export const sampleRenderOptions = {
-}
+        scene.initialize();
+    },
+    tick: function()
+    {
+        this.numTicks++;
+        this.camera.update();
+    
+        return {
+            mesh: Rngon.mesh(scene.ngons),
+            renderOptions: {
+                cameraDirection: this.camera.direction,
+                cameraPosition: this.camera.position,
+                nearPlane: 100,
+                farPlane: 25000,
+                fov: 55,
+            },
+        };
+    },
+    camera: undefined,
+    numTicks: 0,
+};
