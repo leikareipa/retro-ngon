@@ -1,3 +1,18 @@
+html
+{
+    height: 100%;
+}
+
+body
+{
+    background-color: #6e6e6e;
+    margin: 0px;
+    text-align: center;
+    overflow: hidden;
+    font-family: sans-serif;
+    height: 100%;
+}
+
 #sample-container
 {
     margin: 0;
@@ -6,7 +21,7 @@
     color: lightgray;
     display: flex;
     flex-direction: column;
-    height: 100vh;
+    height: 100%;
 }
 
 #sample-container > .content
@@ -45,15 +60,6 @@
     border: none;
 }
 
-body
-{
-    background-color: #6e6e6e;
-    margin: 0px;
-    text-align: center;
-    overflow: hidden;
-    font-family: sans-serif;
-}
-
 /* Upscale the n-gon renderer's output with nearest-neighbor interpolation.*/
 .rngon-pixelated-upscale
 {
@@ -66,8 +72,8 @@ body
 /* Styling for the canvas element that holds the n-gon rendering.*/
 .rngon-canvas
 {
-    width: 100vw;
-    height: 100vh;
+    width: 100%;
+    height: 100%;
     background-color: transparent;
     padding: 0;
     margin: 0;
@@ -199,21 +205,20 @@ body
 .notification
 {
     background-color: #6e6e6e;
-    top: 10px;
-    left: 10px;
-    padding: 5px;
+    padding: 0 5px 4px 5px;
     font-family: sans-serif;
     color: #d3d3d3;
     text-align: left;
     display: flex;
+    border-top: 1px dashed black;
 }
 
-.notification > .left
+.notification > .copyright
 {
     margin-right: 15px;
 }
 
-.notification > .right
+.notification > .info
 {
     margin-left: auto;
     text-overflow: ellipsis;
@@ -247,6 +252,18 @@ body
     {
         display: none;
     }
+
+    .notification .copyright
+    {
+        text-align: center;
+        width: 100%;
+        margin: 0;
+    }
+
+    .notification .info
+    {
+        display: none;
+    }
 }
 
 @media only screen and (max-width: 850px)
@@ -269,5 +286,12 @@ body
     .infoboxes-container:not(.additional)
     {
         display: none;
+    }
+    
+    .infoboxes-container.additional
+    {
+        width: 100%;
+        right: unset;
+        bottom: 5px;
     }
 }

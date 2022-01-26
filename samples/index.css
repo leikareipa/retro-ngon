@@ -1,17 +1,18 @@
-:root
+html
 {
-    --header-height: 34px;
+    height: 100%;
 }
 
 body
 {
     background-color: #6e6e6e;
     color: black;
-    overflow-y: hidden;
     margin: 0;
     padding: 0;
-    height: 100vh;
+    height: 100%;
     font-family: sans-serif;
+    display: flex;
+    flex-direction: column;
 }
 
 #header
@@ -22,10 +23,10 @@ body
     position: relative;
     z-index: 1;
     width: 100%;
-    height: var(--header-height);
+    height: 34px;
     background-color: #8f8f8f;
     color: lightgray;
-    box-shadow: 0 1px 0 rgba(0, 0, 0, 1);
+    border-bottom: 1px solid black;
 }
 
 .selector-container
@@ -72,7 +73,7 @@ body
     padding: 0;
     border: none;
     width: 100%;
-    height: calc(100% - var(--header-height));
+    height: 100%;
 }
 
 #sample-selector-container
