@@ -13,7 +13,7 @@ Rngon.renderShared = {
     initialize_internal_render_state: function(options = {})
     {
         const state = Rngon.internalState;
-        
+
         state.useDepthBuffer = Boolean(options.useDepthBuffer);
         state.showGlobalWireframe = Boolean(options.globalWireframe);
         state.applyViewportClipping = Boolean(options.clipToViewport);
@@ -25,6 +25,9 @@ Rngon.renderShared = {
 
         state.useVertexShader = Boolean(options.vertexShader);
         state.vertex_shader = options.vertexShader;
+
+        state.useContextShader = Boolean(options.contextShader);
+        state.context_shader = options.contextShader;
 
         state.usePixelShader = Boolean(options.pixelShader);
         state.pixel_shader = (options.shaderFunction || // <- Name in pre-beta.3.

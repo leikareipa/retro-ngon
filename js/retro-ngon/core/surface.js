@@ -133,7 +133,17 @@ Rngon.surface = function(canvasElement,  // The target DOM <canvas> element.
 
                 if (!renderOffscreen)
                 {
-                    renderContext.putImageData(Rngon.internalState.pixelBuffer, 0, 0);
+                    if (!Rngon.internalState.useContextShader)
+                    {
+                        renderContext.putImageData(Rngon.internalState.pixelBuffer, 0, 0);
+                    }
+                    else
+                    {
+                        Rngon.internalState.context_shader({
+                            context: renderContext,
+                            image: Rngon.internalState.pixelBuffer,
+                        });
+                    }
                 }
             }
         },

@@ -33,7 +33,12 @@ Rngon.internalState =
 
     // Whether to require pixels to pass a depth test before being allowed on screen.
     useDepthBuffer: false,
-    depthBuffer: {width:1, height:1, data:new Array(1), clearValue:Infinity},
+    depthBuffer: {
+        width: 1,
+        height: 1,
+        data: new Array(1),
+        clearValue: Infinity,
+    },
 
     // Pixel buffer for rasterization. This will be scaled to match the requested
     // render resolution; and the renderer's rasterization pass will populate it
@@ -43,7 +48,11 @@ Rngon.internalState =
     // For each pixel in the rendered frame, metadata about the state of the renderer
     // at that pixel, intended to be used by shaders. The array's size will be set to
     // match the requested render resolution.
-    fragmentBuffer: {width:1, height:1, data:new Array(1), clearValue:{
+    fragmentBuffer: {
+        width: 1,
+        height: 1,
+        data: new Array(1),
+        clearValue: {
             // Index to an n-gon in the list of transformed n-gons that this pixel is
             // part of.
             ngonIdx: undefined,
@@ -80,8 +89,13 @@ Rngon.internalState =
     // that enabling shaders carries a performance penalty even if you don't actually
     // make use of any pixel shaders.
     usePixelShader: false,
+    pixel_shader: undefined,
 
     useVertexShader: false,
+    vertex_shader: undefined,
+
+    useContextShader: false,
+    context_shader: undefined,
 
     usePerspectiveCorrectInterpolation: false,
 
@@ -102,10 +116,16 @@ Rngon.internalState =
     // Pre-allocated memory; stores the n-gons that were most recently passed to render()
     // and then transformed into screen space. In other words, these are the n-gons that
     // were rendered into the most recent frame.
-    ngonCache: {count:0, ngons:[]},
+    ngonCache: {
+        count: 0,
+        ngons: [],
+    },
 
     // Pre-allocated memory; stores the vertices of the n-gon cache's n-gons.
-    vertexCache: {count:0, vertices:[]},
+    vertexCache: {
+        count: 0,
+        vertices:[],
+    },
 
     // All light sources that should currently apply to n-gons passed to render().
     lights: [],
