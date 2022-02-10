@@ -45,15 +45,36 @@ export const sample = {
     shaders: [
         {title:"None",               function:null},
         {title:"On-screen display",  function:cs_osd},
-        {title:"Pixels to ASCII",    function:cs_ascii},
+        {title:"Pixels as ASCII",    function:cs_ascii},
         {title:"Rasterized overlay", function:cs_rasterized_overlay},
         {title:"Screen fade",        function:cs_screen_fade},
+        {title:"Radial fade",        function:cs_radial_fade},
         {title:"Vignette",           function:cs_vignette},
     ],
     camera: undefined,
     Rngon: undefined,
     numTicks: 0,
 };
+
+function cs_radial_fade({context, image})
+{
+    context.putImageData(image, 0, 0);
+
+    const longerImageSide = (image.width > image.height? image.width : image.height);
+    const vignetteScale = (Math.abs(Math.tan(this.numTicks / 75)) * longerImageSide);
+    const gradient = context.createRadialGradient(
+        (image.width / 2),
+        (image.height / 2),
+        0,
+        (image.width / 2),
+        (image.height / 2),
+        (vignetteScale * 2)
+    );
+    gradient.addColorStop(0, "rgba(0, 0, 0, 0)");
+    gradient.addColorStop(1, "rgba(0, 0, 0, 1)");
+    context.fillStyle = gradient;
+    context.fillRect(0, 0, image.width, image.height);
+}
 
 function cs_vignette({context, image})
 {
@@ -63,10 +84,10 @@ function cs_vignette({context, image})
     const gradient = context.createRadialGradient(
         (image.width / 2),
         (image.height / 2),
-        (vignetteScale * 0.4),
+        0,
         (image.width / 2),
         (image.height / 2),
-        (vignetteScale * 0.6)
+        (vignetteScale * 0.9)
     );
     gradient.addColorStop(0, "rgba(0, 0, 0, 0)");
     gradient.addColorStop(0.5, "rgba(0, 0, 0, 0.1)");
@@ -124,29 +145,28 @@ function cs_osd({context, image})
 
     const selfString = "Retro n-gon renderer";
     const versionString = `${this.Rngon.version.family}.${this.Rngon.version.major}.${this.Rngon.version.minor}`;
-    context.font = `italic ${fontSize}px monospace`;
+    context.font = `${fontSize}px monospace`;
     context.fillStyle = "black";
     context.fillText(selfString, 1, fontSize+1);
-    context.fillText(selfString, 2, fontSize+1);
-    context.fillStyle = "lightgray";
-    context.fillText(selfString, 1, fontSize);
-    context.font = `${fontSize}px monospace`;
-    context.fillStyle = "gold";
+    context.font = `italic ${fontSize}px monospace`;
+    context.fillStyle = "black";
     context.fillText(versionString, context.measureText(selfString + " ").width, fontSize+1);
+    context.fillStyle = "gold";
+    context.fillText(versionString, context.measureText(selfString + " ").width, fontSize);
 
     if (isFlogImgLoaded) {
-        context.drawImage(flogImg, 1, fontSize*3+3, 32, 32);
+        context.drawImage(flogImg, 2, fontSize*3+3, 32, 32);
     }
 
     context.shadowOffsetY = 3;
     context.shadowBlur = 2;
-    context.shadowColor = "rgba(0, 0, 0, 0.3)";
+    context.shadowColor = "rgba(0, 0, 0, 0.2)";
     let x = 0;
     `Resolution: ${image.width} × ${image.height}`.split("").forEach((ch, idx)=>{
         const offsetx = Math.cos((Math.cos(idx) - 0.5) + (this.numTicks * 0.15))*3;
         const offsety = Math.sin((Math.cos(idx) - 0.5) + (this.numTicks * 0.15))*3;
         context.fillStyle = "black";
-        context.fillText(ch, x+offsetx+3, fontSize*2+offsety+4);
+        context.fillText(ch, x+offsetx+5, fontSize*2+offsety+4);
         x += context.measureText(ch).width;
     });
 }
