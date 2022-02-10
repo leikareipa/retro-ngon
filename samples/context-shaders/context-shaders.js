@@ -43,14 +43,74 @@ export const sample = {
         };
     },
     shaders: [
-        {title:"None",              function:null},
-        {title:"On-screen display", function:cs_osd},
-        {title:"Pixels to ASCII",  function:cs_ascii},
+        {title:"None",               function:null},
+        {title:"On-screen display",  function:cs_osd},
+        {title:"Pixels to ASCII",    function:cs_ascii},
+        {title:"Rasterized overlay", function:cs_rasterized_overlay},
+        {title:"Screen fade",        function:cs_screen_fade},
+        {title:"Vignette",           function:cs_vignette},
     ],
     camera: undefined,
     Rngon: undefined,
     numTicks: 0,
 };
+
+function cs_vignette({context, image})
+{
+    context.putImageData(image, 0, 0);
+
+    const vignetteScale = (image.width > image.height? image.width : image.height);
+    const gradient = context.createRadialGradient(
+        (image.width / 2),
+        (image.height / 2),
+        (vignetteScale * 0.4),
+        (image.width / 2),
+        (image.height / 2),
+        (vignetteScale * 0.6)
+    );
+    gradient.addColorStop(0, "rgba(0, 0, 0, 0)");
+    gradient.addColorStop(0.5, "rgba(0, 0, 0, 0.1)");
+    gradient.addColorStop(1, "rgba(0, 0, 0, 1)");
+
+    context.fillStyle = gradient;
+    context.fillRect(0, 0, image.width, image.height);
+}
+
+function cs_screen_fade({context, image})
+{
+    context.putImageData(image, 0, 0);
+
+    context.fillStyle = `rgba(0, 0, 0, ${Math.abs(Math.cos(this.numTicks/200))})`;
+    context.fillRect(0, 0, image.width, image.height);
+}
+
+function cs_rasterized_overlay({context, image})
+{
+    context.putImageData(image, 0, 0);
+
+    const numVertices = 7;
+    const sideLen = (image.height / 5);
+    const rotation = (this.numTicks / 100);
+
+    context.globalAlpha = Math.abs(Math.cos(rotation*1.5));
+    context.fillStyle = "gold";
+    context.strokeStyle = "orange";
+    context.lineWidth = (sideLen / 10);
+    context.lineJoin = "round";
+
+    context.beginPath();
+    for (let i = 0, a = ((Math.PI * 2) / numVertices); i < numVertices; i++) {
+        context.lineTo(
+            ((image.width / 2) + (sideLen * Math.cos(i * a + rotation))),
+            ((image.height / 2) + (sideLen * Math.sin(i * a + rotation)))
+        );
+    }
+    context.closePath();
+    context.fill();
+    context.stroke();
+
+    return;
+}
 
 const flogImg = new Image();
 let isFlogImgLoaded = false;
@@ -61,26 +121,34 @@ function cs_osd({context, image})
     context.putImageData(image, 0, 0);
 
     const fontSize = 9;
-    context.font = `${fontSize}px monospace`;
 
+    const selfString = "Retro n-gon renderer";
     const versionString = `${this.Rngon.version.family}.${this.Rngon.version.major}.${this.Rngon.version.minor}`;
-    context.fillStyle = "whitesmoke";
-    context.fillText(`Retro n-gon renderer, ${versionString}`, 0, fontSize-1);
+    context.font = `italic ${fontSize}px monospace`;
     context.fillStyle = "black";
-    context.fillText(`Retro n-gon renderer, ${versionString}`, 0, fontSize);
-
-    let x = 0;
-    `Resolution: ${image.width} × ${image.height}`.split("").forEach((ch, idx)=>{
-        const offsetx = Math.cos((Math.cos(idx) - 0.5) + (this.numTicks * 0.2))*2;
-        const offsety = Math.sin((Math.cos(idx) - 0.5) + (this.numTicks * 0.2))*2;
-        context.fillStyle = "darkblue";
-        context.fillText(ch, x+offsetx+2, fontSize*2+offsety+2);
-        x += context.measureText(ch).width;
-    });
+    context.fillText(selfString, 1, fontSize+1);
+    context.fillText(selfString, 2, fontSize+1);
+    context.fillStyle = "lightgray";
+    context.fillText(selfString, 1, fontSize);
+    context.font = `${fontSize}px monospace`;
+    context.fillStyle = "gold";
+    context.fillText(versionString, context.measureText(selfString + " ").width, fontSize+1);
 
     if (isFlogImgLoaded) {
-        context.drawImage(flogImg, 1, fontSize*3, 32, 32);
+        context.drawImage(flogImg, 1, fontSize*3+3, 32, 32);
     }
+
+    context.shadowOffsetY = 3;
+    context.shadowBlur = 2;
+    context.shadowColor = "rgba(0, 0, 0, 0.3)";
+    let x = 0;
+    `Resolution: ${image.width} × ${image.height}`.split("").forEach((ch, idx)=>{
+        const offsetx = Math.cos((Math.cos(idx) - 0.5) + (this.numTicks * 0.15))*3;
+        const offsety = Math.sin((Math.cos(idx) - 0.5) + (this.numTicks * 0.15))*3;
+        context.fillStyle = "black";
+        context.fillText(ch, x+offsetx+3, fontSize*2+offsety+4);
+        x += context.measureText(ch).width;
+    });
 }
 
 function cs_ascii({context, image})
@@ -104,6 +172,7 @@ function cs_ascii({context, image})
             let ch;
             switch (true) {
                 case avg < 50: ch = "."; break;
+                case avg < 100: ch = "+"; break;
                 case avg < 150: ch = "c"; break;
                 default: ch = "a"; break;
             }
