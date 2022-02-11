@@ -46,10 +46,13 @@ export const sample = {
         {title:"None",               function:null},
         {title:"On-screen display",  function:cs_osd},
         {title:"Pixels as ASCII",    function:cs_ascii},
+        {title:"Dotty",              function:cs_dotty},
         {title:"Rasterized overlay", function:cs_rasterized_overlay},
         {title:"Screen fade",        function:cs_screen_fade},
         {title:"Radial fade",        function:cs_radial_fade},
         {title:"Vignette",           function:cs_vignette},
+        {title:"Shake",              function:cs_shake},
+        {title:"Slide show",         function:cs_slide_show},
     ],
     camera: undefined,
     Rngon: undefined,
@@ -68,7 +71,7 @@ function cs_radial_fade({context, image})
         0,
         (image.width / 2),
         (image.height / 2),
-        (vignetteScale * 2)
+        vignetteScale
     );
     gradient.addColorStop(0, "rgba(0, 0, 0, 0)");
     gradient.addColorStop(1, "rgba(0, 0, 0, 1)");
@@ -87,7 +90,7 @@ function cs_vignette({context, image})
         0,
         (image.width / 2),
         (image.height / 2),
-        (vignetteScale * 0.9)
+        (vignetteScale * 0.85)
     );
     gradient.addColorStop(0, "rgba(0, 0, 0, 0)");
     gradient.addColorStop(0.5, "rgba(0, 0, 0, 0.1)");
@@ -174,8 +177,41 @@ function cs_osd({context, image})
 function cs_ascii({context, image})
 {
     const fontSize = 9;
+    context.font = `italic ${fontSize}px monospace`;
+    
+    const chSpacing = 6;
+    for (let y = 0; y < image.height; y += chSpacing)
+    {
+        for (let x = 0; x < image.width; x += chSpacing)
+        {
+            const bufferIdx = (x + y * image.width);
+            
+            const r = image.data[(bufferIdx * 4) + 0];
+            const g = image.data[(bufferIdx * 4) + 1];
+            const b = image.data[(bufferIdx * 4) + 2];
+            const avg = ((r + g + b) / 3);
+
+            let ch;
+            switch (true) {
+                case avg < 50: ch = "@"; break;
+                case avg < 100: ch = "M"; break;
+                case avg < 150: ch = "S"; break;
+                default: ch = "."; break;
+            }
+
+            context.fillStyle = `rgb(${255-avg},${255-avg},${255-avg})`;
+            context.fillText(ch, x, (y + (fontSize / 2)));
+        }
+    }
+}
+
+function cs_dotty({context, image})
+{
+    context.putImageData(image, 0, 0);
+    
+    const fontSize = 10;
     context.font = `${fontSize}px monospace`;
-    context.fillStyle = "#404040";
+    context.translate(-2, 2);
     
     const chSpacing = 6;
     for (let y = 0; y < image.height; y += chSpacing)
@@ -192,12 +228,31 @@ function cs_ascii({context, image})
             let ch;
             switch (true) {
                 case avg < 50: ch = "."; break;
-                case avg < 100: ch = "+"; break;
-                case avg < 150: ch = "c"; break;
+                case avg < 100: ch = "#"; break;
+                case avg < 150: ch = "#"; break;
                 default: ch = "a"; break;
             }
 
-            context.fillText(ch, x, (y + (fontSize / 2)));
+            context.fillStyle = `rgb(${r},${avg},${b})`;
+            context.fillText("░", x, (y + (fontSize / 2)));
         }
     }
+}
+
+function cs_shake({context, image})
+{
+    context.putImageData(
+        image,
+        Math.cos(this.numTicks/5)*10,
+        Math.sin(this.numTicks/10)*10
+    );
+}
+
+function cs_slide_show({context, image})
+{
+    context.putImageData(
+        image,
+        0,
+        Math.tan(this.numTicks/30)*20
+    );
 }
