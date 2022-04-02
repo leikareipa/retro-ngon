@@ -136,7 +136,8 @@ body
     background-color: black;
 }
 
-.graph-legend .item:not(:last-child)
+.graph-legend .item:not(:last-child),
+.graph-legend .item-meta:not(:last-child)
 {
     display: flex;
     align-items: center;

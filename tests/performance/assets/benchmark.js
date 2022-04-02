@@ -82,8 +82,6 @@ function print_results(results)
         return [averageFPS, minimumFPS, maximumFPS];
     })();
 
-    console.log(maximumFPS, results)
-
     const graphContainer = document.createElement("div");
     {
         graphContainer.setAttribute("id", "benchmark-graph-container");
@@ -135,12 +133,21 @@ function print_results(results)
 
         graph.innerHTML = "";
         add_to_graph({resultProperty: "renderFPS", lineColor: "#959595", lineWidth: 1});
-        add_to_graph({resultProperty: "averageRenderFPS", lineColor: "aquamarine", lineWidth: 2});
+        add_to_graph({resultProperty: "averageRenderFPS", lineColor: "aquamarine", lineWidth: 1});
     }
 
     const legendContainer = document.createElement("div");
     {
         legendContainer.setAttribute("class", "graph-legend");
+
+        const didResolutionChange = results.some(r=>(
+            (r.renderInfo.renderWidth != results.at(0).renderInfo.renderWidth) ||
+            (r.renderInfo.renderHeight != results.at(0).renderInfo.renderHeight)
+        ));
+
+        const legendRes = document.createElement("div");
+        legendRes.setAttribute("class", "item-meta resolution");
+        legendRes.innerHTML = `Resolution: ${results.at(-1).renderInfo.renderWidth} &times; ${results.at(-1).renderInfo.renderHeight}${didResolutionChange? " (dynamic)" : ""}`;
 
         const legendCum = document.createElement("div");
         legendCum.setAttribute("class", "item cumulative");
@@ -150,6 +157,7 @@ function print_results(results)
         legendRaw.setAttribute("class", "item raw");
         legendRaw.textContent = "Unfiltered FPS";
 
+        legendContainer.appendChild(legendRes);
         legendContainer.appendChild(legendCum);
         legendContainer.appendChild(legendRaw);
     }
@@ -278,6 +286,7 @@ function run_bencmark(sceneMeshes = [],
                 screenFPS: Math.round(1000 / (timeDeltaMs || Infinity)),
                 averageRenderFPS: (fpsReadings.reduce((sum, f)=>(sum + f.renderFPS), 0) / (fpsReadings.length || 1)),
                 averageScreenFPS: (fpsReadings.reduce((sum, f)=>(sum + f.screenFPS), 0) / (fpsReadings.length || 1)),
+                renderInfo
             });
 
             queue_new_frame();
