@@ -17,7 +17,7 @@ import {textures as textureAtlas} from "./e1m1.rngon-texture-atlas.js";
 export const benchmarkScene =
 {
 	ngons:[],
-	initialize: async function()
+	initialize: async function({vertexShading = "none"})
 	{
 		// Shorthands, for a smaller file size.
 		const n = Rngon.ngon;
@@ -26,7 +26,7 @@ export const benchmarkScene =
 		const c = Rngon.color_rgba;
 
 		// Default material.
-		const defMat = {color:c(255,255,255),isTwoSided:false,textureMapping:"affine"};
+		const defMat = {color:c(255,255,255),isTwoSided:false,textureMapping:"affine",vertexShading};
 
 		// Load the textures.
 		const t = {

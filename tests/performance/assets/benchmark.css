@@ -1,0 +1,169 @@
+html
+{
+    height: 100%;
+}
+
+body
+{
+    text-align: center;
+    background-color: black;
+    color: white;
+    padding: 0;
+    font-family: sans-serif;
+    height: 100%;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+#benchmark-canvas
+{
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+    background-color: black;
+    padding: 0;
+    margin: 0;
+    border-radius: 0;
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: -o-crisp-edges;
+    image-rendering: -webkit-crisp-edges;
+    transition: filter 0.1s ease-out;
+}
+
+#benchmark-canvas.finished
+{
+    position: absolute;
+    top: 0;
+    left: 0;
+    filter: blur(8px) brightness(0.4);
+}
+
+#benchmark-container
+{
+    width: 100%;
+    height: 100%;
+    background-color: transparent;
+    display: flex;
+    flex-direction: column;
+    border: 0;
+    position: relative;
+    overflow: hidden;
+}
+
+#benchmark-progress-bar
+{
+    width: 0%;
+    height: 6px;
+    background-color: red;
+    color: transparent;
+    text-align: right;
+    line-height: 0;
+    padding: 0;
+    margin: 0;
+    position: absolute;
+    margin-right: 10px;
+    top: 0;
+    border-bottom: 1px solid black;
+}
+
+#benchmark-graph-info-label
+{
+    background-color: white;
+    color: black;
+    position: absolute;
+    z-index: 10;
+    text-align: left;
+    padding: 4px;
+    border-radius: 0;
+    pointer-events: none;
+    user-select: none;
+    white-space: nowrap;
+    display: none;
+}
+
+#benchmark-graph-info-label .primary
+{
+    color: black;
+    margin-right: 0;
+}
+
+#benchmark-graph-info-label .secondary
+{
+    color: dimgray;
+    display: none;
+}
+
+#benchmark-graph-container
+{
+    width: 100%;
+    height: 100%;
+    display: inline-block;
+    border: none;
+    border-radius: 0;
+    position: relative;
+    z-index: 1;
+}
+
+#benchmark-graph
+{
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+    pointer-events: none;
+    transform: scaleY(-1);
+    opacity: 0;
+    transition: opacity 0.1s ease-out;
+}
+
+.graph-legend
+{
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    padding: 5px;
+    text-align: left;
+    pointer-events: none;
+    color: white;
+    font-size: 95%;
+    color: lightgray;
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    background-color: black;
+}
+
+.graph-legend .item:not(:last-child)
+{
+    display: flex;
+    align-items: center;
+    margin-bottom: 3px;
+}
+
+.graph-legend .item::before
+{
+    width: 1em;
+    border-bottom: 1em solid;
+    content: " ";
+    height: 0;
+    display: inline-block;
+    margin-right: 0.5em;
+}
+
+.graph-legend .item.cumulative::before
+{
+    border-color: aquamarine;
+}
+
+.graph-legend .item.screen::before
+{
+    border-color: cyan;
+}
+
+.graph-legend .item.raw::before
+{
+    border-color: gray;
+}

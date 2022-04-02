@@ -10,15 +10,28 @@
 // The id value of the DOM canvas we'll render the benchmark into.
 const canvasId = "benchmark-canvas";
 
-const renderWidth = 1280;
-const renderHeight = 720;
-
 export async function benchmark(sceneFileName = "",
                                 initialCameraPos = {x:0, y:0, z:0},
                                 initialCameraDir = {x:0, y:0, z:0},
-                                extraRenderOptions = {})
+                                extraRenderOptions = {},
+                                extraModelOptions = {})
 {
-    const sceneMesh = await load_scene_mesh(sceneFileName);
+    {
+        const urlParams = new URLSearchParams(window.location.search);
+
+        if (!urlParams.has("scale") ||
+            isNaN(Number(urlParams.get("scale"))) ||
+            (urlParams.get("scale") > 1) ||
+            (urlParams.get("scale") < 0))
+        {
+            urlParams.set("scale", 0.25);
+            window.location.search = urlParams.toString();
+        }
+
+        extraRenderOptions.scale = urlParams.get("scale");
+    }
+    
+    const sceneMesh = await load_scene_mesh(sceneFileName, extraModelOptions);
 
     create_dom_elements();
 
@@ -31,16 +44,17 @@ export async function benchmark(sceneFileName = "",
 
 // Note: we expect the mesh file to export an object called 'benchmarkScene'
 // whose property 'ngons' provides the scene's n-gons.
-async function load_scene_mesh(filename)
+async function load_scene_mesh(filename, options = {})
 {
     // Give the user a visual indication that we're loading data.
     const loadSpinner = document.createElement("div");
-    loadSpinner.innerHTML = "&#8987; Initializing...";
+    loadSpinner.innerHTML = "Initializing...";
+    loadSpinner.style.color = "lightgray";
     document.body.appendChild(loadSpinner);
 
     // Load the data.
     const sceneModule = await import(filename);
-    await sceneModule.benchmarkScene.initialize();
+    await sceneModule.benchmarkScene.initialize(options);
 
     loadSpinner.remove();
 
@@ -68,6 +82,8 @@ function print_results(results)
         return [averageFPS, minimumFPS, maximumFPS];
     })();
 
+    console.log(maximumFPS, results)
+
     const graphContainer = document.createElement("div");
     {
         graphContainer.setAttribute("id", "benchmark-graph-container");
@@ -85,96 +101,89 @@ function print_results(results)
 
         graphContainer.onmousemove = (event)=>
         {
-            // The percentage (in the range [0,1]) of the graph's width and height
-            // that constitute the graph's margins, where no data is displayed.
-            const graphMargin = 0.01;
+            // The percentage (in the range [0,1]) of the graph's width and height that constitute
+            // the graph's margins (SVG viewBox), where no data is displayed.
+            const graphMargin = 0.02;
 
             const timeMargin = ((event.target.clientWidth) * graphMargin);
             const fpsMargin = ((event.target.clientHeight) * graphMargin);
 
             const timeOffset = ((event.offsetX - timeMargin) / (event.target.clientWidth * (1 - (graphMargin * 2))));
-            const fpsOffset = ((event.offsetY - fpsMargin) / (event.target.clientHeight * (1 - (graphMargin * 2))));
+            const fpsOffset = (((event.target.clientHeight - event.offsetY) - fpsMargin) / (event.target.clientHeight * (1 - (graphMargin * 2))));
 
             const hoverFPS = (minimumFPS + (maximumFPS - minimumFPS) * fpsOffset);
             const hoverTimeMs = ((results[results.length-1].time - results[0].time) * timeOffset);
 
             const infoLabel = document.getElementById("benchmark-graph-info-label");
-            infoLabel.style.left = `${event.clientX}px`;
-            infoLabel.style.top = `${event.clientY}px`;
-            infoLabel.innerHTML = `<span class="primary">${Math.floor(hoverFPS)} FPS</span><span class="secondary">${Math.floor(hoverTimeMs)} ms</span>`;
-        }
+            const infoLabelRect = infoLabel.getBoundingClientRect();
 
-        graphContainer.style.width = `${renderWidth + 2}px`; // +2 to account for border.
-        graphContainer.style.height = `${renderHeight + 2}px`; // +2 to account for border.
+            const labelX = (event.clientX - infoLabelRect.width - 20);
+            const labelY = (event.clientY - infoLabelRect.height - 10);
+
+            infoLabel.style.left = `${Math.max(0, Math.min((window.innerWidth - infoLabelRect.width), labelX))}px`;
+            infoLabel.style.top = `${Math.max(0, labelY)}px`;
+            infoLabel.innerHTML = `<span class="primary">${Math.round(hoverFPS)} <span class="secondary">FPS</span>`;
+        }
     }
 
     const graph = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     {
         graph.setAttribute("id", "benchmark-graph");
-        graph.setAttribute("viewBox", `-1 -1 102 102`);
+        graph.setAttribute("viewBox", `-2 -2 104 104`);
         graph.setAttribute("preserveAspectRatio", "none");
         graph.setAttribute("mouseover", "");
-    }
 
-    // Populate the graph.
-    {
         graph.innerHTML = "";
-
-        // Add a background grid.
-        {
-            const verticalIncrement = ((maximumFPS - minimumFPS) * 0.2);
-            let gridValue = verticalIncrement;
-
-            while (maximumFPS / gridValue > 1)
-            {
-                const markerPosition  = (((gridValue - minimumFPS) / (maximumFPS - minimumFPS)) * 100);
-
-                graph.innerHTML += `
-                    <line x1="0"
-                          y1=${markerPosition}
-                          x2="100"
-                          y2=${markerPosition}
-                          stroke-dasharray="4"
-                          stroke-width="2"
-                          stroke="dimgray"
-                          vector-effect="non-scaling-stroke"/>
-                `;
-
-                gridValue += verticalIncrement;
-            }
-        }
-
-        // Add the benchmark results.
-        add_to_graph("renderFPS", "lightgray", minimumFPS, maximumFPS);
-        add_to_graph("screenFPS", "navajowhite", minimumFPS, maximumFPS);
+        add_to_graph({resultProperty: "renderFPS", lineColor: "#959595", lineWidth: 1});
+        add_to_graph({resultProperty: "averageRenderFPS", lineColor: "aquamarine", lineWidth: 2});
     }
+
+    const legendContainer = document.createElement("div");
+    {
+        legendContainer.setAttribute("class", "graph-legend");
+
+        const legendCum = document.createElement("div");
+        legendCum.setAttribute("class", "item cumulative");
+        legendCum.textContent = "Average FPS";
+
+        const legendRaw = document.createElement("div");
+        legendRaw.setAttribute("class", "item raw");
+        legendRaw.textContent = "Unfiltered FPS";
+
+        legendContainer.appendChild(legendCum);
+        legendContainer.appendChild(legendRaw);
+    }
+
 
     document.getElementById("benchmark-progress-bar").textContent = `Benchmark completed. Performance average: ${averageFPS} FPS.`;
     graphContainer.appendChild(graph);
+    graphContainer.appendChild(legendContainer);
     document.getElementById("benchmark-container").insertBefore(graphContainer, document.getElementById("benchmark-progress-bar"));
-    document.getElementById("benchmark-canvas").remove();
+    document.getElementById("benchmark-canvas").classList.add("finished");
 
-    function add_to_graph(resultProperty, color, minimum, maximum)
+    window.requestAnimationFrame(()=>graph.style.opacity = "1");
+
+    function add_to_graph({resultProperty, lineColor, lineWidth})
     {
         const startTime = results[0].time;
         const endTime = results[results.length-1].time;
 
         const line = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
         line.setAttribute("vector-effect", "non-scaling-stroke");
-        line.setAttribute("stroke-width", "5");
-        line.setAttribute("stroke", `${color}`);
+        line.setAttribute("stroke-width", `${lineWidth}`);
+        line.setAttribute("stroke", `${lineColor}`);
         line.setAttribute("fill", "none");
-        line.setAttribute("stroke-linejoin", "round");
-        line.setAttribute("stroke-linecap", "round");
+        line.setAttribute("stroke-linejoin", "bevel");
+        line.setAttribute("stroke-linecap", "bevel");
 
         let points = "";
 
         for (let i = 0; i < results.length; i++)
         {
             const percentTime = (((results[i].time - startTime) / (endTime - startTime)) * 100);
-            const percentFPS = Math.max(0, (((results[i][resultProperty] - minimum) / (maximum - minimum)) * 100));
+            const percentFPS = (((results[i][resultProperty] - minimumFPS) / (maximumFPS - minimumFPS)) * 100);
 
-            points += `${percentTime},${percentFPS} `;
+            points += `${Math.max(0, Math.min(100, percentTime))},${Math.max(0, Math.min(100, percentFPS))} `;
         }
 
         line.setAttribute("points", points);
@@ -227,38 +236,9 @@ function run_bencmark(sceneMeshes = [],
                 });
             };
 
-            // We want the frame timer (timeDeltaMs) to measure time between frames,
-            // so skip the first frames where it's not doing so reliably.
-            if (Math.abs(timeDeltaMs - timestamp) <= 0.0001)
-            {
-                if (frameCount > 10)
-                {
-                    Rngon.throw("Something went wrong while trying to initialize the renderer.");
-                    return;
-                }
-
-                queue_new_frame();
-                return;
-            }
-
             // Update the UI.
-            {
-                let percentDone = Math.floor(((cameraDirection.y - initialCameraDir.y) / 360) * 100);
-
-                // Move the progress bar in smooth increments of 1.
-                document.getElementById("benchmark-progress-bar").style.width = `${percentDone}%`;
-
-                // Dispay the precentage value in increments of 10.
-                {
-                    percentDone = (Math.floor((percentDone) / 10) * 10);
-                    
-                    if (percentDone)
-                    {
-                        document.getElementById("benchmark-progress-bar").style.opacity = "1";
-                        document.getElementById("benchmark-progress-bar").textContent = `${percentDone}%`;
-                    }
-                }
-            }
+            let percentDone = (((cameraDirection.y - initialCameraDir.y) / 360) * 100);
+            document.getElementById("benchmark-progress-bar").style.width = `${percentDone}%`;
 
             // Attempt to limit the renderer's refresh rate, if so requested by the user.
             if (extraRenderOptions.targetRefreshRate &&
@@ -276,10 +256,8 @@ function run_bencmark(sceneMeshes = [],
             }
             else
             {
-                document.getElementById("benchmark-progress-bar").style.width = "100%";
-                document.getElementById("benchmark-progress-bar").style.transition = "none";
-
-                resolve(fpsReadings);
+                document.getElementById("benchmark-progress-bar").style.display = "none";
+                resolve(fpsReadings.slice(5));
                 return;
             }
 
@@ -298,6 +276,8 @@ function run_bencmark(sceneMeshes = [],
                 time: performance.now(),
                 renderFPS: (1000 / renderInfo.totalRenderTimeMs),
                 screenFPS: Math.round(1000 / (timeDeltaMs || Infinity)),
+                averageRenderFPS: (fpsReadings.reduce((sum, f)=>(sum + f.renderFPS), 0) / (fpsReadings.length || 1)),
+                averageScreenFPS: (fpsReadings.reduce((sum, f)=>(sum + f.screenFPS), 0) / (fpsReadings.length || 1)),
             });
 
             queue_new_frame();
@@ -308,40 +288,27 @@ function run_bencmark(sceneMeshes = [],
 
 function create_dom_elements()
 {
-    // Create the main container.
     const mainContainer = document.createElement("div");
     {
         mainContainer.setAttribute("id", "benchmark-container");
-
-        mainContainer.style.width = `${renderWidth + 2}px`; // +2 to account for border.
-
         document.body.appendChild(mainContainer);
     }
 
-    // Create the canvas.
-    const canvas = document.createElement("canvas");
-    {
-        canvas.setAttribute("id", canvasId);
-
-        canvas.style.height = `${renderHeight + 2}px`; // +2 to account for border.
-
-        mainContainer.appendChild(canvas);
-    }
-
-    // Create the progress bar.
     const progressBar = document.createElement("div");
     {
         progressBar.setAttribute("id", "benchmark-progress-bar");
-
         mainContainer.appendChild(progressBar);
     }
 
-    // Create an informational label that will hover next to the cursor when the cursor
-    // is over the graph.
+    const canvas = document.createElement("canvas");
+    {
+        canvas.setAttribute("id", canvasId);
+        mainContainer.appendChild(canvas);
+    }
+
     const infoLabel = document.createElement("div");
     {
         infoLabel.setAttribute("id", "benchmark-graph-info-label");
-
         document.body.appendChild(infoLabel);
     }
 
