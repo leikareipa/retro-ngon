@@ -115,8 +115,8 @@ function print_results(results)
             const infoLabel = document.getElementById("benchmark-graph-info-label");
             const infoLabelRect = infoLabel.getBoundingClientRect();
 
-            const labelX = (event.clientX - infoLabelRect.width - 20);
-            const labelY = (event.clientY - infoLabelRect.height - 10);
+            const labelX = (event.clientX - infoLabelRect.width - 1);
+            const labelY = (event.clientY - infoLabelRect.height - 1);
 
             infoLabel.style.left = `${Math.max(0, Math.min((window.innerWidth - infoLabelRect.width), labelX))}px`;
             infoLabel.style.top = `${Math.max(0, labelY)}px`;
@@ -155,7 +155,7 @@ function print_results(results)
 
         const legendRaw = document.createElement("div");
         legendRaw.setAttribute("class", "item raw");
-        legendRaw.textContent = "Unfiltered FPS";
+        legendRaw.textContent = "Raw FPS";
 
         legendContainer.appendChild(legendRes);
         legendContainer.appendChild(legendCum);
