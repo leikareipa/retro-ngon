@@ -28,6 +28,50 @@ Among some of the possible use cases are:
 - To avoid idiosyncrasies of hardware rendering
 - Engagement in minimalism
 
+## Performance
+
+Below are sample runs of the renderer's [performance benchmarks](tests/performance/), showing average FPS counts across various render resolutions running in Chrome 99.
+
+<table>
+    <tr>
+        <td align="left">AMD Ryzen 5 5600x</td>
+        <th align="center">480 &times; 270</th>
+        <th align="center">960 &times; 540</th>
+        <th align="center">1920 &times; 1080</th>
+        <th align="center">3840 &times; 2160</th>
+    </tr>
+    <tr>
+        <th align="left">Quake 1 (textured)</th>
+        <td align="center">180</td>
+        <td align="center">88</td>
+        <td align="center">28</td>
+        <td align="center">7</td>
+    </tr>
+    <tr>
+        <th align="left">Quake 1 (untextured)</th>
+        <td align="center">200</td>
+        <td align="center">98</td>
+        <td align="center">33</td>
+        <td align="center">9</td>
+    </tr>
+    <tr>
+        <th align="left">Quake 1 (wireframe)</th>
+        <td align="center">286</td>
+        <td align="center">223</td>
+        <td align="center">135</td>
+        <td align="center">62</td>
+    </tr>
+    <tr>
+        <th align="left">Quake 1 (shader)</th>
+        <td align="center">83</td>
+        <td align="center">24</td>
+        <td align="center">6</td>
+        <td align="center">2</td>
+    </tr>
+</table>
+
+Average FPS figures only tell part of the story, though. You may find that the FPS can be quite variable across frames, which is something future versions of the renderer will continue to improve on.
+
 ## Screenshots
 
 ![A view from Grand Prix Legends](./images/screenshots/beta/grand-prix-legends-rouen.png)\
@@ -1096,151 +1140,8 @@ const texture = Rngon.texture_rgba(
                 });
 ```
 
-# Performance
-As suggested in the sections, above, the retro n-gon renderer is not intended to provide fluid rendering of high-polycount, high-resolution scenes. Rather, low resolutions and spartan scenes are its domains.
-
-## Performance on desktop
-The table below lists the results of [tests/performance/perftest1.html](./tests/performance/perftest1.html) as of [de12aa8](https://github.com/leikareipa/retro-ngon/tree/de12aa8b6dd64308ac851659ac1c4da5cf437ee3) running on a Xeon E3-1230 v3 desktop PC in Chrome 79 (top value) and Firefox 72 (bottom value).
-
-The values given are frames per second for scenes with 30, 60, ..., 960 polygons. A bullet indicates that the frame rate was at least 60, the screen's refresh rate during the tests.
-
-<table>
-    <tr>
-        <td align="left" width="130">E3-1230 v3</td>
-        <th align="center">30</th>
-        <th align="center">60</th>
-        <th align="center">120</th>
-        <th align="center">240</th>
-        <th align="center">480</th>
-        <th align="center">960</th>
-    </tr>
-    <tr>
-        <th align="left">Wireframe</th>
-        <td align="center">&bull;</td>
-        <td align="center">&bull;</td>
-        <td align="center">&bull;</td>
-        <td align="center">&bull;</td>
-        <td align="center">&bull;</td>
-        <td align="center">&bull;</td>
-    </tr>
-    <tr>
-        <th align="left">Solid fill</th>
-        <td align="center">&bull;</td>
-        <td align="center">&bull;</td>
-        <td align="center">&bull;</td>
-        <td align="center">&bull;</td>
-        <td align="center">&bull;</td>
-        <td align="center">51<br>40</td>
-    </tr>
-    <tr>
-        <th align="left">Textured</th>
-        <td align="center">&bull;</td>
-        <td align="center">&bull;</td>
-        <td align="center">&bull;</td>
-        <td align="center">&bull;</td>
-        <td align="center">57<br>43</td>
-        <td align="center">32<br>24</td>
-    </tr>
-</table>
-
-Overall, Chrome is somewhat faster than Firefox, but both browsers are able to reach 60 FPS with scenes of up to 300 textured or 500 untextured polygons.
-
-## Performance on mobile
-The table below lists the results of [tests/performance/perftest1.html](./tests/performance/perftest1.html) as of [de12aa8](https://github.com/leikareipa/retro-ngon/tree/de12aa8b6dd64308ac851659ac1c4da5cf437ee3) running on an Honor View20 phone in Chrome 79.
-
-The values given are frames per second for scenes with 30, 60, ..., 960 polygons. A bullet indicates that the frame rate was at least 60, the screen's refresh rate during the tests.
-
-<table>
-    <tr>
-        <td align="left" width="130">View20</td>
-        <th align="center">30</th>
-        <th align="center">60</th>
-        <th align="center">120</th>
-        <th align="center">240</th>
-        <th align="center">480</th>
-        <th align="center">960</th>
-    </tr>
-    <tr>
-        <th align="left">Wireframe</th>
-        <td align="center">&bull;</td>
-        <td align="center">&bull;</td>
-        <td align="center">&bull;</td>
-        <td align="center">&bull;</td>
-        <td align="center">&bull;</td>
-        <td align="center">43</td>
-    </tr>
-    <tr>
-        <th align="left">Solid fill</th>
-        <td align="center">&bull;</td>
-        <td align="center">&bull;</td>
-        <td align="center">&bull;</td>
-        <td align="center">&bull;</td>
-        <td align="center">&bull;</td>
-        <td align="center">34</td>
-    </tr>
-    <tr>
-        <th align="left">Textured</th>
-        <td align="center">&bull;</td>
-        <td align="center">&bull;</td>
-        <td align="center">&bull;</td>
-        <td align="center">52</td>
-        <td align="center">34</td>
-        <td align="center">17</td>
-    </tr>
-</table>
-
-Enabling texturing halves the number of polygons that can be rendered at 60 FPS - but one can still maintain a scene of 500 untextured polygons at that rate.
-
-# Project status
-The project is currently in beta - its core functionality is in place, but notable bugs, API-breaking changes, etc. are to be expected.
-
-## Browser compatibility
-Below are rough estimates of the required browser versions for a given version of the retro n-gon renderer. Browsers marked with "No" are not compatible at all.
-
-<table>
-    <tr>
-        <th align="left" width="110"></th>
-        <th align="center" width="90">
-            <img alt="Chrome" src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/chrome/chrome_24x24.png">
-            <br>Chrome
-        </th>
-        <th align="center" width="90">
-            <img alt="Firefox" src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/firefox/firefox_24x24.png">
-            <br>Firefox
-        </th>
-        <th align="center" width="90">
-            <img alt="Opera" src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/opera/opera_24x24.png">
-            <br>Opera
-        </th>
-        <th align="center" width="90">
-            <img alt="Safari" src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/safari/safari_24x24.png">
-            <br>Safari
-        </th>
-        <th align="center" width="90">
-            <img alt="Edge" src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/edge/edge_24x24.png">
-            <br>Edge
-        </th>
-        <th align="center" width="90">
-            <img title="Internet Explorer" alt="Internet Explorer" src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/archive/internet-explorer_6/internet-explorer_6_24x24.png">
-            <br>IE
-        </th>
-    </tr>
-    <tr>
-        <td align="left">alpha.3+</td>
-        <td align="center">60</td>
-        <td align="center">55</td>
-        <td align="center">50</td>
-        <td align="center">11?</td>
-        <td align="center"><i>No</i></td>
-        <td align="center"><i>No</i></td>
-    </tr>
-</table>
-
 # Authors and credits
+
 The main author of the retro n-gon renderer is the one-man Tarpeeksi Hyvae Soft (see on [GitHub](https://github.com/leikareipa) and the [Web](https://www.tarpeeksihyvaesoft.com)).
 
 On 3D software rendering in general, the aforementioned main author has benefited a good bit from tutorials by Benny Bobaganoosh. You can check out his [YouTube](https://www.youtube.com/playlist?list=PLEETnX-uPtBUbVOok816vTl1K9vV1GgH5) and [GitHub](https://github.com/BennyQBD/3DSoftwareRenderer). The retro n-gon renderer's matrix code ([js/retro-ngon/core/matrix44.js](./js/retro-ngon/core/matrix44.js)) is adapted, with superficial changes, from [Benny's code](https://github.com/BennyQBD/3DSoftwareRenderer/blob/master/src/Matrix4f.java).
-
-The browser icons used in the Browser compatibility section, above, come from [alrra](https://github.com/alrra)'s [Browser Logos](https://github.com/alrra/browser-logos) repository.
-
-The retro n-gon renderer originates as a fork of the renderer used in the JavaScript version of Tarpeeksi Hyvae Soft's [RallySportED](https://github.com/leikareipa/rallysported).
