@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (08 February 2022 13:32:52 UTC)
+// VERSION: beta live (05 April 2022 03:51:39 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -1087,7 +1087,7 @@ Rngon.matrix44 = (()=>
     });
 })();
 /*
- * 2019, 2020 Tarpeeksi Hyvae Soft
+ * 2019-2022 Tarpeeksi Hyvae Soft
  * 
  * Software: Retro n-gon renderer
  * 
@@ -1097,18 +1097,20 @@ Rngon.matrix44 = (()=>
 
 Rngon.baseModules = (Rngon.baseModules || {});
 
-{ // A block to limit the scope of the unit-global variables we set up, below.
+{ // A block to limit the scope of the file-global variables we set up, below.
 
-// We'll sort the n-gon's vertices into those on its left side and those on its
-// right side.
-const leftVerts = new Array(500);
-const rightVerts = new Array(500);
+const maxNumVertsPerPolygon = 500;
 
-// Then we'll organize the sorted vertices into edges (lines between given two
-// vertices). Once we've got the edges figured out, we can render the n-gon by filling
-// in the spans between its edges.
-const leftEdges = new Array(500).fill().map(e=>({}));
-const rightEdges = new Array(500).fill().map(e=>({}));
+// For rendering polygons, we'll sort the polygon's vertices into those on its left
+// side and those on its right side.
+const leftVerts = new Array(maxNumVertsPerPolygon);
+const rightVerts = new Array(maxNumVertsPerPolygon);
+
+// Edges connect a polygon's vertices and provide interpolation parameters for
+// rasterization. For each horizontal span inside the polygon, we'll render pixels
+// from the left edge to the right edge.
+const leftEdges = new Array(maxNumVertsPerPolygon).fill().map(e=>({}));
+const rightEdges = new Array(maxNumVertsPerPolygon).fill().map(e=>({}));
 
 const vertexSorters = {
     verticalAscending: (vertA, vertB)=>((vertA.y === vertB.y)? 0 : ((vertA.y < vertB.y)? -1 : 1)),
@@ -1138,19 +1140,16 @@ Rngon.baseModules.rasterize = function(auxiliaryBuffers = [])
         else if (ngon.vertices.length == 1)
         {
             Rngon.baseModules.rasterize.point(ngon.vertices[0], ngon.material, n);
-
             continue;
         }
         else if (ngon.vertices.length == 2)
         {
             Rngon.baseModules.rasterize.line(ngon.vertices[0], ngon.vertices[1], ngon.material.color, n, false);
-
             continue;
         }
         else
         {
             Rngon.baseModules.rasterize.polygon(ngon, n, auxiliaryBuffers);
-
             continue;
         }
     }
@@ -1158,11 +1157,17 @@ Rngon.baseModules.rasterize = function(auxiliaryBuffers = [])
     return;
 }
 
-Rngon.baseModules.rasterize.polygon = function(ngon = Rngon.ngon(),
-                                               ngonIdx = 0,
-                                               auxiliaryBuffers = [])
+// Rasterizes a polygon with 3+ vertices into the render's pixel buffer.
+Rngon.baseModules.rasterize.polygon = function(
+    ngon = Rngon.ngon(),
+    ngonIdx = 0,
+    auxiliaryBuffers = []
+)
 {
-    Rngon.assert && (ngon.vertices.length < leftVerts.length)
+    Rngon.assert && (ngon.vertices.length >= 3)
+                 || Rngon.throw("Polygons must have 3 or more vertices");
+
+    Rngon.assert && (ngon.vertices.length < maxNumVertsPerPolygon)
                  || Rngon.throw("Overflowing the vertex buffer");
 
     const interpolatePerspective = Rngon.internalState.usePerspectiveCorrectInterpolation;
@@ -1191,40 +1196,51 @@ Rngon.baseModules.rasterize.polygon = function(ngon = Rngon.ngon(),
         textureMipLevel = texture.mipLevels[textureMipLevelIdx];
     }
 
-    // Generic algorithm for n-sided convex polygons.
+    sort_vertices();
+
+    define_edges();
+
+    if (material.hasFill)
     {
-        // Sort the vertices by height from smallest Y to largest Y.
-        ngon.vertices.sort(vertexSorters.verticalAscending);
-
-        const topVert = ngon.vertices[0];
-        const bottomVert = ngon.vertices[ngon.vertices.length-1];
-
-        leftVerts[numLeftVerts++] = topVert;
-        rightVerts[numRightVerts++] = topVert;
-
-        // Trace a line along XY between the top-most vertex and the bottom-most vertex;
-        // and for the intervening vertices, find whether they're to the left or right of
-        // that line on X. Being on the left means the vertex is on the n-gon's left side,
-        // otherwise it's on the right side.
-        for (let i = 1; i < (ngon.vertices.length - 1); i++)
+        if (texture &&
+            depthBuffer &&
+            !usePhongShading &&
+            !usePixelShader &&
+            !material.allowAlphaReject &&
+            !material.allowAlphaBlend &&
+            (material.textureMapping == "affine") &&
+            (material.color.red == 255) &&
+            (material.color.green == 255) &&
+            (material.color.blue == 255))
         {
-            const lr = Rngon.lerp(topVert.x, bottomVert.x, ((ngon.vertices[i].y - topVert.y) / (bottomVert.y - topVert.y)));
-
-            if (ngon.vertices[i].x >= lr)
-            {
-                rightVerts[numRightVerts++] = ngon.vertices[i];
-            }
-            else
-            {
-                leftVerts[numLeftVerts++] = ngon.vertices[i];
-            }
+            plain_fill();
         }
-
-        leftVerts[numLeftVerts++] = bottomVert;
-        rightVerts[numRightVerts++] = bottomVert;
+        else
+        {
+            fill();
+        }
     }
 
-    // Create edges out of the vertices.
+    // Draw a wireframe around any n-gons that wish for one.
+    if (Rngon.internalState.showGlobalWireframe ||
+        material.hasWireframe)
+    {
+        for (let l = 1; l < numLeftVerts; l++)
+        {
+            Rngon.baseModules.rasterize.line(leftVerts[l-1], leftVerts[l], material.wireframeColor, ngonIdx, true);
+        }
+
+        for (let r = 1; r < numRightVerts; r++)
+        {
+            Rngon.baseModules.rasterize.line(rightVerts[r-1], rightVerts[r], material.wireframeColor, ngonIdx, true);
+        }
+    }
+
+    return;
+
+    // Defines the edges connecting the polygon's vertices on the left and right sides of
+    // the polygon. Each edge is associated with interpolation parameters for rasterization.
+    function define_edges()
     {
         for (let l = 1; l < numLeftVerts; l++) add_edge(leftVerts[l-1], leftVerts[l], true);
         for (let r = 1; r < numRightVerts; r++) add_edge(rightVerts[r-1], rightVerts[r], false);
@@ -1305,9 +1321,197 @@ Rngon.baseModules.rasterize.polygon = function(ngon = Rngon.ngon(),
         }
     }
 
-    // Draw the n-gon. On each horizontal raster line, there will be two edges: left and right.
-    // We'll render into the pixel buffer each horizontal span that runs between the two edges.
-    if (material.hasFill)
+    // Generic vertex-sorting algorithm for n-sided convex polygons. Sorts the vertices
+    // into two arrays, left and right. The left array contains all vertices that are on
+    // the left-hand side of a line across the polygon from the highest to the lowest
+    // vertex, and the right array has the rest.
+    function sort_vertices()
+    {
+        // Sort the vertices by height from smallest Y to largest Y.
+        ngon.vertices.sort(vertexSorters.verticalAscending);
+
+        const topVert = ngon.vertices[0];
+        const bottomVert = ngon.vertices[ngon.vertices.length-1];
+
+        leftVerts[numLeftVerts++] = topVert;
+        rightVerts[numRightVerts++] = topVert;
+
+        // Trace a line along XY between the top-most vertex and the bottom-most vertex;
+        // and for the intervening vertices, find whether they're to the left or right of
+        // that line on X. Being on the left means the vertex is on the n-gon's left side,
+        // otherwise it's on the right side.
+        for (let i = 1; i < (ngon.vertices.length - 1); i++)
+        {
+            const lr = Rngon.lerp(topVert.x, bottomVert.x, ((ngon.vertices[i].y - topVert.y) / (bottomVert.y - topVert.y)));
+
+            if (ngon.vertices[i].x >= lr)
+            {
+                rightVerts[numRightVerts++] = ngon.vertices[i];
+            }
+            else
+            {
+                leftVerts[numLeftVerts++] = ngon.vertices[i];
+            }
+        }
+
+        leftVerts[numLeftVerts++] = bottomVert;
+        rightVerts[numRightVerts++] = bottomVert;
+    }
+
+    // Fills the current polygon, with certain performance-increasing assumptions made about it.
+    // The polygon and render state must fulfill the following criteria:
+    // - Depth buffering
+    // - No pixel shading
+    // - No Phong shading
+    // - No alpha operations
+    // - Textured
+    // - White material color
+    // - Only affine texture-mapping
+    function plain_fill()
+    {
+        let curLeftEdgeIdx = 0;
+        let curRightEdgeIdx = 0;
+        let leftEdge = leftEdges[curLeftEdgeIdx];
+        let rightEdge = rightEdges[curRightEdgeIdx];
+        
+        if (!numLeftEdges || !numRightEdges) return;
+
+        // Note: We assume the n-gon's vertices to be sorted by increasing Y.
+        const ngonStartY = leftEdges[0].startY;
+        const ngonEndY = leftEdges[numLeftEdges-1].endY;
+
+        for (let y = ngonStartY; y < ngonEndY; y++)
+        {
+            const spanStartX = Math.min(renderWidth, Math.max(0, Math.round(leftEdge.startX)));
+            const spanEndX = Math.min(renderWidth, Math.max(0, Math.ceil(rightEdge.startX)));
+            const spanWidth = ((spanEndX - spanStartX) + 1);
+
+            if (spanWidth > 0)
+            {
+                const deltaDepth = ((rightEdge.startDepth - leftEdge.startDepth) / spanWidth);
+                let iplDepth = (leftEdge.startDepth - deltaDepth);
+
+                const deltaShade = ((rightEdge.startShade - leftEdge.startShade) / spanWidth);
+                let iplShade = (leftEdge.startShade - deltaShade);
+
+                const deltaU = ((rightEdge.startU - leftEdge.startU) / spanWidth);
+                let iplU = (leftEdge.startU - deltaU);
+
+                const deltaV = ((rightEdge.startV - leftEdge.startV) / spanWidth);
+                let iplV = (leftEdge.startV - deltaV);
+
+                const deltaInvW = ((rightEdge.startInvW - leftEdge.startInvW) / spanWidth);
+                let iplInvW = (leftEdge.startInvW - deltaInvW);
+
+                // Assumes the pixel buffer consists of 4 elements per pixel (e.g. RGBA).
+                let pixelBufferIdx = (((spanStartX + y * renderWidth) * 4) - 4);
+
+                // Assumes the depth buffer consists of 1 element per pixel.
+                let depthBufferIdx = (pixelBufferIdx / 4);
+
+                // Draw the span into the pixel buffer.
+                for (let x = spanStartX; x < spanEndX; x++)
+                {
+                    // Update values that're interpolated horizontally along the span.
+                    iplDepth += deltaDepth;
+                    iplShade += deltaShade;
+                    iplU += deltaU;
+                    iplV += deltaV;
+                    iplInvW += deltaInvW;
+                    pixelBufferIdx += 4;
+                    depthBufferIdx++;
+
+                    const depth = (iplDepth / iplInvW);
+
+                    if (depthBuffer[depthBufferIdx] <= depth) continue;
+
+                    // Texture UV coordinates.
+                    let u = (iplU / iplInvW);
+                    let v = (iplV / iplInvW);
+
+                    switch (material.uvWrapping)
+                    {
+                        case "clamp":
+                        {
+                            const signU = Math.sign(u);
+                            const signV = Math.sign(v);
+                            const upperLimit = (1 - Number.EPSILON);
+
+                            u = Math.max(0, Math.min(Math.abs(u), upperLimit));
+                            v = Math.max(0, Math.min(Math.abs(v), upperLimit));
+
+                            // Negative UV coordinates flip the texture.
+                            if (signU === -1) u = (upperLimit - u);
+                            if (signV === -1) v = (upperLimit - v);
+
+                            u *= textureMipLevel.width;
+                            v *= textureMipLevel.height;
+
+                            break;
+                        }
+                        case "repeat":
+                        {
+                            u -= Math.floor(u);
+                            v -= Math.floor(v);
+
+                            u *= textureMipLevel.width;
+                            v *= textureMipLevel.height;
+
+                            // Modulo for power-of-two. This will also flip the texture for
+                            // negative UV coordinates.
+                            u = (u & (textureMipLevel.width - 1));
+                            v = (v & (textureMipLevel.height - 1));
+
+                            break;
+                        }
+                        default: Rngon.throw("Unrecognized UV wrapping mode."); break;
+                    }
+
+                    const texel = textureMipLevel.pixels[(~~u) + (~~v) * textureMipLevel.width];
+                    
+                    // Make sure we gracefully exit if accessing the texture out of bounds.
+                    if (!texel)
+                    {
+                        continue;
+                    }
+
+                    const shade = (material.renderVertexShade? (iplShade / iplInvW) : 1);
+
+                    pixelBuffer[pixelBufferIdx + 0] = (texel.red * shade);
+                    pixelBuffer[pixelBufferIdx + 1] = (texel.green * shade);
+                    pixelBuffer[pixelBufferIdx + 2] = (texel.blue * shade);
+                    pixelBuffer[pixelBufferIdx + 3] = 255;
+                    depthBuffer[depthBufferIdx] = depth;
+                }
+            }
+
+            // Update values that're interpolated vertically along the edges.
+            {
+                leftEdge.startX      += leftEdge.deltaX;
+                leftEdge.startDepth  += leftEdge.deltaDepth;
+                leftEdge.startShade  += leftEdge.deltaShade;
+                leftEdge.startU      += leftEdge.deltaU;
+                leftEdge.startV      += leftEdge.deltaV;
+                leftEdge.startInvW   += leftEdge.deltaInvW;
+
+                rightEdge.startX     += rightEdge.deltaX;
+                rightEdge.startDepth += rightEdge.deltaDepth;
+                rightEdge.startShade += rightEdge.deltaShade;
+                rightEdge.startU     += rightEdge.deltaU;
+                rightEdge.startV     += rightEdge.deltaV;
+                rightEdge.startInvW  += rightEdge.deltaInvW;
+            }
+
+            // We can move onto the next edge when we're at the end of the current one.
+            if (y === (leftEdge.endY - 1)) leftEdge = leftEdges[++curLeftEdgeIdx];
+            if (y === (rightEdge.endY - 1)) rightEdge = rightEdges[++curRightEdgeIdx];
+        }
+
+        return;
+    }
+
+    // Fills the current polygon.
+    function fill()
     {
         let curLeftEdgeIdx = 0;
         let curRightEdgeIdx = 0;
@@ -1423,9 +1627,11 @@ Rngon.baseModules.rasterize.polygon = function(ngon = Rngon.ngon(),
                         const N = Rngon.vector3((iplNx / iplInvW), (iplNy / iplInvW), (iplNz / iplInvW));
                         Rngon.vector3.normalize(N)
                         
-                        const V = Rngon.vector3((Rngon.internalState.cameraPosition.x - worldPosX),
-                                                (Rngon.internalState.cameraPosition.y - worldPosY),
-                                                (Rngon.internalState.cameraPosition.z - worldPosZ));
+                        const V = Rngon.vector3(
+                            (Rngon.internalState.cameraPosition.x - worldPosX),
+                            (Rngon.internalState.cameraPosition.y - worldPosY),
+                            (Rngon.internalState.cameraPosition.z - worldPosZ)
+                        );
                         Rngon.vector3.normalize(V);
 
                         for (const light of Rngon.internalState.lights)
@@ -1435,15 +1641,19 @@ Rngon.baseModules.rasterize.polygon = function(ngon = Rngon.ngon(),
                                 continue;
                             }
 
-                            const distance = Math.sqrt(((worldPosX - light.position.x) * (worldPosX - light.position.x)) +
-                                                       ((worldPosY - light.position.y) * (worldPosY - light.position.y)) +
-                                                       ((worldPosZ - light.position.z) * (worldPosZ - light.position.z)));
+                            const distance = Math.sqrt(
+                                ((worldPosX - light.position.x) * (worldPosX - light.position.x)) +
+                                ((worldPosY - light.position.y) * (worldPosY - light.position.y)) +
+                                ((worldPosZ - light.position.z) * (worldPosZ - light.position.z))
+                            );
 
                             const distanceMul = (1 / (1 + (light.attenuation * distance)));
 
-                            const L = Rngon.vector3((light.position.x - worldPosX),
-                                                    (light.position.y - worldPosY),
-                                                    (light.position.z - worldPosZ));
+                            const L = Rngon.vector3(
+                                (light.position.x - worldPosX),
+                                (light.position.y - worldPosY),
+                                (light.position.z - worldPosZ)
+                            );
                             Rngon.vector3.normalize(L);
 
                             const dotNL = Math.max(0, Math.min(1, Rngon.vector3.dot(N, L)));
@@ -1692,32 +1902,19 @@ Rngon.baseModules.rasterize.polygon = function(ngon = Rngon.ngon(),
             if (y === (leftEdge.endY - 1)) leftEdge = leftEdges[++curLeftEdgeIdx];
             if (y === (rightEdge.endY - 1)) rightEdge = rightEdges[++curRightEdgeIdx];
         }
+
+        return;
     }
-
-    // Draw a wireframe around any n-gons that wish for one.
-    if (Rngon.internalState.showGlobalWireframe ||
-        material.hasWireframe)
-    {
-        for (let l = 1; l < numLeftVerts; l++)
-        {
-            Rngon.baseModules.rasterize.line(leftVerts[l-1], leftVerts[l], material.wireframeColor, ngonIdx, true);
-        }
-
-        for (let r = 1; r < numRightVerts; r++)
-        {
-            Rngon.baseModules.rasterize.line(rightVerts[r-1], rightVerts[r], material.wireframeColor, ngonIdx, true);
-        }
-    }
-
-    return;
 }
 
-// Draws a line between the two given vertices into the render's pixel buffer.
-Rngon.baseModules.rasterize.line = function(vert1 = Rngon.vertex(),
-                                            vert2 = Rngon.vertex(),
-                                            color = Rngon.color_rgba(),
-                                            ngonIdx = 0,
-                                            ignoreDepthBuffer = false)
+// Rasterizes a line between the two given vertices into the render's pixel buffer.
+Rngon.baseModules.rasterize.line = function(
+    vert1 = Rngon.vertex(),
+    vert2 = Rngon.vertex(),
+    color = Rngon.color_rgba(),
+    ngonIdx = 0,
+    ignoreDepthBuffer = false
+)
 {
     if (color.alpha !== 255)
     {
@@ -1838,9 +2035,11 @@ Rngon.baseModules.rasterize.line = function(vert1 = Rngon.vertex(),
     }
 };
 
-Rngon.baseModules.rasterize.point = function(vertex = Rngon.vertex(),
-                                             material = {},
-                                             ngonIdx = 0)
+Rngon.baseModules.rasterize.point = function(
+    vertex = Rngon.vertex(),
+    material = {},
+    ngonIdx = 0
+)
 {
     if (material.color.alpha != 255)
     {

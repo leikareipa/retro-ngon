@@ -114,7 +114,23 @@ Rngon.baseModules.rasterize.polygon = function(
 
     if (material.hasFill)
     {
-        fill();
+        if (texture &&
+            depthBuffer &&
+            !usePhongShading &&
+            !usePixelShader &&
+            !material.allowAlphaReject &&
+            !material.allowAlphaBlend &&
+            (material.textureMapping == "affine") &&
+            (material.color.red == 255) &&
+            (material.color.green == 255) &&
+            (material.color.blue == 255))
+        {
+            plain_fill();
+        }
+        else
+        {
+            fill();
+        }
     }
 
     // Draw a wireframe around any n-gons that wish for one.
@@ -254,6 +270,159 @@ Rngon.baseModules.rasterize.polygon = function(
         rightVerts[numRightVerts++] = bottomVert;
     }
 
+    // Fills the current polygon, with certain performance-increasing assumptions made about it.
+    // The polygon and render state must fulfill the following criteria:
+    // - Depth buffering
+    // - No pixel shading
+    // - No Phong shading
+    // - No alpha operations
+    // - Textured
+    // - White material color
+    // - Only affine texture-mapping
+    function plain_fill()
+    {
+        let curLeftEdgeIdx = 0;
+        let curRightEdgeIdx = 0;
+        let leftEdge = leftEdges[curLeftEdgeIdx];
+        let rightEdge = rightEdges[curRightEdgeIdx];
+        
+        if (!numLeftEdges || !numRightEdges) return;
+
+        // Note: We assume the n-gon's vertices to be sorted by increasing Y.
+        const ngonStartY = leftEdges[0].startY;
+        const ngonEndY = leftEdges[numLeftEdges-1].endY;
+
+        for (let y = ngonStartY; y < ngonEndY; y++)
+        {
+            const spanStartX = Math.min(renderWidth, Math.max(0, Math.round(leftEdge.startX)));
+            const spanEndX = Math.min(renderWidth, Math.max(0, Math.ceil(rightEdge.startX)));
+            const spanWidth = ((spanEndX - spanStartX) + 1);
+
+            if (spanWidth > 0)
+            {
+                const deltaDepth = ((rightEdge.startDepth - leftEdge.startDepth) / spanWidth);
+                let iplDepth = (leftEdge.startDepth - deltaDepth);
+
+                const deltaShade = ((rightEdge.startShade - leftEdge.startShade) / spanWidth);
+                let iplShade = (leftEdge.startShade - deltaShade);
+
+                const deltaU = ((rightEdge.startU - leftEdge.startU) / spanWidth);
+                let iplU = (leftEdge.startU - deltaU);
+
+                const deltaV = ((rightEdge.startV - leftEdge.startV) / spanWidth);
+                let iplV = (leftEdge.startV - deltaV);
+
+                const deltaInvW = ((rightEdge.startInvW - leftEdge.startInvW) / spanWidth);
+                let iplInvW = (leftEdge.startInvW - deltaInvW);
+
+                // Assumes the pixel buffer consists of 4 elements per pixel (e.g. RGBA).
+                let pixelBufferIdx = (((spanStartX + y * renderWidth) * 4) - 4);
+
+                // Assumes the depth buffer consists of 1 element per pixel.
+                let depthBufferIdx = (pixelBufferIdx / 4);
+
+                // Draw the span into the pixel buffer.
+                for (let x = spanStartX; x < spanEndX; x++)
+                {
+                    // Update values that're interpolated horizontally along the span.
+                    iplDepth += deltaDepth;
+                    iplShade += deltaShade;
+                    iplU += deltaU;
+                    iplV += deltaV;
+                    iplInvW += deltaInvW;
+                    pixelBufferIdx += 4;
+                    depthBufferIdx++;
+
+                    const depth = (iplDepth / iplInvW);
+
+                    if (depthBuffer[depthBufferIdx] <= depth) continue;
+
+                    // Texture UV coordinates.
+                    let u = (iplU / iplInvW);
+                    let v = (iplV / iplInvW);
+
+                    switch (material.uvWrapping)
+                    {
+                        case "clamp":
+                        {
+                            const signU = Math.sign(u);
+                            const signV = Math.sign(v);
+                            const upperLimit = (1 - Number.EPSILON);
+
+                            u = Math.max(0, Math.min(Math.abs(u), upperLimit));
+                            v = Math.max(0, Math.min(Math.abs(v), upperLimit));
+
+                            // Negative UV coordinates flip the texture.
+                            if (signU === -1) u = (upperLimit - u);
+                            if (signV === -1) v = (upperLimit - v);
+
+                            u *= textureMipLevel.width;
+                            v *= textureMipLevel.height;
+
+                            break;
+                        }
+                        case "repeat":
+                        {
+                            u -= Math.floor(u);
+                            v -= Math.floor(v);
+
+                            u *= textureMipLevel.width;
+                            v *= textureMipLevel.height;
+
+                            // Modulo for power-of-two. This will also flip the texture for
+                            // negative UV coordinates.
+                            u = (u & (textureMipLevel.width - 1));
+                            v = (v & (textureMipLevel.height - 1));
+
+                            break;
+                        }
+                        default: Rngon.throw("Unrecognized UV wrapping mode."); break;
+                    }
+
+                    const texel = textureMipLevel.pixels[(~~u) + (~~v) * textureMipLevel.width];
+                    
+                    // Make sure we gracefully exit if accessing the texture out of bounds.
+                    if (!texel)
+                    {
+                        continue;
+                    }
+
+                    const shade = (material.renderVertexShade? (iplShade / iplInvW) : 1);
+
+                    pixelBuffer[pixelBufferIdx + 0] = (texel.red * shade);
+                    pixelBuffer[pixelBufferIdx + 1] = (texel.green * shade);
+                    pixelBuffer[pixelBufferIdx + 2] = (texel.blue * shade);
+                    pixelBuffer[pixelBufferIdx + 3] = 255;
+                    depthBuffer[depthBufferIdx] = depth;
+                }
+            }
+
+            // Update values that're interpolated vertically along the edges.
+            {
+                leftEdge.startX      += leftEdge.deltaX;
+                leftEdge.startDepth  += leftEdge.deltaDepth;
+                leftEdge.startShade  += leftEdge.deltaShade;
+                leftEdge.startU      += leftEdge.deltaU;
+                leftEdge.startV      += leftEdge.deltaV;
+                leftEdge.startInvW   += leftEdge.deltaInvW;
+
+                rightEdge.startX     += rightEdge.deltaX;
+                rightEdge.startDepth += rightEdge.deltaDepth;
+                rightEdge.startShade += rightEdge.deltaShade;
+                rightEdge.startU     += rightEdge.deltaU;
+                rightEdge.startV     += rightEdge.deltaV;
+                rightEdge.startInvW  += rightEdge.deltaInvW;
+            }
+
+            // We can move onto the next edge when we're at the end of the current one.
+            if (y === (leftEdge.endY - 1)) leftEdge = leftEdges[++curLeftEdgeIdx];
+            if (y === (rightEdge.endY - 1)) rightEdge = rightEdges[++curRightEdgeIdx];
+        }
+
+        return;
+    }
+
+    // Fills the current polygon.
     function fill()
     {
         let curLeftEdgeIdx = 0;
@@ -659,9 +828,6 @@ Rngon.baseModules.rasterize.line = function(
     ignoreDepthBuffer = false
 )
 {
-    Rngon.assert && (ngon.vertices.length == 2)
-                 || Rngon.throw("Lines must have exactly 2 vertices");
-
     if (color.alpha !== 255)
     {
         return;
@@ -787,9 +953,6 @@ Rngon.baseModules.rasterize.point = function(
     ngonIdx = 0
 )
 {
-    Rngon.assert && (ngon.vertices.length == 1)
-                 || Rngon.throw("Points must have exactly 1 vertex");
-
     if (material.color.alpha != 255)
     {
         return;
