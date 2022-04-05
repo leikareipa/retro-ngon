@@ -94,7 +94,7 @@ body
 #benchmark-graph-info-label .secondary
 {
     color: dimgray;
-    display: none;
+    font-size: 85%;
 }
 
 #benchmark-graph-container

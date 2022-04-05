@@ -110,7 +110,7 @@ function print_results(results)
             const fpsOffset = (((event.target.clientHeight - event.offsetY) - fpsMargin) / (event.target.clientHeight * (1 - (graphMargin * 2))));
 
             const hoverFPS = (minimumFPS + (maximumFPS - minimumFPS) * fpsOffset);
-            const hoverTimeMs = ((results[results.length-1].time - results[0].time) * timeOffset);
+            const hoverTimeMs = Math.round((results.at(-1).timestamp - results[0].timestamp) * timeOffset);
 
             const infoLabel = document.getElementById("benchmark-graph-info-label");
             const infoLabelRect = infoLabel.getBoundingClientRect();
@@ -120,7 +120,7 @@ function print_results(results)
 
             infoLabel.style.left = `${Math.max(0, Math.min((window.innerWidth - infoLabelRect.width), labelX))}px`;
             infoLabel.style.top = `${Math.max(0, labelY)}px`;
-            infoLabel.innerHTML = `<span class="primary">${Math.round(hoverFPS)} <span class="secondary">FPS</span>`;
+            infoLabel.innerHTML = `<span class="primary">${Math.round(hoverFPS)} <span class="secondary">@ ${hoverTimeMs} ms</span>`;
         }
     }
 
@@ -173,8 +173,8 @@ function print_results(results)
 
     function add_to_graph({resultProperty, lineColor, lineWidth})
     {
-        const startTime = results[0].time;
-        const endTime = results[results.length-1].time;
+        const startTime = results[0].timestamp;
+        const endTime = results[results.length-1].timestamp;
 
         const line = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
         line.setAttribute("vector-effect", "non-scaling-stroke");
@@ -188,7 +188,7 @@ function print_results(results)
 
         for (let i = 0; i < results.length; i++)
         {
-            const percentTime = (((results[i].time - startTime) / (endTime - startTime)) * 100);
+            const percentTime = (((results[i].timestamp - startTime) / (endTime - startTime)) * 100);
             const percentFPS = (((results[i][resultProperty] - minimumFPS) / (maximumFPS - minimumFPS)) * 100);
 
             points += `${Math.max(0, Math.min(100, percentTime))},${Math.max(0, Math.min(100, percentFPS))} `;
@@ -232,7 +232,7 @@ function run_bencmark(sceneMeshes = [],
 
         // 'timeDeltaMs' is the number of milliseconds elapsed since the previous call
         // to this render function.
-        (function render_loop(timestamp = 0, timeDeltaMs = 0, frameCount = 0)
+        (function render_loop(timestamp = performance.now(), timeDeltaMs = 0, frameCount = 0)
         {
             const queue_new_frame = (additionalTimeDelta = 0)=>
             {
@@ -265,7 +265,7 @@ function run_bencmark(sceneMeshes = [],
             else
             {
                 document.getElementById("benchmark-progress-bar").style.display = "none";
-                resolve(fpsReadings.slice(5));
+                resolve(fpsReadings);
                 return;
             }
 
@@ -280,14 +280,18 @@ function run_bencmark(sceneMeshes = [],
                 ...extraRenderOptions,
             });
 
-            fpsReadings.push({
-                time: performance.now(),
-                renderFPS: (1000 / renderInfo.totalRenderTimeMs),
-                screenFPS: Math.round(1000 / (timeDeltaMs || Infinity)),
-                averageRenderFPS: (fpsReadings.reduce((sum, f)=>(sum + f.renderFPS), 0) / (fpsReadings.length || 1)),
-                averageScreenFPS: (fpsReadings.reduce((sum, f)=>(sum + f.screenFPS), 0) / (fpsReadings.length || 1)),
-                renderInfo
-            });
+            if (frameCount)
+            {
+                fpsReadings.push({
+                    timestamp,
+                    renderFPS: (1000 / renderInfo.totalRenderTimeMs),
+                    screenFPS: Math.round(1000 / (timeDeltaMs || Infinity)),
+                    renderInfo
+                });
+
+                fpsReadings.at(-1).averageRenderFPS = (fpsReadings.reduce((sum, f)=>(sum + f.renderFPS), 0) / (fpsReadings.length || 1));
+                fpsReadings.at(-1).averageScreenFPS = (fpsReadings.reduce((sum, f)=>(sum + f.screenFPS), 0) / (fpsReadings.length || 1));
+            }
 
             queue_new_frame();
             return;
