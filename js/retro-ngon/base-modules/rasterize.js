@@ -1,5 +1,5 @@
 /*
- * 2019, 2020 Tarpeeksi Hyvae Soft
+ * 2019-2022 Tarpeeksi Hyvae Soft
  * 
  * Software: Retro n-gon renderer
  * 
@@ -9,18 +9,20 @@
 
 Rngon.baseModules = (Rngon.baseModules || {});
 
-{ // A block to limit the scope of the unit-global variables we set up, below.
+{ // A block to limit the scope of the file-global variables we set up, below.
 
-// We'll sort the n-gon's vertices into those on its left side and those on its
-// right side.
-const leftVerts = new Array(500);
-const rightVerts = new Array(500);
+const maxNumVertsPerPolygon = 500;
 
-// Then we'll organize the sorted vertices into edges (lines between given two
-// vertices). Once we've got the edges figured out, we can render the n-gon by filling
-// in the spans between its edges.
-const leftEdges = new Array(500).fill().map(e=>({}));
-const rightEdges = new Array(500).fill().map(e=>({}));
+// For rendering polygons, we'll sort the polygon's vertices into those on its left
+// side and those on its right side.
+const leftVerts = new Array(maxNumVertsPerPolygon);
+const rightVerts = new Array(maxNumVertsPerPolygon);
+
+// Edges connect a polygon's vertices and provide interpolation parameters for
+// rasterization. For each horizontal span inside the polygon, we'll render pixels
+// from the left edge to the right edge.
+const leftEdges = new Array(maxNumVertsPerPolygon).fill().map(e=>({}));
+const rightEdges = new Array(maxNumVertsPerPolygon).fill().map(e=>({}));
 
 const vertexSorters = {
     verticalAscending: (vertA, vertB)=>((vertA.y === vertB.y)? 0 : ((vertA.y < vertB.y)? -1 : 1)),
@@ -50,19 +52,16 @@ Rngon.baseModules.rasterize = function(auxiliaryBuffers = [])
         else if (ngon.vertices.length == 1)
         {
             Rngon.baseModules.rasterize.point(ngon.vertices[0], ngon.material, n);
-
             continue;
         }
         else if (ngon.vertices.length == 2)
         {
             Rngon.baseModules.rasterize.line(ngon.vertices[0], ngon.vertices[1], ngon.material.color, n, false);
-
             continue;
         }
         else
         {
             Rngon.baseModules.rasterize.polygon(ngon, n, auxiliaryBuffers);
-
             continue;
         }
     }
@@ -70,11 +69,17 @@ Rngon.baseModules.rasterize = function(auxiliaryBuffers = [])
     return;
 }
 
-Rngon.baseModules.rasterize.polygon = function(ngon = Rngon.ngon(),
-                                               ngonIdx = 0,
-                                               auxiliaryBuffers = [])
+// Rasterizes a polygon with 3+ vertices into the render's pixel buffer.
+Rngon.baseModules.rasterize.polygon = function(
+    ngon = Rngon.ngon(),
+    ngonIdx = 0,
+    auxiliaryBuffers = []
+)
 {
-    Rngon.assert && (ngon.vertices.length < leftVerts.length)
+    Rngon.assert && (ngon.vertices.length >= 3)
+                 || Rngon.throw("Polygons must have 3 or more vertices");
+
+    Rngon.assert && (ngon.vertices.length < maxNumVertsPerPolygon)
                  || Rngon.throw("Overflowing the vertex buffer");
 
     const interpolatePerspective = Rngon.internalState.usePerspectiveCorrectInterpolation;
@@ -103,40 +108,35 @@ Rngon.baseModules.rasterize.polygon = function(ngon = Rngon.ngon(),
         textureMipLevel = texture.mipLevels[textureMipLevelIdx];
     }
 
-    // Generic algorithm for n-sided convex polygons.
+    sort_vertices();
+
+    define_edges();
+
+    if (material.hasFill)
     {
-        // Sort the vertices by height from smallest Y to largest Y.
-        ngon.vertices.sort(vertexSorters.verticalAscending);
-
-        const topVert = ngon.vertices[0];
-        const bottomVert = ngon.vertices[ngon.vertices.length-1];
-
-        leftVerts[numLeftVerts++] = topVert;
-        rightVerts[numRightVerts++] = topVert;
-
-        // Trace a line along XY between the top-most vertex and the bottom-most vertex;
-        // and for the intervening vertices, find whether they're to the left or right of
-        // that line on X. Being on the left means the vertex is on the n-gon's left side,
-        // otherwise it's on the right side.
-        for (let i = 1; i < (ngon.vertices.length - 1); i++)
-        {
-            const lr = Rngon.lerp(topVert.x, bottomVert.x, ((ngon.vertices[i].y - topVert.y) / (bottomVert.y - topVert.y)));
-
-            if (ngon.vertices[i].x >= lr)
-            {
-                rightVerts[numRightVerts++] = ngon.vertices[i];
-            }
-            else
-            {
-                leftVerts[numLeftVerts++] = ngon.vertices[i];
-            }
-        }
-
-        leftVerts[numLeftVerts++] = bottomVert;
-        rightVerts[numRightVerts++] = bottomVert;
+        fill();
     }
 
-    // Create edges out of the vertices.
+    // Draw a wireframe around any n-gons that wish for one.
+    if (Rngon.internalState.showGlobalWireframe ||
+        material.hasWireframe)
+    {
+        for (let l = 1; l < numLeftVerts; l++)
+        {
+            Rngon.baseModules.rasterize.line(leftVerts[l-1], leftVerts[l], material.wireframeColor, ngonIdx, true);
+        }
+
+        for (let r = 1; r < numRightVerts; r++)
+        {
+            Rngon.baseModules.rasterize.line(rightVerts[r-1], rightVerts[r], material.wireframeColor, ngonIdx, true);
+        }
+    }
+
+    return;
+
+    // Defines the edges connecting the polygon's vertices on the left and right sides of
+    // the polygon. Each edge is associated with interpolation parameters for rasterization.
+    function define_edges()
     {
         for (let l = 1; l < numLeftVerts; l++) add_edge(leftVerts[l-1], leftVerts[l], true);
         for (let r = 1; r < numRightVerts; r++) add_edge(rightVerts[r-1], rightVerts[r], false);
@@ -217,9 +217,44 @@ Rngon.baseModules.rasterize.polygon = function(ngon = Rngon.ngon(),
         }
     }
 
-    // Draw the n-gon. On each horizontal raster line, there will be two edges: left and right.
-    // We'll render into the pixel buffer each horizontal span that runs between the two edges.
-    if (material.hasFill)
+    // Generic vertex-sorting algorithm for n-sided convex polygons. Sorts the vertices
+    // into two arrays, left and right. The left array contains all vertices that are on
+    // the left-hand side of a line across the polygon from the highest to the lowest
+    // vertex, and the right array has the rest.
+    function sort_vertices()
+    {
+        // Sort the vertices by height from smallest Y to largest Y.
+        ngon.vertices.sort(vertexSorters.verticalAscending);
+
+        const topVert = ngon.vertices[0];
+        const bottomVert = ngon.vertices[ngon.vertices.length-1];
+
+        leftVerts[numLeftVerts++] = topVert;
+        rightVerts[numRightVerts++] = topVert;
+
+        // Trace a line along XY between the top-most vertex and the bottom-most vertex;
+        // and for the intervening vertices, find whether they're to the left or right of
+        // that line on X. Being on the left means the vertex is on the n-gon's left side,
+        // otherwise it's on the right side.
+        for (let i = 1; i < (ngon.vertices.length - 1); i++)
+        {
+            const lr = Rngon.lerp(topVert.x, bottomVert.x, ((ngon.vertices[i].y - topVert.y) / (bottomVert.y - topVert.y)));
+
+            if (ngon.vertices[i].x >= lr)
+            {
+                rightVerts[numRightVerts++] = ngon.vertices[i];
+            }
+            else
+            {
+                leftVerts[numLeftVerts++] = ngon.vertices[i];
+            }
+        }
+
+        leftVerts[numLeftVerts++] = bottomVert;
+        rightVerts[numRightVerts++] = bottomVert;
+    }
+
+    function fill()
     {
         let curLeftEdgeIdx = 0;
         let curRightEdgeIdx = 0;
@@ -335,9 +370,11 @@ Rngon.baseModules.rasterize.polygon = function(ngon = Rngon.ngon(),
                         const N = Rngon.vector3((iplNx / iplInvW), (iplNy / iplInvW), (iplNz / iplInvW));
                         Rngon.vector3.normalize(N)
                         
-                        const V = Rngon.vector3((Rngon.internalState.cameraPosition.x - worldPosX),
-                                                (Rngon.internalState.cameraPosition.y - worldPosY),
-                                                (Rngon.internalState.cameraPosition.z - worldPosZ));
+                        const V = Rngon.vector3(
+                            (Rngon.internalState.cameraPosition.x - worldPosX),
+                            (Rngon.internalState.cameraPosition.y - worldPosY),
+                            (Rngon.internalState.cameraPosition.z - worldPosZ)
+                        );
                         Rngon.vector3.normalize(V);
 
                         for (const light of Rngon.internalState.lights)
@@ -347,15 +384,19 @@ Rngon.baseModules.rasterize.polygon = function(ngon = Rngon.ngon(),
                                 continue;
                             }
 
-                            const distance = Math.sqrt(((worldPosX - light.position.x) * (worldPosX - light.position.x)) +
-                                                       ((worldPosY - light.position.y) * (worldPosY - light.position.y)) +
-                                                       ((worldPosZ - light.position.z) * (worldPosZ - light.position.z)));
+                            const distance = Math.sqrt(
+                                ((worldPosX - light.position.x) * (worldPosX - light.position.x)) +
+                                ((worldPosY - light.position.y) * (worldPosY - light.position.y)) +
+                                ((worldPosZ - light.position.z) * (worldPosZ - light.position.z))
+                            );
 
                             const distanceMul = (1 / (1 + (light.attenuation * distance)));
 
-                            const L = Rngon.vector3((light.position.x - worldPosX),
-                                                    (light.position.y - worldPosY),
-                                                    (light.position.z - worldPosZ));
+                            const L = Rngon.vector3(
+                                (light.position.x - worldPosX),
+                                (light.position.y - worldPosY),
+                                (light.position.z - worldPosZ)
+                            );
                             Rngon.vector3.normalize(L);
 
                             const dotNL = Math.max(0, Math.min(1, Rngon.vector3.dot(N, L)));
@@ -604,33 +645,23 @@ Rngon.baseModules.rasterize.polygon = function(ngon = Rngon.ngon(),
             if (y === (leftEdge.endY - 1)) leftEdge = leftEdges[++curLeftEdgeIdx];
             if (y === (rightEdge.endY - 1)) rightEdge = rightEdges[++curRightEdgeIdx];
         }
+
+        return;
     }
-
-    // Draw a wireframe around any n-gons that wish for one.
-    if (Rngon.internalState.showGlobalWireframe ||
-        material.hasWireframe)
-    {
-        for (let l = 1; l < numLeftVerts; l++)
-        {
-            Rngon.baseModules.rasterize.line(leftVerts[l-1], leftVerts[l], material.wireframeColor, ngonIdx, true);
-        }
-
-        for (let r = 1; r < numRightVerts; r++)
-        {
-            Rngon.baseModules.rasterize.line(rightVerts[r-1], rightVerts[r], material.wireframeColor, ngonIdx, true);
-        }
-    }
-
-    return;
 }
 
-// Draws a line between the two given vertices into the render's pixel buffer.
-Rngon.baseModules.rasterize.line = function(vert1 = Rngon.vertex(),
-                                            vert2 = Rngon.vertex(),
-                                            color = Rngon.color_rgba(),
-                                            ngonIdx = 0,
-                                            ignoreDepthBuffer = false)
+// Rasterizes a line between the two given vertices into the render's pixel buffer.
+Rngon.baseModules.rasterize.line = function(
+    vert1 = Rngon.vertex(),
+    vert2 = Rngon.vertex(),
+    color = Rngon.color_rgba(),
+    ngonIdx = 0,
+    ignoreDepthBuffer = false
+)
 {
+    Rngon.assert && (ngon.vertices.length == 2)
+                 || Rngon.throw("Lines must have exactly 2 vertices");
+
     if (color.alpha !== 255)
     {
         return;
@@ -750,10 +781,15 @@ Rngon.baseModules.rasterize.line = function(vert1 = Rngon.vertex(),
     }
 };
 
-Rngon.baseModules.rasterize.point = function(vertex = Rngon.vertex(),
-                                             material = {},
-                                             ngonIdx = 0)
+Rngon.baseModules.rasterize.point = function(
+    vertex = Rngon.vertex(),
+    material = {},
+    ngonIdx = 0
+)
 {
+    Rngon.assert && (ngon.vertices.length == 1)
+                 || Rngon.throw("Points must have exactly 1 vertex");
+
     if (material.color.alpha != 255)
     {
         return;
