@@ -260,7 +260,7 @@ function run_bencmark(sceneMeshes = [],
             // the benchmark when done.
             if ((cameraDirection.y - initialCameraDir.y) < 360)
             {
-                cameraDirection.y += (0.02 * timeDeltaMs);
+                cameraDirection.y += (0.03 * timeDeltaMs);
             }
             else
             {
