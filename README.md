@@ -1,53 +1,43 @@
 # The retro n-gon renderer
-An olden-style software 3D renderer in modern JavaScript.
 
-Provides a simple, streamlined API for rasterizing *n*-sided polygons - as well as points and lines - onto a HTML5 canvas (or into an independent ImageData object).
+A retro-themed software 3D renderer for rasterizing *n*-sided polygons (as well as points and lines) onto a HTML5 canvas. Also supports async off-screen rendering.
 
-You can view various interactive render samples [here](https://www.tarpeeksihyvaesoft.com/experimental/retro-ngon/samples/). Note that these samples might not work on Apple's operating systems, although the renderer itself does.
+![A textured cube](./images/screenshots/beta/tomb-raider-1-texture-lightmap-2.png)\
+*A scene from Tomb Raider (1996) reproduced with this renderer. (Based on assets produced by Core Design for Tomb Raider. Core Design is not associated with the retro n-gon renderer.)*
 
-### Features
+You can view various interactive render samples [here](https://www.tarpeeksihyvaesoft.com/experimental/retro-ngon/samples/).
+
+## Documentation
+
+- [User's manual](#users-manual)
+- [API reference](#api-reference)
+
+## Main features
+
 - Straightforward API
 - Genuine retro aesthetics
-- Optional pixel and vertex shaders
-- Optional async Web Worker rendering
-- Modular design - easily override core renderer functionality
-- Single-file distributable with no external dependencies
+- Modular design makes it easy to override parts of the render pipeline for specialized uses
+- No external dependencies
 
-![A textured cube](./images/painting-cube.png)
+## Suggested use cases
 
-### Projects using the retro n-gon renderer
-- [RallySportED-js](https://github.com/leikareipa/rallysported-js/), the modern asset editor for the cult DOS game Rally-Sport
+Being a retro-oriented software 3D renderer for JavaScript, the retro n-gon renderer encourages low resolutions, low polycounts, and general creativity in navigating around technical and/or performance limitations.
 
-### Suggested use cases
-Being a retro-oriented software 3D renderer for JavaScript, the retro n-gon renderer encourages low resolutions, low polycounts, and general creativity in navigating around technical and/or performance limitations &ndash; like they did in the old days of software rendering.
-
-Here are some of the possible use cases:
+Among some of the possible use cases are:
 - Retro-themed 3D games and model visualization
+- To avoid idiosyncrasies of hardware rendering
 - Engagement in minimalism
-- Async rendering
-- Avoidance of WebGL
 
-# Screenshots
-![A scene from Tomb Raider, textured](./images/screenshots/beta/tomb-raider-1-texture-lightmap-2.png)\
-**A scene** from Tomb Raider 1 as rendered by the retro n-gon renderer and consisting of textured quads. A custom lightmap has been baked onto the textures. (Based on assets produced by Core Design for *Tomb Raider*. Core Design is not associated with the retro n-gon renderer.)
-
-![Utah teapot](./images/screenshots/beta/teapt.png)\
-**The Utah teapot** with Phong shading.
-
-![A scene from Tomb Raider, vertex-lit](./images/screenshots/beta/tomb-raider-1-vertex-shade.png)\
-**Vertex lighting** with Gouraud interpolation in a scene from Tomb Raider 1. (Based on assets produced by Core Design for *Tomb Raider*. Core Design is not associated with the retro n-gon renderer.)
-
-![Ray-traced lighting with a pixel shader](./images/screenshots/beta/shader-ray-trace.png)
-**Ray-traced lighting** applied with a pixel shader.
+## Screenshots
 
 ![A view from Grand Prix Legends](./images/screenshots/beta/grand-prix-legends-rouen.png)\
-**A view** of the race track at Rouen in Grand Prix Legends. Note the low FPS due to a lack of visibility culling in the scene. (Based on textures and 3D models produced by Papyrus Design Group for *Grand Prix Legends*. Papyrus Design Group is not associated with the retro n-gon renderer.)
+*A view of the race track and stands at Rouen in Grand Prix Legends. (Based on textures and 3D models produced by Papyrus Design Group for Grand Prix Legends. Papyrus Design Group is not associated with the retro n-gon renderer.)*
 
-![Depth blur with a pixel shader](./images/screenshots/beta/shader-distance-blur.png)
-**Depth blur** applied with a pixel shader. (See [here](./samples/pixel-shaders/assets/copying.txt) for texture copyright information.)
+![Utah teapot](./images/screenshots/beta/teapt.png)\
+*The Utah teapot with Phong shading.*
 
 ![Lightmapping sample](./images/screenshots/beta/lightmap-sample.png)
-**Viewing one of the included render samples**, showcasing lightmapping.
+*Viewing one of the included render samples, showcasing lightmapping.*
 
 # User's manual
 In this section, you'll find both theoretical and practical guidance on using the retro n-gon renderer; including a reference manual for the renderer's API.
@@ -67,7 +57,6 @@ Contents:
     - [Models](#models)
     - [Exporting models from Blender](#exporting-models-from-blender)
     - [Texturing](#texturing)
-- [API reference](#api-reference)
 
 ## Introduction and intro tutorial
 ### The gist of it in theory
@@ -564,7 +553,7 @@ If your JSON texture data is stored in a JSON file rather than as a JavaScript o
 
 Be aware, however, that `texture_rgba.create_with_data_from_file()` uses the Fetch API, which typically requires the content to be served via a server rather than from a local file directly. If you want to use this functionality locally, you can set up a server on localhost &ndash; e.g. by executing `$ php -S localhost:8000` in the retro n-gon renderer's root &ndash; and then accessing the code's HTML via `localhost:8000/*`.
 
-## API reference
+# API reference
 The renderer's public API consists of the following objects:
 
 | Object                                          | Brief description                           |
@@ -579,7 +568,7 @@ The renderer's public API consists of the following objects:
 | [texture_rgba](#texture_rgbadata)               | RGB texture with transparency.              |
 | light                                           | (A description is coming.)                  |
 
-### render(canvasElement[, meshes[, options]])
+## render(canvasElement[, meshes[, options]])
 Renders one or more n-gon meshes onto an existing canvas element.
 
 *Parameters:*
@@ -731,7 +720,7 @@ Rngon.render("canvas", [Rngon.mesh([ngon])],
 // image.
 ```
 
-### render_async([, meshes[, options[, rngonUrl]]])
+## render_async([, meshes[, options[, rngonUrl]]])
 Renders one or more n-gon meshes into a pixel buffer (an ImageData object). Runs in a Web Worker so is non-blocking, provided that the host hardware supports concurrent threads.
 
 *Parameters:*
@@ -811,7 +800,7 @@ Rngon.render_async([mesh], {width: 640, height: 480})
 const result = await Rngon.render_async([mesh], {width: 640, height: 480});
 ```
 
-### mesh([ngons[, transform]])
+## mesh([ngons[, transform]])
 A collection of thematically-related n-gons, rendered as a unit with shared transformations.
 
 *Parameters:*
@@ -858,7 +847,7 @@ const mesh = Rngon.mesh([ngon],
                         });
 ```
 
-### ngon([vertices[, material[, normal]]])
+## ngon([vertices[, material[, normal]]])
 An n-gon &ndash; a shape defined by *n* vertices; typically a triangle or a quad.
 
 *Parameters:*
@@ -931,7 +920,7 @@ const quad = Rngon.ngon([Rngon.vertex(-1, -1, 0),
                         });
 ```
 
-### vertex([x[, y[, z[, u[, v[, w]]]]]])
+## vertex([x[, y[, z[, u[, v[, w]]]]]])
 One corner of an n-gon.
 
 *Parameters:*
@@ -980,7 +969,7 @@ const vertex2 = Rngon.vertex(-1, -1, 0);
 const ngon = Rngon.ngon([vertex1, vertex2]);
 ```
 
-### vector3([x[, y[, z]]])
+## vector3([x[, y[, z]]])
 A three-component vector.
 
 *Aliases:* **rotation_vector**\*, **translation_vector**, **scaling_vector**
@@ -1013,7 +1002,7 @@ A three-component vector.
 const vector = Rngon.vector3(1, 2, 3);
 ```
 
-### color_rgba([red[, green[, blue[, alpha]]]])
+## color_rgba([red[, green[, blue[, alpha]]]])
 RGB color with transparency (alpha channel). The alpha channel is either fully transparent or fully opaque.
 
 *Parameters:*
@@ -1038,7 +1027,7 @@ RGB color with transparency (alpha channel). The alpha channel is either fully t
 }
 ```
 
-### texture_rgba([data])
+## texture_rgba([data])
 A texture whose pixels are RGB with alpha.
 
 *Parameters:*
