@@ -28,20 +28,31 @@ Among some of the possible use cases are:
 - To avoid idiosyncrasies of hardware rendering
 - Engagement in minimalism
 
+## Screenshots
+
+![A view from Grand Prix Legends](./images/screenshots/beta/grand-prix-legends-rouen.png)\
+*A view of the race track and stands at Rouen in Grand Prix Legends. (Based on textures and 3D models produced by Papyrus Design Group for Grand Prix Legends. Papyrus Design Group is not associated with the retro n-gon renderer.)*
+
+![Utah teapot](./images/screenshots/beta/teapt.png)\
+*The Utah teapot with Phong shading.*
+
+![Lightmapping sample](./images/screenshots/beta/lightmap-sample.png)
+*Viewing one of the included render samples, showcasing lightmapping.*
+
 ## Performance
 
 Below are sample runs of the renderer's [performance benchmarks](tests/performance/), showing average FPS counts across various render resolutions running in Chrome 99.
 
 <table>
     <tr>
-        <td align="left">AMD Ryzen 5 5600x</td>
+        <td align="left">AMD Ryzen 5 5600X</td>
         <th align="center">480 &times; 270</th>
         <th align="center">960 &times; 540</th>
         <th align="center">1920 &times; 1080</th>
         <th align="center">3840 &times; 2160</th>
     </tr>
     <tr>
-        <th align="left">Quake 1 (textured)</th>
+        <th align="left">Quake 1</th>
         <td align="center">180</td>
         <td align="center">88</td>
         <td align="center">28</td>
@@ -71,17 +82,6 @@ Below are sample runs of the renderer's [performance benchmarks](tests/performan
 </table>
 
 Average FPS figures only tell part of the story, though. You may find that the FPS can be quite variable across frames, which is something future versions of the renderer will continue to improve on.
-
-## Screenshots
-
-![A view from Grand Prix Legends](./images/screenshots/beta/grand-prix-legends-rouen.png)\
-*A view of the race track and stands at Rouen in Grand Prix Legends. (Based on textures and 3D models produced by Papyrus Design Group for Grand Prix Legends. Papyrus Design Group is not associated with the retro n-gon renderer.)*
-
-![Utah teapot](./images/screenshots/beta/teapt.png)\
-*The Utah teapot with Phong shading.*
-
-![Lightmapping sample](./images/screenshots/beta/lightmap-sample.png)
-*Viewing one of the included render samples, showcasing lightmapping.*
 
 # User's manual
 In this section, you'll find both theoretical and practical guidance on using the retro n-gon renderer; including a reference manual for the renderer's API.
