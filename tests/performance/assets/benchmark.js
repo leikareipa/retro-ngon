@@ -120,7 +120,7 @@ function print_results(results)
 
             infoLabel.style.left = `${Math.max(0, Math.min((window.innerWidth - infoLabelRect.width), labelX))}px`;
             infoLabel.style.top = `${Math.max(0, labelY)}px`;
-            infoLabel.innerHTML = `<span class="primary">${Math.round(hoverFPS)} <span class="secondary">@ ${hoverTimeMs} ms</span>`;
+            infoLabel.innerHTML = `<div class="secondary">${hoverTimeMs} ms</div><div class="primary">${Math.round(hoverFPS)}</div>`;
         }
     }
 
@@ -285,7 +285,7 @@ function run_bencmark(sceneMeshes = [],
                 fpsReadings.push({
                     timestamp,
                     renderFPS: (1000 / renderInfo.totalRenderTimeMs),
-                    screenFPS: Math.round(1000 / (timeDeltaMs || Infinity)),
+                    screenFPS: (1000 / (timeDeltaMs || Infinity)),
                     renderInfo
                 });
 

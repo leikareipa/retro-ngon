@@ -83,6 +83,7 @@ body
     user-select: none;
     white-space: nowrap;
     display: none;
+    text-align: right;
 }
 
 #benchmark-graph-info-label .primary
@@ -93,8 +94,8 @@ body
 
 #benchmark-graph-info-label .secondary
 {
-    color: dimgray;
-    font-size: 85%;
+    color: gray;
+    font-size: 80%;
 }
 
 #benchmark-graph-container
