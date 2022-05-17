@@ -11,8 +11,10 @@
 Rngon.light = function(position = Rngon.translation_vector(0, 0, 0),
                        settings = {})
 {
-    Rngon.assert && (typeof position === "object")
-                 || Rngon.throw("Expected numbers as parameters to the light factory.");
+    Rngon.assert?.(
+        (typeof position === "object"),
+        "Expected numbers as parameters to the light factory."
+    );
 
     settings = {
         ...Rngon.light.defaultSettings,

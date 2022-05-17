@@ -10,13 +10,22 @@
 // A collection of ngons, with shared translation and rotation.
 Rngon.mesh = function(ngons = [Rngon.ngon()], transform = {})
 {
-    Rngon.assert && (ngons instanceof Array) || Rngon.throw("Expected a list of ngons for creating an ngon mesh.");
-    Rngon.assert && (transform instanceof Object) || Rngon.throw("Expected an object with transformation properties.");
+    Rngon.assert?.(
+        (ngons instanceof Array),
+        "Expected a list of ngons for creating an ngon mesh."
+    );
 
-    Rngon.assert && (typeof Rngon.mesh.defaultTransform.rotation !== "undefined" &&
-                     typeof Rngon.mesh.defaultTransform.translation !== "undefined" &&
-                     typeof Rngon.mesh.defaultTransform.scaling !== "undefined")
-                 || Rngon.throw("The default transforms object for mesh() is missing required properties.");
+    Rngon.assert?.(
+        (transform instanceof Object),
+        "Expected an object with transformation properties."
+    );
+
+    Rngon.assert?.(
+        (typeof Rngon.mesh.defaultTransform.rotation !== "undefined" &&
+         typeof Rngon.mesh.defaultTransform.translation !== "undefined" &&
+         typeof Rngon.mesh.defaultTransform.scaling !== "undefined"),
+        "The default transforms object for mesh() is missing required properties."
+    );
 
     // Combine default transformations with the user-supplied ones.
     transform =
@@ -43,19 +52,25 @@ Rngon.mesh.defaultTransform =
     scaling: Rngon.scaling_vector(1, 1, 1)
 };
 
-Rngon.mesh.object_space_matrix = function(m)
+Rngon.mesh.object_space_matrix = function(mesh)
 {
-    const translationMatrix = Rngon.matrix44.translation(m.translation.x,
-                                                         m.translation.y,
-                                                         m.translation.z);
+    const translationMatrix = Rngon.matrix44.translation(
+        mesh.translation.x,
+        mesh.translation.y,
+        mesh.translation.z
+    );
 
-    const rotationMatrix = Rngon.matrix44.rotation(m.rotation.x,
-                                                   m.rotation.y,
-                                                   m.rotation.z);
+    const rotationMatrix = Rngon.matrix44.rotation(
+        mesh.rotation.x,
+        mesh.rotation.y,
+        mesh.rotation.z
+    );
 
-    const scalingMatrix = Rngon.matrix44.scaling(m.scale.x,
-                                                 m.scale.y,
-                                                 m.scale.z);
+    const scalingMatrix = Rngon.matrix44.scaling(
+        mesh.scale.x,
+        mesh.scale.y,
+        mesh.scale.z
+    );
 
     return Rngon.matrix44.multiply(Rngon.matrix44.multiply(translationMatrix, rotationMatrix), scalingMatrix);
 }

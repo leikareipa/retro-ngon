@@ -25,8 +25,10 @@ export function tile_filler()
         const material = ngon.material;
         const texture = material.texture;
 
-        Rngon.assert && (ngon.vertices.length == 4)
-                     || Rngon.throw("Expected four-sided polygons.");
+        Rngon.assert?.(
+            (ngon.vertices.length == 4),
+            "Expected four-sided polygons."
+        );
 
         // Define the tile's left and right edges. Later, we'll render the tile
         // as horizontal pixel spans across these edges.

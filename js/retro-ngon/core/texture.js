@@ -29,12 +29,20 @@ Rngon.texture_rgba = function(data = {})
 
     const numColorChannels = 4;
 
-    Rngon.assert && (Number.isInteger(data.width) && Number.isInteger(data.height))
-                 || Rngon.throw("Expected texture width and height to be integer values.");
-    Rngon.assert && (data.width >= 0 && data.height >= 0)
-                 || Rngon.throw("Expected texture width and height to be no less than zero.");
-    Rngon.assert && (data.width <= maxWidth && data.height <= maxHeight)
-                 || Rngon.throw("Expected texture width/height to be no more than " + maxWidth + "/" + maxHeight + ".");
+    Rngon.assert?.(
+        (Number.isInteger(data.width) && Number.isInteger(data.height)),
+        "Expected texture width and height to be integer values."
+    );
+    
+    Rngon.assert?.(
+        ((data.width >= 0) && (data.height >= 0)),
+        "Expected texture width and height to be no less than zero."
+    );
+
+    Rngon.assert?.(
+        ((data.width <= maxWidth) && (data.height <= maxHeight)),
+        `Expected texture width/height to be no more than ${maxWidth}/${maxHeight}.`
+    );
 
     // If necessary, decode the pixel data into raw RGBA/8888.
     if (data.encoding !== "none")
@@ -44,8 +52,10 @@ Rngon.texture_rgba = function(data = {})
         // 1 bit.
         if (data.encoding === "base64")
         {
-            Rngon.assert && (data.channels === "rgba:5+5+5+1")
-                         || Rngon.throw("Expected Base64-encoded data to be in RGBA 5551 format.");
+            Rngon.assert?.(
+                (data.channels === "rgba:5+5+5+1"),
+                "Expected Base64-encoded data to be in RGBA 5551 format."
+            );
 
             data.pixels = (()=>
             {
@@ -53,8 +63,10 @@ Rngon.texture_rgba = function(data = {})
                 const decoded = atob(data.pixels);
 
                 // We should have an array where each pixel is a 2-byte value.
-                Rngon.assert && (decoded.length === (data.width * data.height * 2))
-                             || Rngon.throw("Unexpected data length for a Base64-encoded texture.");
+                Rngon.assert?.(
+                    (decoded.length === (data.width * data.height * 2)),
+                    "Unexpected data length for a Base64-encoded texture."
+                );
 
                 for (let i = 0; i < (data.width * data.height * 2); i += 2)
                 {
@@ -75,8 +87,10 @@ Rngon.texture_rgba = function(data = {})
         }
     }
 
-    Rngon.assert && (data.pixels.length === (data.width * data.height * numColorChannels))
-                 || Rngon.throw("The texture's pixel array size doesn't match its width and height.");
+    Rngon.assert?.(
+        (data.pixels.length === (data.width * data.height * numColorChannels)),
+        "The texture's pixel array size doesn't match its width and height."
+    );
 
     // Convert the raw pixel data into objects of the form {red, green, blue, alpha}.
     // Note: We also flip the texture on the Y axis, to counter the fact that textures
@@ -132,9 +146,11 @@ Rngon.texture_rgba = function(data = {})
         // We're finished generating mip levels once we've done them down to 1 x 1.
         if ((mipWidth === 1) && (mipHeight === 1))
         {
-            Rngon.assert && (mipmaps.length > 0)
-                         || Rngon.throw("Failed to generate mip levels for a texture.");
-                         
+            Rngon.assert?.(
+                (mipmaps.length > 0),
+                "Failed to generate mip levels for a texture."
+            );
+
             break;
         }
     }

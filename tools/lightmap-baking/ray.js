@@ -244,8 +244,7 @@ function uv_to_texel_coordinates(u, v, material)
 {
     const texture = material.texture;
 
-    Rngon.assert && (texture)
-                 || Rngon.throw("The material must have a texture.");
+    Rngon.assert?.(texture, "The material must have a texture.");
 
     switch (material.textureMapping)
     {

@@ -79,7 +79,11 @@ Rngon.matrix44 = (()=>
             const temp = Rngon.matrix44.multiply(my, mz);
             const mResult = Rngon.matrix44.multiply(mx, temp);
 
-            Rngon.assert && (mResult.length === 16) || Rngon.throw("Expected a 4 x 4 matrix.");
+            Rngon.assert?.(
+                (mResult.length === 16),
+                "Expected a 4 x 4 matrix."
+            );
+
             return Object.freeze(mResult);
         },
 
@@ -104,8 +108,10 @@ Rngon.matrix44 = (()=>
         
         multiply: function(m1 = [], m2 = [])
         {
-            Rngon.assert && ((m1.length === 16) && (m2.length === 16))
-                         || Rngon.throw("Expected 4 x 4 matrices.");
+            Rngon.assert?.(
+                ((m1.length === 16) && (m2.length === 16)),
+                "Expected 4 x 4 matrices."
+            );
 
             let mResult = [];
             for (let i = 0; i < 4; i++)
@@ -119,7 +125,11 @@ Rngon.matrix44 = (()=>
                 }
             }
 
-            Rngon.assert && (mResult.length === 16) || Rngon.throw("Expected a 4 x 4 matrix.");
+            Rngon.assert?.(
+                (mResult.length === 16),
+                "Expected a 4 x 4 matrix."
+            );
+            
             return Object.freeze(mResult);
         },
     });

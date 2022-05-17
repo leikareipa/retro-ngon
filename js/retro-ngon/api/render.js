@@ -18,15 +18,13 @@ Rngon.render = function(canvasElement,
     // identifies the DOM element, or directly as a DOM element object. So let's figure
     // out what we received, and turn it into a DOM element object for the renderer
     // to operate on.
+    if (typeof canvasElement == "string")
     {
-        if (typeof canvasElement == "string")
-        {
-            canvasElement = document.getElementById(canvasElement);
-        }
-        else if (!(canvasElement instanceof Element))
-        {
-            Rngon.throw("Invalid canvas element.");
-        }
+        canvasElement = document.getElementById(canvasElement);
+    }
+    else if (!(canvasElement instanceof Element))
+    {
+        Rngon.throw("Invalid canvas element.");
     }
 
     options = Object.freeze({

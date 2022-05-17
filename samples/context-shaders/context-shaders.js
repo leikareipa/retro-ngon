@@ -50,9 +50,9 @@ export const sample = {
         {title:"Rasterized overlay", function:cs_rasterized_overlay},
         {title:"Screen fade",        function:cs_screen_fade},
         {title:"Radial fade",        function:cs_radial_fade},
-        {title:"Vignette",           function:cs_vignette},
         {title:"Shake",              function:cs_shake},
         {title:"Slide show",         function:cs_slide_show},
+        {title:"Vignette",           function:cs_vignette},
     ],
     camera: undefined,
     Rngon: undefined,
@@ -104,7 +104,7 @@ function cs_screen_fade({context, image})
 {
     context.putImageData(image, 0, 0);
 
-    context.fillStyle = `rgba(0, 0, 0, ${Math.abs(Math.cos(this.numTicks/200))})`;
+    context.fillStyle = `rgba(0, 0, 0, ${Math.abs(Math.cos(this.numTicks/100))})`;
     context.fillRect(0, 0, image.width, image.height);
 }
 
@@ -160,7 +160,7 @@ function cs_osd({context, image})
     if (isFlogImgLoaded) {
         context.drawImage(flogImg, 2, fontSize*3+3, 32, 32);
     }
-
+    
     context.shadowOffsetY = 3;
     context.shadowBlur = 2;
     context.shadowColor = "rgba(0, 0, 0, 0.2)";

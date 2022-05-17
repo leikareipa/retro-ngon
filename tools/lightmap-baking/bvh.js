@@ -60,8 +60,10 @@ function bvh_aabb(mesh = [Rngon.ngon()], isLeaf = false)
 // Recursively splits the given mesh into smaller and smaller bounding boxes.
 function bvh(mesh = [Rngon.ngon()])
 {
-    Rngon.assert && Array.isArray(mesh)
-                 || Rngon.throw("Expected an array of triangles for creating a BVH.");
+    Rngon.assert?.(
+        Array.isArray(mesh),
+        "Expected an array of triangles for creating a BVH."
+    );
 
     // The time at which construction for this BVH began. We'll use this to time how long
     // the construction took.
@@ -132,8 +134,10 @@ function bvh(mesh = [Rngon.ngon()])
             // Distribute the parent AABB's triangles between the two new AABBs that the parent was split into.
             const leftMesh = mesh.filter(triangle=>is_triangle_fully_inside_box(triangle, leftMin, leftMax));
             const rightMesh = mesh.filter(triangle=>!is_triangle_fully_inside_box(triangle, leftMin, leftMax));
-            Rngon.assert && ((leftMesh.length + rightMesh.length) === mesh.length)
-                         || Rngon.throw("Triangles have gone missing during AABB splitting.");
+            Rngon.assert?.(
+                ((leftMesh.length + rightMesh.length) === mesh.length),
+                "Triangles have gone missing during AABB splitting."
+            );
 
             // Recurse to split each of the two new AABBs further into two more, etc.
             parentAABB.mutable.left = bvh_aabb(leftMesh, Boolean(((depth + 1) >= maxDepth) || (leftMesh.length <= minNumTris)));

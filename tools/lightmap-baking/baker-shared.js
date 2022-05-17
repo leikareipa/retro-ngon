@@ -13,8 +13,10 @@
 // the returned array will generally also modify the original n-gon data.
 function triangulate_ngons(ngons = [Rngon.ngon()])
 {
-    Rngon.assert && ngons.every(n=>n.vertices.length >= 3)
-                 || Rngon.throw("All n-gons must have at least three vertices.");
+    Rngon.assert?.(
+        ngons.every(n=>n.vertices.length >= 3),
+        "All n-gons must have at least three vertices."
+    );
 
     return ngons.reduce((triangles, ngon)=>
     {
@@ -69,8 +71,7 @@ function uv_to_texel_coordinates(u, v, material)
 {
     const texture = material.shadeMap;
 
-    Rngon.assert && (texture)
-                 || Rngon.throw("The material must have a shade map.");
+    Rngon.assert?.(texture, "The material must have a shade map.");
 
     switch (material.textureMapping)
     {

@@ -11,8 +11,7 @@ import * as FileSaver from "./filesaver/FileSaver.js";
 
 function verify_argument(condition = false)
 {
-    Rngon.assert && condition
-                 || Rngon.throw("Invalid argument.");
+    Rngon.assert?.(condition, "Invalid argument.");
 }
 
 export async function load_shade_maps_from_file(filename = "shade-maps.js",
@@ -26,8 +25,10 @@ export async function load_shade_maps_from_file(filename = "shade-maps.js",
     const shadeMapModule = await import(filename);
     const loadedShadeMaps = [];
     
-    Rngon.assert && (shadeMapModule.SHADE_MAPS.length == forNgons.length)
-                 || Rngon.throw("The shade map data does not appear compatible with these n-gons.");
+    Rngon.assert?.(
+        (shadeMapModule.SHADE_MAPS.length == forNgons.length),
+        "The shade map data does not appear compatible with these n-gons."
+    );
 
     for (let i = 0; i < forNgons.length; i++)
     {
@@ -37,8 +38,10 @@ export async function load_shade_maps_from_file(filename = "shade-maps.js",
         shadeMap.width = Math.max(2, Math.min(maxShadeMapWidth, texture.width));
         shadeMap.height = Math.max(2, Math.min(maxShadeMapHeight, texture.height));
 
-        Rngon.assert && ((shadeMap.width * shadeMap.height) == shadeMapModule.SHADE_MAPS[i].length)
-                     || Rngon.throw("The shade map data does not appear compatible with these n-gons.");
+        Rngon.assert?.(
+            ((shadeMap.width * shadeMap.height) == shadeMapModule.SHADE_MAPS[i].length),
+            "The shade map data does not appear compatible with these n-gons."
+        );
 
         for (let texelIdx = 0; texelIdx < (shadeMap.width * shadeMap.height); texelIdx++)
         {
@@ -114,9 +117,10 @@ export function apply_shade_maps_to_ngons(shadeMaps = [],
     {
         for (const [ngonIdx, ngon] of ngons.entries())
         {
-            Rngon.assert && (ngon.material &&
-                             ngon.material.texture)
-                         || Rngon.throw("All n-gons must have a texture.");
+            Rngon.assert?.(
+                (ngon.material && ngon.material.texture),
+                "All n-gons must have a texture."
+            );
 
             const texture = ngon.material.texture;
             const shadeMap = shadeMaps[ngonIdx];

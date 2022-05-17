@@ -210,21 +210,26 @@ Rngon.surface = function(canvasElement,  // The target DOM <canvas> element.
     // Initializes the target DOM <canvas> element for rendering into. Throws on errors.
     function setup_onscreen(canvasElement, scale)
     {
-        Rngon.assert && (canvasElement instanceof Element)
-                     || Rngon.throw("Can't find the given canvas element.");
+        Rngon.assert?.(
+            (canvasElement instanceof Element),
+            "Can't find the given canvas element."
+        );
 
         const renderContext = canvasElement.getContext("2d");
 
-        Rngon.assert && (renderContext instanceof CanvasRenderingContext2D)
-                     || Rngon.throw("Couldn't establish a canvas render context.");
+        Rngon.assert?.(
+            (renderContext instanceof CanvasRenderingContext2D),
+            "Couldn't establish a canvas render context."
+        );
 
         // Size the canvas as per the requested render scale.
         const surfaceWidth = Rngon.renderable_width_of(canvasElement, scale);
         const surfaceHeight = Rngon.renderable_height_of(canvasElement, scale);
         {
-            Rngon.assert && ((surfaceWidth > 0) &&
-                             (surfaceHeight > 0))
-                         || Rngon.throw("Couldn't retrieve the canvas's dimensions.");
+            Rngon.assert?.(
+                ((surfaceWidth > 0) && (surfaceHeight > 0)),
+                "Couldn't retrieve the canvas's dimensions."
+            );
 
             canvasElement.setAttribute("width", surfaceWidth);
             canvasElement.setAttribute("height", surfaceHeight);
@@ -234,7 +239,8 @@ Rngon.surface = function(canvasElement,  // The target DOM <canvas> element.
             surfaceWidth,
             surfaceHeight,
             canvasElement,
-            renderContext};
+            renderContext
+        };
     }
 
     // Sets up rendering into an off-screen buffer, i.e. without using a DOM <canvas>

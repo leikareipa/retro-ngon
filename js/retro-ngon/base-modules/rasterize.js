@@ -76,11 +76,15 @@ Rngon.baseModules.rasterize.polygon = function(
     auxiliaryBuffers = []
 )
 {
-    Rngon.assert && (ngon.vertices.length >= 3)
-                 || Rngon.throw("Polygons must have 3 or more vertices");
+    Rngon.assert?.(
+        (ngon.vertices.length >= 3),
+        "Polygons must have 3 or more vertices"
+    );
 
-    Rngon.assert && (ngon.vertices.length < maxNumVertsPerPolygon)
-                 || Rngon.throw("Overflowing the vertex buffer");
+    Rngon.assert?.(
+        (ngon.vertices.length < maxNumVertsPerPolygon),
+        "Overflowing the vertex buffer"
+    );
 
     const interpolatePerspective = Rngon.internalState.usePerspectiveCorrectInterpolation;
     const usePixelShader = Rngon.internalState.usePixelShader;

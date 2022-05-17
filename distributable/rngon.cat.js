@@ -1,6 +1,6 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (05 April 2022 03:51:39 UTC)
+// VERSION: beta live (17 May 2022 20:34:33 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
@@ -49,13 +49,15 @@ const Rngon = {
 
 "use strict";
 
-// Defined 'true' to allow for the conveniency of named in-place assertions,
-// e.g. Rngon.assert && (x === 1) || Rngon.throw("X wasn't 1.").
-// Note that setting this to 'false' won't disable assertions - for that,
-// you'll want to search/replace "Rngon.assert &&" with "Rngon.assert ||"
-// and keep this set to 'true'. The comparison against Rngon.assert may still
-// be done, though (I guess depending on the JS engine's ability to optimize).
-Object.defineProperty(Rngon, "assert", {value:true, writable:false});
+// Call this function using optional chaining: "Rsed.assert?.()".
+// To disable assertions, comment out this function definition.
+Rngon.assert = (condition, errorMessage)=>
+{
+    if (!condition)
+    {
+        Rngon.throw(errorMessage);
+    }
+}
 
 Rngon.lerp = (x, y, interval)=>(x + (interval * (y - x)));
 
@@ -439,8 +441,10 @@ Rngon.trig = (function()
 Rngon.light = function(position = Rngon.translation_vector(0, 0, 0),
                        settings = {})
 {
-    Rngon.assert && (typeof position === "object")
-                 || Rngon.throw("Expected numbers as parameters to the light factory.");
+    Rngon.assert?.(
+        (typeof position === "object"),
+        "Expected numbers as parameters to the light factory."
+    );
 
     settings = {
         ...Rngon.light.defaultSettings,
@@ -482,11 +486,13 @@ Rngon.light.defaultSettings = {
 // NOTE: Expects to remain immutable.
 Rngon.color_rgba = function(red = 55, green = 55, blue = 55, alpha = 255)
 {
-    Rngon.assert && (((red   >= 0) && (red   <= 255)) &&
-                     ((green >= 0) && (green <= 255)) &&
-                     ((blue  >= 0) && (blue  <= 255)) &&
-                     ((alpha >= 0) && (alpha <= 255)))
-                 || Rngon.throw("The given color values are out of range.");
+    Rngon.assert?.(
+        (((red   >= 0) && (red   <= 255)) &&
+         ((green >= 0) && (green <= 255)) &&
+         ((blue  >= 0) && (blue  <= 255)) &&
+         ((alpha >= 0) && (alpha <= 255))),
+        "The given color values are out of range."
+    );
 
     // Alternate range, 0..1.
     const unitRange = Object.freeze({red:red/255, green:green/255, blue:blue/255, alpha:alpha/255});
@@ -515,8 +521,12 @@ Rngon.color_rgba = function(red = 55, green = 55, blue = 55, alpha = 255)
 // NOTE: The returned object is not immutable.
 Rngon.vector3 = function(x = 0, y = 0, z = 0)
 {
-    Rngon.assert && (typeof x === "number" && typeof y === "number" && typeof z === "number")
-                 || Rngon.throw("Expected numbers as parameters to the vector3 factory.");
+    Rngon.assert?.(
+        ((typeof x === "number") &&
+         (typeof y === "number") &&
+         (typeof z === "number")),
+        "Expected numbers as parameters to the vector3 factory."
+    );
 
     const returnObject =
     {
@@ -536,9 +546,11 @@ Rngon.scaling_vector     = Rngon.vector3;
 // Transforms the vector by the given 4x4 matrix.
 Rngon.vector3.transform = function(v, m = [])
 {
-    Rngon.assert && (m.length === 16)
-                 || Rngon.throw("Expected a 4 x 4 matrix to transform the vector by.");
-    
+    Rngon.assert?.(
+        (m.length === 16),
+        "Expected a 4 x 4 matrix to transform the vector by."
+    );
+
     const x_ = ((m[0] * v.x) + (m[4] * v.y) + (m[ 8] * v.z));
     const y_ = ((m[1] * v.x) + (m[5] * v.y) + (m[ 9] * v.z));
     const z_ = ((m[2] * v.x) + (m[6] * v.y) + (m[10] * v.z));
@@ -630,10 +642,18 @@ Rngon.vertex = function(x = 0, y = 0, z = 0,
                         worldX = x, worldY = y, worldZ = z,
                         normalX = 0, normalY = 1, normalZ = 0)
 {
-    Rngon.assert && (typeof x === "number" && typeof y === "number" && typeof z === "number" &&
-                     typeof w === "number" && typeof u === "number" && typeof v === "number" &&
-                     typeof worldX === "number" && typeof worldY === "number" && typeof worldZ === "number")
-                 || Rngon.throw("Expected numbers as parameters to the vertex factory.");
+    Rngon.assert?.(
+        ((typeof x === "number") &&
+         (typeof y === "number") &&
+         (typeof z === "number") &&
+         (typeof w === "number") &&
+         (typeof u === "number") &&
+         (typeof v === "number") &&
+         (typeof worldX === "number") &&
+         (typeof worldY === "number") &&
+         (typeof worldZ === "number")),
+        "Expected numbers as parameters to the vertex factory."
+    );
 
     const returnObject =
     {
@@ -664,8 +684,10 @@ Rngon.vertex = function(x = 0, y = 0, z = 0,
 // Transforms the vertex by the given 4x4 matrix.
 Rngon.vertex.transform = function(v, m = [])
 {
-    Rngon.assert && (m.length === 16)
-                    || Rngon.throw("Expected a 4 x 4 matrix to transform the vertex by.");
+    Rngon.assert?.(
+        (m.length === 16),
+        "Expected a 4 x 4 matrix to transform the vertex by."
+    );
     
     const x_ = ((m[0] * v.x) + (m[4] * v.y) + (m[ 8] * v.z) + (m[12] * v.w));
     const y_ = ((m[1] * v.x) + (m[5] * v.y) + (m[ 9] * v.z) + (m[13] * v.w));
@@ -734,13 +756,22 @@ Rngon.material.default = {
 // A collection of ngons, with shared translation and rotation.
 Rngon.mesh = function(ngons = [Rngon.ngon()], transform = {})
 {
-    Rngon.assert && (ngons instanceof Array) || Rngon.throw("Expected a list of ngons for creating an ngon mesh.");
-    Rngon.assert && (transform instanceof Object) || Rngon.throw("Expected an object with transformation properties.");
+    Rngon.assert?.(
+        (ngons instanceof Array),
+        "Expected a list of ngons for creating an ngon mesh."
+    );
 
-    Rngon.assert && (typeof Rngon.mesh.defaultTransform.rotation !== "undefined" &&
-                     typeof Rngon.mesh.defaultTransform.translation !== "undefined" &&
-                     typeof Rngon.mesh.defaultTransform.scaling !== "undefined")
-                 || Rngon.throw("The default transforms object for mesh() is missing required properties.");
+    Rngon.assert?.(
+        (transform instanceof Object),
+        "Expected an object with transformation properties."
+    );
+
+    Rngon.assert?.(
+        (typeof Rngon.mesh.defaultTransform.rotation !== "undefined" &&
+         typeof Rngon.mesh.defaultTransform.translation !== "undefined" &&
+         typeof Rngon.mesh.defaultTransform.scaling !== "undefined"),
+        "The default transforms object for mesh() is missing required properties."
+    );
 
     // Combine default transformations with the user-supplied ones.
     transform =
@@ -767,19 +798,25 @@ Rngon.mesh.defaultTransform =
     scaling: Rngon.scaling_vector(1, 1, 1)
 };
 
-Rngon.mesh.object_space_matrix = function(m)
+Rngon.mesh.object_space_matrix = function(mesh)
 {
-    const translationMatrix = Rngon.matrix44.translation(m.translation.x,
-                                                         m.translation.y,
-                                                         m.translation.z);
+    const translationMatrix = Rngon.matrix44.translation(
+        mesh.translation.x,
+        mesh.translation.y,
+        mesh.translation.z
+    );
 
-    const rotationMatrix = Rngon.matrix44.rotation(m.rotation.x,
-                                                   m.rotation.y,
-                                                   m.rotation.z);
+    const rotationMatrix = Rngon.matrix44.rotation(
+        mesh.rotation.x,
+        mesh.rotation.y,
+        mesh.rotation.z
+    );
 
-    const scalingMatrix = Rngon.matrix44.scaling(m.scale.x,
-                                                 m.scale.y,
-                                                 m.scale.z);
+    const scalingMatrix = Rngon.matrix44.scaling(
+        mesh.scale.x,
+        mesh.scale.y,
+        mesh.scale.z
+    );
 
     return Rngon.matrix44.multiply(Rngon.matrix44.multiply(translationMatrix, rotationMatrix), scalingMatrix);
 }
@@ -798,8 +835,15 @@ Rngon.ngon = function(vertices = [Rngon.vertex()],
                       material = Rngon.material(), // or {}
                       vertexNormals = Rngon.vector3(0, 1, 0))
 {
-    Rngon.assert && (vertices instanceof Array) || Rngon.throw("Expected an array of vertices to make an ngon.");
-    Rngon.assert && (material instanceof Object) || Rngon.throw("Expected an object containing user-supplied options.");
+    Rngon.assert?.(
+        (vertices instanceof Array),
+        "Expected an array of vertices to make an ngon."
+    );
+
+    Rngon.assert?.(
+        (material instanceof Object),
+        "Expected an object containing user-supplied options."
+    );
 
     // Combine default material options with the user-supplied ones.
     material = Rngon.material(material);
@@ -860,7 +904,7 @@ Rngon.ngon.perspective_divide = function(ngon)
     {
         Rngon.vertex.perspective_divide(vert);
     }
-},
+}
 
 Rngon.ngon.transform = function(ngon, matrix44)
 {
@@ -868,97 +912,95 @@ Rngon.ngon.transform = function(ngon, matrix44)
     {
         Rngon.vertex.transform(vert, matrix44);
     }
-},
+}
 
 // Clips all vertices against the sides of the viewport. Adapted from Benny
 // Bobaganoosh's 3d software renderer, the source for which is available at
 // https://github.com/BennyQBD/3DSoftwareRenderer.
+const axes = ["x", "y", "z"];
+const factors = [1, -1];
 Rngon.ngon.clip_to_viewport = function(ngon)
 {
-    clip_on_axis("x", 1);
-    clip_on_axis("x", -1);
-    clip_on_axis("y", 1);
-    clip_on_axis("y", -1);
-    clip_on_axis("z", 1);
-    clip_on_axis("z", -1);
+    for (const axis of axes)
+    {
+        for (const factor of factors)
+        {
+            if (!ngon.vertices.length)
+            {
+                break;
+            }
+
+            if (ngon.vertices.length == 1)
+            {
+                // If the point is fully inside the viewport, allow it to stay.
+                if (( ngon.vertices[0].x <= ngon.vertices[0].w) &&
+                    (-ngon.vertices[0].x <= ngon.vertices[0].w) &&
+                    ( ngon.vertices[0].y <= ngon.vertices[0].w) &&
+                    (-ngon.vertices[0].y <= ngon.vertices[0].w) &&
+                    ( ngon.vertices[0].z <= ngon.vertices[0].w) &&
+                    (-ngon.vertices[0].z <= ngon.vertices[0].w))
+                {
+                    break;
+                }
+
+                ngon.vertices.length = 0;
+
+                break;
+            }
+
+            let prevVertex = ngon.vertices[ngon.vertices.length - ((ngon.vertices.length == 2)? 2 : 1)];
+            let prevComponent = (prevVertex[axis] * factor);
+            let isPrevVertexInside = (prevComponent <= prevVertex.w);
+            
+            // The vertices array will be modified in-place by appending the clipped vertices
+            // onto the end of the array, then removing the previous ones.
+            let k = 0;
+            let numOriginalVertices = ngon.vertices.length;
+            for (let i = 0; i < numOriginalVertices; i++)
+            {
+                const curComponent = (ngon.vertices[i][axis] * factor);
+                const thisVertexIsInside = (curComponent <= ngon.vertices[i].w);
+
+                // If either the current vertex or the previous vertex is inside but the other isn't,
+                // and they aren't both inside, interpolate a new vertex between them that lies on
+                // the clipping plane.
+                if (thisVertexIsInside ^ isPrevVertexInside)
+                {
+                    const lerpStep = (prevVertex.w - prevComponent) /
+                                    ((prevVertex.w - prevComponent) - (ngon.vertices[i].w - curComponent));
+
+                    ngon.vertices[numOriginalVertices + k++] = Rngon.vertex(
+                        Rngon.lerp(prevVertex.x, ngon.vertices[i].x, lerpStep),
+                        Rngon.lerp(prevVertex.y, ngon.vertices[i].y, lerpStep),
+                        Rngon.lerp(prevVertex.z, ngon.vertices[i].z, lerpStep),
+                        Rngon.lerp(prevVertex.u, ngon.vertices[i].u, lerpStep),
+                        Rngon.lerp(prevVertex.v, ngon.vertices[i].v, lerpStep),
+                        Rngon.lerp(prevVertex.w, ngon.vertices[i].w, lerpStep),
+                        Rngon.lerp(prevVertex.shade, ngon.vertices[i].shade, lerpStep),
+                        Rngon.lerp(prevVertex.worldX, ngon.vertices[i].worldX, lerpStep),
+                        Rngon.lerp(prevVertex.worldY, ngon.vertices[i].worldY, lerpStep),
+                        Rngon.lerp(prevVertex.worldZ, ngon.vertices[i].worldZ, lerpStep),
+                        Rngon.lerp(prevVertex.normalX, ngon.vertices[i].normalX, lerpStep),
+                        Rngon.lerp(prevVertex.normalY, ngon.vertices[i].normalY, lerpStep),
+                        Rngon.lerp(prevVertex.normalZ, ngon.vertices[i].normalZ, lerpStep)
+                    );
+                }
+                
+                if (thisVertexIsInside)
+                {
+                    ngon.vertices[numOriginalVertices + k++] = ngon.vertices[i];
+                }
+
+                prevVertex = ngon.vertices[i];
+                prevComponent = curComponent;
+                isPrevVertexInside = thisVertexIsInside;
+            }
+
+            ngon.vertices.splice(0, numOriginalVertices);
+        }
+    }
 
     return;
-
-    function clip_on_axis(axis, factor)
-    {
-        if (!ngon.vertices.length)
-        {
-            return;
-        }
-
-        if (ngon.vertices.length == 1)
-        {
-            // If the point is fully inside the viewport, allow it to stay.
-            if (( ngon.vertices[0].x <= ngon.vertices[0].w) &&
-                (-ngon.vertices[0].x <= ngon.vertices[0].w) &&
-                ( ngon.vertices[0].y <= ngon.vertices[0].w) &&
-                (-ngon.vertices[0].y <= ngon.vertices[0].w) &&
-                ( ngon.vertices[0].z <= ngon.vertices[0].w) &&
-                (-ngon.vertices[0].z <= ngon.vertices[0].w))
-            {
-                return;
-            }
-
-            ngon.vertices.length = 0;
-
-            return;
-        }
-
-        let prevVertex = ngon.vertices[ngon.vertices.length - ((ngon.vertices.length == 2)? 2 : 1)];
-        let prevComponent = (prevVertex[axis] * factor);
-        let isPrevVertexInside = (prevComponent <= prevVertex.w);
-        
-        // The vertices array will be modified in-place by appending the clipped vertices
-        // onto the end of the array, then removing the previous ones.
-        let k = 0;
-        let numOriginalVertices = ngon.vertices.length;
-        for (let i = 0; i < numOriginalVertices; i++)
-        {
-            const curComponent = (ngon.vertices[i][axis] * factor);
-            const thisVertexIsInside = (curComponent <= ngon.vertices[i].w);
-
-            // If either the current vertex or the previous vertex is inside but the other isn't,
-            // and they aren't both inside, interpolate a new vertex between them that lies on
-            // the clipping plane.
-            if (thisVertexIsInside ^ isPrevVertexInside)
-            {
-                const lerpStep = (prevVertex.w - prevComponent) /
-                                  ((prevVertex.w - prevComponent) - (ngon.vertices[i].w - curComponent));
-
-                ngon.vertices[numOriginalVertices + k++] = Rngon.vertex(Rngon.lerp(prevVertex.x, ngon.vertices[i].x, lerpStep),
-                                                                        Rngon.lerp(prevVertex.y, ngon.vertices[i].y, lerpStep),
-                                                                        Rngon.lerp(prevVertex.z, ngon.vertices[i].z, lerpStep),
-                                                                        Rngon.lerp(prevVertex.u, ngon.vertices[i].u, lerpStep),
-                                                                        Rngon.lerp(prevVertex.v, ngon.vertices[i].v, lerpStep),
-                                                                        Rngon.lerp(prevVertex.w, ngon.vertices[i].w, lerpStep),
-                                                                        Rngon.lerp(prevVertex.shade, ngon.vertices[i].shade, lerpStep),
-                                                                        Rngon.lerp(prevVertex.worldX, ngon.vertices[i].worldX, lerpStep),
-                                                                        Rngon.lerp(prevVertex.worldY, ngon.vertices[i].worldY, lerpStep),
-                                                                        Rngon.lerp(prevVertex.worldZ, ngon.vertices[i].worldZ, lerpStep),
-                                                                        Rngon.lerp(prevVertex.normalX, ngon.vertices[i].normalX, lerpStep),
-                                                                        Rngon.lerp(prevVertex.normalY, ngon.vertices[i].normalY, lerpStep),
-                                                                        Rngon.lerp(prevVertex.normalZ, ngon.vertices[i].normalZ, lerpStep));
-            }
-            
-            if (thisVertexIsInside)
-            {
-                ngon.vertices[numOriginalVertices + k++] = ngon.vertices[i];
-            }
-
-            prevVertex = ngon.vertices[i];
-            prevComponent = curComponent;
-            isPrevVertexInside = thisVertexIsInside;
-        }
-
-        ngon.vertices.splice(0, numOriginalVertices);
-
-        return;
-    }
 }
 /*
  * Tarpeeksi Hyvae Soft 2019 /
@@ -1041,7 +1083,11 @@ Rngon.matrix44 = (()=>
             const temp = Rngon.matrix44.multiply(my, mz);
             const mResult = Rngon.matrix44.multiply(mx, temp);
 
-            Rngon.assert && (mResult.length === 16) || Rngon.throw("Expected a 4 x 4 matrix.");
+            Rngon.assert?.(
+                (mResult.length === 16),
+                "Expected a 4 x 4 matrix."
+            );
+
             return Object.freeze(mResult);
         },
 
@@ -1066,8 +1112,10 @@ Rngon.matrix44 = (()=>
         
         multiply: function(m1 = [], m2 = [])
         {
-            Rngon.assert && ((m1.length === 16) && (m2.length === 16))
-                         || Rngon.throw("Expected 4 x 4 matrices.");
+            Rngon.assert?.(
+                ((m1.length === 16) && (m2.length === 16)),
+                "Expected 4 x 4 matrices."
+            );
 
             let mResult = [];
             for (let i = 0; i < 4; i++)
@@ -1081,7 +1129,11 @@ Rngon.matrix44 = (()=>
                 }
             }
 
-            Rngon.assert && (mResult.length === 16) || Rngon.throw("Expected a 4 x 4 matrix.");
+            Rngon.assert?.(
+                (mResult.length === 16),
+                "Expected a 4 x 4 matrix."
+            );
+            
             return Object.freeze(mResult);
         },
     });
@@ -1164,11 +1216,15 @@ Rngon.baseModules.rasterize.polygon = function(
     auxiliaryBuffers = []
 )
 {
-    Rngon.assert && (ngon.vertices.length >= 3)
-                 || Rngon.throw("Polygons must have 3 or more vertices");
+    Rngon.assert?.(
+        (ngon.vertices.length >= 3),
+        "Polygons must have 3 or more vertices"
+    );
 
-    Rngon.assert && (ngon.vertices.length < maxNumVertsPerPolygon)
-                 || Rngon.throw("Overflowing the vertex buffer");
+    Rngon.assert?.(
+        (ngon.vertices.length < maxNumVertsPerPolygon),
+        "Overflowing the vertex buffer"
+    );
 
     const interpolatePerspective = Rngon.internalState.usePerspectiveCorrectInterpolation;
     const usePixelShader = Rngon.internalState.usePixelShader;
@@ -2193,12 +2249,14 @@ Rngon.baseModules = (Rngon.baseModules || {});
 
 // Applies lighting to the given n-gons, and transforms them into screen space
 // for rendering. The processed n-gons are stored in the internal n-gon cache.
-Rngon.baseModules.transform_clip_light = function(ngons = [],
-                                                  objectMatrix = [],
-                                                  cameraMatrix = [],
-                                                  projectionMatrix = [],
-                                                  screenSpaceMatrix = [],
-                                                  cameraPos)
+Rngon.baseModules.transform_clip_light = function(
+    ngons = [],
+    objectMatrix = [],
+    cameraMatrix = [],
+    projectionMatrix = [],
+    screenSpaceMatrix = [],
+    cameraPos
+)
 {
     const viewVector = {x:0.0, y:0.0, z:0.0};
     const ngonCache = Rngon.internalState.ngonCache;
@@ -2251,9 +2309,11 @@ Rngon.baseModules.transform_clip_light = function(ngons = [],
                     (ngon.material.vertexShading === "gouraud") ||
                     (ngon.material.vertexShading === "phong"))
                 {
-                    cachedNgon.vertexNormals[v] = Rngon.vector3(ngon.vertexNormals[v].x,
-                                                                ngon.vertexNormals[v].y,
-                                                                ngon.vertexNormals[v].z);
+                    cachedNgon.vertexNormals[v] = Rngon.vector3(
+                        ngon.vertexNormals[v].x,
+                        ngon.vertexNormals[v].y,
+                        ngon.vertexNormals[v].z
+                    );
                 }
             }
 
@@ -2528,15 +2588,13 @@ Rngon.render = function(canvasElement,
     // identifies the DOM element, or directly as a DOM element object. So let's figure
     // out what we received, and turn it into a DOM element object for the renderer
     // to operate on.
+    if (typeof canvasElement == "string")
     {
-        if (typeof canvasElement == "string")
-        {
-            canvasElement = document.getElementById(canvasElement);
-        }
-        else if (!(canvasElement instanceof Element))
-        {
-            Rngon.throw("Invalid canvas element.");
-        }
+        canvasElement = document.getElementById(canvasElement);
+    }
+    else if (!(canvasElement instanceof Element))
+    {
+        Rngon.throw("Invalid canvas element.");
     }
 
     options = Object.freeze({
@@ -2855,8 +2913,10 @@ Rngon.renderShared = {
     // in the given array of meshes.
     prepare_ngon_cache: function(meshes = [Rngon.ngon()])
     {
-        Rngon.assert && (meshes instanceof Array)
-                     || Rngon.throw("Invalid arguments to n-gon cache initialization.");
+        Rngon.assert?.(
+            (meshes instanceof Array),
+            "Invalid arguments to n-gon cache initialization."
+        );
 
         const ngonCache = Rngon.internalState.ngonCache;
         const totalNgonCount = meshes.reduce((totalCount, mesh)=>(totalCount + mesh.ngons.length), 0);
@@ -2879,8 +2939,10 @@ Rngon.renderShared = {
     // in the given array of meshes.
     prepare_vertex_cache: function(meshes = [Rngon.ngon()])
     {
-        Rngon.assert && (meshes instanceof Array)
-                     || Rngon.throw("Invalid arguments to n-gon cache initialization.");
+        Rngon.assert?.(
+            (meshes instanceof Array),
+            "Invalid arguments to n-gon cache initialization."
+        );
 
         const vertexCache = Rngon.internalState.vertexCache;
         let totalVertexCount = 0;
@@ -3059,12 +3121,20 @@ Rngon.texture_rgba = function(data = {})
 
     const numColorChannels = 4;
 
-    Rngon.assert && (Number.isInteger(data.width) && Number.isInteger(data.height))
-                 || Rngon.throw("Expected texture width and height to be integer values.");
-    Rngon.assert && (data.width >= 0 && data.height >= 0)
-                 || Rngon.throw("Expected texture width and height to be no less than zero.");
-    Rngon.assert && (data.width <= maxWidth && data.height <= maxHeight)
-                 || Rngon.throw("Expected texture width/height to be no more than " + maxWidth + "/" + maxHeight + ".");
+    Rngon.assert?.(
+        (Number.isInteger(data.width) && Number.isInteger(data.height)),
+        "Expected texture width and height to be integer values."
+    );
+    
+    Rngon.assert?.(
+        ((data.width >= 0) && (data.height >= 0)),
+        "Expected texture width and height to be no less than zero."
+    );
+
+    Rngon.assert?.(
+        ((data.width <= maxWidth) && (data.height <= maxHeight)),
+        `Expected texture width/height to be no more than ${maxWidth}/${maxHeight}.`
+    );
 
     // If necessary, decode the pixel data into raw RGBA/8888.
     if (data.encoding !== "none")
@@ -3074,8 +3144,10 @@ Rngon.texture_rgba = function(data = {})
         // 1 bit.
         if (data.encoding === "base64")
         {
-            Rngon.assert && (data.channels === "rgba:5+5+5+1")
-                         || Rngon.throw("Expected Base64-encoded data to be in RGBA 5551 format.");
+            Rngon.assert?.(
+                (data.channels === "rgba:5+5+5+1"),
+                "Expected Base64-encoded data to be in RGBA 5551 format."
+            );
 
             data.pixels = (()=>
             {
@@ -3083,8 +3155,10 @@ Rngon.texture_rgba = function(data = {})
                 const decoded = atob(data.pixels);
 
                 // We should have an array where each pixel is a 2-byte value.
-                Rngon.assert && (decoded.length === (data.width * data.height * 2))
-                             || Rngon.throw("Unexpected data length for a Base64-encoded texture.");
+                Rngon.assert?.(
+                    (decoded.length === (data.width * data.height * 2)),
+                    "Unexpected data length for a Base64-encoded texture."
+                );
 
                 for (let i = 0; i < (data.width * data.height * 2); i += 2)
                 {
@@ -3105,8 +3179,10 @@ Rngon.texture_rgba = function(data = {})
         }
     }
 
-    Rngon.assert && (data.pixels.length === (data.width * data.height * numColorChannels))
-                 || Rngon.throw("The texture's pixel array size doesn't match its width and height.");
+    Rngon.assert?.(
+        (data.pixels.length === (data.width * data.height * numColorChannels)),
+        "The texture's pixel array size doesn't match its width and height."
+    );
 
     // Convert the raw pixel data into objects of the form {red, green, blue, alpha}.
     // Note: We also flip the texture on the Y axis, to counter the fact that textures
@@ -3162,9 +3238,11 @@ Rngon.texture_rgba = function(data = {})
         // We're finished generating mip levels once we've done them down to 1 x 1.
         if ((mipWidth === 1) && (mipHeight === 1))
         {
-            Rngon.assert && (mipmaps.length > 0)
-                         || Rngon.throw("Failed to generate mip levels for a texture.");
-                         
+            Rngon.assert?.(
+                (mipmaps.length > 0),
+                "Failed to generate mip levels for a texture."
+            );
+
             break;
         }
     }
@@ -3431,21 +3509,26 @@ Rngon.surface = function(canvasElement,  // The target DOM <canvas> element.
     // Initializes the target DOM <canvas> element for rendering into. Throws on errors.
     function setup_onscreen(canvasElement, scale)
     {
-        Rngon.assert && (canvasElement instanceof Element)
-                     || Rngon.throw("Can't find the given canvas element.");
+        Rngon.assert?.(
+            (canvasElement instanceof Element),
+            "Can't find the given canvas element."
+        );
 
         const renderContext = canvasElement.getContext("2d");
 
-        Rngon.assert && (renderContext instanceof CanvasRenderingContext2D)
-                     || Rngon.throw("Couldn't establish a canvas render context.");
+        Rngon.assert?.(
+            (renderContext instanceof CanvasRenderingContext2D),
+            "Couldn't establish a canvas render context."
+        );
 
         // Size the canvas as per the requested render scale.
         const surfaceWidth = Rngon.renderable_width_of(canvasElement, scale);
         const surfaceHeight = Rngon.renderable_height_of(canvasElement, scale);
         {
-            Rngon.assert && ((surfaceWidth > 0) &&
-                             (surfaceHeight > 0))
-                         || Rngon.throw("Couldn't retrieve the canvas's dimensions.");
+            Rngon.assert?.(
+                ((surfaceWidth > 0) && (surfaceHeight > 0)),
+                "Couldn't retrieve the canvas's dimensions."
+            );
 
             canvasElement.setAttribute("width", surfaceWidth);
             canvasElement.setAttribute("height", surfaceHeight);
@@ -3455,7 +3538,8 @@ Rngon.surface = function(canvasElement,  // The target DOM <canvas> element.
             surfaceWidth,
             surfaceHeight,
             canvasElement,
-            renderContext};
+            renderContext
+        };
     }
 
     // Sets up rendering into an off-screen buffer, i.e. without using a DOM <canvas>

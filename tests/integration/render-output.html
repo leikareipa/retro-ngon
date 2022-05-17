@@ -431,7 +431,10 @@
 
                     // Load the reference image into its canvas.
                     const context = referenceCanvasElement.getContext('2d');
-                    Rngon.assert && (context !== null) || Rngon.throw("Failed to establish a canvas context.");
+                    Rngon.assert?.(
+                        (context !== null),
+                        "Failed to establish a canvas context."
+                    );
                     context.imageSmoothingEnabled = false;
                     const refImage = new Image();
                     refImage.addEventListener("load", ()=>

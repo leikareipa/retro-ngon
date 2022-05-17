@@ -51,8 +51,10 @@ Rngon.renderShared = {
     // in the given array of meshes.
     prepare_ngon_cache: function(meshes = [Rngon.ngon()])
     {
-        Rngon.assert && (meshes instanceof Array)
-                     || Rngon.throw("Invalid arguments to n-gon cache initialization.");
+        Rngon.assert?.(
+            (meshes instanceof Array),
+            "Invalid arguments to n-gon cache initialization."
+        );
 
         const ngonCache = Rngon.internalState.ngonCache;
         const totalNgonCount = meshes.reduce((totalCount, mesh)=>(totalCount + mesh.ngons.length), 0);
@@ -75,8 +77,10 @@ Rngon.renderShared = {
     // in the given array of meshes.
     prepare_vertex_cache: function(meshes = [Rngon.ngon()])
     {
-        Rngon.assert && (meshes instanceof Array)
-                     || Rngon.throw("Invalid arguments to n-gon cache initialization.");
+        Rngon.assert?.(
+            (meshes instanceof Array),
+            "Invalid arguments to n-gon cache initialization."
+        );
 
         const vertexCache = Rngon.internalState.vertexCache;
         let totalVertexCount = 0;

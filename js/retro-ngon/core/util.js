@@ -9,13 +9,15 @@
 
 "use strict";
 
-// Defined 'true' to allow for the conveniency of named in-place assertions,
-// e.g. Rngon.assert && (x === 1) || Rngon.throw("X wasn't 1.").
-// Note that setting this to 'false' won't disable assertions - for that,
-// you'll want to search/replace "Rngon.assert &&" with "Rngon.assert ||"
-// and keep this set to 'true'. The comparison against Rngon.assert may still
-// be done, though (I guess depending on the JS engine's ability to optimize).
-Object.defineProperty(Rngon, "assert", {value:true, writable:false});
+// Call this function using optional chaining: "Rsed.assert?.()".
+// To disable assertions, comment out this function definition.
+Rngon.assert = (condition, errorMessage)=>
+{
+    if (!condition)
+    {
+        Rngon.throw(errorMessage);
+    }
+}
 
 Rngon.lerp = (x, y, interval)=>(x + (interval * (y - x)));
 

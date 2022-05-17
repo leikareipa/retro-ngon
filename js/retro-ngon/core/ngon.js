@@ -13,8 +13,15 @@ Rngon.ngon = function(vertices = [Rngon.vertex()],
                       material = Rngon.material(), // or {}
                       vertexNormals = Rngon.vector3(0, 1, 0))
 {
-    Rngon.assert && (vertices instanceof Array) || Rngon.throw("Expected an array of vertices to make an ngon.");
-    Rngon.assert && (material instanceof Object) || Rngon.throw("Expected an object containing user-supplied options.");
+    Rngon.assert?.(
+        (vertices instanceof Array),
+        "Expected an array of vertices to make an ngon."
+    );
+
+    Rngon.assert?.(
+        (material instanceof Object),
+        "Expected an object containing user-supplied options."
+    );
 
     // Combine default material options with the user-supplied ones.
     material = Rngon.material(material);

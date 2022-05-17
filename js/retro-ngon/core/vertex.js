@@ -15,10 +15,18 @@ Rngon.vertex = function(x = 0, y = 0, z = 0,
                         worldX = x, worldY = y, worldZ = z,
                         normalX = 0, normalY = 1, normalZ = 0)
 {
-    Rngon.assert && (typeof x === "number" && typeof y === "number" && typeof z === "number" &&
-                     typeof w === "number" && typeof u === "number" && typeof v === "number" &&
-                     typeof worldX === "number" && typeof worldY === "number" && typeof worldZ === "number")
-                 || Rngon.throw("Expected numbers as parameters to the vertex factory.");
+    Rngon.assert?.(
+        ((typeof x === "number") &&
+         (typeof y === "number") &&
+         (typeof z === "number") &&
+         (typeof w === "number") &&
+         (typeof u === "number") &&
+         (typeof v === "number") &&
+         (typeof worldX === "number") &&
+         (typeof worldY === "number") &&
+         (typeof worldZ === "number")),
+        "Expected numbers as parameters to the vertex factory."
+    );
 
     const returnObject =
     {
@@ -49,8 +57,10 @@ Rngon.vertex = function(x = 0, y = 0, z = 0,
 // Transforms the vertex by the given 4x4 matrix.
 Rngon.vertex.transform = function(v, m = [])
 {
-    Rngon.assert && (m.length === 16)
-                    || Rngon.throw("Expected a 4 x 4 matrix to transform the vertex by.");
+    Rngon.assert?.(
+        (m.length === 16),
+        "Expected a 4 x 4 matrix to transform the vertex by."
+    );
     
     const x_ = ((m[0] * v.x) + (m[4] * v.y) + (m[ 8] * v.z) + (m[12] * v.w));
     const y_ = ((m[1] * v.x) + (m[5] * v.y) + (m[ 9] * v.z) + (m[13] * v.w));
