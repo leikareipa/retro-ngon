@@ -28,7 +28,10 @@ export const torusModel =
 
 		// Set up the materials.
 		const m = {
-			"Torus":{color:c(145,205,255),},
+			"Torus":{
+				color: c(145,205,255),
+				allowAlphaBlend: true,
+			},
 		};
 
 		// Create the n-gons.

@@ -31,9 +31,8 @@ export const benchmarkScene =
 			color: c(255,255,255),
 			isTwoSided: false,
 			textureMapping: "affine",
-			allowAlphaBlend: false,
-			allowAlphaReject: false,
-			vertexShading,};
+			vertexShading,
+		};
 
 		// Load the textures.
 		const t = !useTextures
