@@ -89,6 +89,7 @@ Rngon.baseModules.rasterize.polygon = function(
     const interpolatePerspective = Rngon.internalState.usePerspectiveCorrectInterpolation;
     const usePixelShader = Rngon.internalState.usePixelShader;
     const usePhongShading = (ngon.material.vertexShading === "phong");
+    const useAuxiliaryBuffers = auxiliaryBuffers.length;
     const fragmentBuffer = Rngon.internalState.fragmentBuffer.data;
     const pixelBuffer = Rngon.internalState.pixelBuffer.data;
     const depthBuffer = (Rngon.internalState.useDepthBuffer? Rngon.internalState.depthBuffer.data : null);
@@ -118,7 +119,8 @@ Rngon.baseModules.rasterize.polygon = function(
 
     if (material.hasFill)
     {
-        if (texture &&
+        if (
+            texture &&
             depthBuffer &&
             !usePhongShading &&
             !usePixelShader &&
@@ -127,9 +129,20 @@ Rngon.baseModules.rasterize.polygon = function(
             (material.textureMapping == "affine") &&
             (material.color.red == 255) &&
             (material.color.green == 255) &&
-            (material.color.blue == 255))
-        {
-            plain_fill();
+            (material.color.blue == 255)
+        ){
+            plain_textured_fill();
+        }
+        else if (
+            !texture &&
+            depthBuffer &&
+            !usePhongShading &&
+            !usePixelShader &&
+            !useAuxiliaryBuffers &&
+            !material.allowAlphaReject &&
+            !material.allowAlphaBlend
+        ){
+            plain_solid_fill();
         }
         else
         {
@@ -276,14 +289,14 @@ Rngon.baseModules.rasterize.polygon = function(
 
     // Fills the current polygon, with certain performance-increasing assumptions made about it.
     // The polygon and render state must fulfill the following criteria:
-    // - Depth buffering
-    // - No pixel shading
+    // - Depth buffering enabled
+    // - No pixel shader
     // - No Phong shading
     // - No alpha operations
     // - Textured
     // - White material color
     // - Only affine texture-mapping
-    function plain_fill()
+    function plain_textured_fill()
     {
         let curLeftEdgeIdx = 0;
         let curRightEdgeIdx = 0;
@@ -415,6 +428,104 @@ Rngon.baseModules.rasterize.polygon = function(
                 rightEdge.startShade += rightEdge.deltaShade;
                 rightEdge.startU     += rightEdge.deltaU;
                 rightEdge.startV     += rightEdge.deltaV;
+                rightEdge.startInvW  += rightEdge.deltaInvW;
+            }
+
+            // We can move onto the next edge when we're at the end of the current one.
+            if (y === (leftEdge.endY - 1)) leftEdge = leftEdges[++curLeftEdgeIdx];
+            if (y === (rightEdge.endY - 1)) rightEdge = rightEdges[++curRightEdgeIdx];
+        }
+
+        return;
+    }
+
+    // Fills the current non-textured polygon, with certain performance-enhancing
+    // assumptions. The polygon and render state must fulfill the following criteria:
+    // - No texture
+    // - No pixel shader
+    // - No Phong shading
+    // - No alpha operations
+    // - No auxiliary buffers
+    // - Depth buffering enabled
+    function plain_solid_fill()
+    {
+        let curLeftEdgeIdx = 0;
+        let curRightEdgeIdx = 0;
+        let leftEdge = leftEdges[curLeftEdgeIdx];
+        let rightEdge = rightEdges[curRightEdgeIdx];
+        
+        if (!numLeftEdges || !numRightEdges) return;
+
+        // Note: We assume the n-gon's vertices to be sorted by increasing Y.
+        const ngonStartY = leftEdges[0].startY;
+        const ngonEndY = leftEdges[numLeftEdges-1].endY;
+        
+        // Rasterize the n-gon in horizontal pixel spans over its height.
+        for (let y = ngonStartY; y < ngonEndY; y++)
+        {
+            const spanStartX = Math.min(renderWidth, Math.max(0, Math.round(leftEdge.startX)));
+            const spanEndX = Math.min(renderWidth, Math.max(0, Math.ceil(rightEdge.startX)));
+            const spanWidth = ((spanEndX - spanStartX) + 1);
+
+            if (spanWidth > 0)
+            {
+                const deltaDepth = ((rightEdge.startDepth - leftEdge.startDepth) / spanWidth);
+                let iplDepth = (leftEdge.startDepth - deltaDepth);
+
+                const deltaShade = ((rightEdge.startShade - leftEdge.startShade) / spanWidth);
+                let iplShade = (leftEdge.startShade - deltaShade);
+
+                const deltaInvW = ((rightEdge.startInvW - leftEdge.startInvW) / spanWidth);
+                let iplInvW = (leftEdge.startInvW - deltaInvW);
+
+                // Assumes the pixel buffer consists of 4 elements per pixel (e.g. RGBA).
+                let pixelBufferIdx = (((spanStartX + y * renderWidth) * 4) - 4);
+
+                // Assumes the depth buffer consists of 1 element per pixel.
+                let depthBufferIdx = (pixelBufferIdx / 4);
+
+                // Draw the span into the pixel buffer.
+                for (let x = spanStartX; x < spanEndX; x++)
+                {
+                    // Update values that're interpolated horizontally along the span.
+                    iplDepth += deltaDepth;
+                    iplShade += deltaShade;
+                    iplInvW += deltaInvW;
+                    pixelBufferIdx += 4;
+                    depthBufferIdx++;
+
+                    const depth = (iplDepth / iplInvW);
+                    if (depthBuffer[depthBufferIdx] <= depth) continue;
+
+                    // The color we'll write into the pixel buffer for this pixel; assuming
+                    // it passes the alpha test, the depth test, etc.
+                    const shade = (material.renderVertexShade? (iplShade / iplInvW) : 1);
+                    const red   = (material.color.red   * shade);
+                    const green = (material.color.green * shade);
+                    const blue  = (material.color.blue  * shade);
+
+                    // The pixel passed its alpha test, depth test, etc., and should be drawn
+                    // on screen.
+                    {
+                        pixelBuffer[pixelBufferIdx + 0] = red;
+                        pixelBuffer[pixelBufferIdx + 1] = green;
+                        pixelBuffer[pixelBufferIdx + 2] = blue;
+                        pixelBuffer[pixelBufferIdx + 3] = 255;
+                        depthBuffer[depthBufferIdx] = depth;
+                    }
+                }
+            }
+
+            // Update values that're interpolated vertically along the edges.
+            {
+                leftEdge.startX      += leftEdge.deltaX;
+                leftEdge.startDepth  += leftEdge.deltaDepth;
+                leftEdge.startShade  += leftEdge.deltaShade;
+                leftEdge.startInvW   += leftEdge.deltaInvW;
+
+                rightEdge.startX     += rightEdge.deltaX;
+                rightEdge.startDepth += rightEdge.deltaDepth;
+                rightEdge.startShade += rightEdge.deltaShade;
                 rightEdge.startInvW  += rightEdge.deltaInvW;
             }
 
@@ -849,7 +960,7 @@ Rngon.baseModules.rasterize.line = function(
     const startY = Math.floor(vert1.y);
     const endX = Math.floor(vert2.x);
     const endY = Math.ceil(vert2.y);
-    let lineLength = Math.floor(Math.sqrt((endX - startX) * (endX - startX) + (endY - startY) * (endY - startY)));
+    let lineLength = Math.round(Math.sqrt((endX - startX) * (endX - startX) + (endY - startY) * (endY - startY)));
     const deltaX = ((endX - startX) / lineLength);
     const deltaY = ((endY - startY) / lineLength);
     let curX = startX;
