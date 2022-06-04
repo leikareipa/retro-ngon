@@ -41,7 +41,7 @@ Among some of the possible use cases are:
 
 ## Performance
 
-Below are sample runs of the renderer's [performance benchmarks](tests/performance/), showing average FPS counts across various render resolutions running in Chrome 99.
+Below are sample runs of the renderer's [performance benchmarks](tests/performance/), showing average FPS counts across various render resolutions running in Google Chrome.
 
 <table>
     <tr>
@@ -60,10 +60,10 @@ Below are sample runs of the renderer's [performance benchmarks](tests/performan
     </tr>
     <tr>
         <th align="left">Quake 1 (untextured)</th>
-        <td align="center">200</td>
-        <td align="center">98</td>
-        <td align="center">33</td>
-        <td align="center">9</td>
+        <td align="center">252</td>
+        <td align="center">134</td>
+        <td align="center">52</td>
+        <td align="center">13</td>
     </tr>
     <tr>
         <th align="left">Quake 1 (wireframe)</th>
@@ -80,8 +80,6 @@ Below are sample runs of the renderer's [performance benchmarks](tests/performan
         <td align="center">2</td>
     </tr>
 </table>
-
-Average FPS figures only tell part of the story, though. You may find that the FPS can be quite variable across frames, which is something future versions of the renderer will continue to improve on.
 
 # User's manual
 In this section, you'll find both theoretical and practical guidance on using the retro n-gon renderer; including a reference manual for the renderer's API.
