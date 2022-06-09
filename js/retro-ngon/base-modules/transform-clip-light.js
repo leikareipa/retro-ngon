@@ -67,8 +67,7 @@ Rngon.baseModules.transform_clip_light = function(
                 dstVertex.shade = srcVertex.shade;
 
                 if (Rngon.internalState.useVertexShader ||
-                    (ngon.material.vertexShading === "gouraud") ||
-                    (ngon.material.vertexShading === "phong"))
+                    (ngon.material.vertexShading === "gouraud"))
                 {
                     cachedNgon.vertexNormals[v] = Rngon.vector3(
                         ngon.vertexNormals[v].x,
@@ -111,8 +110,7 @@ Rngon.baseModules.transform_clip_light = function(
                 // If using Gouraud shading, we need to transform all vertex normals; but
                 // the face normal won't be used and so can be ignored.
                 if (Rngon.internalState.useVertexShader ||
-                    (cachedNgon.material.vertexShading === "gouraud") ||
-                    (cachedNgon.material.vertexShading === "phong"))
+                    (cachedNgon.material.vertexShading === "gouraud"))
                 {
                     for (let v = 0; v < cachedNgon.vertices.length; v++)
                     {
@@ -212,12 +210,6 @@ Rngon.baseModules.transform_clip_light = function(
 
 Rngon.baseModules.transform_clip_light.apply_lighting = function(ngon)
 {
-    // Phong shading will be computed by the rasterizer.
-    if (ngon.material.vertexShading === "phong")
-    {
-        return;
-    }
-    
     // Pre-allocate a vector object to operate on, so we don't need to create one repeatedly.
     const lightDirection = Rngon.vector3();
 
@@ -267,7 +259,6 @@ Rngon.baseModules.transform_clip_light.apply_lighting = function(ngon)
                 Rngon.vector3.normalize(lightDirection);
 
                 const shadeFromThisLight = Math.max(0, Math.min(1, Rngon.vector3.dot(ngon.vertexNormals[v], lightDirection)));
-
                 vertex.shade = Math.max(vertex.shade, Math.min(light.clip, (shadeFromThisLight * distanceMul * light.intensity)));
             }
         }
@@ -285,7 +276,6 @@ Rngon.baseModules.transform_clip_light.apply_lighting = function(ngon)
             Rngon.vector3.normalize(lightDirection);
 
             const shadeFromThisLight = Math.max(0, Math.min(1, Rngon.vector3.dot(ngon.normal, lightDirection)));
-
             faceShade = Math.max(faceShade, Math.min(light.clip, (shadeFromThisLight * distanceMul * light.intensity)));
         }
         else

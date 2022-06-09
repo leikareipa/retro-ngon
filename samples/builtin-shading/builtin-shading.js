@@ -45,6 +45,6 @@ export const sample = {
             mesh: Rngon.mesh(torusModel.ngons, meshSettings)
         };
     },
-    shadingTypes: ["None", "Flat", "Gouraud", "Phong"],
+    shadingTypes: ["None", "Flat", "Gouraud"],
     numTicks: 0,
 };

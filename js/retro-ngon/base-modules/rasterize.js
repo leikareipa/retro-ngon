@@ -88,10 +88,10 @@ Rngon.baseModules.rasterize.polygon = function(
 
     const interpolatePerspective = Rngon.internalState.usePerspectiveCorrectInterpolation;
     const usePixelShader = Rngon.internalState.usePixelShader;
-    const usePhongShading = (ngon.material.vertexShading === "phong");
     const useAuxiliaryBuffers = auxiliaryBuffers.length;
     const fragmentBuffer = Rngon.internalState.fragmentBuffer.data;
-    const pixelBuffer = Rngon.internalState.pixelBuffer.data;
+    const pixelBufferClamped8 = Rngon.internalState.pixelBuffer.data;
+    const pixelBuffer = new Uint32Array(pixelBufferClamped8.buffer);
     const depthBuffer = (Rngon.internalState.useDepthBuffer? Rngon.internalState.depthBuffer.data : null);
     const renderWidth = Rngon.internalState.pixelBuffer.width;
     const renderHeight = Rngon.internalState.pixelBuffer.height;
@@ -122,21 +122,19 @@ Rngon.baseModules.rasterize.polygon = function(
         if (
             texture &&
             depthBuffer &&
-            !usePhongShading &&
             !usePixelShader &&
             !material.allowAlphaReject &&
             !material.allowAlphaBlend &&
-            (material.textureMapping == "affine") &&
-            (material.color.red == 255) &&
-            (material.color.green == 255) &&
-            (material.color.blue == 255)
+            (material.textureMapping === "affine") &&
+            (material.color.red === 255) &&
+            (material.color.green === 255) &&
+            (material.color.blue === 255)
         ){
             plain_textured_fill();
         }
         else if (
             !texture &&
             depthBuffer &&
-            !usePhongShading &&
             !usePixelShader &&
             !useAuxiliaryBuffers &&
             !material.allowAlphaReject &&
@@ -195,8 +193,8 @@ Rngon.baseModules.rasterize.polygon = function(
             const startDepth = depth1/w1;
             const deltaDepth = ((depth2/w2 - depth1/w1) / edgeHeight);
 
-            const startShade = vert1.shade/w1;
-            const deltaShade = ((vert2.shade/w2 - vert1.shade/w1) / edgeHeight);
+            const startShade = vert1.shade;
+            const deltaShade = ((vert2.shade - vert1.shade) / edgeHeight);
 
             const u1 = (material.texture? vert1.u : 1);
             const v1 = (material.texture? vert1.v : 1);
@@ -226,17 +224,7 @@ Rngon.baseModules.rasterize.polygon = function(
             edge.startInvW = startInvW;
             edge.deltaInvW = deltaInvW;
 
-            if (usePhongShading)
-            {
-                edge.startNx = vert1.normalX/w1;
-                edge.deltaNx = ((vert2.normalX/w2 - vert1.normalX/w1) / edgeHeight);
-                edge.startNy = vert1.normalY/w1;
-                edge.deltaNy = ((vert2.normalY/w2 - vert1.normalY/w1) / edgeHeight);
-                edge.startNz = vert1.normalZ/w1;
-                edge.deltaNz = ((vert2.normalZ/w2 - vert1.normalZ/w1) / edgeHeight);
-            }
-
-            if (usePixelShader || usePhongShading)
+            if (usePixelShader)
             {
                 edge.startWorldX = vert1.worldX/w1;
                 edge.deltaWorldX = ((vert2.worldX/w2 - vert1.worldX/w1) / edgeHeight);
@@ -291,7 +279,6 @@ Rngon.baseModules.rasterize.polygon = function(
     // The polygon and render state must fulfill the following criteria:
     // - Depth buffering enabled
     // - No pixel shader
-    // - No Phong shading
     // - No alpha operations
     // - Textured
     // - White material color
@@ -332,11 +319,7 @@ Rngon.baseModules.rasterize.polygon = function(
                 const deltaInvW = ((rightEdge.startInvW - leftEdge.startInvW) / spanWidth);
                 let iplInvW = (leftEdge.startInvW - deltaInvW);
 
-                // Assumes the pixel buffer consists of 4 elements per pixel (e.g. RGBA).
-                let pixelBufferIdx = (((spanStartX + y * renderWidth) * 4) - 4);
-
-                // Assumes the depth buffer consists of 1 element per pixel.
-                let depthBufferIdx = (pixelBufferIdx / 4);
+                let pixelBufferIdx = ((spanStartX + y * renderWidth) - 1);
 
                 // Draw the span into the pixel buffer.
                 for (let x = spanStartX; x < spanEndX; x++)
@@ -347,12 +330,11 @@ Rngon.baseModules.rasterize.polygon = function(
                     iplU += deltaU;
                     iplV += deltaV;
                     iplInvW += deltaInvW;
-                    pixelBufferIdx += 4;
-                    depthBufferIdx++;
+                    pixelBufferIdx++;
 
                     const depth = (iplDepth / iplInvW);
 
-                    if (depthBuffer[depthBufferIdx] <= depth) continue;
+                    if (depthBuffer[pixelBufferIdx] <= depth) continue;
 
                     // Texture UV coordinates.
                     let u = (iplU / iplInvW);
@@ -404,13 +386,32 @@ Rngon.baseModules.rasterize.polygon = function(
                         continue;
                     }
 
-                    const shade = (material.renderVertexShade? (iplShade / iplInvW) : 1);
+                    const shade = (material.renderVertexShade? iplShade : 1);
+                    const red   = (texel.red   * shade);
+                    const green = (texel.green * shade);
+                    const blue  = (texel.blue  * shade);
 
-                    pixelBuffer[pixelBufferIdx + 0] = (texel.red * shade);
-                    pixelBuffer[pixelBufferIdx + 1] = (texel.green * shade);
-                    pixelBuffer[pixelBufferIdx + 2] = (texel.blue * shade);
-                    pixelBuffer[pixelBufferIdx + 3] = 255;
-                    depthBuffer[depthBufferIdx] = depth;
+                    depthBuffer[pixelBufferIdx] = depth;
+
+                    // If shade is > 1, the color values may exceed 255, in which case we write into
+                    // the clamped 8-bit view to get 'free' clamping.
+                    if (shade > 1)
+                    {
+                        const idx = (pixelBufferIdx * 4);
+                        pixelBufferClamped8[idx+0] = red;
+                        pixelBufferClamped8[idx+1] = green;
+                        pixelBufferClamped8[idx+2] = blue;
+                        pixelBufferClamped8[idx+3] = 255;
+                    }
+                    else
+                    {
+                        pixelBuffer[pixelBufferIdx] = (
+                            (255 << 24) +
+                            (blue << 16) +
+                            (green << 8) +
+                            red
+                        );
+                    }
                 }
             }
 
@@ -443,7 +444,6 @@ Rngon.baseModules.rasterize.polygon = function(
     // assumptions. The polygon and render state must fulfill the following criteria:
     // - No texture
     // - No pixel shader
-    // - No Phong shading
     // - No alpha operations
     // - No auxiliary buffers
     // - Depth buffering enabled
@@ -478,11 +478,7 @@ Rngon.baseModules.rasterize.polygon = function(
                 const deltaInvW = ((rightEdge.startInvW - leftEdge.startInvW) / spanWidth);
                 let iplInvW = (leftEdge.startInvW - deltaInvW);
 
-                // Assumes the pixel buffer consists of 4 elements per pixel (e.g. RGBA).
-                let pixelBufferIdx = (((spanStartX + y * renderWidth) * 4) - 4);
-
-                // Assumes the depth buffer consists of 1 element per pixel.
-                let depthBufferIdx = (pixelBufferIdx / 4);
+                let pixelBufferIdx = ((spanStartX + y * renderWidth) - 1);
 
                 // Draw the span into the pixel buffer.
                 for (let x = spanStartX; x < spanEndX; x++)
@@ -491,27 +487,38 @@ Rngon.baseModules.rasterize.polygon = function(
                     iplDepth += deltaDepth;
                     iplShade += deltaShade;
                     iplInvW += deltaInvW;
-                    pixelBufferIdx += 4;
-                    depthBufferIdx++;
+                    pixelBufferIdx++;
 
                     const depth = (iplDepth / iplInvW);
-                    if (depthBuffer[depthBufferIdx] <= depth) continue;
+                    if (depthBuffer[pixelBufferIdx] <= depth) continue;
 
                     // The color we'll write into the pixel buffer for this pixel; assuming
                     // it passes the alpha test, the depth test, etc.
-                    const shade = (material.renderVertexShade? (iplShade / iplInvW) : 1);
+                    const shade = (material.renderVertexShade? iplShade : 1);
                     const red   = (material.color.red   * shade);
                     const green = (material.color.green * shade);
                     const blue  = (material.color.blue  * shade);
 
-                    // The pixel passed its alpha test, depth test, etc., and should be drawn
-                    // on screen.
+                    depthBuffer[pixelBufferIdx] = depth;
+
+                    // If shade is > 1, the color values may exceed 255, in which case we write into
+                    // the clamped 8-bit view to get 'free' clamping.
+                    if (shade > 1)
                     {
-                        pixelBuffer[pixelBufferIdx + 0] = red;
-                        pixelBuffer[pixelBufferIdx + 1] = green;
-                        pixelBuffer[pixelBufferIdx + 2] = blue;
-                        pixelBuffer[pixelBufferIdx + 3] = 255;
-                        depthBuffer[depthBufferIdx] = depth;
+                        const idx = (pixelBufferIdx * 4);
+                        pixelBufferClamped8[idx+0] = red;
+                        pixelBufferClamped8[idx+1] = green;
+                        pixelBufferClamped8[idx+2] = blue;
+                        pixelBufferClamped8[idx+3] = 255;
+                    }
+                    else
+                    {
+                        pixelBuffer[pixelBufferIdx] = (
+                            (255 << 24) +
+                            (blue << 16) +
+                            (green << 8) +
+                            red
+                        );
                     }
                 }
             }
@@ -575,19 +582,7 @@ Rngon.baseModules.rasterize.polygon = function(
                 const deltaInvW = ((rightEdge.startInvW - leftEdge.startInvW) / spanWidth);
                 let iplInvW = (leftEdge.startInvW - deltaInvW);
 
-                if (usePhongShading)
-                {
-                    var deltaNx = ((rightEdge.startNx - leftEdge.startNx) / spanWidth);
-                    var iplNx = (leftEdge.startNx - deltaNx);
-
-                    var deltaNy = ((rightEdge.startNy - leftEdge.startNy) / spanWidth);
-                    var iplNy = (leftEdge.startNy - deltaNy);
-
-                    var deltaNz = ((rightEdge.startNz - leftEdge.startNz) / spanWidth);
-                    var iplNz = (leftEdge.startNz - deltaNz);
-                }
-
-                if (usePixelShader || usePhongShading)
+                if (usePixelShader)
                 {
                     var deltaWorldX = ((rightEdge.startWorldX - leftEdge.startWorldX) / spanWidth);
                     var iplWorldX = (leftEdge.startWorldX - deltaWorldX);
@@ -599,11 +594,8 @@ Rngon.baseModules.rasterize.polygon = function(
                     var iplWorldZ = (leftEdge.startWorldZ - deltaWorldZ);
                 }
 
-                // Assumes the pixel buffer consists of 4 elements per pixel (e.g. RGBA).
-                let pixelBufferIdx = (((spanStartX + y * renderWidth) * 4) - 4);
-
                 // Assumes the depth buffer consists of 1 element per pixel.
-                let depthBufferIdx = (pixelBufferIdx / 4);
+                let pixelBufferIdx = ((spanStartX + y * renderWidth) - 1);
 
                 // Draw the span into the pixel buffer.
                 for (let x = spanStartX; x < spanEndX; x++)
@@ -618,17 +610,9 @@ Rngon.baseModules.rasterize.polygon = function(
                     iplU += deltaU;
                     iplV += deltaV;
                     iplInvW += deltaInvW;
-                    pixelBufferIdx += 4;
-                    depthBufferIdx++;
+                    pixelBufferIdx++;
 
-                    if (usePhongShading)
-                    {
-                        iplNx += deltaNx;
-                        iplNy += deltaNy;
-                        iplNz += deltaNz;
-                    }
-
-                    if (usePixelShader || usePhongShading)
+                    if (usePixelShader)
                     {
                         iplWorldX += deltaWorldX;
                         iplWorldY += deltaWorldY;
@@ -638,63 +622,9 @@ Rngon.baseModules.rasterize.polygon = function(
                     const depth = (iplDepth / iplInvW);
 
                     // Depth test.
-                    if (depthBuffer && (depthBuffer[depthBufferIdx] <= depth)) continue;
+                    if (depthBuffer && (depthBuffer[pixelBufferIdx] <= depth)) continue;
 
-                    let shade = (material.renderVertexShade? (iplShade / iplInvW) : 1);
-                    let shadeHighlight = 0;
-
-                    if (usePhongShading)
-                    {
-                        shade = material.ambientLightLevel;
-
-                        const worldPosX = (iplWorldX / iplInvW);
-                        const worldPosY = (iplWorldY / iplInvW);
-                        const worldPosZ = (iplWorldZ / iplInvW);
-
-                        const N = Rngon.vector3((iplNx / iplInvW), (iplNy / iplInvW), (iplNz / iplInvW));
-                        Rngon.vector3.normalize(N)
-                        
-                        const V = Rngon.vector3(
-                            (Rngon.internalState.cameraPosition.x - worldPosX),
-                            (Rngon.internalState.cameraPosition.y - worldPosY),
-                            (Rngon.internalState.cameraPosition.z - worldPosZ)
-                        );
-                        Rngon.vector3.normalize(V);
-
-                        for (const light of Rngon.internalState.lights)
-                        {
-                            if (shade >= light.clip)
-                            {
-                                continue;
-                            }
-
-                            const distance = Math.sqrt(
-                                ((worldPosX - light.position.x) * (worldPosX - light.position.x)) +
-                                ((worldPosY - light.position.y) * (worldPosY - light.position.y)) +
-                                ((worldPosZ - light.position.z) * (worldPosZ - light.position.z))
-                            );
-
-                            const distanceMul = (1 / (1 + (light.attenuation * distance)));
-
-                            const L = Rngon.vector3(
-                                (light.position.x - worldPosX),
-                                (light.position.y - worldPosY),
-                                (light.position.z - worldPosZ)
-                            );
-                            Rngon.vector3.normalize(L);
-
-                            const dotNL = Math.max(0, Math.min(1, Rngon.vector3.dot(N, L)));
-
-                            const R = Rngon.vector3.sub(Rngon.vector3.mul_scalar(N, (2 * dotNL)), L);
-                            Rngon.vector3.normalize(R);
-
-                            const Kd = (Math.max(0, dotNL) * distanceMul * light.intensity);
-                            const Ks = (material.specularity? Math.pow(Math.max(0, Math.min(1, Rngon.vector3.dot(V, R))), material.specularity) : 0);
-
-                            shade = Math.max(shade, Math.min(light.clip, Kd));
-                            shadeHighlight = Math.max(shadeHighlight, (Ks * 255));
-                        }
-                    }
+                    let shade = (material.renderVertexShade? iplShade  : 1);
 
                     // The color we'll write into the pixel buffer for this pixel; assuming
                     // it passes the alpha test, the depth test, etc.
@@ -715,9 +645,9 @@ Rngon.baseModules.rasterize.polygon = function(
                             continue;
                         }
                         
-                        red   = ((material.color.red   * shade) + shadeHighlight);
-                        green = ((material.color.green * shade) + shadeHighlight);
-                        blue  = ((material.color.blue  * shade) + shadeHighlight);
+                        red   = (material.color.red   * shade);
+                        green = (material.color.green * shade);
+                        blue  = (material.color.blue  * shade);
                     }
                     // Textured fill.
                     else
@@ -850,24 +780,39 @@ Rngon.baseModules.rasterize.polygon = function(
                     // The pixel passed its alpha test, depth test, etc., and should be drawn
                     // on screen.
                     {
-                        pixelBuffer[pixelBufferIdx + 0] = red;
-                        pixelBuffer[pixelBufferIdx + 1] = green;
-                        pixelBuffer[pixelBufferIdx + 2] = blue;
-                        pixelBuffer[pixelBufferIdx + 3] = 255;
+                        // If shade is > 1, the color values may exceed 255, in which case we write into
+                        // the clamped 8-bit view to get 'free' clamping.
+                        if (shade > 1)
+                        {
+                            const idx = (pixelBufferIdx * 4);
+                            pixelBufferClamped8[idx+0] = red;
+                            pixelBufferClamped8[idx+1] = green;
+                            pixelBufferClamped8[idx+2] = blue;
+                            pixelBufferClamped8[idx+3] = 255;
+                        }
+                        else
+                        {
+                            pixelBuffer[pixelBufferIdx] = (
+                                (255 << 24) +
+                                (blue << 16) +
+                                (green << 8) +
+                                red
+                            );
+                        }
 
                         if (depthBuffer)
                         {
-                            depthBuffer[depthBufferIdx] = depth;
+                            depthBuffer[pixelBufferIdx] = depth;
                         }
 
                         if (usePixelShader)
                         {
-                            const fragment = fragmentBuffer[depthBufferIdx];
+                            const fragment = fragmentBuffer[pixelBufferIdx];
                             fragment.ngonIdx = ngonIdx;
                             fragment.textureUScaled = ~~u;
                             fragment.textureVScaled = ~~v;
                             fragment.depth = (iplDepth / iplInvW);
-                            fragment.shade = (iplShade / iplInvW);
+                            fragment.shade = iplShade;
                             fragment.worldX = (iplWorldX / iplInvW);
                             fragment.worldY = (iplWorldY / iplInvW);
                             fragment.worldZ = (iplWorldZ / iplInvW);
@@ -879,7 +824,7 @@ Rngon.baseModules.rasterize.polygon = function(
                             if (material.auxiliary[auxiliaryBuffers[b].property] !== null)
                             {
                                 // Buffers are expected to consist of one element per pixel.
-                                auxiliaryBuffers[b].buffer[depthBufferIdx] = material.auxiliary[auxiliaryBuffers[b].property];
+                                auxiliaryBuffers[b].buffer[pixelBufferIdx] = material.auxiliary[auxiliaryBuffers[b].property];
                             }
                         }
                     }
@@ -902,18 +847,7 @@ Rngon.baseModules.rasterize.polygon = function(
                 rightEdge.startV     += rightEdge.deltaV;
                 rightEdge.startInvW  += rightEdge.deltaInvW;
 
-                if (usePhongShading)
-                {
-                    leftEdge.startNx += leftEdge.deltaNx;
-                    leftEdge.startNy += leftEdge.deltaNy;
-                    leftEdge.startNz += leftEdge.deltaNz;
-
-                    rightEdge.startNx += rightEdge.deltaNx;
-                    rightEdge.startNy += rightEdge.deltaNy;
-                    rightEdge.startNz += rightEdge.deltaNz;
-                }
-
-                if (usePixelShader || usePhongShading)
+                if (usePixelShader)
                 {
                     leftEdge.startWorldX  += leftEdge.deltaWorldX;
                     leftEdge.startWorldY  += leftEdge.deltaWorldY;
@@ -952,7 +886,8 @@ Rngon.baseModules.rasterize.line = function(
     const farPlane = Rngon.internalState.farPlaneDistance;
     const usePixelShader = Rngon.internalState.usePixelShader;
     const depthBuffer = (Rngon.internalState.useDepthBuffer? Rngon.internalState.depthBuffer.data : null);
-    const pixelBuffer = Rngon.internalState.pixelBuffer.data;
+    const pixelBufferClamped8 = Rngon.internalState.pixelBuffer.data;
+    const pixelBuffer = new Uint32Array(pixelBufferClamped8.buffer);
     const renderWidth = Rngon.internalState.pixelBuffer.width;
     const renderHeight = Rngon.internalState.pixelBuffer.height;
  
@@ -1023,29 +958,46 @@ Rngon.baseModules.rasterize.line = function(
             return;
         }
 
-        const idx = ((x + y * renderWidth) * 4);
-        const depthBufferIdx = (idx / 4);
+        const pixelBufferIdx = (x + y * renderWidth);
         const depth = (startDepth / startInvW);
         const shade = (startShade / startInvW);
+        const red = (color.red * shade);
+        const green = (color.green * shade);
+        const blue = (color.blue * shade);
 
         // Draw the pixel.
         if (ignoreDepthBuffer ||
             !depthBuffer ||
-            (depthBuffer[depthBufferIdx] > depth))
+            (depthBuffer[pixelBufferIdx] > depth))
         {
-            pixelBuffer[idx + 0] = (shade * color.red);
-            pixelBuffer[idx + 1] = (shade * color.green);
-            pixelBuffer[idx + 2] = (shade * color.blue);
-            pixelBuffer[idx + 3] = 255;
+            // If shade is > 1, the color values may exceed 255, in which case we write into
+            // the clamped 8-bit view to get 'free' clamping.
+            if (shade > 1)
+            {
+                const idx = (pixelBufferIdx * 4);
+                pixelBufferClamped8[idx+0] = red;
+                pixelBufferClamped8[idx+1] = green;
+                pixelBufferClamped8[idx+2] = blue;
+                pixelBufferClamped8[idx+3] = 255;
+            }
+            else
+            {
+                pixelBuffer[pixelBufferIdx] = (
+                    (255 << 24) +
+                    (blue << 16) +
+                    (green << 8) +
+                    red
+                );
+            }
 
             if (depthBuffer && !ignoreDepthBuffer)
             {
-                depthBuffer[depthBufferIdx] = depth;
+                depthBuffer[pixelBufferIdx] = depth;
             }
 
             if (usePixelShader)
             {
-                const fragment = Rngon.internalState.fragmentBuffer.data[depthBufferIdx];
+                const fragment = Rngon.internalState.fragmentBuffer.data[pixelBufferIdx];
                 fragment.ngonIdx = ngonIdx;
                 fragment.textureUScaled = undefined; // We don't support textures on lines.
                 fragment.textureVScaled = undefined;
@@ -1075,14 +1027,14 @@ Rngon.baseModules.rasterize.point = function(
 
     const usePixelShader = Rngon.internalState.usePixelShader;
     const depthBuffer = (Rngon.internalState.useDepthBuffer? Rngon.internalState.depthBuffer.data : null);
-    const pixelBuffer = Rngon.internalState.pixelBuffer.data;
+    const pixelBufferClamped8 = Rngon.internalState.pixelBuffer.data;
+    const pixelBuffer = new Uint32Array(pixelBufferClamped8.buffer);
     const renderWidth = Rngon.internalState.pixelBuffer.width;
     const renderHeight = Rngon.internalState.pixelBuffer.height;
 
     const x = Math.floor(vertex.x);
     const y = Math.floor(vertex.y);
-    const idx = ((x + y * renderWidth) * 4);
-    const depthBufferIdx = (idx / 4);
+    const pixelBufferIdx = (x + y * renderWidth);
 
     if ((x < 0) ||
         (y < 0) ||
@@ -1095,27 +1047,45 @@ Rngon.baseModules.rasterize.point = function(
     const depth = (vertex.z / Rngon.internalState.farPlaneDistance);
     const shade = (material.renderVertexShade? vertex.shade : 1);
     const color = (material.texture? material.texture.pixels[0] : material.color);
+    const red = (color.red * shade);
+    const green = (color.green * shade);
+    const blue = (color.blue * shade);
 
-    if (depthBuffer && (depthBuffer[depthBufferIdx] <= depth))
+    if (depthBuffer && (depthBuffer[pixelBufferIdx] <= depth))
     {
         return;
     }
     
     // Write the pixel.
     {
-        pixelBuffer[idx + 0] = (shade * color.red);
-        pixelBuffer[idx + 1] = (shade * color.green);
-        pixelBuffer[idx + 2] = (shade * color.blue);
-        pixelBuffer[idx + 3] = 255;
+        // If shade is > 1, the color values may exceed 255, in which case we write into
+        // the clamped 8-bit view to get 'free' clamping.
+        if (shade > 1)
+        {
+            const idx = (pixelBufferIdx * 4);
+            pixelBufferClamped8[idx+0] = red;
+            pixelBufferClamped8[idx+1] = green;
+            pixelBufferClamped8[idx+2] = blue;
+            pixelBufferClamped8[idx+3] = 255;
+        }
+        else
+        {
+            pixelBuffer[pixelBufferIdx] = (
+                (255 << 24) +
+                (blue << 16) +
+                (green << 8) +
+                red
+            );
+        }
 
         if (depthBuffer)
         {
-            depthBuffer[depthBufferIdx] = depth;
+            depthBuffer[pixelBufferIdx] = depth;
         }
 
         if (usePixelShader)
         {
-            const fragment = Rngon.internalState.fragmentBuffer.data[depthBufferIdx];
+            const fragment = Rngon.internalState.fragmentBuffer.data[pixelBufferIdx];
             fragment.ngonIdx = ngonIdx;
             fragment.textureUScaled = 0;
             fragment.textureVScaled = 0;
