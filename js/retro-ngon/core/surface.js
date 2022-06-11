@@ -23,17 +23,12 @@ Rngon.surface = function(canvasElement,  // The target DOM <canvas> element.
 
     try
     {
-        if (renderOffscreen)
-        {
-            ({surfaceWidth, surfaceHeight} = setup_offscreen(options.width, options.height));
-        }
-        else
-        {
-            ({surfaceWidth,
-              surfaceHeight,
-              canvasElement,
-              renderContext} = setup_onscreen(canvasElement, options.scale));
-        }
+        ({
+            surfaceWidth,
+            surfaceHeight,
+            canvasElement,
+            renderContext
+        } = (renderOffscreen? setup_offscreen : setup_onscreen)(options, canvasElement));
         
         initialize_internal_surface_state(surfaceWidth, surfaceHeight);
     }
@@ -43,17 +38,30 @@ Rngon.surface = function(canvasElement,  // The target DOM <canvas> element.
         return null;
     }
 
-    const cameraMatrix = Rngon.matrix44.multiply(Rngon.matrix44.rotation(options.cameraDirection.x,
-                                                                         options.cameraDirection.y,
-                                                                         options.cameraDirection.z),
-                                                 Rngon.matrix44.translation(-options.cameraPosition.x,
-                                                                            -options.cameraPosition.y,
-                                                                            -options.cameraPosition.z));
-    const perspectiveMatrix = Rngon.matrix44.perspective((options.fov * Math.PI/180),
-                                                         (surfaceWidth / surfaceHeight),
-                                                         options.nearPlane,
-                                                         options.farPlane);
-    const screenSpaceMatrix = Rngon.matrix44.ortho((surfaceWidth + 1), (surfaceHeight + 1));
+    const cameraMatrix = Rngon.matrix44.multiply(
+        Rngon.matrix44.rotation(
+            options.cameraDirection.x,
+            options.cameraDirection.y,
+            options.cameraDirection.z
+        ),
+        Rngon.matrix44.translation(
+            -options.cameraPosition.x,
+            -options.cameraPosition.y,
+            -options.cameraPosition.z
+        )
+    );
+
+    const perspectiveMatrix = Rngon.matrix44.perspective(
+        (options.fov * (Math.PI / 180)),
+        (surfaceWidth / surfaceHeight),
+        options.nearPlane,
+        options.farPlane
+    );
+
+    const screenSpaceMatrix = Rngon.matrix44.ortho(
+        (surfaceWidth + 1),
+        (surfaceHeight + 1)
+    );
 
     const publicInterface = Object.freeze(
     {
@@ -172,14 +180,13 @@ Rngon.surface = function(canvasElement,  // The target DOM <canvas> element.
 
     return publicInterface;
 
-    // Initializes the internal render buffers if they're not already in a
-    // suitable state.
+    // Initializes the internal render buffers if they're not already in a suitable state.
     function initialize_internal_surface_state(surfaceWidth, surfaceHeight)
     {
         if ((Rngon.internalState.pixelBuffer.width != surfaceWidth) ||
             (Rngon.internalState.pixelBuffer.height != surfaceHeight))
         {
-            Rngon.internalState.pixelBuffer = new ImageData(surfaceWidth, surfaceHeight);
+            Rngon.internalState.pixelBuffer = renderContext.createImageData(surfaceWidth, surfaceHeight);
         }
 
         if ( Rngon.internalState.usePixelShader &&
@@ -208,7 +215,7 @@ Rngon.surface = function(canvasElement,  // The target DOM <canvas> element.
     }
 
     // Initializes the target DOM <canvas> element for rendering into. Throws on errors.
-    function setup_onscreen(canvasElement, scale)
+    function setup_onscreen({scale}, canvasElement)
     {
         Rngon.assert?.(
             (canvasElement instanceof Element),
@@ -218,7 +225,7 @@ Rngon.surface = function(canvasElement,  // The target DOM <canvas> element.
         const renderContext = canvasElement.getContext("2d");
 
         Rngon.assert?.(
-            (renderContext instanceof CanvasRenderingContext2D),
+            (renderContext !== null),
             "Couldn't establish a canvas render context."
         );
 
@@ -249,11 +256,17 @@ Rngon.surface = function(canvasElement,  // The target DOM <canvas> element.
     // is more about just skipping initialization of the <canvas> element.
     //
     // Note: This function should throw on errors.
-    function setup_offscreen(width, height)
+    function setup_offscreen({width, height})
     {
         return {
             surfaceWidth: width,
             surfaceHeight: height,
+            renderContext: {
+                createImageData: function(width, height)
+                {
+                    return new ImageData(width, height);
+                },
+            },
         };
     }
 }
