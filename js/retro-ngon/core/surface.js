@@ -8,14 +8,14 @@
 "use strict";
 
 // A surface for rendering onto. Will also paint the rendered image onto a HTML5 <canvas>
-// element unless the 'canvasElementId' parameter is null, in which case rendering will be
+// element unless the 'canvasElement' parameter is null, in which case rendering will be
 // to an off-screen buffer only.
 //
 // Returns null if the surface could not be created.
-Rngon.surface = function(canvasElement,  // The target DOM <canvas> element.
-                         options = {})   // A reference to or copy of the options passed to render().
+Rngon.surface = function(canvasElement)
 {
-    const renderOffscreen = Boolean(canvasElement === null);
+    const state = Rngon.internalState;
+    const renderOffscreen = (canvasElement === null);
 
     let surfaceWidth = undefined,
         surfaceHeight = undefined,
@@ -28,9 +28,9 @@ Rngon.surface = function(canvasElement,  // The target DOM <canvas> element.
             surfaceHeight,
             canvasElement,
             renderContext
-        } = (renderOffscreen? setup_offscreen : setup_onscreen)(options, canvasElement));
-        
-        initialize_internal_surface_state(surfaceWidth, surfaceHeight);
+        } = (renderOffscreen? setup_offscreen : setup_onscreen)());
+
+        initialize_internal_surface_state();
     }
     catch (error)
     {
@@ -40,22 +40,22 @@ Rngon.surface = function(canvasElement,  // The target DOM <canvas> element.
 
     const cameraMatrix = Rngon.matrix44.multiply(
         Rngon.matrix44.rotation(
-            options.cameraDirection.x,
-            options.cameraDirection.y,
-            options.cameraDirection.z
+            state.cameraDirection.x,
+            state.cameraDirection.y,
+            state.cameraDirection.z
         ),
         Rngon.matrix44.translation(
-            -options.cameraPosition.x,
-            -options.cameraPosition.y,
-            -options.cameraPosition.z
+            -state.cameraPosition.x,
+            -state.cameraPosition.y,
+            -state.cameraPosition.z
         )
     );
 
     const perspectiveMatrix = Rngon.matrix44.perspective(
-        (options.fov * (Math.PI / 180)),
+        (state.fov * (Math.PI / 180)),
         (surfaceWidth / surfaceHeight),
-        options.nearPlane,
-        options.farPlane
+        state.nearPlaneDistance,
+        state.farPlaneDistance
     );
 
     const screenSpaceMatrix = Rngon.matrix44.ortho(
@@ -75,7 +75,7 @@ Rngon.surface = function(canvasElement,  // The target DOM <canvas> element.
         // this surface, the rasterized pixels will also be painted onto that canvas.
         display_meshes: function(meshes = [])
         {
-            Rngon.internalState.modules.surface_wipe();
+            state.modules.surface_wipe();
 
             // Prepare the meshes' n-gons for rendering. This will place the transformed
             // n-gons into the internal n-gon cache, Rngon.internalState.ngonCache.
@@ -85,54 +85,52 @@ Rngon.surface = function(canvasElement,  // The target DOM <canvas> element.
 
                 for (const mesh of meshes)
                 {
-                    Rngon.internalState.modules.transform_clip_light(
+                    state.modules.transform_clip_light(
                         mesh.ngons,
                         Rngon.mesh.object_space_matrix(mesh),
                         cameraMatrix,
                         perspectiveMatrix,
                         screenSpaceMatrix,
-                        options.cameraPosition);
+                        state.cameraPosition
+                    );
                 };
 
                 Rngon.renderShared.mark_npot_textures_in_ngon_cache();
-                Rngon.renderShared.depth_sort_ngon_cache(options.depthSort);
+                Rngon.renderShared.depth_sort_ngon_cache(state.depthSortingMode);
             }
 
             // Render the n-gons from the n-gon cache. The rendering will go into the
             // renderer's internal pixel buffer, Rngon.internalState.pixelBuffer.
             {
-                Rngon.internalState.modules.rasterize(options.auxiliaryBuffers);
+                state.modules.rasterize(state.auxiliaryBuffers);
 
-                if (Rngon.internalState.usePixelShader)
+                if (state.usePixelShader)
                 {
                     const args = {
                         renderWidth: surfaceWidth,
                         renderHeight: surfaceHeight,
-                        fragmentBuffer: Rngon.internalState.fragmentBuffer.data,
-                        pixelBuffer: Rngon.internalState.pixelBuffer.data,
-                        ngonCache: Rngon.internalState.ngonCache.ngons,
-                        cameraPosition: options.cameraPosition,
+                        fragmentBuffer: state.fragmentBuffer.data,
+                        pixelBuffer: state.pixelBuffer.data,
+                        ngonCache: state.ngonCache.ngons,
+                        cameraPosition: state.cameraPosition,
                     };
 
                     const paramNamesString = `{${Object.keys(args).join(",")}}`;
 
-                    switch (typeof Rngon.internalState.pixel_shader)
+                    switch (typeof state.pixel_shader)
                     {
-                        case "function":
-                        {
-                            Rngon.internalState.pixel_shader(args);
+                        case "function": {
+                            state.pixel_shader(args);
                             break;
                         }
                         // Shader functions as strings are supported to allow shaders to be
                         // used in Web Workers. These strings are expected to be of - or
                         // equivalent to - the form "(a)=>{console.log(a)}".
-                        case "string":
-                        {
-                            Function(paramNamesString, `(${Rngon.internalState.pixel_shader})(${paramNamesString})`)(args);
+                        case "string": {
+                            Function(paramNamesString, `(${state.pixel_shader})(${paramNamesString})`)(args);
                             break;
                         }
-                        default:
-                        {
+                        default: {
                             Rngon.throw("Unrecognized type of pixel shader function.");
                             break;
                         }
@@ -141,16 +139,17 @@ Rngon.surface = function(canvasElement,  // The target DOM <canvas> element.
 
                 if (!renderOffscreen)
                 {
-                    if (!Rngon.internalState.useContextShader)
+                    if (state.useContextShader)
                     {
-                        renderContext.putImageData(Rngon.internalState.pixelBuffer, 0, 0);
+                        state.context_shader({
+                            context: renderContext,
+                            image: state.pixelBuffer,
+                        });
                     }
                     else
                     {
-                        Rngon.internalState.context_shader({
-                            context: renderContext,
-                            image: Rngon.internalState.pixelBuffer,
-                        });
+                        state.pixelBuffer.palette = state.palette;
+                        renderContext.putImageData(state.pixelBuffer, 0, 0);
                     }
                 }
             }
@@ -173,49 +172,51 @@ Rngon.surface = function(canvasElement,  // The target DOM <canvas> element.
             const viewHeight = window.innerHeight;
             const containerRect = canvasElement.getBoundingClientRect();
 
-            return Boolean((containerRect.top > -containerRect.height) &&
-                           (containerRect.top < viewHeight));
+            return (
+                (containerRect.top > -containerRect.height) &&
+                (containerRect.top < viewHeight)
+            );
         },
     });
 
     return publicInterface;
 
     // Initializes the internal render buffers if they're not already in a suitable state.
-    function initialize_internal_surface_state(surfaceWidth, surfaceHeight)
+    function initialize_internal_surface_state()
     {
-        if ((Rngon.internalState.pixelBuffer.width != surfaceWidth) ||
-            (Rngon.internalState.pixelBuffer.height != surfaceHeight))
-        {
-            Rngon.internalState.pixelBuffer = renderContext.createImageData(surfaceWidth, surfaceHeight);
+        if (
+            (state.pixelBuffer.width != surfaceWidth) ||
+            (state.pixelBuffer.height != surfaceHeight)
+        ){
+            state.pixelBuffer = renderContext.createImageData(surfaceWidth, surfaceHeight);
         }
 
-        if ( Rngon.internalState.usePixelShader &&
-            (Rngon.internalState.fragmentBuffer.width != surfaceWidth) ||
-            (Rngon.internalState.fragmentBuffer.height != surfaceHeight))
-        {
-            Rngon.internalState.fragmentBuffer.width = surfaceWidth;
-            Rngon.internalState.fragmentBuffer.height = surfaceHeight;
-            Rngon.internalState.fragmentBuffer.data = new Array(surfaceWidth * surfaceHeight)
-                                                      .fill()
-                                                      .map(e=>({}));
+        if (
+            state.usePixelShader &&
+            (state.fragmentBuffer.width != surfaceWidth) ||
+            (state.fragmentBuffer.height != surfaceHeight)
+        ){
+            state.fragmentBuffer.width = surfaceWidth;
+            state.fragmentBuffer.height = surfaceHeight;
+            state.fragmentBuffer.data = new Array(surfaceWidth * surfaceHeight).fill().map(e=>({}));
         }
 
-        if ( Rngon.internalState.useDepthBuffer &&
-            (Rngon.internalState.depthBuffer.width != surfaceWidth) ||
-            (Rngon.internalState.depthBuffer.height != surfaceHeight) ||
-            !Rngon.internalState.depthBuffer.data.length)
-        {
-            Rngon.internalState.depthBuffer.width = surfaceWidth;
-            Rngon.internalState.depthBuffer.height = surfaceHeight;
-            Rngon.internalState.depthBuffer.data = new Array(Rngon.internalState.depthBuffer.width *
-                                                             Rngon.internalState.depthBuffer.height); 
+        if (
+            state.useDepthBuffer &&
+            (state.depthBuffer.width != surfaceWidth) ||
+            (state.depthBuffer.height != surfaceHeight) ||
+            !state.depthBuffer.data.length
+        ){
+            state.depthBuffer.width = surfaceWidth;
+            state.depthBuffer.height = surfaceHeight;
+            state.depthBuffer.data = new Array(state.depthBuffer.width * state.depthBuffer.height); 
         }
 
         return;
     }
 
     // Initializes the target DOM <canvas> element for rendering into. Throws on errors.
-    function setup_onscreen({scale}, canvasElement)
+    function setup_onscreen()
     {
         Rngon.assert?.(
             (canvasElement instanceof Element),
@@ -230,17 +231,14 @@ Rngon.surface = function(canvasElement,  // The target DOM <canvas> element.
         );
 
         // Size the canvas as per the requested render scale.
-        const surfaceWidth = Rngon.renderable_width_of(canvasElement, scale);
-        const surfaceHeight = Rngon.renderable_height_of(canvasElement, scale);
-        {
-            Rngon.assert?.(
-                ((surfaceWidth > 0) && (surfaceHeight > 0)),
-                "Couldn't retrieve the canvas's dimensions."
-            );
-
-            canvasElement.setAttribute("width", surfaceWidth);
-            canvasElement.setAttribute("height", surfaceHeight);
-        }
+        const surfaceWidth = Rngon.renderable_width_of(canvasElement, state.renderScale);
+        const surfaceHeight = Rngon.renderable_height_of(canvasElement, state.renderScale);
+        Rngon.assert?.(
+            ((surfaceWidth > 0) && (surfaceHeight > 0)),
+            "Couldn't retrieve the canvas's dimensions."
+        );
+        canvasElement.setAttribute("width", surfaceWidth);
+        canvasElement.setAttribute("height", surfaceHeight);
 
         return {
             surfaceWidth,
@@ -256,11 +254,11 @@ Rngon.surface = function(canvasElement,  // The target DOM <canvas> element.
     // is more about just skipping initialization of the <canvas> element.
     //
     // Note: This function should throw on errors.
-    function setup_offscreen({width, height})
+    function setup_offscreen()
     {
         return {
-            surfaceWidth: width,
-            surfaceHeight: height,
+            surfaceWidth: state.offscreenRenderWidth,
+            surfaceHeight: state.offscreenRenderHeight,
             renderContext: {
                 createImageData: function(width, height)
                 {

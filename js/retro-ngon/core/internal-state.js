@@ -29,8 +29,6 @@ Rngon.internalState =
         surface_wipe: undefined,
     },
 
-    cameraPosition: undefined,
-
     // Whether to require pixels to pass a depth test before being allowed on screen.
     useDepthBuffer: false,
     depthBuffer: {
@@ -39,6 +37,15 @@ Rngon.internalState =
         data: new Array(1),
         clearValue: Infinity,
     },
+
+    // A string identifying the kind of depth sorting to be done prior to rasterization.
+    depthSortingMode: undefined,
+
+    auxiliaryBuffers: [],
+
+    // Whether to render into an indexed-color (paletted) pixel buffer.
+    usePalette: false,
+    palette: undefined,
 
     // Pixel buffer for rasterization. This will be scaled to match the requested
     // render resolution; and the renderer's rasterization pass will populate it
@@ -97,6 +104,15 @@ Rngon.internalState =
     useContextShader: false,
     context_shader: undefined,
 
+    // The render resolution when using off-screen rendering. Has no effect on the
+    // resolution of on-screen, into-canvas rendering.
+    offscreenRenderWidth: 1,
+    offscreenRenderHeight: 1,
+
+    // A scalar for the internal render resolution. Values below 1 mean the image
+    // will be rendered at a resolution lower than the display size, then upscaled.
+    renderScale: 1,
+
     usePerspectiveCorrectInterpolation: false,
 
     // If set to true, all n-gons will be rendered with a wireframe.
@@ -105,8 +121,15 @@ Rngon.internalState =
     // If true, all n-gons will be clipped against the viewport.
     applyViewportClipping: true,
 
-    // Distance, in world units, to the far clipping plane.
+    // Distance, in world units, to the near and far clipping planes.
+    nearPlaneDistance: 1,
     farPlaneDistance: 1,
+
+    // Field of view.
+    fov: 45,
+
+    cameraDirection: undefined,
+    cameraPosition: undefined,
 
     // Whether the renderer is allowed to call window.alert(), e.g. to alert the user
     // to errors. This parameter can be set directly, as the render API doesn't yet

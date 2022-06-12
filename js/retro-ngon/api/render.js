@@ -8,11 +8,20 @@
 
 // Renders the given meshes onto a given DOM <canvas> element. Note that the target element
 // must already exist.
-Rngon.render = function(canvasElement,
-                        meshes = [Rngon.mesh()],
-                        options = {})
+Rngon.render = function(
+    canvasElement,
+    meshes = [Rngon.mesh()],
+    options = {}
+)
 {
     const renderCallInfo = Rngon.renderShared.setup_render_call_info();
+
+    options = Object.freeze({
+        ...Rngon.renderShared.defaultRenderOptions,
+        ...options
+    });
+
+    Rngon.renderShared.initialize_internal_render_state(options);
 
     // The canvas element can be passed in in a couple of ways, e.g. as a string that
     // identifies the DOM element, or directly as a DOM element object. So let's figure
@@ -26,13 +35,6 @@ Rngon.render = function(canvasElement,
     {
         Rngon.throw("Invalid canvas element.");
     }
-
-    options = Object.freeze({
-        ...Rngon.renderShared.defaultRenderOptions,
-        ...options
-    });
-    
-    Rngon.renderShared.initialize_internal_render_state(options);
     
     // Render a single frame onto the target <canvas> element.
     {

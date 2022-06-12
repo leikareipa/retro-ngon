@@ -79,6 +79,9 @@ body
     margin: 0;
     border: none;
     border-radius: 0px;
+    position: absolute;
+    top: 0;
+    left: 0;
 }
 
 .notice

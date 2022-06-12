@@ -1,9 +1,10 @@
 // WHAT: Concatenated JavaScript source files
 // PROGRAM: Retro n-gon renderer
-// VERSION: beta live (11 June 2022 23:32:03 UTC)
+// VERSION: beta live (12 June 2022 14:53:26 UTC)
 // AUTHOR: Tarpeeksi Hyvae Soft and others
 // LINK: https://www.github.com/leikareipa/retro-ngon/
 // FILES:
+//	./js/paletted-canvas/paletted-canvas.js
 //	./js/retro-ngon/retro-ngon.js
 //	./js/retro-ngon/core/util.js
 //	./js/retro-ngon/core/internal-state.js
@@ -26,6 +27,173 @@
 //	./js/retro-ngon/core/surface.js
 /////////////////////////////////////////////////
 
+/*
+ * 2022 Tarpeeksi Hyvae Soft
+ *
+ * Software: Paletted canvas (https://github.com/leikareipa/paletted-canvas)
+ * 
+ * This is an early in-development version of a paletted <canvas>. Future versions will add
+ * more documentation, fix bugs, etc.
+ * 
+ */
+
+// Provides an ImageData-like interface for storing paletted image data.
+class IndexedImageData {
+    #palette
+    #width
+    #height
+    #data
+
+    constructor(data, width, height, palette) {
+        // Validate input.
+        {
+            if (!(data instanceof Uint8ClampedArray)) {
+                throw new Error("The data must be a Uint8ClampedArray array.");
+            }
+
+            if (
+                (typeof width !== "number") ||
+                (typeof height !== "number")
+            ){
+                throw new Error("The width and height must be numbers.");
+            }
+        }
+
+        this.#width = width;
+        this.#height = height;
+        this.#data = data;
+        this.palette = (palette || [[0, 0, 0, 0]]);
+    }
+
+    // To get the palette index at x as a quadruplet of 8-bit RGBA values, do "palette[x]".
+    // To modify individual indices of the returned palette, do "palette[x] = [R, G, B, A]".
+    // To replace the entire palette, do "palette = [[R, G, B, A], [R, G, B, A], ...]".
+    // When setting palette data, the alpha (A) component is optional - if not defined, a
+    // default of 255 will be used.
+    get palette() {
+        return this.#palette;
+    }
+
+    // Replaces the current palette with a new palette. The new palette should be an array
+    // containing 8-bit (0-255) RGBA quadruplet arrays; e.g. [[255, 0, 0, 255], [0, 255, 0, 255]]
+    // for a palette of red and green (the alpha component is optional and will default to
+    // 255 if not given).
+    set palette(newPalette) {
+        if (!Array.isArray(newPalette)) {
+            throw new Error("The palette must be an array.");
+        }
+
+        newPalette.forEach(color=>{
+            color.length = 4;
+            if (typeof color[3] === "undefined") {
+                color[3] = 255;
+            }
+        });
+
+        newPalette = newPalette.map(color=>Uint8ClampedArray.from(color));
+
+        const palette = {
+            byte: newPalette,
+            dword: new Uint32Array(newPalette.map(color=>((color[3] << 24) | (color[2] << 16) | (color[1] << 8) | color[0]))),
+        };
+
+        // We use a proxy to allow "this.#palette[x] = ..." to modify individual indices even
+        // though the underlying this.#palette object doesn't have index keys.
+        this.#palette = new Proxy(palette, {
+            set: (palette, index, newValue)=>{
+                palette.byte[index] = newValue;
+                this.palette = palette.byte;
+                return true;
+            },
+            get: (palette, index)=>{
+                return (palette[index] || palette.byte[index]);
+            },
+        });
+    }
+
+    get data() {
+        return this.#data;
+    }
+
+    get width() {
+        return this.#width;
+    }
+
+    get height() {
+        return this.#height;
+    }
+
+    get colorSpace() {
+        return "indexed";
+    }
+};
+
+class PalettedCanvas extends HTMLCanvasElement {
+    #canvasImage
+    #canvasContext
+
+    constructor() {
+        super();
+    }
+    
+    static get observedAttributes() {
+        return ["width", "height"];
+    }
+
+    attributeChangedCallback(name, oldValue, newValue) {
+        if ((oldValue != newValue) && ["width", "height"].includes(name)) {
+            this.#canvasContext = super.getContext("2d");
+            this.#canvasImage = this.#canvasContext.createImageData(super.width, super.height);
+        }
+    }
+
+    getContext(contextType = "2d") {
+        if (contextType !== "2d") {
+            throw new Error(`Only the "2d" context type is supported.`);
+        }
+
+        // Emulates the interface of CanvasRenderingContext2D.
+        return {
+            createImageData: this.#createImageData.bind(this),
+            putImageData: this.#putImageData.bind(this),
+        };
+    }
+
+    #createImageData() {
+        return new IndexedImageData(
+            new Uint8ClampedArray(super.width * super.height),
+            super.width,
+            super.height,
+        );
+    }
+
+    #putImageData(image) {
+        if (!(image instanceof IndexedImageData)) {
+            throw new Error("Only images of type IndexedImageData can be rendered.");
+        }
+
+        if (
+            !(this.#canvasImage instanceof ImageData) ||
+            !(this.#canvasContext instanceof CanvasRenderingContext2D)
+        ){
+            throw new Error("Internal error: incomplete state initialization.");
+        }
+
+        // Convert the paletted image into a 32-bit image on the canvas.
+        {
+            const palette = image.palette.dword;
+            const pixelBuffer32bit = new Uint32Array(this.#canvasImage.data.buffer);
+
+            for (let i = 0; i < image.data.length; i++) {
+                pixelBuffer32bit[i] = palette[image.data[i]];
+            }
+        }
+
+        this.#canvasContext.putImageData(this.#canvasImage, 0, 0);
+    }
+};
+
+customElements.define("paletted-canvas", PalettedCanvas, {extends: "canvas"});
 /*
  * Tarpeeksi Hyvae Soft 2019 /
  * Retro n-gon renderer
@@ -133,8 +301,6 @@ Rngon.internalState =
         surface_wipe: undefined,
     },
 
-    cameraPosition: undefined,
-
     // Whether to require pixels to pass a depth test before being allowed on screen.
     useDepthBuffer: false,
     depthBuffer: {
@@ -143,6 +309,15 @@ Rngon.internalState =
         data: new Array(1),
         clearValue: Infinity,
     },
+
+    // A string identifying the kind of depth sorting to be done prior to rasterization.
+    depthSortingMode: undefined,
+
+    auxiliaryBuffers: [],
+
+    // Whether to render into an indexed-color (paletted) pixel buffer.
+    usePalette: false,
+    palette: undefined,
 
     // Pixel buffer for rasterization. This will be scaled to match the requested
     // render resolution; and the renderer's rasterization pass will populate it
@@ -201,6 +376,15 @@ Rngon.internalState =
     useContextShader: false,
     context_shader: undefined,
 
+    // The render resolution when using off-screen rendering. Has no effect on the
+    // resolution of on-screen, into-canvas rendering.
+    offscreenRenderWidth: 1,
+    offscreenRenderHeight: 1,
+
+    // A scalar for the internal render resolution. Values below 1 mean the image
+    // will be rendered at a resolution lower than the display size, then upscaled.
+    renderScale: 1,
+
     usePerspectiveCorrectInterpolation: false,
 
     // If set to true, all n-gons will be rendered with a wireframe.
@@ -209,8 +393,15 @@ Rngon.internalState =
     // If true, all n-gons will be clipped against the viewport.
     applyViewportClipping: true,
 
-    // Distance, in world units, to the far clipping plane.
+    // Distance, in world units, to the near and far clipping planes.
+    nearPlaneDistance: 1,
     farPlaneDistance: 1,
+
+    // Field of view.
+    fov: 45,
+
+    cameraDirection: undefined,
+    cameraPosition: undefined,
 
     // Whether the renderer is allowed to call window.alert(), e.g. to alert the user
     // to errors. This parameter can be set directly, as the render API doesn't yet
@@ -1230,10 +1421,13 @@ Rngon.baseModules.rasterize.polygon = function(
     const useAuxiliaryBuffers = auxiliaryBuffers.length;
     const fragmentBuffer = Rngon.internalState.fragmentBuffer.data;
     const pixelBufferClamped8 = Rngon.internalState.pixelBuffer.data;
-    const pixelBuffer = new Uint32Array(pixelBufferClamped8.buffer);
     const depthBuffer = (Rngon.internalState.useDepthBuffer? Rngon.internalState.depthBuffer.data : null);
     const renderWidth = Rngon.internalState.pixelBuffer.width;
     const renderHeight = Rngon.internalState.pixelBuffer.height;
+    const usePalette = Rngon.internalState.usePalette;
+    const pixelBuffer32 = usePalette
+        ? undefined
+        : new Uint32Array(pixelBufferClamped8.buffer);
 
     let numLeftVerts = 0;
     let numRightVerts = 0;
@@ -1258,7 +1452,11 @@ Rngon.baseModules.rasterize.polygon = function(
 
     if (material.hasFill)
     {
-        if (
+        if (usePalette)
+        {
+            paletted_fill();
+        }
+        else if (
             texture &&
             depthBuffer &&
             !usePixelShader &&
@@ -1283,7 +1481,7 @@ Rngon.baseModules.rasterize.polygon = function(
         }
         else
         {
-            fill();
+            generic_fill();
         }
     }
 
@@ -1472,7 +1670,6 @@ Rngon.baseModules.rasterize.polygon = function(
                     pixelBufferIdx++;
 
                     const depth = (iplDepth / iplInvW);
-
                     if (depthBuffer[pixelBufferIdx] <= depth) continue;
 
                     // Texture UV coordinates.
@@ -1544,7 +1741,7 @@ Rngon.baseModules.rasterize.polygon = function(
                     }
                     else
                     {
-                        pixelBuffer[pixelBufferIdx] = (
+                        pixelBuffer32[pixelBufferIdx] = (
                             (255 << 24) +
                             (blue << 16) +
                             (green << 8) +
@@ -1652,7 +1849,7 @@ Rngon.baseModules.rasterize.polygon = function(
                     }
                     else
                     {
-                        pixelBuffer[pixelBufferIdx] = (
+                        pixelBuffer32[pixelBufferIdx] = (
                             (255 << 24) +
                             (blue << 16) +
                             (green << 8) +
@@ -1683,8 +1880,76 @@ Rngon.baseModules.rasterize.polygon = function(
         return;
     }
 
-    // Fills the current polygon.
-    function fill()
+    // Fills the current polygon into an indexed-color (paletted) pixel buffer.
+    // NOTE: THIS IS AN EARLY WORK-IN-PROGRES IMPLEMENTATION, NOT READY FOR USE.
+    function paletted_fill()
+    {
+        let curLeftEdgeIdx = 0;
+        let curRightEdgeIdx = 0;
+        let leftEdge = leftEdges[curLeftEdgeIdx];
+        let rightEdge = rightEdges[curRightEdgeIdx];
+        
+        if (!numLeftEdges || !numRightEdges) return;
+
+        // Note: We assume the n-gon's vertices to be sorted by increasing Y.
+        const ngonStartY = leftEdges[0].startY;
+        const ngonEndY = leftEdges[numLeftEdges-1].endY;
+        
+        // Rasterize the n-gon in horizontal pixel spans over its height.
+        for (let y = ngonStartY; y < ngonEndY; y++)
+        {
+            const spanStartX = Math.min(renderWidth, Math.max(0, Math.round(leftEdge.startX)));
+            const spanEndX = Math.min(renderWidth, Math.max(0, Math.ceil(rightEdge.startX)));
+            const spanWidth = ((spanEndX - spanStartX) + 1);
+
+            if (spanWidth > 0)
+            {
+                const deltaDepth = ((rightEdge.startDepth - leftEdge.startDepth) / spanWidth);
+                let iplDepth = (leftEdge.startDepth - deltaDepth);
+
+                const deltaInvW = ((rightEdge.startInvW - leftEdge.startInvW) / spanWidth);
+                let iplInvW = (leftEdge.startInvW - deltaInvW);
+
+                let pixelBufferIdx = ((spanStartX + y * renderWidth) - 1);
+
+                // Draw the span into the pixel buffer.
+                for (let x = spanStartX; x < spanEndX; x++)
+                {
+                    // Update values that're interpolated horizontally along the span.
+                    iplDepth += deltaDepth;
+                    iplInvW += deltaInvW;
+                    pixelBufferIdx++;
+
+                    const depth = (iplDepth / iplInvW);
+                    if (depthBuffer[pixelBufferIdx] <= depth) continue;
+
+                    depthBuffer[pixelBufferIdx] = depth;
+                    pixelBufferClamped8[pixelBufferIdx] = material.colorIdx;
+                }
+            }
+
+            // Update values that're interpolated vertically along the edges.
+            {
+                leftEdge.startX      += leftEdge.deltaX;
+                leftEdge.startDepth  += leftEdge.deltaDepth;
+                leftEdge.startInvW   += leftEdge.deltaInvW;
+
+                rightEdge.startX     += rightEdge.deltaX;
+                rightEdge.startDepth += rightEdge.deltaDepth;
+                rightEdge.startInvW  += rightEdge.deltaInvW;
+            }
+
+            // We can move onto the next edge when we're at the end of the current one.
+            if (y === (leftEdge.endY - 1)) leftEdge = leftEdges[++curLeftEdgeIdx];
+            if (y === (rightEdge.endY - 1)) rightEdge = rightEdges[++curRightEdgeIdx];
+        }
+
+        return;
+    }
+
+    // Fills the current polygon. No performance-enhancing assumptions are made, so this
+    // is the most compatible filler, but also potentially the slowest. 
+    function generic_fill()
     {
         let curLeftEdgeIdx = 0;
         let curRightEdgeIdx = 0;
@@ -1931,7 +2196,7 @@ Rngon.baseModules.rasterize.polygon = function(
                         }
                         else
                         {
-                            pixelBuffer[pixelBufferIdx] = (
+                            pixelBuffer32[pixelBufferIdx] = (
                                 (255 << 24) +
                                 (blue << 16) +
                                 (green << 8) +
@@ -2648,11 +2913,20 @@ Rngon.baseModules.surface_wipe = function()
 
 // Renders the given meshes onto a given DOM <canvas> element. Note that the target element
 // must already exist.
-Rngon.render = function(canvasElement,
-                        meshes = [Rngon.mesh()],
-                        options = {})
+Rngon.render = function(
+    canvasElement,
+    meshes = [Rngon.mesh()],
+    options = {}
+)
 {
     const renderCallInfo = Rngon.renderShared.setup_render_call_info();
+
+    options = Object.freeze({
+        ...Rngon.renderShared.defaultRenderOptions,
+        ...options
+    });
+
+    Rngon.renderShared.initialize_internal_render_state(options);
 
     // The canvas element can be passed in in a couple of ways, e.g. as a string that
     // identifies the DOM element, or directly as a DOM element object. So let's figure
@@ -2666,13 +2940,6 @@ Rngon.render = function(canvasElement,
     {
         Rngon.throw("Invalid canvas element.");
     }
-
-    options = Object.freeze({
-        ...Rngon.renderShared.defaultRenderOptions,
-        ...options
-    });
-    
-    Rngon.renderShared.initialize_internal_render_state(options);
     
     // Render a single frame onto the target <canvas> element.
     {
@@ -2950,10 +3217,26 @@ Rngon.renderShared = {
         state.showGlobalWireframe = Boolean(options.globalWireframe);
         state.applyViewportClipping = Boolean(options.clipToViewport);
         state.lights = options.lights;
+
+        state.renderScale = options.scale;
+        state.offscreenRenderWidth = options.width;
+        state.offscreenRenderHeight = options.height;
+
+        state.depthSortingMode = options.depthSort;
+
+        state.auxiliaryBuffers = options.auxiliaryBuffers;
+
+        state.nearPlaneDistance = options.nearPlane;
         state.farPlaneDistance = options.farPlane;
 
-        state.usePerspectiveCorrectInterpolation = Boolean((options.perspectiveCorrectTexturing || // <- Name in pre-beta.2.
-                                                            options.perspectiveCorrectInterpolation));
+        state.fov = options.fov;
+        state.cameraDirection = options.cameraDirection;
+        state.cameraPosition = options.cameraPosition;
+
+        state.usePerspectiveCorrectInterpolation = Boolean(
+            options.perspectiveCorrectTexturing || // <- Name in pre-beta.2.
+            options.perspectiveCorrectInterpolation
+        );
 
         state.useVertexShader = Boolean(options.vertexShader);
         state.vertex_shader = options.vertexShader;
@@ -2962,19 +3245,28 @@ Rngon.renderShared = {
         state.context_shader = options.contextShader;
 
         state.usePixelShader = Boolean(options.pixelShader);
-        state.pixel_shader = (options.shaderFunction || // <- Name in pre-beta.3.
-                              options.pixelShader); 
+        state.pixel_shader = (
+            options.shaderFunction || // <- Name in pre-beta.3.
+            options.pixelShader
+        ); 
 
-        state.modules.rasterize = (options.modules.rasterize ||
-                                   Rngon.baseModules.rasterize);
-                                   
-        state.modules.transform_clip_light = (options.modules.transformClipLight ||
-                                              Rngon.baseModules.transform_clip_light);
+        state.usePalette = Array.isArray(options.palette);
+        state.palette = options.palette;
 
-        state.modules.surface_wipe = (options.modules.surfaceWipe ||
-                                      Rngon.baseModules.surface_wipe);
+        state.modules.rasterize = (
+            options.modules.rasterize ||
+            Rngon.baseModules.rasterize
+        );
 
-        state.cameraPosition = options.cameraPosition;
+        state.modules.transform_clip_light = (
+            options.modules.transformClipLight ||
+            Rngon.baseModules.transform_clip_light
+        );
+
+        state.modules.surface_wipe = (
+            options.modules.surfaceWipe ||
+            Rngon.baseModules.surface_wipe
+        );
 
         return;
     },
@@ -3136,6 +3428,7 @@ Rngon.renderShared = {
         lights: [],
         width: 640, // Used by render_async() only.
         height: 480, // Used by render_async() only.
+        palette: null,
         modules: {
             rasterize: null, // Null defaults to Rngon.baseModules.rasterize.
             transformClipLight: null, // Null defaults to Rngon.baseModules.transform_clip_light.
@@ -3377,14 +3670,14 @@ Rngon.texture_rgba.create_with_data_from_file = function(filename)
 "use strict";
 
 // A surface for rendering onto. Will also paint the rendered image onto a HTML5 <canvas>
-// element unless the 'canvasElementId' parameter is null, in which case rendering will be
+// element unless the 'canvasElement' parameter is null, in which case rendering will be
 // to an off-screen buffer only.
 //
 // Returns null if the surface could not be created.
-Rngon.surface = function(canvasElement,  // The target DOM <canvas> element.
-                         options = {})   // A reference to or copy of the options passed to render().
+Rngon.surface = function(canvasElement)
 {
-    const renderOffscreen = Boolean(canvasElement === null);
+    const state = Rngon.internalState;
+    const renderOffscreen = (canvasElement === null);
 
     let surfaceWidth = undefined,
         surfaceHeight = undefined,
@@ -3397,9 +3690,9 @@ Rngon.surface = function(canvasElement,  // The target DOM <canvas> element.
             surfaceHeight,
             canvasElement,
             renderContext
-        } = (renderOffscreen? setup_offscreen : setup_onscreen)(options, canvasElement));
-        
-        initialize_internal_surface_state(surfaceWidth, surfaceHeight);
+        } = (renderOffscreen? setup_offscreen : setup_onscreen)());
+
+        initialize_internal_surface_state();
     }
     catch (error)
     {
@@ -3409,22 +3702,22 @@ Rngon.surface = function(canvasElement,  // The target DOM <canvas> element.
 
     const cameraMatrix = Rngon.matrix44.multiply(
         Rngon.matrix44.rotation(
-            options.cameraDirection.x,
-            options.cameraDirection.y,
-            options.cameraDirection.z
+            state.cameraDirection.x,
+            state.cameraDirection.y,
+            state.cameraDirection.z
         ),
         Rngon.matrix44.translation(
-            -options.cameraPosition.x,
-            -options.cameraPosition.y,
-            -options.cameraPosition.z
+            -state.cameraPosition.x,
+            -state.cameraPosition.y,
+            -state.cameraPosition.z
         )
     );
 
     const perspectiveMatrix = Rngon.matrix44.perspective(
-        (options.fov * (Math.PI / 180)),
+        (state.fov * (Math.PI / 180)),
         (surfaceWidth / surfaceHeight),
-        options.nearPlane,
-        options.farPlane
+        state.nearPlaneDistance,
+        state.farPlaneDistance
     );
 
     const screenSpaceMatrix = Rngon.matrix44.ortho(
@@ -3444,7 +3737,7 @@ Rngon.surface = function(canvasElement,  // The target DOM <canvas> element.
         // this surface, the rasterized pixels will also be painted onto that canvas.
         display_meshes: function(meshes = [])
         {
-            Rngon.internalState.modules.surface_wipe();
+            state.modules.surface_wipe();
 
             // Prepare the meshes' n-gons for rendering. This will place the transformed
             // n-gons into the internal n-gon cache, Rngon.internalState.ngonCache.
@@ -3454,54 +3747,52 @@ Rngon.surface = function(canvasElement,  // The target DOM <canvas> element.
 
                 for (const mesh of meshes)
                 {
-                    Rngon.internalState.modules.transform_clip_light(
+                    state.modules.transform_clip_light(
                         mesh.ngons,
                         Rngon.mesh.object_space_matrix(mesh),
                         cameraMatrix,
                         perspectiveMatrix,
                         screenSpaceMatrix,
-                        options.cameraPosition);
+                        state.cameraPosition
+                    );
                 };
 
                 Rngon.renderShared.mark_npot_textures_in_ngon_cache();
-                Rngon.renderShared.depth_sort_ngon_cache(options.depthSort);
+                Rngon.renderShared.depth_sort_ngon_cache(state.depthSortingMode);
             }
 
             // Render the n-gons from the n-gon cache. The rendering will go into the
             // renderer's internal pixel buffer, Rngon.internalState.pixelBuffer.
             {
-                Rngon.internalState.modules.rasterize(options.auxiliaryBuffers);
+                state.modules.rasterize(state.auxiliaryBuffers);
 
-                if (Rngon.internalState.usePixelShader)
+                if (state.usePixelShader)
                 {
                     const args = {
                         renderWidth: surfaceWidth,
                         renderHeight: surfaceHeight,
-                        fragmentBuffer: Rngon.internalState.fragmentBuffer.data,
-                        pixelBuffer: Rngon.internalState.pixelBuffer.data,
-                        ngonCache: Rngon.internalState.ngonCache.ngons,
-                        cameraPosition: options.cameraPosition,
+                        fragmentBuffer: state.fragmentBuffer.data,
+                        pixelBuffer: state.pixelBuffer.data,
+                        ngonCache: state.ngonCache.ngons,
+                        cameraPosition: state.cameraPosition,
                     };
 
                     const paramNamesString = `{${Object.keys(args).join(",")}}`;
 
-                    switch (typeof Rngon.internalState.pixel_shader)
+                    switch (typeof state.pixel_shader)
                     {
-                        case "function":
-                        {
-                            Rngon.internalState.pixel_shader(args);
+                        case "function": {
+                            state.pixel_shader(args);
                             break;
                         }
                         // Shader functions as strings are supported to allow shaders to be
                         // used in Web Workers. These strings are expected to be of - or
                         // equivalent to - the form "(a)=>{console.log(a)}".
-                        case "string":
-                        {
-                            Function(paramNamesString, `(${Rngon.internalState.pixel_shader})(${paramNamesString})`)(args);
+                        case "string": {
+                            Function(paramNamesString, `(${state.pixel_shader})(${paramNamesString})`)(args);
                             break;
                         }
-                        default:
-                        {
+                        default: {
                             Rngon.throw("Unrecognized type of pixel shader function.");
                             break;
                         }
@@ -3510,16 +3801,17 @@ Rngon.surface = function(canvasElement,  // The target DOM <canvas> element.
 
                 if (!renderOffscreen)
                 {
-                    if (!Rngon.internalState.useContextShader)
+                    if (state.useContextShader)
                     {
-                        renderContext.putImageData(Rngon.internalState.pixelBuffer, 0, 0);
+                        state.context_shader({
+                            context: renderContext,
+                            image: state.pixelBuffer,
+                        });
                     }
                     else
                     {
-                        Rngon.internalState.context_shader({
-                            context: renderContext,
-                            image: Rngon.internalState.pixelBuffer,
-                        });
+                        state.pixelBuffer.palette = state.palette;
+                        renderContext.putImageData(state.pixelBuffer, 0, 0);
                     }
                 }
             }
@@ -3542,49 +3834,51 @@ Rngon.surface = function(canvasElement,  // The target DOM <canvas> element.
             const viewHeight = window.innerHeight;
             const containerRect = canvasElement.getBoundingClientRect();
 
-            return Boolean((containerRect.top > -containerRect.height) &&
-                           (containerRect.top < viewHeight));
+            return (
+                (containerRect.top > -containerRect.height) &&
+                (containerRect.top < viewHeight)
+            );
         },
     });
 
     return publicInterface;
 
     // Initializes the internal render buffers if they're not already in a suitable state.
-    function initialize_internal_surface_state(surfaceWidth, surfaceHeight)
+    function initialize_internal_surface_state()
     {
-        if ((Rngon.internalState.pixelBuffer.width != surfaceWidth) ||
-            (Rngon.internalState.pixelBuffer.height != surfaceHeight))
-        {
-            Rngon.internalState.pixelBuffer = renderContext.createImageData(surfaceWidth, surfaceHeight);
+        if (
+            (state.pixelBuffer.width != surfaceWidth) ||
+            (state.pixelBuffer.height != surfaceHeight)
+        ){
+            state.pixelBuffer = renderContext.createImageData(surfaceWidth, surfaceHeight);
         }
 
-        if ( Rngon.internalState.usePixelShader &&
-            (Rngon.internalState.fragmentBuffer.width != surfaceWidth) ||
-            (Rngon.internalState.fragmentBuffer.height != surfaceHeight))
-        {
-            Rngon.internalState.fragmentBuffer.width = surfaceWidth;
-            Rngon.internalState.fragmentBuffer.height = surfaceHeight;
-            Rngon.internalState.fragmentBuffer.data = new Array(surfaceWidth * surfaceHeight)
-                                                      .fill()
-                                                      .map(e=>({}));
+        if (
+            state.usePixelShader &&
+            (state.fragmentBuffer.width != surfaceWidth) ||
+            (state.fragmentBuffer.height != surfaceHeight)
+        ){
+            state.fragmentBuffer.width = surfaceWidth;
+            state.fragmentBuffer.height = surfaceHeight;
+            state.fragmentBuffer.data = new Array(surfaceWidth * surfaceHeight).fill().map(e=>({}));
         }
 
-        if ( Rngon.internalState.useDepthBuffer &&
-            (Rngon.internalState.depthBuffer.width != surfaceWidth) ||
-            (Rngon.internalState.depthBuffer.height != surfaceHeight) ||
-            !Rngon.internalState.depthBuffer.data.length)
-        {
-            Rngon.internalState.depthBuffer.width = surfaceWidth;
-            Rngon.internalState.depthBuffer.height = surfaceHeight;
-            Rngon.internalState.depthBuffer.data = new Array(Rngon.internalState.depthBuffer.width *
-                                                             Rngon.internalState.depthBuffer.height); 
+        if (
+            state.useDepthBuffer &&
+            (state.depthBuffer.width != surfaceWidth) ||
+            (state.depthBuffer.height != surfaceHeight) ||
+            !state.depthBuffer.data.length
+        ){
+            state.depthBuffer.width = surfaceWidth;
+            state.depthBuffer.height = surfaceHeight;
+            state.depthBuffer.data = new Array(state.depthBuffer.width * state.depthBuffer.height); 
         }
 
         return;
     }
 
     // Initializes the target DOM <canvas> element for rendering into. Throws on errors.
-    function setup_onscreen({scale}, canvasElement)
+    function setup_onscreen()
     {
         Rngon.assert?.(
             (canvasElement instanceof Element),
@@ -3599,17 +3893,14 @@ Rngon.surface = function(canvasElement,  // The target DOM <canvas> element.
         );
 
         // Size the canvas as per the requested render scale.
-        const surfaceWidth = Rngon.renderable_width_of(canvasElement, scale);
-        const surfaceHeight = Rngon.renderable_height_of(canvasElement, scale);
-        {
-            Rngon.assert?.(
-                ((surfaceWidth > 0) && (surfaceHeight > 0)),
-                "Couldn't retrieve the canvas's dimensions."
-            );
-
-            canvasElement.setAttribute("width", surfaceWidth);
-            canvasElement.setAttribute("height", surfaceHeight);
-        }
+        const surfaceWidth = Rngon.renderable_width_of(canvasElement, state.renderScale);
+        const surfaceHeight = Rngon.renderable_height_of(canvasElement, state.renderScale);
+        Rngon.assert?.(
+            ((surfaceWidth > 0) && (surfaceHeight > 0)),
+            "Couldn't retrieve the canvas's dimensions."
+        );
+        canvasElement.setAttribute("width", surfaceWidth);
+        canvasElement.setAttribute("height", surfaceHeight);
 
         return {
             surfaceWidth,
@@ -3625,11 +3916,11 @@ Rngon.surface = function(canvasElement,  // The target DOM <canvas> element.
     // is more about just skipping initialization of the <canvas> element.
     //
     // Note: This function should throw on errors.
-    function setup_offscreen({width, height})
+    function setup_offscreen()
     {
         return {
-            surfaceWidth: width,
-            surfaceHeight: height,
+            surfaceWidth: state.offscreenRenderWidth,
+            surfaceHeight: state.offscreenRenderHeight,
             renderContext: {
                 createImageData: function(width, height)
                 {

@@ -24,8 +24,10 @@
             Loading render sample...
         </div>
 
-        <canvas id="canvas"
-                class="rngon-canvas rngon-pixelated-upscale">
+        <canvas id="canvas" class="rngon-canvas rngon-pixelated-upscale">
+        </canvas>
+
+        <canvas is="paletted-canvas" id="canvas-paletted" class="rngon-canvas rngon-pixelated-upscale">
         </canvas>
 
         <div class="infoboxes-container">
@@ -127,7 +129,6 @@
 
             async function run()
             {
-                const canvasElement = "canvas"; // or "document.getElementById("canvas")" for versions >= beta.5.
                 const sampleId = (new URLSearchParams(window.location.search).get("sample") || "textured-cube-model");
                 const {sample} = await import(`./${sampleId}/${sampleId}.js`);
 
@@ -177,7 +178,16 @@
 
                     be_backwards_compatible(options);
 
-                    const renderInfo = Rngon.render(canvasElement, [scene.mesh], options);
+                    // We have two <canvas> elements available, one for normal rendering and the
+                    // other for paletted rendering. Based on which the user has requested, we
+                    // remove the other, unneeded canvas.
+                    document.getElementById((options.palette? "canvas" : "canvas-paletted"))?.remove?.();
+
+                    const renderInfo = Rngon.render(
+                        (options.palette? "canvas-paletted" : "canvas"),
+                        [scene.mesh],
+                        options
+                    );
 
                     if ((uiUpdateTimer += frameTimeDeltaMs) >= 500)
                     {

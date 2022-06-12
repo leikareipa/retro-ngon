@@ -18,10 +18,26 @@ Rngon.renderShared = {
         state.showGlobalWireframe = Boolean(options.globalWireframe);
         state.applyViewportClipping = Boolean(options.clipToViewport);
         state.lights = options.lights;
+
+        state.renderScale = options.scale;
+        state.offscreenRenderWidth = options.width;
+        state.offscreenRenderHeight = options.height;
+
+        state.depthSortingMode = options.depthSort;
+
+        state.auxiliaryBuffers = options.auxiliaryBuffers;
+
+        state.nearPlaneDistance = options.nearPlane;
         state.farPlaneDistance = options.farPlane;
 
-        state.usePerspectiveCorrectInterpolation = Boolean((options.perspectiveCorrectTexturing || // <- Name in pre-beta.2.
-                                                            options.perspectiveCorrectInterpolation));
+        state.fov = options.fov;
+        state.cameraDirection = options.cameraDirection;
+        state.cameraPosition = options.cameraPosition;
+
+        state.usePerspectiveCorrectInterpolation = Boolean(
+            options.perspectiveCorrectTexturing || // <- Name in pre-beta.2.
+            options.perspectiveCorrectInterpolation
+        );
 
         state.useVertexShader = Boolean(options.vertexShader);
         state.vertex_shader = options.vertexShader;
@@ -30,19 +46,28 @@ Rngon.renderShared = {
         state.context_shader = options.contextShader;
 
         state.usePixelShader = Boolean(options.pixelShader);
-        state.pixel_shader = (options.shaderFunction || // <- Name in pre-beta.3.
-                              options.pixelShader); 
+        state.pixel_shader = (
+            options.shaderFunction || // <- Name in pre-beta.3.
+            options.pixelShader
+        ); 
 
-        state.modules.rasterize = (options.modules.rasterize ||
-                                   Rngon.baseModules.rasterize);
-                                   
-        state.modules.transform_clip_light = (options.modules.transformClipLight ||
-                                              Rngon.baseModules.transform_clip_light);
+        state.usePalette = Array.isArray(options.palette);
+        state.palette = options.palette;
 
-        state.modules.surface_wipe = (options.modules.surfaceWipe ||
-                                      Rngon.baseModules.surface_wipe);
+        state.modules.rasterize = (
+            options.modules.rasterize ||
+            Rngon.baseModules.rasterize
+        );
 
-        state.cameraPosition = options.cameraPosition;
+        state.modules.transform_clip_light = (
+            options.modules.transformClipLight ||
+            Rngon.baseModules.transform_clip_light
+        );
+
+        state.modules.surface_wipe = (
+            options.modules.surfaceWipe ||
+            Rngon.baseModules.surface_wipe
+        );
 
         return;
     },
@@ -204,6 +229,7 @@ Rngon.renderShared = {
         lights: [],
         width: 640, // Used by render_async() only.
         height: 480, // Used by render_async() only.
+        palette: null,
         modules: {
             rasterize: null, // Null defaults to Rngon.baseModules.rasterize.
             transformClipLight: null, // Null defaults to Rngon.baseModules.transform_clip_light.
