@@ -50,7 +50,7 @@ export const renderShared = {
             options.pixelShader
         );
 
-        state.rasterShaders = options.rasterShaders;
+        state.rasterShaders = options.rasterShaders.filter(e=>typeof e === "function");
 
         state.usePalette = Array.isArray(options.palette);
         state.palette = options.palette;
