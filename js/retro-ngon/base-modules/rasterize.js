@@ -429,7 +429,7 @@ rasterize.line = function(
 
 rasterize.point = function(
     vertex = Rngon.vertex(),
-    material = {},
+    material = Rngon.material(),
     ngonIdx = 0
 )
 {
