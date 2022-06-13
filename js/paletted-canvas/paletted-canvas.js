@@ -8,6 +8,10 @@
  * 
  */
 
+const isRunningInWebWorker = (typeof importScripts === "function");
+
+if (!isRunningInWebWorker)
+{
 // Provides an ImageData-like interface for storing paletted image data.
 class IndexedImageData {
     #palette
@@ -165,3 +169,4 @@ class PalettedCanvas extends HTMLCanvasElement {
 };
 
 customElements.define("paletted-canvas", PalettedCanvas, {extends: "canvas"});
+}
