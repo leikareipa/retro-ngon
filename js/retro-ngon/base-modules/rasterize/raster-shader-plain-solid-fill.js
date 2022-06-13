@@ -5,17 +5,13 @@
  * 
  */
 
-"use strict";
-
-Rngon.rasterShader = (Rngon.rasterShader || {});
-
 // The n-gon and render state must fulfill the following criteria:
 // - No texture
 // - No pixel shader
 // - No alpha operations
 // - No auxiliary buffers
 // - Depth buffering enabled
-Rngon.rasterShader.plain_solid_fill = function({
+export function plain_solid_fill({
     ngon,
     leftEdges,
     rightEdges,

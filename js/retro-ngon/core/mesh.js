@@ -5,10 +5,11 @@
  *
  */
 
-"use strict";
-
 // A collection of ngons, with shared translation and rotation.
-Rngon.mesh = function(ngons = [Rngon.ngon()], transform = {})
+export function mesh(
+    ngons = [Rngon.ngon()],
+    transform = {}
+)
 {
     Rngon.assert?.(
         (ngons instanceof Array),
@@ -20,22 +21,28 @@ Rngon.mesh = function(ngons = [Rngon.ngon()], transform = {})
         "Expected an object with transformation properties."
     );
 
+    mesh.defaultTransform = (
+        mesh.defaultTransform ||
+        {
+            translation: Rngon.translation_vector(0, 0, 0),
+            rotation: Rngon.rotation_vector(0, 0, 0),
+            scaling: Rngon.scaling_vector(1, 1, 1),
+        }
+    );
+
     Rngon.assert?.(
-        (typeof Rngon.mesh.defaultTransform.rotation !== "undefined" &&
-         typeof Rngon.mesh.defaultTransform.translation !== "undefined" &&
-         typeof Rngon.mesh.defaultTransform.scaling !== "undefined"),
+        (typeof Rngon.mesh.defaultTransform?.rotation !== "undefined" &&
+         typeof Rngon.mesh.defaultTransform?.translation !== "undefined" &&
+         typeof Rngon.mesh.defaultTransform?.scaling !== "undefined"),
         "The default transforms object for mesh() is missing required properties."
     );
 
-    // Combine default transformations with the user-supplied ones.
-    transform =
-    {
+    transform = {
         ...Rngon.mesh.defaultTransform,
         ...transform
     };
 
-    const publicInterface =
-    {
+    const publicInterface = {
         ngons,
         rotation: transform.rotation,
         translation: transform.translation,
@@ -45,14 +52,7 @@ Rngon.mesh = function(ngons = [Rngon.ngon()], transform = {})
     return publicInterface;
 }
 
-Rngon.mesh.defaultTransform = 
-{
-    translation: Rngon.translation_vector(0, 0, 0),
-    rotation: Rngon.rotation_vector(0, 0, 0),
-    scaling: Rngon.scaling_vector(1, 1, 1)
-};
-
-Rngon.mesh.object_space_matrix = function(mesh)
+mesh.object_space_matrix = function(mesh)
 {
     const translationMatrix = Rngon.matrix44.translation(
         mesh.translation.x,

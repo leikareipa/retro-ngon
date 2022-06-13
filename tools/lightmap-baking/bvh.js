@@ -110,7 +110,7 @@ function bvh(mesh = [Rngon.ngon()])
                             case "x": return Rngon.vector3(proposedSplitStart, parentAABB.max.y, parentAABB.max.z);
                             case "y": return Rngon.vector3(parentAABB.max.x, proposedSplitStart, parentAABB.max.z);
                             case "z": return Rngon.vector3(parentAABB.max.x, parentAABB.max.y, proposedSplitStart);
-                            default: Rngon.throw("Unknown BVH split direction."); return Rngon.vector3(0, 0, 0);
+                            default: Rngon.$throw("Unknown BVH split direction."); return Rngon.vector3(0, 0, 0);
                         }
                     })();
 

@@ -50,7 +50,7 @@
                 if (direction > 0) shaders.push(shaders.shift());
                 else if (direction < 0) shaders.unshift(shaders.pop());
 
-                ACTIVE_SHADER = sample.shaders[0];
+                window.ACTIVE_SHADER = sample.shaders[0];
                 document.querySelector(".infobox.shader .value").innerHTML = ACTIVE_SHADER.title;
 
                 return;

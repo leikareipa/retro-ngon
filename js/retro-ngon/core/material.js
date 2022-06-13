@@ -5,33 +5,34 @@
  *
  */
 
-"use strict";
-
 // Material for n-gons.
-Rngon.material = function(properties = {})
+export function material(properties = {})
 {
+    material.default = (
+        material.default ||
+        {
+            color: Rngon.color_rgba(255, 255, 255, 255),
+            wireframeColor: Rngon.color_rgba(0, 0, 0),
+            texture: null,
+            textureMapping: "ortho",
+            uvWrapping: "repeat",
+            vertexShading: "none",
+            renderVertexShade: true,
+            ambientLightLevel: 0,
+            hasWireframe: false,
+            hasFill: true,
+            isTwoSided: true,
+            allowTransform: true,
+            allowAlphaReject: false,
+            allowAlphaBlend: false,
+            auxiliary: {},
+        }
+    );
+
     const publicInterface = {
-        ...Rngon.material.default,
+        ...material.default,
         ...properties,
     };
 
     return publicInterface;
 }
-
-Rngon.material.default = {
-    color: Rngon.color_rgba(255, 255, 255, 255),
-    texture: null,
-    textureMapping: "ortho",
-    uvWrapping: "repeat",
-    vertexShading: "none",
-    renderVertexShade: true,
-    ambientLightLevel: 0,
-    hasWireframe: false,
-    hasFill: true,
-    isTwoSided: true,
-    wireframeColor: Rngon.color_rgba(0, 0, 0),
-    allowTransform: true,
-    allowAlphaReject: false,
-    allowAlphaBlend: false,
-    auxiliary: {},
-};

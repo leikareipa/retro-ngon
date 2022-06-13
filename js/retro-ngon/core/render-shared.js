@@ -1,14 +1,13 @@
 /*
- * Tarpeeksi Hyvae Soft 2019 /
- * Retro n-gon renderer
+ * 2019 Tarpeeksi Hyvae Soft
  * 
+ * Software: Retro n-gon renderer
+ *
  */
-
-"use strict";
 
 // Functionality that may be shared between different implementations of Rngon.render()
 // and perhaps called by other subsystems, like Rngon.surface().
-Rngon.renderShared = {
+export const renderShared = {
     // The 'options' object is a reference to or copy of the options passed to render().
     initialize_internal_render_state: function(options = {})
     {
@@ -210,31 +209,33 @@ Rngon.renderShared = {
     },
 
     // (See the root README.md for documentation on these parameters.)
-    defaultRenderOptions: Object.freeze({
-        cameraPosition: Rngon.vector3(0, 0, 0),
-        cameraDirection: Rngon.vector3(0, 0, 0),
-        pixelShader: null, // If null, all pixel shader functionality will be disabled.
-        vertexShader: null, // If null, all vertex shader functionality will be disabled.
-        scale: 1,
-        fov: 43,
-        nearPlane: 1,
-        farPlane: 1000,
-        depthSort: "", // An empty string will make the renderer use its default depth sort option.
-        useDepthBuffer: true,
-        clipToViewport: true,
-        globalWireframe: false,
-        hibernateWhenNotOnScreen: true,
-        perspectiveCorrectInterpolation: false,
-        auxiliaryBuffers: [],
-        lights: [],
-        width: 640, // Used by render_async() only.
-        height: 480, // Used by render_async() only.
-        palette: null,
-        modules: {
-            rasterize: null, // Null defaults to Rngon.baseModules.rasterize.
-            transformClipLight: null, // Null defaults to Rngon.baseModules.transform_clip_light.
-        },
-    }),
+    get defaultRenderOptions() {
+        return {
+            cameraPosition: Rngon.vector3(0, 0, 0),
+            cameraDirection: Rngon.vector3(0, 0, 0),
+            pixelShader: null, // If null, all pixel shader functionality will be disabled.
+            vertexShader: null, // If null, all vertex shader functionality will be disabled.
+            scale: 1,
+            fov: 43,
+            nearPlane: 1,
+            farPlane: 1000,
+            depthSort: "", // An empty string will make the renderer use its default depth sort option.
+            useDepthBuffer: true,
+            clipToViewport: true,
+            globalWireframe: false,
+            hibernateWhenNotOnScreen: true,
+            perspectiveCorrectInterpolation: false,
+            auxiliaryBuffers: [],
+            lights: [],
+            width: 640, // Used by render_async() only.
+            height: 480, // Used by render_async() only.
+            palette: null,
+            modules: {
+                rasterize: null, // Null defaults to Rngon.baseModules.rasterize.
+                transformClipLight: null, // Null defaults to Rngon.baseModules.transform_clip_light.
+            },
+        };
+    },
 
     // Returns an object containing the properties - and their defualt starting values -
     // that a call to render() should return.

@@ -5,10 +5,6 @@
  * 
  */
 
-"use strict";
-
-Rngon.rasterShader = (Rngon.rasterShader || {});
-
 // The n-gon and render state must fulfill the following criteria:
 // - Depth buffering enabled
 // - No pixel shader
@@ -16,7 +12,7 @@ Rngon.rasterShader = (Rngon.rasterShader || {});
 // - Textured
 // - White material color
 // - Only affine texture-mapping
-Rngon.rasterShader.plain_textured_fill = function({
+export function plain_textured_fill({
     ngon,
     leftEdges,
     rightEdges,
@@ -129,7 +125,7 @@ Rngon.rasterShader.plain_textured_fill = function({
 
                         break;
                     }
-                    default: Rngon.throw("Unrecognized UV wrapping mode."); break;
+                    default: Rngon.$throw("Unrecognized UV wrapping mode."); break;
                 }
 
                 const texel = textureMipLevel.pixels[(~~u) + (~~v) * textureMipLevel.width];

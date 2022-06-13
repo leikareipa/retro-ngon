@@ -5,13 +5,12 @@
  *
  */
 
-"use strict";
-
 // A single n-sided ngon.
-// NOTE: The return object is not immutable.
-Rngon.ngon = function(vertices = [Rngon.vertex()],
-                      material = Rngon.material(), // or {}
-                      vertexNormals = Rngon.vector3(0, 1, 0))
+export function ngon(
+    vertices = [Rngon.vertex()],
+    material = Rngon.material(),
+    vertexNormals = Rngon.vector3(0, 1, 0)
+)
 {
     Rngon.assert?.(
         (vertices instanceof Array),
@@ -33,14 +32,13 @@ Rngon.ngon = function(vertices = [Rngon.vertex()],
         vertexNormals = new Array(vertices.length).fill().map(n=>Rngon.vector3(vertexNormals.x, vertexNormals.y, vertexNormals.z));
     }
 
-    const faceNormal = vertexNormals.reduce((faceNormal, vertexNormal)=>
-    {
+    const faceNormal = vertexNormals.reduce((faceNormal, vertexNormal)=>{
         faceNormal.x += vertexNormal.x;
         faceNormal.y += vertexNormal.y;
         faceNormal.z += vertexNormal.z;
-
         return faceNormal;
     }, Rngon.vector3(0, 0, 0));
+
     Rngon.vector3.normalize(faceNormal);
 
     // If we get vertex U or V coordinates in the range [0,-x], we want to change 0 to
@@ -59,8 +57,7 @@ Rngon.ngon = function(vertices = [Rngon.vertex()],
         }
     }
 
-    const returnObject =
-    {
+    const publicInterface = {
         vertices,
         vertexNormals,
         normal: faceNormal,
@@ -73,10 +70,10 @@ Rngon.ngon = function(vertices = [Rngon.vertex()],
         mipLevel: 0,
     };
 
-    return returnObject;
+    return publicInterface;
 }
 
-Rngon.ngon.perspective_divide = function(ngon)
+ngon.perspective_divide = function(ngon)
 {
     for (const vert of ngon.vertices)
     {
@@ -84,7 +81,7 @@ Rngon.ngon.perspective_divide = function(ngon)
     }
 }
 
-Rngon.ngon.transform = function(ngon, matrix44)
+ngon.transform = function(ngon, matrix44)
 {
     for (const vert of ngon.vertices)
     {
@@ -97,7 +94,7 @@ Rngon.ngon.transform = function(ngon, matrix44)
 // https://github.com/BennyQBD/3DSoftwareRenderer.
 const axes = ["x", "y", "z"];
 const factors = [1, -1];
-Rngon.ngon.clip_to_viewport = function(ngon)
+ngon.clip_to_viewport = function(ngon)
 {
     for (const axis of axes)
     {

@@ -5,10 +5,8 @@
  *
  */
 
-"use strict";
-
 // NOTE: The returned object is not immutable.
-Rngon.vector3 = function(x = 0, y = 0, z = 0)
+export function vector3(x = 0, y = 0, z = 0)
 {
     Rngon.assert?.(
         ((typeof x === "number") &&
@@ -17,23 +15,22 @@ Rngon.vector3 = function(x = 0, y = 0, z = 0)
         "Expected numbers as parameters to the vector3 factory."
     );
 
-    const returnObject =
-    {
+    const publicInterface = {
         x,
         y,
         z,
     };
 
-    return returnObject;
+    return publicInterface;
 }
 
 // Convenience aliases for vector3.
-Rngon.translation_vector = Rngon.vector3;
-Rngon.rotation_vector    = (x, y, z)=>Rngon.vector3(Rngon.trig.deg(x), Rngon.trig.deg(y), Rngon.trig.deg(z));
-Rngon.scaling_vector     = Rngon.vector3;
+export const translation_vector = vector3;
+export const scaling_vector = vector3;
+export const rotation_vector = (x, y, z)=>Rngon.vector3(Rngon.trig.deg(x), Rngon.trig.deg(y), Rngon.trig.deg(z));
 
 // Transforms the vector by the given 4x4 matrix.
-Rngon.vector3.transform = function(v, m = [])
+vector3.transform = function(v, m = [])
 {
     Rngon.assert?.(
         (m.length === 16),
@@ -49,7 +46,7 @@ Rngon.vector3.transform = function(v, m = [])
     v.z = z_;
 }
 
-Rngon.vector3.normalize = function(v)
+vector3.normalize = function(v)
 {
     const sn = ((v.x * v.x) + (v.y * v.y) + (v.z * v.z));
 
@@ -62,42 +59,42 @@ Rngon.vector3.normalize = function(v)
     }
 }
 
-Rngon.vector3.dot = function(v, other)
+vector3.dot = function(v, other)
 {
     return ((v.x * other.x) + (v.y * other.y) + (v.z * other.z));
 }
 
-Rngon.vector3.mul_scalar = function(v, scalar)
+vector3.mul_scalar = function(v, scalar)
 {
     return Rngon.vector3((v.x * scalar), (v.y * scalar), (v.z * scalar));
 }
 
-Rngon.vector3.add_scalar = function(v, scalar)
+vector3.add_scalar = function(v, scalar)
 {
     return Rngon.vector3((v.x + scalar), (v.y + scalar), (v.z + scalar));
 }
 
-Rngon.vector3.sub_scalar = function(v, scalar)
+vector3.sub_scalar = function(v, scalar)
 {
     return Rngon.vector3((v.x - scalar), (v.y - scalar), (v.z - scalar));
 }
 
-Rngon.vector3.mul = function(v, other)
+vector3.mul = function(v, other)
 {
     return Rngon.vector3((v.x * other.x), (v.y * other.y), (v.z * other.z));
 }
 
-Rngon.vector3.add = function(v, other)
+vector3.add = function(v, other)
 {
     return Rngon.vector3((v.x + other.x), (v.y + other.y), (v.z + other.z));
 }
 
-Rngon.vector3.sub = function(v, other)
+vector3.sub = function(v, other)
 {
     return Rngon.vector3((v.x - other.x), (v.y - other.y), (v.z - other.z));
 }
 
-Rngon.vector3.cross = function(v, other)
+vector3.cross = function(v, other)
 {
     const c = Rngon.vector3();
 
@@ -108,7 +105,7 @@ Rngon.vector3.cross = function(v, other)
     return c;
 }
 
-Rngon.vector3.invert = function(v)
+vector3.invert = function(v)
 {
     v.x *= -1;
     v.y *= -1;

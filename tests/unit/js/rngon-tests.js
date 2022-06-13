@@ -2,7 +2,7 @@
 
 // The unit tester expects assertion failures to throw and only throw
 // (not also pop up window.alert()s or the like).
-Rngon.throw = function(explanation = "(no reason given)")
+Rngon.$throw = function(explanation = "(no reason given)")
 {
     throw new Error(explanation);
 } 

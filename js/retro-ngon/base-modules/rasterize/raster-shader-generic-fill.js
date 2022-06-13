@@ -5,13 +5,9 @@
  * 
  */
 
-"use strict";
-
-Rngon.rasterShader = (Rngon.rasterShader || {});
-
 // No performance-enhancing assumptions are made, so this is the most compatible filler,
 // but also potentially the slowest.
-Rngon.rasterShader.generic_fill = function({
+export function generic_fill({
     ngon,
     ngonIdx,
     leftEdges,
@@ -187,7 +183,7 @@ Rngon.rasterShader.generic_fill = function({
 
                                     break;
                                 }
-                                default: Rngon.throw("Unrecognized UV wrapping mode."); break;
+                                default: Rngon.$throw("Unrecognized UV wrapping mode."); break;
                             }
 
                             break;
@@ -241,7 +237,7 @@ Rngon.rasterShader.generic_fill = function({
 
                             break;
                         }
-                        default: Rngon.throw("Unknown texture-mapping mode."); break;
+                        default: Rngon.$throw("Unknown texture-mapping mode."); break;
                     }
 
                     const texel = textureMipLevel.pixels[(~~u) + (~~v) * textureMipLevel.width];

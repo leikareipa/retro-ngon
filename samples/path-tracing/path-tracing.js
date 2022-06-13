@@ -137,11 +137,10 @@ export const sample = {
 // to viewport clipping, screen-space transformation etc.
 function vs_copy_ngons(ngon)
 {
-    if (ngon.vertices.length != 3)
-    {
-        this.Rngon.throw("Detected an unsupported type of n-gon. Only triangles are supported.");
-        return;
-    }
+    Rngon.assert?.(
+        (ngon.vertices.length === 3),
+        "Only triangles are supported."
+    );
 
     const wrayVertices = ngon.vertices.map(v=>Wray.vertex(Wray.vector3(v.x, v.y, v.z)));
     const wrayMaterial = ngon.material.isEmissive

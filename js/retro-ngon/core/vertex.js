@@ -5,15 +5,21 @@
  *
  */
 
-"use strict";
-
-// NOTE: The returned object is not immutable.
-Rngon.vertex = function(x = 0, y = 0, z = 0,
-                        u = 0, v = 0,
-                        w = 1,
-                        shade = 1,
-                        worldX = x, worldY = y, worldZ = z,
-                        normalX = 0, normalY = 1, normalZ = 0)
+export function vertex(
+    x = 0,
+    y = 0,
+    z = 0,
+    u = 0,
+    v = 0,
+    w = 1,
+    shade = 1,
+    worldX = x,
+    worldY = y,
+    worldZ = z,
+    normalX = 0,
+    normalY = 1,
+    normalZ = 0,
+)
 {
     Rngon.assert?.(
         ((typeof x === "number") &&
@@ -28,8 +34,7 @@ Rngon.vertex = function(x = 0, y = 0, z = 0,
         "Expected numbers as parameters to the vertex factory."
     );
 
-    const returnObject =
-    {
+    const publicInterface = {
         x,
         y,
         z,
@@ -51,11 +56,11 @@ Rngon.vertex = function(x = 0, y = 0, z = 0,
         normalZ,
     };
 
-    return returnObject;
+    return publicInterface;
 }
 
 // Transforms the vertex by the given 4x4 matrix.
-Rngon.vertex.transform = function(v, m = [])
+vertex.transform = function(v, m = [])
 {
     Rngon.assert?.(
         (m.length === 16),
@@ -74,7 +79,7 @@ Rngon.vertex.transform = function(v, m = [])
 }
 
 // Applies perspective division to the vertex.
-Rngon.vertex.perspective_divide = function(v)
+vertex.perspective_divide = function(v)
 {
     v.x /= v.w;
     v.y /= v.w;

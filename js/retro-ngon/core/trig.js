@@ -1,33 +1,12 @@
 /*
- * Tarpeeksi Hyvae Soft 2019 /
- * Retro n-gon renderer
- * 
+ * 2019 Tarpeeksi Hyvae Soft
+ *
+ * Software: Retro n-gon renderer
+ *
  */
 
-"use strict";
-
-// Trigonometric lookup tables, and helper functions for accessing them.
-Rngon.trig = (function()
-{
-    const publicInterface = Object.freeze(
-    {
-        // Returns approximations of sin() and cos() for degrees 0..359 given in
-        // the range 0..65535. For instance, to get sin() for 144 deg, you'd call
-        // sin(deg(144)), or alternatively sin(26214).
-        // NOTE: Doesn't validate the input, so make sure it's in the correct range
-        //       before calling these functions.
-        sin: (x)=>sineLut[x>>6],
-        cos: (x)=>sineLut[(x>>6)+256],
-
-        // Transforms the given value 0..359 to the range 0..65535, which can, for
-        // instance, be fed into the sin() and cos() helper functions, above.
-        // Will wrap the input value to the correct range.
-        // The magic number 182.04166666666666 is 65535/360.
-        deg: (deg)=>(182.04166666666666 * (deg >= 0? (deg % 360) : (360 - (Math.abs(deg) % 360)))),
-    });
-
-    // Range: 0-1023 for sin() + 256 for approximating cos().
-    const sineLut =
+// Range: 0-1023 for sin() + 256 for approximating cos().
+const sineLut =
     [0.0000000,
     0.0061359, 0.0122715, 0.0184067, 0.0245412, 0.0306748, 0.0368072, 0.0429383, 0.0490677,
     0.0551952, 0.0613207, 0.0674439, 0.0735646, 0.0796824, 0.0857973, 0.0919090, 0.0980171,
@@ -188,7 +167,25 @@ Rngon.trig = (function()
     0.9819639, 0.9831055, 0.9842101, 0.9852776, 0.9863081, 0.9873014, 0.9882576, 0.9891765,
     0.9900582, 0.9909026, 0.9917098, 0.9924795, 0.9932119, 0.9939070, 0.9945646, 0.9951847,
     0.9957674, 0.9963126, 0.9968203, 0.9972905, 0.9977231, 0.9981181, 0.9984756, 0.9987955,
-    0.9990777, 0.9993224, 0.9995294, 0.9996988, 0.9998306, 0.9999247, 0.9999812];
+    0.9990777, 0.9993224, 0.9995294, 0.9996988, 0.9998306, 0.9999247, 0.9999812
+];
 
-    return publicInterface;
-})();
+// Trigonometric lookup tables, and helper functions for accessing them.
+// Note that it's not really required for performance reasons to use lookup tables - it may
+// well be faster to call the sin()/cos() functions directly. Lookup tables are used purely
+// for a retro effect.
+export const trig = {
+    // Returns approximations of sin() and cos() for degrees 0..359 given in
+    // the range 0..65535. For instance, to get sin() for 144 deg, you'd call
+    // sin(deg(144)), or alternatively sin(26214).
+    // NOTE: Doesn't validate the input, so make sure it's in the correct range
+    //       before calling these functions.
+    sin: (x)=>sineLut[x>>6],
+    cos: (x)=>sineLut[(x>>6)+256],
+
+    // Transforms the given value 0..359 to the range 0..65535, which can, for
+    // instance, be fed into the sin() and cos() helper functions, above.
+    // Will wrap the input value to the correct range.
+    // The magic number 182.04166666666666 is 65535/360.
+    deg: (deg)=>(182.04166666666666 * (deg >= 0? (deg % 360) : (360 - (Math.abs(deg) % 360)))),
+};

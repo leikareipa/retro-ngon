@@ -5,14 +5,12 @@
  *
  */
 
-"use strict";
-
 // A surface for rendering onto. Will also paint the rendered image onto a HTML5 <canvas>
 // element unless the 'canvasElement' parameter is null, in which case rendering will be
 // to an off-screen buffer only.
 //
 // Returns null if the surface could not be created.
-Rngon.surface = function(canvasElement)
+export function surface(canvasElement)
 {
     const state = Rngon.internalState;
     const renderOffscreen = (canvasElement === null);
@@ -131,7 +129,7 @@ Rngon.surface = function(canvasElement)
                             break;
                         }
                         default: {
-                            Rngon.throw("Unrecognized type of pixel shader function.");
+                            Rngon.$throw("Unrecognized type of pixel shader function.");
                             break;
                         }
                     }

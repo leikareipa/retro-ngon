@@ -1,17 +1,15 @@
 /*
- * Tarpeeksi Hyvae Soft 2019 /
- * Retro n-gon renderer
+ * 2019 Tarpeeksi Hyvae Soft
  * 
+ * Software: Retro n-gon renderer
+ *
  */
 
-"use strict";
-
 // A 32-bit texture.
-Rngon.texture_rgba = function(data = {})
+export function texture_rgba(data = {})
 {
     // Append default parameter arguments.
-    data =
-    {
+    data = {
         ...{
             width: 0,
             height: 0,
@@ -83,7 +81,7 @@ Rngon.texture_rgba = function(data = {})
         }
         else if (data.encoding !== "none")
         {
-            Rngon.throw("Unknown texture data encoding '" + data.encoding + "'.");
+            Rngon.$throw("Unknown texture data encoding '" + data.encoding + "'.");
         }
     }
 
@@ -155,8 +153,7 @@ Rngon.texture_rgba = function(data = {})
         }
     }
 
-    const publicInterface =
-    {
+    const publicInterface = {
         width: data.width,
         height: data.height,
         pixels: pixelArray,
@@ -168,7 +165,7 @@ Rngon.texture_rgba = function(data = {})
 
 
 // Returns a new texture whose data are a deep copy of the given texture.
-Rngon.texture_rgba.deep_copy = function(texture)
+texture_rgba.deep_copy = function(texture)
 {
     const copiedPixels = new Array(texture.width * texture.height * 4);
 
@@ -192,7 +189,7 @@ Rngon.texture_rgba.deep_copy = function(texture)
 // texture is returned once the data has been loaded.
 // Note: Only supports JSON files at the moment, expecting them to contain a valid
 // object to be passed as-is into texture_rgba().
-Rngon.texture_rgba.create_with_data_from_file = function(filename)
+texture_rgba.create_with_data_from_file = function(filename)
 {
     return new Promise((resolve, reject)=>
     {
@@ -202,6 +199,8 @@ Rngon.texture_rgba.create_with_data_from_file = function(filename)
         {
             resolve(Rngon.texture_rgba(data));
         })
-        .catch((error)=>{Rngon.throw("Failed to create a texture with data from file '" + filename + "'. Error: '" + error + "'.")});
+        .catch((error)=>{
+            Rngon.$throw(`Failed to create a texture with data from file '${filename}'. Error: '${error}'.`)
+        });
     });
 }

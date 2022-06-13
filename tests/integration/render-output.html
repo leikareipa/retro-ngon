@@ -444,7 +444,7 @@
                     });
                     refImage.addEventListener("error", ()=>
                     {
-                        Rngon.throw("Failed to load one or more of the reference images.");
+                        Rngon.$throw("Failed to load one or more of the reference images.");
                         mark_canvas_as_mismatched(referenceCanvasElement);
                         compare_images();
                     });

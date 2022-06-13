@@ -1,14 +1,13 @@
 /*
- * Tarpeeksi Hyvae Soft 2019 /
- * Retro n-gon renderer
- * 
+ * 2019-2022 Tarpeeksi Hyvae Soft
+ *
+ * Software: Retro n-gon renderer
+ *
  */
-
-"use strict";
 
 // Renders the given meshes onto a given DOM <canvas> element. Note that the target element
 // must already exist.
-Rngon.render = function(
+export function render(
     canvasElement,
     meshes = [Rngon.mesh()],
     options = {}
@@ -31,10 +30,11 @@ Rngon.render = function(
     {
         canvasElement = document.getElementById(canvasElement);
     }
-    else if (!(canvasElement instanceof Element))
-    {
-        Rngon.throw("Invalid canvas element.");
-    }
+
+    Rngon.assert?.(
+        (canvasElement instanceof HTMLElement),
+        "Invalid canvas element for rendering into."
+    );
     
     // Render a single frame onto the target <canvas> element.
     {

@@ -163,7 +163,7 @@ export function apply_shade_maps_to_ngons(shadeMaps = [],
     }
     else
     {
-        Rngon.throw("Unknown target.");
+        Rngon.$throw("Unknown target.");
     }
 
     return;

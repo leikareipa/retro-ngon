@@ -1,16 +1,13 @@
 /*
- * Tarpeeksi Hyvae Soft 2019 /
- * Retro n-gon renderer
- *
+ * 2019-2022 Tarpeeksi Hyvae Soft
+ * 
+ * Software: Retro n-gon renderer
+ * 
  */
-
-"use strict";
-
-Rngon.baseModules = (Rngon.baseModules || {});
 
 // Applies lighting to the given n-gons, and transforms them into screen space
 // for rendering. The processed n-gons are stored in the internal n-gon cache.
-Rngon.baseModules.transform_clip_light = function(
+export function transform_clip_light(
     ngons = [],
     objectMatrix = [],
     cameraMatrix = [],
@@ -132,7 +129,7 @@ Rngon.baseModules.transform_clip_light = function(
 
                 if (cachedNgon.material.vertexShading !== "none")
                 {
-                    Rngon.baseModules.transform_clip_light.apply_lighting(cachedNgon);
+                    apply_lighting(cachedNgon);
                 }
 
                 // Apply an optional, user-defined vertex shader.
@@ -162,7 +159,7 @@ Rngon.baseModules.transform_clip_light = function(
                         }
                         default:
                         {
-                            Rngon.throw("Unrecognized type of vertex shader function.");
+                            Rngon.$throw("Unrecognized type of vertex shader function.");
                             break;
                         }
                     }
@@ -208,7 +205,7 @@ Rngon.baseModules.transform_clip_light = function(
     return;
 }
 
-Rngon.baseModules.transform_clip_light.apply_lighting = function(ngon)
+function apply_lighting(ngon)
 {
     // Pre-allocate a vector object to operate on, so we don't need to create one repeatedly.
     const lightDirection = Rngon.vector3();
@@ -280,7 +277,7 @@ Rngon.baseModules.transform_clip_light.apply_lighting = function(ngon)
         }
         else
         {
-            Rngon.throw("Unknown shading mode.");
+            Rngon.$throw("Unknown shading mode.");
         }
     }
 

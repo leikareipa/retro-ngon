@@ -5,13 +5,9 @@
  * 
  */
 
-"use strict";
-
-Rngon.rasterShader = (Rngon.rasterShader || {});
-
 // Fills the current polygon into an indexed-color (paletted) pixel buffer.
 // NOTE: THIS IS AN EARLY WORK-IN-PROGRES IMPLEMENTATION, NOT READY FOR USE.
-Rngon.rasterShader.paletted_fill = function({
+export function paletted_fill({
     ngon,
     leftEdges,
     rightEdges,

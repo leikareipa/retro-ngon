@@ -5,13 +5,10 @@
  *
  */
 
-"use strict";
-
 // Global app state, for internal use by the renderer. Unless otherwise noted, these
 // parameters should not be modified directly; they're instead set by the renderer
 // based on settings requested by the user.
-Rngon.internalState =
-{
+export const internalState = {
     // Modules provide core renderer functionality in overridable packages (the
     // user can provide custom modules to be used in place of the default ones).
     // Each module is a function that performs a set of tasks.
@@ -152,4 +149,4 @@ Rngon.internalState =
 
     // All light sources that should currently apply to n-gons passed to render().
     lights: [],
-}
+};

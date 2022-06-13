@@ -5,11 +5,10 @@
  * 
  */
 
-"use strict";
-
-Rngon.baseModules = (Rngon.baseModules || {});
-
-{ // A block to limit the scope of the file-global variables we set up, below.
+import {generic_fill} from "./rasterize/raster-shader-generic-fill.js";
+import {paletted_fill} from "./rasterize/raster-shader-paletted-fill.js";
+import {plain_solid_fill} from "./rasterize/raster-shader-plain-solid-fill.js";
+import {plain_textured_fill} from "./rasterize/raster-shader-plain-textured-fill.js";
 
 const maxNumVertsPerPolygon = 500;
 
@@ -37,7 +36,7 @@ const vertexSorters = {
 // code, please benchmark its effects on performance first - maintaining or
 // improving performance would be great, losing performance would be bad.
 //
-Rngon.baseModules.rasterize = function(auxiliaryBuffers = [])
+export function rasterize(auxiliaryBuffers = [])
 {
     for (let n = 0; n < Rngon.internalState.ngonCache.count; n++)
     {
@@ -70,7 +69,7 @@ Rngon.baseModules.rasterize = function(auxiliaryBuffers = [])
 }
 
 // Rasterizes a polygon with 3+ vertices into the render's pixel buffer.
-Rngon.baseModules.rasterize.polygon = function(
+rasterize.polygon = function(
     ngon = Rngon.ngon(),
     ngonIdx = 0,
     auxiliaryBuffers = []
@@ -108,11 +107,11 @@ Rngon.baseModules.rasterize.polygon = function(
 
     if (material.hasFill)
     {
-        let raster_fn = Rngon.rasterShader.generic_fill;
+        let raster_fn = generic_fill;
 
         if (usePalette)
         {
-            raster_fn = Rngon.rasterShader.paletted_fill;
+            raster_fn = paletted_fill;
         }
         else if (
             material.texture &&
@@ -125,7 +124,7 @@ Rngon.baseModules.rasterize.polygon = function(
             (material.color.green === 255) &&
             (material.color.blue === 255)
         ){
-            raster_fn = Rngon.rasterShader.plain_textured_fill;
+            raster_fn = plain_textured_fill;
         }
         else if (
             !material.texture &&
@@ -135,7 +134,7 @@ Rngon.baseModules.rasterize.polygon = function(
             !material.allowAlphaReject &&
             !material.allowAlphaBlend
         ){
-            raster_fn = Rngon.rasterShader.plain_solid_fill;
+            raster_fn = plain_solid_fill;
         }
 
         raster_fn({
@@ -276,7 +275,7 @@ Rngon.baseModules.rasterize.polygon = function(
 }
 
 // Rasterizes a line between the two given vertices into the render's pixel buffer.
-Rngon.baseModules.rasterize.line = function(
+rasterize.line = function(
     vert1 = Rngon.vertex(),
     vert2 = Rngon.vertex(),
     color = Rngon.color_rgba(),
@@ -421,7 +420,7 @@ Rngon.baseModules.rasterize.line = function(
     }
 };
 
-Rngon.baseModules.rasterize.point = function(
+rasterize.point = function(
     vertex = Rngon.vertex(),
     material = {},
     ngonIdx = 0
@@ -509,7 +508,7 @@ Rngon.baseModules.rasterize.point = function(
 }
 
 // For emulating pixel transparency with stipple patterns.
-Rngon.baseModules.rasterize.stipple = (function()
+rasterize.stipple = (function()
 {
     const patterns = [
         // ~99% transparent.
@@ -610,6 +609,4 @@ function edge_object_factory()
         // horizontal pixel span from the top of the edge down.
         delta: {},
     }
-}
-
 }

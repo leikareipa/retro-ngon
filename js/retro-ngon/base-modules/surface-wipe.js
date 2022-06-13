@@ -5,12 +5,8 @@
  * 
  */
 
-"use strict";
-
-Rngon.baseModules = (Rngon.baseModules || {});
-
 // Resets the render surface's buffers to their initial contents.
-Rngon.baseModules.surface_wipe = function()
+export function surface_wipe()
 {
     Rngon.internalState.pixelBuffer.data.fill(0);
 

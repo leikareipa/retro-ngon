@@ -113,7 +113,7 @@ function uv_to_texel_coordinates(u, v, material)
 
                     break;
                 }
-                default: Rngon.throw("Unrecognized UV wrapping mode."); break;
+                default: Rngon.$throw("Unrecognized UV wrapping mode."); break;
             }
 
             break;
@@ -152,7 +152,7 @@ function uv_to_texel_coordinates(u, v, material)
         {
             break;
         }
-        default: Rngon.throw("Unknown texture-mapping mode."); break;
+        default: Rngon.$throw("Unknown texture-mapping mode."); break;
     }
 
     return [u, v];
