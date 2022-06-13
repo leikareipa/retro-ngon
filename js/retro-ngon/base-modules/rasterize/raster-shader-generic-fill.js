@@ -352,5 +352,5 @@ export function generic_fill({
         if (y === (rightEdge.bottom - 1)) rightEdge = rightEdges[++curRightEdgeIdx];
     }
 
-    return;
+    return true;
 }

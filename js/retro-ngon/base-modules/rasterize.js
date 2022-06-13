@@ -107,37 +107,7 @@ rasterize.polygon = function(
 
     if (material.hasFill)
     {
-        let raster_fn = generic_fill;
-
-        if (usePalette)
-        {
-            raster_fn = paletted_fill;
-        }
-        else if (
-            material.texture &&
-            depthBuffer &&
-            !usePixelShader &&
-            !material.allowAlphaReject &&
-            !material.allowAlphaBlend &&
-            (material.textureMapping === "affine") &&
-            (material.color.red === 255) &&
-            (material.color.green === 255) &&
-            (material.color.blue === 255)
-        ){
-            raster_fn = plain_textured_fill;
-        }
-        else if (
-            !material.texture &&
-            depthBuffer &&
-            !usePixelShader &&
-            !useAuxiliaryBuffers &&
-            !material.allowAlphaReject &&
-            !material.allowAlphaBlend
-        ){
-            raster_fn = plain_solid_fill;
-        }
-
-        raster_fn({
+        const rasterShaderArgs = {
             ngon,
             ngonIdx,
             leftEdges,
@@ -146,7 +116,44 @@ rasterize.polygon = function(
             numRightEdges,
             pixelBuffer32,
             auxiliaryBuffers
-        });
+        };
+
+        // If none of the user-provided raster shaders accept this n-gon, we'll use one
+        // of the built-in raster shaders.
+        if (Rngon.internalState.rasterShaders.every(fn=>!fn(rasterShaderArgs)))
+        {
+            let raster_fn = generic_fill;
+
+            if (usePalette)
+            {
+                raster_fn = paletted_fill;
+            }
+            else if (
+                material.texture &&
+                depthBuffer &&
+                !usePixelShader &&
+                !material.allowAlphaReject &&
+                !material.allowAlphaBlend &&
+                (material.textureMapping === "affine") &&
+                (material.color.red === 255) &&
+                (material.color.green === 255) &&
+                (material.color.blue === 255)
+            ){
+                raster_fn = plain_textured_fill;
+            }
+            else if (
+                !material.texture &&
+                depthBuffer &&
+                !usePixelShader &&
+                !useAuxiliaryBuffers &&
+                !material.allowAlphaReject &&
+                !material.allowAlphaBlend
+            ){
+                raster_fn = plain_solid_fill;
+            }
+
+            raster_fn(rasterShaderArgs);
+        }
     }
 
     // Draw a wireframe around any n-gons that wish for one.

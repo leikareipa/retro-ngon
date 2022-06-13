@@ -48,7 +48,9 @@ export const renderShared = {
         state.pixel_shader = (
             options.shaderFunction || // <- Name in pre-beta.3.
             options.pixelShader
-        ); 
+        );
+
+        state.rasterShaders = options.rasterShaders;
 
         state.usePalette = Array.isArray(options.palette);
         state.palette = options.palette;
@@ -215,6 +217,7 @@ export const renderShared = {
             cameraDirection: Rngon.vector3(0, 0, 0),
             pixelShader: null, // If null, all pixel shader functionality will be disabled.
             vertexShader: null, // If null, all vertex shader functionality will be disabled.
+            rasterShaders: [],
             scale: 1,
             fov: 43,
             nearPlane: 1,
