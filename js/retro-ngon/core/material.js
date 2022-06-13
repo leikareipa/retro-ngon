@@ -11,8 +11,8 @@ export function material(properties = {})
     material.default = (
         material.default ||
         {
-            color: Rngon.color_rgba(255, 255, 255, 255),
-            wireframeColor: Rngon.color_rgba(0, 0, 0),
+            color: Rngon.color_rgba(),
+            wireframeColor: Rngon.color_rgba(),
             texture: null,
             textureMapping: "ortho",
             uvWrapping: "repeat",
