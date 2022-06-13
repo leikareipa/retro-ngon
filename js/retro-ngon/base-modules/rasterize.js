@@ -21,8 +21,8 @@ const rightVerts = new Array(maxNumVertsPerPolygon);
 // Edges connect a polygon's vertices and provide interpolation parameters for
 // rasterization. For each horizontal span inside the polygon, we'll render pixels
 // from the left edge to the right edge.
-const leftEdges = new Array(maxNumVertsPerPolygon).fill().map(e=>({}));
-const rightEdges = new Array(maxNumVertsPerPolygon).fill().map(e=>({}));
+const leftEdges = new Array(maxNumVertsPerPolygon).fill().map(()=>edge_object_factory());
+const rightEdges = new Array(maxNumVertsPerPolygon).fill().map(()=>edge_object_factory());
 
 const vertexSorters = {
     verticalAscending: (vertA, vertB)=>((vertA.y === vertB.y)? 0 : ((vertA.y < vertB.y)? -1 : 1)),
@@ -216,31 +216,28 @@ Rngon.baseModules.rasterize.polygon = function(
             const deltaInvW = ((1/w2 - 1/w1) / edgeHeight);
 
             const edge = (isLeftEdge? leftEdges[numLeftEdges++] : rightEdges[numRightEdges++]);
-            edge.startY = startY;
-            edge.endY = endY;
-            edge.startX = startX;
-            edge.deltaX = deltaX;
-            edge.startDepth = startDepth;
-            edge.deltaDepth = deltaDepth;
-            edge.startShade = startShade;
-            edge.deltaShade = deltaShade;
-            edge.startU = startU;
-            edge.deltaU = deltaU;
-            edge.startV = startV;
-            edge.deltaV = deltaV;
-            edge.startInvW = startInvW;
-            edge.deltaInvW = deltaInvW;
-
+            edge.top = startY;
+            edge.bottom = endY;
+            edge.start.x = startX;
+            edge.delta.x = deltaX;
+            edge.start.depth = startDepth;
+            edge.delta.depth = deltaDepth;
+            edge.start.shade = startShade;
+            edge.delta.shade = deltaShade;
+            edge.start.u = startU;
+            edge.delta.u = deltaU;
+            edge.start.v = startV;
+            edge.delta.v = deltaV;
+            edge.start.invW = startInvW;
+            edge.delta.invW = deltaInvW;
             if (usePixelShader)
             {
-                edge.startWorldX = vert1.worldX/w1;
-                edge.deltaWorldX = ((vert2.worldX/w2 - vert1.worldX/w1) / edgeHeight);
-
-                edge.startWorldY = vert1.worldY/w1;
-                edge.deltaWorldY = ((vert2.worldY/w2 - vert1.worldY/w1) / edgeHeight);
-
-                edge.startWorldZ = vert1.worldZ/w1;
-                edge.deltaWorldZ = ((vert2.worldZ/w2 - vert1.worldZ/w1) / edgeHeight);
+                edge.start.worldX = vert1.worldX/w1;
+                edge.delta.worldX = ((vert2.worldX/w2 - vert1.worldX/w1) / edgeHeight);
+                edge.start.worldY = vert1.worldY/w1;
+                edge.delta.worldY = ((vert2.worldY/w2 - vert1.worldY/w1) / edgeHeight);
+                edge.start.worldZ = vert1.worldZ/w1;
+                edge.delta.worldZ = ((vert2.worldZ/w2 - vert1.worldZ/w1) / edgeHeight);
             }
         }
     }
@@ -300,31 +297,31 @@ Rngon.baseModules.rasterize.polygon = function(
         if (!numLeftEdges || !numRightEdges) return;
 
         // Note: We assume the n-gon's vertices to be sorted by increasing Y.
-        const ngonStartY = leftEdges[0].startY;
-        const ngonEndY = leftEdges[numLeftEdges-1].endY;
+        const ngonStartY = leftEdges[0].top;
+        const ngonEndY = leftEdges[numLeftEdges-1].bottom;
 
         for (let y = ngonStartY; y < ngonEndY; y++)
         {
-            const spanStartX = Math.min(renderWidth, Math.max(0, Math.round(leftEdge.startX)));
-            const spanEndX = Math.min(renderWidth, Math.max(0, Math.ceil(rightEdge.startX)));
+            const spanStartX = Math.min(renderWidth, Math.max(0, Math.round(leftEdge.start.x)));
+            const spanEndX = Math.min(renderWidth, Math.max(0, Math.ceil(rightEdge.start.x)));
             const spanWidth = ((spanEndX - spanStartX) + 1);
 
             if (spanWidth > 0)
             {
-                const deltaDepth = ((rightEdge.startDepth - leftEdge.startDepth) / spanWidth);
-                let iplDepth = (leftEdge.startDepth - deltaDepth);
+                const deltaDepth = ((rightEdge.start.depth - leftEdge.start.depth) / spanWidth);
+                let iplDepth = (leftEdge.start.depth - deltaDepth);
 
-                const deltaShade = ((rightEdge.startShade - leftEdge.startShade) / spanWidth);
-                let iplShade = (leftEdge.startShade - deltaShade);
+                const deltaShade = ((rightEdge.start.shade - leftEdge.start.shade) / spanWidth);
+                let iplShade = (leftEdge.start.shade - deltaShade);
 
-                const deltaU = ((rightEdge.startU - leftEdge.startU) / spanWidth);
-                let iplU = (leftEdge.startU - deltaU);
+                const deltaU = ((rightEdge.start.u - leftEdge.start.u) / spanWidth);
+                let iplU = (leftEdge.start.u - deltaU);
 
-                const deltaV = ((rightEdge.startV - leftEdge.startV) / spanWidth);
-                let iplV = (leftEdge.startV - deltaV);
+                const deltaV = ((rightEdge.start.v - leftEdge.start.v) / spanWidth);
+                let iplV = (leftEdge.start.v - deltaV);
 
-                const deltaInvW = ((rightEdge.startInvW - leftEdge.startInvW) / spanWidth);
-                let iplInvW = (leftEdge.startInvW - deltaInvW);
+                const deltaInvW = ((rightEdge.start.invW - leftEdge.start.invW) / spanWidth);
+                let iplInvW = (leftEdge.start.invW - deltaInvW);
 
                 let pixelBufferIdx = ((spanStartX + y * renderWidth) - 1);
 
@@ -423,24 +420,24 @@ Rngon.baseModules.rasterize.polygon = function(
 
             // Update values that're interpolated vertically along the edges.
             {
-                leftEdge.startX      += leftEdge.deltaX;
-                leftEdge.startDepth  += leftEdge.deltaDepth;
-                leftEdge.startShade  += leftEdge.deltaShade;
-                leftEdge.startU      += leftEdge.deltaU;
-                leftEdge.startV      += leftEdge.deltaV;
-                leftEdge.startInvW   += leftEdge.deltaInvW;
+                leftEdge.start.x      += leftEdge.delta.x;
+                leftEdge.start.depth  += leftEdge.delta.depth;
+                leftEdge.start.shade  += leftEdge.delta.shade;
+                leftEdge.start.u      += leftEdge.delta.u;
+                leftEdge.start.v      += leftEdge.delta.v;
+                leftEdge.start.invW   += leftEdge.delta.invW;
 
-                rightEdge.startX     += rightEdge.deltaX;
-                rightEdge.startDepth += rightEdge.deltaDepth;
-                rightEdge.startShade += rightEdge.deltaShade;
-                rightEdge.startU     += rightEdge.deltaU;
-                rightEdge.startV     += rightEdge.deltaV;
-                rightEdge.startInvW  += rightEdge.deltaInvW;
+                rightEdge.start.x     += rightEdge.delta.x;
+                rightEdge.start.depth += rightEdge.delta.depth;
+                rightEdge.start.shade += rightEdge.delta.shade;
+                rightEdge.start.u     += rightEdge.delta.u;
+                rightEdge.start.v     += rightEdge.delta.v;
+                rightEdge.start.invW  += rightEdge.delta.invW;
             }
 
             // We can move onto the next edge when we're at the end of the current one.
-            if (y === (leftEdge.endY - 1)) leftEdge = leftEdges[++curLeftEdgeIdx];
-            if (y === (rightEdge.endY - 1)) rightEdge = rightEdges[++curRightEdgeIdx];
+            if (y === (leftEdge.bottom - 1)) leftEdge = leftEdges[++curLeftEdgeIdx];
+            if (y === (rightEdge.bottom - 1)) rightEdge = rightEdges[++curRightEdgeIdx];
         }
 
         return;
@@ -463,26 +460,26 @@ Rngon.baseModules.rasterize.polygon = function(
         if (!numLeftEdges || !numRightEdges) return;
 
         // Note: We assume the n-gon's vertices to be sorted by increasing Y.
-        const ngonStartY = leftEdges[0].startY;
-        const ngonEndY = leftEdges[numLeftEdges-1].endY;
+        const ngonStartY = leftEdges[0].top;
+        const ngonEndY = leftEdges[numLeftEdges-1].bottom;
         
         // Rasterize the n-gon in horizontal pixel spans over its height.
         for (let y = ngonStartY; y < ngonEndY; y++)
         {
-            const spanStartX = Math.min(renderWidth, Math.max(0, Math.round(leftEdge.startX)));
-            const spanEndX = Math.min(renderWidth, Math.max(0, Math.ceil(rightEdge.startX)));
+            const spanStartX = Math.min(renderWidth, Math.max(0, Math.round(leftEdge.start.x)));
+            const spanEndX = Math.min(renderWidth, Math.max(0, Math.ceil(rightEdge.start.x)));
             const spanWidth = ((spanEndX - spanStartX) + 1);
 
             if (spanWidth > 0)
             {
-                const deltaDepth = ((rightEdge.startDepth - leftEdge.startDepth) / spanWidth);
-                let iplDepth = (leftEdge.startDepth - deltaDepth);
+                const deltaDepth = ((rightEdge.start.depth - leftEdge.start.depth) / spanWidth);
+                let iplDepth = (leftEdge.start.depth - deltaDepth);
 
-                const deltaShade = ((rightEdge.startShade - leftEdge.startShade) / spanWidth);
-                let iplShade = (leftEdge.startShade - deltaShade);
+                const deltaShade = ((rightEdge.start.shade - leftEdge.start.shade) / spanWidth);
+                let iplShade = (leftEdge.start.shade - deltaShade);
 
-                const deltaInvW = ((rightEdge.startInvW - leftEdge.startInvW) / spanWidth);
-                let iplInvW = (leftEdge.startInvW - deltaInvW);
+                const deltaInvW = ((rightEdge.start.invW - leftEdge.start.invW) / spanWidth);
+                let iplInvW = (leftEdge.start.invW - deltaInvW);
 
                 let pixelBufferIdx = ((spanStartX + y * renderWidth) - 1);
 
@@ -531,20 +528,20 @@ Rngon.baseModules.rasterize.polygon = function(
 
             // Update values that're interpolated vertically along the edges.
             {
-                leftEdge.startX      += leftEdge.deltaX;
-                leftEdge.startDepth  += leftEdge.deltaDepth;
-                leftEdge.startShade  += leftEdge.deltaShade;
-                leftEdge.startInvW   += leftEdge.deltaInvW;
+                leftEdge.start.x      += leftEdge.delta.x;
+                leftEdge.start.depth  += leftEdge.delta.depth;
+                leftEdge.start.shade  += leftEdge.delta.shade;
+                leftEdge.start.invW   += leftEdge.delta.invW;
 
-                rightEdge.startX     += rightEdge.deltaX;
-                rightEdge.startDepth += rightEdge.deltaDepth;
-                rightEdge.startShade += rightEdge.deltaShade;
-                rightEdge.startInvW  += rightEdge.deltaInvW;
+                rightEdge.start.x     += rightEdge.delta.x;
+                rightEdge.start.depth += rightEdge.delta.depth;
+                rightEdge.start.shade += rightEdge.delta.shade;
+                rightEdge.start.invW  += rightEdge.delta.invW;
             }
 
             // We can move onto the next edge when we're at the end of the current one.
-            if (y === (leftEdge.endY - 1)) leftEdge = leftEdges[++curLeftEdgeIdx];
-            if (y === (rightEdge.endY - 1)) rightEdge = rightEdges[++curRightEdgeIdx];
+            if (y === (leftEdge.bottom - 1)) leftEdge = leftEdges[++curLeftEdgeIdx];
+            if (y === (rightEdge.bottom - 1)) rightEdge = rightEdges[++curRightEdgeIdx];
         }
 
         return;
@@ -562,23 +559,23 @@ Rngon.baseModules.rasterize.polygon = function(
         if (!numLeftEdges || !numRightEdges) return;
 
         // Note: We assume the n-gon's vertices to be sorted by increasing Y.
-        const ngonStartY = leftEdges[0].startY;
-        const ngonEndY = leftEdges[numLeftEdges-1].endY;
+        const ngonStartY = leftEdges[0].top;
+        const ngonEndY = leftEdges[numLeftEdges-1].bottom;
         
         // Rasterize the n-gon in horizontal pixel spans over its height.
         for (let y = ngonStartY; y < ngonEndY; y++)
         {
-            const spanStartX = Math.min(renderWidth, Math.max(0, Math.round(leftEdge.startX)));
-            const spanEndX = Math.min(renderWidth, Math.max(0, Math.ceil(rightEdge.startX)));
+            const spanStartX = Math.min(renderWidth, Math.max(0, Math.round(leftEdge.start.x)));
+            const spanEndX = Math.min(renderWidth, Math.max(0, Math.ceil(rightEdge.start.x)));
             const spanWidth = ((spanEndX - spanStartX) + 1);
 
             if (spanWidth > 0)
             {
-                const deltaDepth = ((rightEdge.startDepth - leftEdge.startDepth) / spanWidth);
-                let iplDepth = (leftEdge.startDepth - deltaDepth);
+                const deltaDepth = ((rightEdge.start.depth - leftEdge.start.depth) / spanWidth);
+                let iplDepth = (leftEdge.start.depth - deltaDepth);
 
-                const deltaInvW = ((rightEdge.startInvW - leftEdge.startInvW) / spanWidth);
-                let iplInvW = (leftEdge.startInvW - deltaInvW);
+                const deltaInvW = ((rightEdge.start.invW - leftEdge.start.invW) / spanWidth);
+                let iplInvW = (leftEdge.start.invW - deltaInvW);
 
                 let pixelBufferIdx = ((spanStartX + y * renderWidth) - 1);
 
@@ -600,18 +597,18 @@ Rngon.baseModules.rasterize.polygon = function(
 
             // Update values that're interpolated vertically along the edges.
             {
-                leftEdge.startX      += leftEdge.deltaX;
-                leftEdge.startDepth  += leftEdge.deltaDepth;
-                leftEdge.startInvW   += leftEdge.deltaInvW;
+                leftEdge.start.x      += leftEdge.delta.x;
+                leftEdge.start.depth  += leftEdge.delta.depth;
+                leftEdge.start.invW   += leftEdge.delta.invW;
 
-                rightEdge.startX     += rightEdge.deltaX;
-                rightEdge.startDepth += rightEdge.deltaDepth;
-                rightEdge.startInvW  += rightEdge.deltaInvW;
+                rightEdge.start.x     += rightEdge.delta.x;
+                rightEdge.start.depth += rightEdge.delta.depth;
+                rightEdge.start.invW  += rightEdge.delta.invW;
             }
 
             // We can move onto the next edge when we're at the end of the current one.
-            if (y === (leftEdge.endY - 1)) leftEdge = leftEdges[++curLeftEdgeIdx];
-            if (y === (rightEdge.endY - 1)) rightEdge = rightEdges[++curRightEdgeIdx];
+            if (y === (leftEdge.bottom - 1)) leftEdge = leftEdges[++curLeftEdgeIdx];
+            if (y === (rightEdge.bottom - 1)) rightEdge = rightEdges[++curRightEdgeIdx];
         }
 
         return;
@@ -629,43 +626,43 @@ Rngon.baseModules.rasterize.polygon = function(
         if (!numLeftEdges || !numRightEdges) return;
 
         // Note: We assume the n-gon's vertices to be sorted by increasing Y.
-        const ngonStartY = leftEdges[0].startY;
-        const ngonEndY = leftEdges[numLeftEdges-1].endY;
+        const ngonStartY = leftEdges[0].top;
+        const ngonEndY = leftEdges[numLeftEdges-1].bottom;
         
         // Rasterize the n-gon in horizontal pixel spans over its height.
         for (let y = ngonStartY; y < ngonEndY; y++)
         {
-            const spanStartX = Math.min(renderWidth, Math.max(0, Math.round(leftEdge.startX)));
-            const spanEndX = Math.min(renderWidth, Math.max(0, Math.ceil(rightEdge.startX)));
+            const spanStartX = Math.min(renderWidth, Math.max(0, Math.round(leftEdge.start.x)));
+            const spanEndX = Math.min(renderWidth, Math.max(0, Math.ceil(rightEdge.start.x)));
             const spanWidth = ((spanEndX - spanStartX) + 1);
 
             if (spanWidth > 0)
             {
-                const deltaDepth = ((rightEdge.startDepth - leftEdge.startDepth) / spanWidth);
-                let iplDepth = (leftEdge.startDepth - deltaDepth);
+                const deltaDepth = ((rightEdge.start.depth - leftEdge.start.depth) / spanWidth);
+                let iplDepth = (leftEdge.start.depth - deltaDepth);
 
-                const deltaShade = ((rightEdge.startShade - leftEdge.startShade) / spanWidth);
-                let iplShade = (leftEdge.startShade - deltaShade);
+                const deltaShade = ((rightEdge.start.shade - leftEdge.start.shade) / spanWidth);
+                let iplShade = (leftEdge.start.shade - deltaShade);
 
-                const deltaU = ((rightEdge.startU - leftEdge.startU) / spanWidth);
-                let iplU = (leftEdge.startU - deltaU);
+                const deltaU = ((rightEdge.start.u - leftEdge.start.u) / spanWidth);
+                let iplU = (leftEdge.start.u - deltaU);
 
-                const deltaV = ((rightEdge.startV - leftEdge.startV) / spanWidth);
-                let iplV = (leftEdge.startV - deltaV);
+                const deltaV = ((rightEdge.start.v - leftEdge.start.v) / spanWidth);
+                let iplV = (leftEdge.start.v - deltaV);
 
-                const deltaInvW = ((rightEdge.startInvW - leftEdge.startInvW) / spanWidth);
-                let iplInvW = (leftEdge.startInvW - deltaInvW);
+                const deltaInvW = ((rightEdge.start.invW - leftEdge.start.invW) / spanWidth);
+                let iplInvW = (leftEdge.start.invW - deltaInvW);
 
                 if (usePixelShader)
                 {
-                    var deltaWorldX = ((rightEdge.startWorldX - leftEdge.startWorldX) / spanWidth);
-                    var iplWorldX = (leftEdge.startWorldX - deltaWorldX);
+                    var deltaWorldX = ((rightEdge.start.worldX - leftEdge.start.worldX) / spanWidth);
+                    var iplWorldX = (leftEdge.start.worldX - deltaWorldX);
 
-                    var deltaWorldY = ((rightEdge.startWorldY - leftEdge.startWorldY) / spanWidth);
-                    var iplWorldY = (leftEdge.startWorldY - deltaWorldY);
+                    var deltaWorldY = ((rightEdge.start.worldY - leftEdge.start.worldY) / spanWidth);
+                    var iplWorldY = (leftEdge.start.worldY - deltaWorldY);
 
-                    var deltaWorldZ = ((rightEdge.startWorldZ - leftEdge.startWorldZ) / spanWidth);
-                    var iplWorldZ = (leftEdge.startWorldZ - deltaWorldZ);
+                    var deltaWorldZ = ((rightEdge.start.worldZ - leftEdge.start.worldZ) / spanWidth);
+                    var iplWorldZ = (leftEdge.start.worldZ - deltaWorldZ);
                 }
 
                 // Assumes the depth buffer consists of 1 element per pixel.
@@ -907,35 +904,35 @@ Rngon.baseModules.rasterize.polygon = function(
 
             // Update values that're interpolated vertically along the edges.
             {
-                leftEdge.startX      += leftEdge.deltaX;
-                leftEdge.startDepth  += leftEdge.deltaDepth;
-                leftEdge.startShade  += leftEdge.deltaShade;
-                leftEdge.startU      += leftEdge.deltaU;
-                leftEdge.startV      += leftEdge.deltaV;
-                leftEdge.startInvW   += leftEdge.deltaInvW;
+                leftEdge.start.x      += leftEdge.delta.x;
+                leftEdge.start.depth  += leftEdge.delta.depth;
+                leftEdge.start.shade  += leftEdge.delta.shade;
+                leftEdge.start.u      += leftEdge.delta.u;
+                leftEdge.start.v      += leftEdge.delta.v;
+                leftEdge.start.invW   += leftEdge.delta.invW;
 
-                rightEdge.startX     += rightEdge.deltaX;
-                rightEdge.startDepth += rightEdge.deltaDepth;
-                rightEdge.startShade += rightEdge.deltaShade;
-                rightEdge.startU     += rightEdge.deltaU;
-                rightEdge.startV     += rightEdge.deltaV;
-                rightEdge.startInvW  += rightEdge.deltaInvW;
+                rightEdge.start.x     += rightEdge.delta.x;
+                rightEdge.start.depth += rightEdge.delta.depth;
+                rightEdge.start.shade += rightEdge.delta.shade;
+                rightEdge.start.u     += rightEdge.delta.u;
+                rightEdge.start.v     += rightEdge.delta.v;
+                rightEdge.start.invW  += rightEdge.delta.invW;
 
                 if (usePixelShader)
                 {
-                    leftEdge.startWorldX  += leftEdge.deltaWorldX;
-                    leftEdge.startWorldY  += leftEdge.deltaWorldY;
-                    leftEdge.startWorldZ  += leftEdge.deltaWorldZ;
+                    leftEdge.start.worldX  += leftEdge.delta.worldX;
+                    leftEdge.start.worldY  += leftEdge.delta.worldY;
+                    leftEdge.start.worldZ  += leftEdge.delta.worldZ;
 
-                    rightEdge.startWorldX += rightEdge.deltaWorldX;
-                    rightEdge.startWorldY += rightEdge.deltaWorldY;
-                    rightEdge.startWorldZ += rightEdge.deltaWorldZ;
+                    rightEdge.start.worldX += rightEdge.delta.worldX;
+                    rightEdge.start.worldY += rightEdge.delta.worldY;
+                    rightEdge.start.worldZ += rightEdge.delta.worldZ;
                 }
             }
 
             // We can move onto the next edge when we're at the end of the current one.
-            if (y === (leftEdge.endY - 1)) leftEdge = leftEdges[++curLeftEdgeIdx];
-            if (y === (rightEdge.endY - 1)) rightEdge = rightEdges[++curRightEdgeIdx];
+            if (y === (leftEdge.bottom - 1)) leftEdge = leftEdges[++curLeftEdgeIdx];
+            if (y === (rightEdge.bottom - 1)) rightEdge = rightEdges[++curRightEdgeIdx];
         }
 
         return;
@@ -1250,5 +1247,33 @@ Rngon.baseModules.rasterize.stipple = (function()
         return false;
     };
 })();
+
+// Returns an empty polygon edge object. An edge represents an outer edge of a polygon,
+// associated with values that are to be interpolated across the polygon during rasterization.
+function edge_object_factory()
+{
+    return {
+        // The top (smallest Y) and bottom (largest Y) extent of this edge, in screen coordinates.
+        top: undefined,
+        bottom: undefined,
+
+        // The starting values of the properties associated with this edge, at the top of the edge.
+        start: {
+            x: undefined,
+            depth: undefined,
+            shade: undefined,
+            u: undefined,
+            v: undefined,
+            invW: undefined,
+            worldX: undefined,
+            worldY: undefined,
+            worldZ: undefined,
+        },
+
+        // For each property in 'start', a corresponding amount by which that value is changed per
+        // horizontal pixel span from the top of the edge down.
+        delta: {},
+    }
+}
 
 }
