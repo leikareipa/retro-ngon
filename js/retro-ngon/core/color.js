@@ -5,7 +5,7 @@
  *
  */
 
-// Red, green, blue, alpha; in the range 0..255.
+// Red, green, blue, alpha; in the range [0,255].
 export function color_rgba(
     red = 55,
     green = 55,
@@ -34,5 +34,20 @@ export function color_rgba(
         }),
     });
     
+    return publicInterface;
+}
+
+// Indexed color; in the range [0,255]. Represents an entry in a palette.
+export function color_index(index = 0)
+{
+    Rngon.assert?.(
+        ((index >= 0) && (index <= 255)),
+        "The given color index is out of range."
+    );
+
+    const publicInterface = Object.freeze({
+        index,
+    });
+
     return publicInterface;
 }

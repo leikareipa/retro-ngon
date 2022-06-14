@@ -19,7 +19,10 @@ import {render_async} from "./api/render-async.js";
 import {rasterize} from "./base-modules/rasterize.js";
 import {surface_wipe} from "./base-modules/surface-wipe.js";
 import {transform_clip_light} from "./base-modules/transform-clip-light.js";
-import {color_rgba} from "./core/color.js";
+import {
+    color_rgba,
+    color_index,
+} from "./core/color.js";
 import {internalState} from "./core/internal-state.js";
 import {light} from "./core/light.js";
 import {material} from "./core/material.js";
@@ -66,6 +69,7 @@ export {
     renderable_width_of,
     renderable_height_of,
     color_rgba,
+    color_index,
     internalState,
     light,
     material,

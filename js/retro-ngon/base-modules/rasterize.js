@@ -6,7 +6,6 @@
  */
 
 import {generic_fill} from "./rasterize/raster-shader-generic-fill.js";
-import {paletted_fill} from "./rasterize/raster-shader-paletted-fill.js";
 import {plain_solid_fill} from "./rasterize/raster-shader-plain-solid-fill.js";
 import {plain_textured_fill} from "./rasterize/raster-shader-plain-textured-fill.js";
 
@@ -124,11 +123,7 @@ rasterize.polygon = function(
         {
             let raster_fn = generic_fill;
 
-            if (usePalette)
-            {
-                raster_fn = paletted_fill;
-            }
-            else if (
+            if (
                 material.texture &&
                 depthBuffer &&
                 !usePixelShader &&
