@@ -42,12 +42,12 @@ export function $throw(errMessage = "")
         window.alert("Retro n-gon error: " + errMessage);
     }
 
-    throw Error("Retro n-gon error: " + errMessage);
+    throw Error(errMessage);
 }
 
 export function log(string = "Hello there.")
 {
-    console.log("Retro n-gon: " + string);
+    console.log(string);
 }
 
 // Returns the resulting width of an image if it were rendered onto the given canvas element.
