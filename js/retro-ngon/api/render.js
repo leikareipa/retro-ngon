@@ -32,8 +32,13 @@ export function render(
     }
 
     Rngon.assert?.(
-        (canvasElement instanceof HTMLElement),
+        (canvasElement instanceof HTMLCanvasElement),
         "Invalid canvas element for rendering into."
+    );
+
+    Rngon.assert?.(
+        (!Rngon.internalState.usePalette || (canvasElement instanceof HTMLPalettedCanvasElement)),
+        "For paletted rendering, the attribute is='paletted-canvas' must be present on the target <canvas>."
     );
     
     // Render a single frame onto the target <canvas> element.
