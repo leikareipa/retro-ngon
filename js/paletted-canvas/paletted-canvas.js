@@ -103,7 +103,7 @@ class IndexedImageData {
     }
 };
 
-class PalettedCanvas extends HTMLCanvasElement {
+class HTMLPalettedCanvasElement extends HTMLCanvasElement {
     #canvasImage
     #canvasContext
 
@@ -168,5 +168,7 @@ class PalettedCanvas extends HTMLCanvasElement {
     }
 };
 
-customElements.define("paletted-canvas", PalettedCanvas, {extends: "canvas"});
+window.IndexedImageData = IndexedImageData;
+window.HTMLPalettedCanvasElement = HTMLPalettedCanvasElement;
+customElements.define("paletted-canvas", HTMLPalettedCanvasElement, {extends: "canvas"});
 }
