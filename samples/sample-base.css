@@ -97,7 +97,7 @@ body
 .infoboxes-container
 {
     position: absolute;
-    top: 10px;
+    top: 50px;
     right: 10px;
     display: flex;
     flex-direction: row;
@@ -130,8 +130,8 @@ body
     padding: 0 16px;
     width: 100px;
     height: 65px;
-    background-color: #8f8f8f;
-    color: black;
+    background-color: rgba(0, 0, 0, 0.45);
+    color: lightgray;
     justify-content: center;
     align-items: center;
     border-radius: 0;
@@ -151,6 +151,7 @@ body
 
 .infobox > .value
 {
+    color: whitesmoke;
     font-weight: bold;
     text-align: center;
     margin: 0 5px;
@@ -207,13 +208,17 @@ body
 
 .notification
 {
-    background-color: #6e6e6e;
+    background-color: rgba(0, 0, 0, 0.45);
     padding: 0 5px 4px 5px;
     font-family: sans-serif;
-    color: #d3d3d3;
     text-align: left;
-    display: flex;
-    border-top: 1px dashed black;
+    border-top: 1px solid black;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    display: block;
+    width: 100%;
+    font-size: 95%;
 }
 
 .notification > .copyright
