@@ -154,8 +154,7 @@ export function texture_rgba(data = {})
     }
 
     const publicInterface = {
-        width: data.width,
-        height: data.height,
+        ...data,
         pixels: pixelArray,
         mipLevels: mipmaps,
     };
@@ -164,7 +163,7 @@ export function texture_rgba(data = {})
 }
 
 
-// Returns a new texture whose data are a deep copy of the given texture.
+// Returns a new texture whose pixel data are a deep copy of the given texture.
 texture_rgba.deep_copy = function(texture)
 {
     const copiedPixels = new Array(texture.width * texture.height * 4);
@@ -178,16 +177,15 @@ texture_rgba.deep_copy = function(texture)
     }
 
     return Rngon.texture_rgba({
-       width: texture.width,
-       height: texture.height,
-       pixels: copiedPixels,
-       needsFlip: false,
+        ...texture,
+        pixels: copiedPixels,
     });
 }
 
 // Returns a Promise of a texture whose data is loaded from the given file. The actual
 // texture is returned once the data has been loaded.
-// Note: Only supports JSON files at the moment, expecting them to contain a valid
+//
+// NOTE: Only supports JSON files at the moment, expecting them to contain a valid
 // object to be passed as-is into texture_rgba().
 texture_rgba.create_with_data_from_file = function(filename)
 {
