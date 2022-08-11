@@ -12,32 +12,25 @@ const isRunningInWebWorker = (typeof importScripts === "function");
 
 if (!isRunningInWebWorker)
 {
-// Provides an ImageData-like interface for storing paletted image data.
+// A wrapper interface around ImageData for storing paletted image data.
 class IndexedImageData {
     #palette
     #width
     #height
-    #data
+    data
 
-    constructor(data, width, height, palette) {
-        // Validate input.
-        {
-            if (!(data instanceof Uint8ClampedArray)) {
-                throw new Error("The data must be a Uint8ClampedArray array.");
-            }
-
-            if (
-                (typeof width !== "number") ||
-                (typeof height !== "number")
-            ){
-                throw new Error("The width and height must be numbers.");
-            }
+    constructor(width, height) {
+        if (
+            isNaN(width) ||
+            isNaN(height)
+        ){
+            throw new Error("This interface supports only numeric 'width' and 'height' as arguments.");
         }
 
         this.#width = width;
         this.#height = height;
-        this.#data = data;
-        this.palette = (palette || [[0, 0, 0, 0]]);
+        this.data = new Array(width * height);
+        this.palette = [[0, 0, 0, 0]];
     }
 
     // To get the palette index at x as a quadruplet of 8-bit RGBA values, do "palette[x]".
@@ -58,14 +51,20 @@ class IndexedImageData {
             throw new Error("The palette must be an array.");
         }
 
+        if (newPalette.length < 1) {
+            throw new Error("A palette must consist of at least one color.");
+        }
+
+        if (!newPalette.every(element=>Array.isArray(element))) {
+            throw new Error("Each entry in the palette must be a sub-array of color channel values.");
+        }
+
         newPalette.forEach(color=>{
             color.length = 4;
             if (typeof color[3] === "undefined") {
                 color[3] = 255;
             }
         });
-
-        newPalette = newPalette.map(color=>Uint8ClampedArray.from(color));
 
         const palette = {
             byte: newPalette,
@@ -86,10 +85,6 @@ class IndexedImageData {
         });
     }
 
-    get data() {
-        return this.#data;
-    }
-
     get width() {
         return this.#width;
     }
@@ -103,9 +98,88 @@ class IndexedImageData {
     }
 };
 
+// A wrapper interface around CanvasRenderingContext2D for manipulating the drawing surface
+// of a <canvas> element using indexed colors.
+class CanvasRenderingContextIndexed {
+    #underlyingContext2D
+    #underlyingImageData
+    #width
+    #height
+
+    constructor(underlyingContext2D) {
+        if (!(underlyingContext2D instanceof CanvasRenderingContext2D)) {
+            throw new Error("CanvasRenderingContextIndexed requires an instance of CanvasRenderingContext2D as an argument.");
+        }
+
+        this.#underlyingContext2D = underlyingContext2D;
+        this.#width = this.#underlyingContext2D.canvas.width;
+        this.#height = this.#underlyingContext2D.canvas.height;
+        this.#underlyingImageData = this.#underlyingContext2D.createImageData(this.#width, this.#height);
+        this.#underlyingImageData.data.fill(0);
+
+        if (
+            isNaN(this.#width) ||
+            isNaN(this.#height) ||
+            (this.#height < 1) ||
+            (this.#width < 1)
+        ){
+            throw new Error("Invalid context resolution.");
+        }
+    }
+    
+    createImageData(
+        width = this.#width,
+        height = this.#height
+    )
+    {
+        if (width instanceof ImageData) {
+            throw new Error("This interface supports only 'width' and 'height' as arguments.");
+        }
+
+        if (
+            (width !== this.#width) ||
+            (height !== this.#height)
+        ){
+            throw new Error("This interface can only create images whose resolution matches the size of the canvas.");
+        }
+
+        return new IndexedImageData(width, height);
+    }
+
+    // Returns as an ImageData object the RGBA/8888 pixel data as displayed on the canvas.
+    getImageData() {
+        return this.#underlyingImageData;
+    }
+
+    putImageData(indexedImage) {
+        if (!(indexedImage instanceof IndexedImageData)) {
+            throw new Error("Only images of type IndexedImageData can be rendered.");
+        }
+
+        if (
+            (indexedImage.width !== this.#width) ||
+            (indexedImage.height !== this.#height)
+        ){
+            throw new Error("Mismatched image resolution: images must be the size of the canvas.");
+        }
+
+        // Convert the paletted image into a 32-bit image on the canvas.
+        {
+            const palette = indexedImage.palette.dword;
+            const pixelBuffer32bit = new Uint32Array(this.#underlyingImageData.data.buffer);
+
+            for (let i = 0; i < indexedImage.data.length; i++) {
+                pixelBuffer32bit[i] = palette[indexedImage.data[i]];
+            }
+        }
+
+        this.#underlyingContext2D.putImageData(this.#underlyingImageData, 0, 0);
+    }
+}
+
 class HTMLPalettedCanvasElement extends HTMLCanvasElement {
-    #canvasImage
-    #canvasContext
+    #underlyingContext
+    #indexedRenderingContext
 
     constructor() {
         super();
@@ -117,58 +191,22 @@ class HTMLPalettedCanvasElement extends HTMLCanvasElement {
 
     attributeChangedCallback(name, oldValue, newValue) {
         if ((oldValue != newValue) && ["width", "height"].includes(name)) {
-            this.#canvasContext = super.getContext("2d");
-            this.#canvasImage = this.#canvasContext.createImageData(super.width, super.height);
+            this.#underlyingContext = super.getContext("2d");
+            this.#indexedRenderingContext = new CanvasRenderingContextIndexed(this.#underlyingContext);
         }
     }
 
     getContext(contextType = "2d") {
         if (contextType !== "2d") {
-            throw new Error(`Only the "2d" context type is supported.`);
+            throw new Error("This interface only supports the '2d' context type.");
         }
 
-        // Emulates the interface of CanvasRenderingContext2D.
-        return {
-            createImageData: this.#createImageData.bind(this),
-            putImageData: this.#putImageData.bind(this),
-        };
-    }
-
-    #createImageData() {
-        return new IndexedImageData(
-            new Uint8ClampedArray(super.width * super.height),
-            super.width,
-            super.height,
-        );
-    }
-
-    #putImageData(image) {
-        if (!(image instanceof IndexedImageData)) {
-            throw new Error("Only images of type IndexedImageData can be rendered.");
-        }
-
-        if (
-            !(this.#canvasImage instanceof ImageData) ||
-            !(this.#canvasContext instanceof CanvasRenderingContext2D)
-        ){
-            throw new Error("Internal error: incomplete state initialization.");
-        }
-
-        // Convert the paletted image into a 32-bit image on the canvas.
-        {
-            const palette = image.palette.dword;
-            const pixelBuffer32bit = new Uint32Array(this.#canvasImage.data.buffer);
-
-            for (let i = 0; i < image.data.length; i++) {
-                pixelBuffer32bit[i] = palette[image.data[i]];
-            }
-        }
-
-        this.#canvasContext.putImageData(this.#canvasImage, 0, 0);
+        return this.#indexedRenderingContext;
     }
 };
 
 window.IndexedImageData = IndexedImageData;
+window.CanvasRenderingContextIndexed = CanvasRenderingContextIndexed;
 window.HTMLPalettedCanvasElement = HTMLPalettedCanvasElement;
 customElements.define("paletted-canvas", HTMLPalettedCanvasElement, {extends: "canvas"});
 }

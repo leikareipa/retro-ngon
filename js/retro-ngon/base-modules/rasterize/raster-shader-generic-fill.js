@@ -22,8 +22,9 @@ export function generic_fill({
     const usePixelShader = Rngon.internalState.usePixelShader;
     const fragmentBuffer = Rngon.internalState.fragmentBuffer.data;
     const depthBuffer = (Rngon.internalState.useDepthBuffer? Rngon.internalState.depthBuffer.data : null);
-    const pixelBufferClamped8 = Rngon.internalState.pixelBuffer.data;
-    const pixelBufferWidth = Rngon.internalState.pixelBuffer.width;
+    const pixelBufferImage = Rngon.internalState.pixelBuffer;
+    const pixelBufferClamped8 = pixelBufferImage.data;
+    const pixelBufferWidth = pixelBufferImage.width;
     const material = ngon.material;
     const texture = (material.texture || null);
     

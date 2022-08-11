@@ -146,7 +146,6 @@ export function surface(canvasElement)
                     }
                     else
                     {
-                        state.pixelBuffer.palette = state.palette;
                         renderContext.putImageData(state.pixelBuffer, 0, 0);
                     }
                 }
@@ -227,6 +226,11 @@ export function surface(canvasElement)
             (renderContext !== null),
             "Couldn't establish a canvas render context."
         );
+
+        if (state.usePalette)
+        {
+            state.pixelBuffer.palette = state.palette;
+        }
 
         // Size the canvas as per the requested render scale.
         const surfaceWidth = Rngon.renderable_width_of(canvasElement, state.renderScale);

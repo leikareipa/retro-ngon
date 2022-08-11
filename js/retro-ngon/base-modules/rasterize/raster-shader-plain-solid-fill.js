@@ -23,8 +23,9 @@ export function plain_solid_fill({
 })
 {
     const usePalette = Rngon.internalState.usePalette;
-    const pixelBufferClamped8 = Rngon.internalState.pixelBuffer.data;
-    const pixelBufferWidth = Rngon.internalState.pixelBuffer.width;
+    const pixelBufferImage = Rngon.internalState.pixelBuffer;
+    const pixelBufferClamped8 = pixelBufferImage.data;
+    const pixelBufferWidth = pixelBufferImage.width;
     const depthBuffer = (Rngon.internalState.useDepthBuffer? Rngon.internalState.depthBuffer.data : null);
     const material = ngon.material;
 
