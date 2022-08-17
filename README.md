@@ -600,8 +600,8 @@ The renderer's public API consists of the following objects:
 
 | Object                                          | Brief description                           |
 | ----------------------------------------------- | ------------------------------------------- |
-| [render()](#rendercanvaselement-meshes-options) | Renders n-gon meshes onto a canvas.         |
-| [render_async()](#render_async-meshes-options-rngonurl) | Renders n-gon meshes into a pixel buffer. Runs in a Web Worker.  |
+| [render()](#rendertarget-meshes-options)        | Renders n-gon meshes.                       |
+| [render_async()](#render_async-meshes-options-rngonurl) | Renders n-gon meshes asynchronously.  |
 | [mesh](#meshngons-transform)                    | Collection of thematically-related n-gons.  |
 | [ngon](#ngonvertices-material-normal)           | Polygonal shape defined by *n* vertices.    |
 | [vertex](#vertexx-y-z-u-v-w)                    | Corner of an n-gon.                         |
@@ -610,22 +610,26 @@ The renderer's public API consists of the following objects:
 | [texture_rgba](#texture_rgbadata)               | RGB texture with transparency.              |
 | light                                           | (A description is coming.)                  |
 
-## render(canvasElement[, meshes[, options]])
-Renders one or more n-gon meshes onto an existing canvas element.
+## render(target[, meshes[, options]])
+Renders an image of the given n-gon meshes into the given target. This call is blocking and will return once the rendering is completed. For non-blocking rendering, see render_async().
+
+After the call, the resulting raw pixel buffer is also available via *Rngon.internalState.pixelBuffer*, and the corresponding screen-space n-gons via *Rngon.internalState.ngonCache*.
 
 *Parameters:*
 
 | Type      | Name            | Description |
 | --------- | --------------- | ----------- |
-| *mixed*   | canvasElement   | A value identifying the canvas element to render into. This can be either a string, in which case it should represent the target canvas's *id* property; or a DOM Element object (e.g. from `document.getElementById()`). |
-| *array*   | meshes          | An array of one or more **mesh** objects to be rendered. Defaults to *[Rngon.mesh()]* (one empty mesh). |
+| *mixed*   | target   | A value identifying the recipient of the rendering. Possible types: HTMLCanvasElement, string, *null*. If HTMLCanvasElement, the rendering will be displayed on the corresponding canvas element. A string will be interpreted as the **id** property of the desired target canvas element. If *null*, the rendered image will be available only via *Rngon.internalState.pixelBuffer*. |
+| *array*   | meshes          | An array providing the **mesh** objects to be rendered. Defaults to *[Rngon.mesh()]*. |
 | *object*  | options         | An object providing optional directives (see below). |
 
 *The **options** parameter object recognizes the following properties:*
 
 | Type                  | Name                     | Description |
 | --------------------- | ------------------------ | ----------- |
-| *number*              | scale                    | The resolution of the rendering relative to the size of the target canvas. For instance, a scale of 0.5 would result in rendering an image half the resolution of the target canvas. Values below 1 will see the rendered image upscaled to fit the canvas, while values above 1 result in downscaling. The CSS property *image-rendering* on the target canvas can be used to set the type of post-render scaling - f.e. *image-rendering: pixelated* will on some browsers result in pixelated rather than blurred scaling. Defaults to *1*. |
+| *number*              | scale                    | If the render target is a canvas, this value sets the resolution of the rendering relative to the size of the canvas. For instance, a scale of 0.5 would result in rendering an image half the resolution of the canvas. The finished rendering is then scaled to the size of the canvas according to the *image-rendering* CSS property. If the render target is not a canvas, this value will be ignored. Defaults to *1*. |
+| *number*    | width         | If the render target is *null*, this value sets the width (in pixels) of the image to be rendered. Ignored if the render target is not *null*. Defaults to *640*. |
+| *number*    | height        | If the render target is *null*, this value sets the height (in pixels) of the image to be rendered. Ignored if the render target is not *null*. Defaults to *480*. |
 | *number*              | fov                      | Field of view. Defaults to *43*. |
 | *string*              | depthSort                | Type of depth sorting to use when ordering n-gons for rasterization. Possible values: "none" (no depth sorting; n-gons will be rendered in the order they were given), "painter" (painter's algorithm; n-gons furthest from the camera will be rendered first), "painter-reverse" (n-gons closest to the camera will be rendered first). If the *useDepthBuffer* option is true, "painter-reverse" may provide the best performance, as this combination allows for early rejection of occluded pixels. Defaults to *"painter-reverse"*. |
 | *boolean*             | useDepthBuffer           | If true, a depth buffer will be used during rasterization to discard occluded pixels. For best performance, consider combining depth buffering with the "painter-reverse" *depthSort* option. Defaults to *true*. |
@@ -645,9 +649,9 @@ Renders one or more n-gon meshes onto an existing canvas element.
 
 | Type                  | Name                     | Description |
 | --------------------- | ------------------------ | ----------- |
-| *function*            | transformClipLight       | A function called by the renderer to transform, clip, and light the n-gons that were passed to **render()**. For more info, including the list of parameters, see the default function. Defaults to *null*, which is an alias for the default function, *Rngon.transform_clip_light*. |
-| *function*            | rasterize                 | A function called by the renderer to rasterize the n-gons that were passed to **render()**. For more info, including the list of parameters, see the default function. Defaults to *null*, which is an alias for the default function, *Rngon.baseModules.rasterize*. |
-| *function*            | surfaceWipe              | A function called by the renderer to clear the render surface of previous renderings (pixels, depth values, etc.). For more info, including the list of parameters, see the default function. Defaults to *null*, which is an alias for the default function, *Rngon.baseModules.surface_wipe*. |
+| *mixed*               | transformClipLight       | A function that will be called by the renderer to transform, clip, and light the n-gons that were passed to **render()**; or *null* to disable that functionality. For more information, including the list of parameters, see the default function. Defaults to *undefined*, which will invoke the default function, *Rngon.baseModules.transform_clip_light*. |
+| *mixed*               | rasterize                 | A function that will be called by the renderer to rasterize the n-gons that were passed to **render()**; or *null* to disable rasterization. If you intend to disable rasterization, setting this value to *null* instead of an empty function is recommended, as the former will also inhibit the unnecessary allocation of raster buffers. For more information, including the list of parameters, see the default function. Defaults to *undefined*, which will invoke the default function, *Rngon.baseModules.rasterize*. |
+| *mixed*               | surfaceWipe              | A function that will be called by the renderer to clear the render surface of previous renderings (pixel colors, depth values, etc.); or *null* to disable that functionality. For more information, including the list of parameters, see the default function. Defaults to *undefined*, which will invoke the default function, *Rngon.baseModules.surface_wipe*. |
 
 *Returns:*
 
@@ -763,7 +767,9 @@ Rngon.render("canvas", [Rngon.mesh([ngon])],
 ```
 
 ## render_async([, meshes[, options[, rngonUrl]]])
-Renders one or more n-gon meshes into a pixel buffer (an ImageData object). Runs in a Web Worker so is non-blocking, provided that the host hardware supports concurrent threads.
+Renders an image of the given n-gon meshes into an off-screen target. This call is non-blocking; the brunt of the rendering will be done using Web Workers.
+
+Returns a Promise that will resolve when the rendering is completed.
 
 *Parameters:*
 

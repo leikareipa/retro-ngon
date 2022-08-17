@@ -73,7 +73,7 @@ export function surface(canvasElement)
         // this surface, the rasterized pixels will also be painted onto that canvas.
         display_meshes: function(meshes = [])
         {
-            state.modules.surface_wipe();
+            state.modules.surface_wipe?.();
 
             // Prepare the meshes' n-gons for rendering. This will place the transformed
             // n-gons into the internal n-gon cache, Rngon.internalState.ngonCache.
@@ -81,17 +81,20 @@ export function surface(canvasElement)
                 Rngon.renderShared.prepare_vertex_cache(meshes);
                 Rngon.renderShared.prepare_ngon_cache(meshes);
 
-                for (const mesh of meshes)
+                if (state.modules.transform_clip_light)
                 {
-                    state.modules.transform_clip_light(
-                        mesh.ngons,
-                        Rngon.mesh.object_space_matrix(mesh),
-                        cameraMatrix,
-                        perspectiveMatrix,
-                        screenSpaceMatrix,
-                        state.cameraPosition
-                    );
-                };
+                    for (const mesh of meshes)
+                    {
+                        state.modules.transform_clip_light(
+                            mesh.ngons,
+                            Rngon.mesh.object_space_matrix(mesh),
+                            cameraMatrix,
+                            perspectiveMatrix,
+                            screenSpaceMatrix,
+                            state.cameraPosition
+                        );
+                    };
+                }
 
                 Rngon.renderShared.mark_npot_textures_in_ngon_cache();
                 Rngon.renderShared.depth_sort_ngon_cache(state.depthSortingMode);
@@ -99,6 +102,7 @@ export function surface(canvasElement)
 
             // Render the n-gons from the n-gon cache. The rendering will go into the
             // renderer's internal pixel buffer, Rngon.internalState.pixelBuffer.
+            if (state.modules.rasterize)
             {
                 state.modules.rasterize(state.auxiliaryBuffers);
 
@@ -181,6 +185,11 @@ export function surface(canvasElement)
     // Initializes the internal render buffers if they're not already in a suitable state.
     function initialize_internal_surface_state()
     {
+        if (!state.modules.rasterize)
+        {
+            return;
+        }
+
         if (
             (state.pixelBuffer.width != surfaceWidth) ||
             (state.pixelBuffer.height != surfaceHeight)

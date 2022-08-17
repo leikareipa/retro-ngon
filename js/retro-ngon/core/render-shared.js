@@ -56,18 +56,27 @@ export const renderShared = {
         state.palette = options.palette;
 
         state.modules.rasterize = (
-            options.modules.rasterize ||
-            Rngon.baseModules.rasterize
+            (typeof options.modules.rasterize === "function")
+                ? options.modules.rasterize
+                : (options.modules.rasterize === null)
+                    ? null
+                    : Rngon.baseModules.rasterize
         );
 
         state.modules.transform_clip_light = (
-            options.modules.transformClipLight ||
-            Rngon.baseModules.transform_clip_light
+            (typeof options.modules.transformClipLight === "function")
+                ? options.modules.transformClipLight
+                : (options.modules.transformClipLight === null)
+                    ? null
+                    : Rngon.baseModules.transform_clip_light
         );
 
         state.modules.surface_wipe = (
-            options.modules.surfaceWipe ||
-            Rngon.baseModules.surface_wipe
+            (typeof options.modules.surfaceWipe === "function")
+                ? options.modules.surfaceWipe
+                : (options.modules.surfaceWipe === null)
+                    ? null
+                    : Rngon.baseModules.surface_wipe
         );
 
         return;
@@ -234,8 +243,9 @@ export const renderShared = {
             height: 480, // Used by render_async() only.
             palette: null,
             modules: {
-                rasterize: null, // Null defaults to Rngon.baseModules.rasterize.
-                transformClipLight: null, // Null defaults to Rngon.baseModules.transform_clip_light.
+                surfaceWipe: undefined, // Undefined defaults to Rngon.baseModules.rasterize.
+                rasterize: undefined, // Undefined defaults to Rngon.baseModules.rasterize.
+                transformClipLight: undefined, // Undefined defaults to Rngon.baseModules.transform_clip_light.
             },
         };
     },

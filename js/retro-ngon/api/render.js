@@ -8,7 +8,7 @@
 // Renders the given meshes onto a given DOM <canvas> element. Note that the target element
 // must already exist.
 export function render(
-    canvasElement,
+    target,
     meshes = [Rngon.mesh()],
     options = {}
 )
@@ -26,24 +26,25 @@ export function render(
     // identifies the DOM element, or directly as a DOM element object. So let's figure
     // out what we received, and turn it into a DOM element object for the renderer
     // to operate on.
-    if (typeof canvasElement == "string")
+    if (typeof target === "string")
     {
-        canvasElement = document.getElementById(canvasElement);
+        target = document.getElementById(target);
     }
 
     Rngon.assert?.(
-        (canvasElement instanceof HTMLCanvasElement),
+        ((target === null) ||
+         (target instanceof HTMLCanvasElement)),
         "Invalid canvas element for rendering into."
     );
 
     Rngon.assert?.(
-        (!Rngon.internalState.usePalette || (canvasElement instanceof HTMLPalettedCanvasElement)),
+        (!Rngon.internalState.usePalette || (target instanceof HTMLPalettedCanvasElement)),
         "For paletted rendering, the attribute is='paletted-canvas' must be present on the target <canvas>."
     );
     
     // Render a single frame onto the target <canvas> element.
     {
-        const renderSurface = Rngon.surface(canvasElement, options);
+        const renderSurface = Rngon.surface(target, options);
 
         // We'll render either always or only when the render canvas is in view,
         // depending on whether the user asked us for the latter option.

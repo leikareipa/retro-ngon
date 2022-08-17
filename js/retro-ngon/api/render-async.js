@@ -29,8 +29,9 @@ export async function render_async(
 {
     // Modules are not supported by the async renderer.
     options.modules = {
-        rasterize: null,
-        transformClipLight: null,
+        surfaceWipe: undefined,
+        rasterize: undefined,
+        transformClipLight: undefined,
     };
 
     return new Promise((resolve, reject)=>{
