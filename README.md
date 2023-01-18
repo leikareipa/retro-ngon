@@ -133,7 +133,7 @@ const mesh = Rngon.mesh(scene.ngons)
 The following code first constructs a HTML5 canvas element to render into, using CSS to set the size of the rendering to 300 x 300 pixels. It then creates an n-gon quad (i.e. a 4-gon), wraps it up in a mesh, and asks the renderer to draw the mesh onto the canvas. Note also that the mesh is given a 45-degree rotation, the renderer's camera is moved back by 5 units, and the quad is colored blue.
 ```
 <canvas id="canvas" style="width: 300px; height: 300px; background-color: rgba(0, 0, 0, .05);"></canvas>
-<script src="distributable/rngon.cat.js"></script>
+<script src="distributable/rngon.js"></script>
 <script>
     const quad = Rngon.ngon([Rngon.vertex(-1, -1, 0),
                              Rngon.vertex( 1, -1, 0),
@@ -161,7 +161,7 @@ The following code first constructs a HTML5 canvas element to render into, using
 Textures are a staple of 3D rendering, so let's add one. The code below is otherwise the same as above, but additionally creates a `texture` object and appends it to the quad's material property. You'll learn more about textures later in this document, but for right now, the details don't need worrying about. Just know that this is roughly how textures are added to n-gons. Since the base color of an n-gon also modifies the color of its texture, we set the color to white instead of blue, as we don't want the texture to be tinted blue, here.
 ```
 <canvas id="canvas" style="width: 300px; height: 300px; background-color: rgba(0, 0, 0, .05);"></canvas>
-<script src="distributable/rngon.cat.js"></script>
+<script src="distributable/rngon.js"></script>
 <script>
     const texture = Rngon.texture_rgba({width: 2, height: 2, pixels: [255, 200, 0, 255,
                                                                       200, 255, 0, 255,
@@ -212,7 +212,7 @@ The code below modifies the `quad` object given above to add UV texture coordina
 With a few simple additions, we can modify the code so far to add a spinning animation to the quad. We'll do this by repeatedly calling `render()` in sync with the device's refresh rate via `window.requestAnimationFrame()`, and for each frame wrapping the quad in a new mesh with a slightly increased rotation value. (The retro n-gon renderer favors immutable data, which is why we're creating the mesh object from scratch each frame, rather than modifying the rotation of an existing mesh. Although note that since alpha.5 and later versions, the renderer has now begun moving away from immutable structures, for reasons of performance.)
 ```
 <canvas id="canvas" style="width: 300px; height: 300px; background-color: rgba(0, 0, 0, .05);"></canvas>
-<script src="distributable/rngon.cat.js"></script>
+<script src="distributable/rngon.js"></script>
 <script>
     const texture = Rngon.texture_rgba({width: 2, height: 2, pixels: [255, 200, 0, 255,
                                                                       200, 255, 0, 255,
@@ -508,7 +508,7 @@ const scene =
 
 The `scene` object (though it could be called anything) contains the `ngons` array of n-gons, and the `initialize()` function, which populates the `ngons` array. Assuming the object is contained in a file called `scene.js`, we could render it like so:
 ```
-<script src="distributable/rngon.cat.js"></script>
+<script src="distributable/rngon.js"></script>
 <script src="scene.js"></script>
 <canvas id="canvas" style="width: 300px; height: 300px;"></canvas>
 <script>
@@ -777,7 +777,7 @@ Returns a Promise that will resolve when the rendering is completed.
 | --------- | --------------- | ----------- |
 | *array*   | meshes          | An array of one or more **mesh** objects to be rendered. Defaults to *[Rngon.mesh()]* (one empty mesh). |
 | *object*  | options         | An object providing optional directives (see below). |
-| *string*  | rngonUrl        | A string providing the complete source URL of the renderer's script file &ndash; for example, `"http://localhost:8000/distributable/rngon.cat.js"`. This information is needed by the renderer's Web Worker, which runs from a Blob environment and thus can't use relative file paths. If this argument is not given, or if *null*, the URL will be determined automatically by inspecting the Document's \<script\> tags' `src` properties and selecting the first one that ends in `"rngon.cat.js"`.  Defaults to *null*. |
+| *string*  | rngonUrl        | A string providing the complete source URL of the renderer's script file &ndash; for example, `"http://localhost:8000/distributable/rngon.js"`. This information is needed by the renderer's Web Worker, which runs from a Blob environment and thus can't use relative file paths. If this argument is not given, or if *null*, the URL will be determined automatically by inspecting the Document's \<script\> tags' `src` properties and selecting the first one that ends in `"rngon.js"`.  Defaults to *null*. |
 
 *The **options** parameter object recognizes the same properties as the one for **render()** but with the following additions and exceptions:*
 

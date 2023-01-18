@@ -1,9 +1,9 @@
 const path = require("path");
 
 module.exports = {
-    mode: "production",
+    mode: "development",
     entry: {
-        "rngon.cat": "./js/retro-ngon/retro-ngon.js",
+        "rngon": "./js/retro-ngon/retro-ngon.js",
     },
     output: {
         library: {

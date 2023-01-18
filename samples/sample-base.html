@@ -58,11 +58,11 @@
             if (!rendererName ||
                 (rendererName == "dev"))
             {
-                rngonScriptElement.src = "../distributable/rngon.cat.js"
+                rngonScriptElement.src = "../distributable/rngon.js"
             }
             else
             {
-                rngonScriptElement.src = `../distributable/old/rngon.${rendererName}.cat.js`;
+                rngonScriptElement.src = `../distributable/old/rngon.${rendererName}.js`;
             }
 
             document.body.appendChild(rngonScriptElement);

@@ -7,9 +7,11 @@
 
 "use strict";
 
-importScripts("../../distributable/rngon.cat.js",
-              "./bvh.js",
-              "./ray.js");
+importScripts(
+    "../../distributable/rngon.js",
+    "./bvh.js",
+    "./ray.js"
+);
 
 onmessage = (message)=>
 {

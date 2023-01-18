@@ -7,10 +7,12 @@
 
 "use strict";
 
-importScripts("../../distributable/rngon.cat.js",
-              "./bvh.js",
-              "./ray.js",
-              "./baker-shared.js");
+importScripts(
+    "../../distributable/rngon.js",
+    "./bvh.js",
+    "./ray.js",
+    "./baker-shared.js"
+);
 
 onmessage = (message)=>
 {
