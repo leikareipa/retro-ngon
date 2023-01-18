@@ -112,22 +112,23 @@ export const sample = {
 // a list. This function gets called for each of the scene's n-gons.
 function vs_copy_ngons(ngon)
 {
-    if (ngon.vertices.length != 3)
-    {
-        Rngon.throw("Detected an unsupported type of n-gon. Only triangles are supported.");
-        return;
-    }
-
+    Rngon.assert?.(
+        (ngon.vertices.length === 3),
+        "Only triangles are supported."
+    );
+    
     const newNgon = Rngon.ngon([]);
 
     for (let v = 0; v < ngon.vertices.length; v++)
     {
-        newNgon.vertices[v] = Rngon.vertex(ngon.vertices[v].x,
-                                           ngon.vertices[v].y,
-                                           ngon.vertices[v].z,
-                                           ngon.vertices[v].u,
-                                           ngon.vertices[v].v,
-                                           ngon.vertices[v].w);
+        newNgon.vertices[v] = Rngon.vertex(
+            ngon.vertices[v].x,
+            ngon.vertices[v].y,
+            ngon.vertices[v].z,
+            ngon.vertices[v].u,
+            ngon.vertices[v].v,
+            ngon.vertices[v].w)
+        ;
     }
 
     newNgon.material = ngon.material;
