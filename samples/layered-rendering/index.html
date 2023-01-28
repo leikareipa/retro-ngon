@@ -90,24 +90,30 @@
         <div class="infoboxes-container additional"
              style="position: absolute; z-index: 9999999;">
 
-            <div class="infobox layer-setup" style="width: 160px;">
-                <div class="title">Layers</div>
-                <div class="value">All</div>
+            <div class="infobox layer-setup">
                 <div class="adjust left" onclick="change_canvas_setup(-1);"></div>
+                <div class="content" style="width: 7rem;">
+                    <div class="title">Layers</div>
+                    <div class="value">All</div>
+                </div>
                 <div class="adjust right" onclick="change_canvas_setup(1);"></div>
             </div>
 
-            <div class="infobox layer-1-filter" style="width: 160px;">
-                <div class="title">CSS filter #1</div>
-                <div class="value">None</div>
+            <div class="infobox layer-1-filter">
                 <div class="adjust left" onclick="change_filter(0, -1);"></div>
+                <div class="content" style="width: 7rem;">
+                    <div class="title">CSS filter #1</div>
+                    <div class="value">None</div>
+                </div>
                 <div class="adjust right" onclick="change_filter(0, 1);"></div>
             </div>
 
-            <div class="infobox layer-2-filter" style="width: 160px;">
-                <div class="title">CSS filter #2</div>
-                <div class="value">None</div>
+            <div class="infobox layer-2-filter">
                 <div class="adjust left" onclick="change_filter(1, -1);"></div>
+                <div class="content" style="width: 7rem;">
+                    <div class="title">CSS filter #2</div>
+                    <div class="value">None</div>
+                </div>
                 <div class="adjust right" onclick="change_filter(1, 1);"></div>
             </div>
 
@@ -115,6 +121,16 @@
 
         <script src="../../distributable/rngon.js"></script>
         <script type="module">
+            parent.COPYRIGHT = `
+                <a href="./layered-rendering/assets/copying.txt">
+                    various sources
+                </a>
+            `;
+
+            parent.USAGE = `
+                Click to capture mouse, ESDF & QA to move
+            `;
+
             import {room} from "./assets/room.rngon-model.js";
             import {object} from "./assets/object.rngon-model.js";
             import {first_person_camera} from "../first-person-camera/camera.js";

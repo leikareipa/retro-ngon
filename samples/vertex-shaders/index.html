@@ -20,25 +20,29 @@
             </iframe>
 
             <div class="infoboxes-container additional">
-                <div class="infobox shader" style="width: 260px;">
-                    <div class="title">Vertex shader</div>
-                    <div class="value">None</div>
+                <div class="infobox shader">
                     <div class="adjust left" onclick="change_shader(-1);"></div>
+                    <div class="content" style="width: 9em;">
+                        <div class="title">Vertex shader</div>
+                        <div class="value">None</div>
+                    </div>
                     <div class="adjust right" onclick="change_shader(1);"></div>
                 </div>
             </div>
 
         </div>
 
-        <div class="notification">
-            <span class="copyright">
-                <a href="./assets/copying.txt">
-                    Texture copyright
-                </a>
-            </span>
-        </div>
-
         <script type="module">
+            parent.COPYRIGHT = `
+                <a href="./vertex-shaders/assets/copying.txt">
+                    various sources
+                </a>
+            `;
+
+            parent.USAGE = `
+                Click to capture mouse, ESDF & QA to move
+            `;
+            
             import {sample} from "./vertex-shaders.js";
 
             const shaders = sample.shaders;

@@ -14,61 +14,62 @@
     </head>
     <body>
         <div id="header">
-            <div id="sample-selector-container"
-                 class="selector-container">
-                <div class="selector-tag">Sample</div>
-                <select id="sample-selector"
-                        onchange="set_sample(event.target.value);">
+            <main>
+                <div id="sample-selector-container" class="selector-container">
+                    <div class="selector-tag">Sample</div>
+                    <select id="sample-selector"
+                            onchange="set_sample(event.target.value);">
 
-                    <optgroup label='Sample scenes'></optgroup>
-                    <option value='tomb-raider-home'>Tomb Raider &ndash; Lara's Home</option>
+                        <optgroup label='Sample scenes'></optgroup>
+                        <option value='tomb-raider-home'>Tomb Raider &ndash; Lara's Home</option>
 
-                    <optgroup label="Feature samples"></optgroup>
-                    <option value="async-rendering">Async rendering</option>
-                    <option value="textured-cube-model">Barebones textured model</option>
-                    <option value="rotating-triangle">Barebones triangle</option>
-                    <option value="mipmapping">Mipmapping</option>
-                    <option value="point-rendering">Point rendering</option>
-                    <option value="builtin-shading">Shading</option>
-                    <option value="pixel-shaders">Shaders, pixel</option>
-                    <option value="raster-shaders">Shaders, raster</option>
-                    <option value="vertex-shaders">Shaders, vertex</option>
-                    <option value="context-shaders">Shaders, context</option>
-                    <option value="transparency">Transparency</option>
-                    <option value="wireframe-rendering">Wireframe rendering</option>
+                        <optgroup label="Feature samples"></optgroup>
+                        <option value="async-rendering">Async rendering</option>
+                        <option value="textured-cube-model">Barebones textured model</option>
+                        <option value="rotating-triangle">Barebones triangle</option>
+                        <option value="mipmapping">Mipmapping</option>
+                        <option value="point-rendering">Point rendering</option>
+                        <option value="context-shaders">Shaders, context</option>
+                        <option value="pixel-shaders">Shaders, pixel</option>
+                        <option value="raster-shaders">Shaders, raster</option>
+                        <option value="vertex-shaders">Shaders, vertex</option>
+                        <option value="builtin-shading">Shading</option>
+                        <option value="transparency">Transparency</option>
+                        <option value="wireframe-rendering">Wireframe rendering</option>
 
-                    <optgroup label="Ideas & Implementations"></optgroup>
-                    <option value="first-person-camera">First-person camera</option>
-                    <option value="layered-rendering">Layered rendering</option>
-                    <option value="lightmaps">Lightmapping</option>
-                    <option value='oblique-2d-tiles'>Oblique 2D tiles</option>
-                    <option value="path-tracing">Path-traced global illumination</option>
-                    <option value="raytraced-lighting">Ray-traced lighting</option>
-                    <option value="framerate-limiter">Refresh rate limiter</option>
+                        <optgroup label="Ideas & Implementations"></optgroup>
+                        <option value="first-person-camera">First-person camera</option>
+                        <option value="layered-rendering">Layered rendering</option>
+                        <option value="lightmaps">Lightmapping</option>
+                        <option value='oblique-2d-tiles'>Oblique 2D tiles</option>
+                        <option value="path-tracing">Path-traced global illumination</option>
+                        <option value="raytraced-lighting">Ray-traced lighting</option>
+                        <option value="framerate-limiter">Refresh rate limiter</option>
 
-                </select>
-            </div>
-            <div id="renderer-selector-container"
-                 class="selector-container">
-                <div class="selector-tag">Renderer</div>
-                <select id="renderer-selector"
-                        onchange="set_version(event.target.value);">
-                    <optgroup label="Supported"></optgroup>
-                    <option value="dev">~dev</option>
-                    <optgroup label="Deprecated"></optgroup>
-                    <option value="beta.4">beta.4</option>
-                    <option value="beta.3">beta.3</option>
-                    <option value="beta.2">beta.2</option>
-                    <option value="beta.1">beta.1</option>
-                    <option value="alpha.8">alpha.8</option>
-                    <option value="alpha.7">alpha.7</option>
-                    <option value="alpha.6">alpha.6</option>
-                    <option value="alpha.5">alpha.5</option>
-                    <option value="alpha.4">alpha.4</option>
-                </select>
-            </div>
+                    </select>
+                </div>
+                <div id="renderer-selector-container"
+                    class="selector-container">
+                    <div class="selector-tag">Renderer</div>
+                    <select id="renderer-selector"
+                            onchange="set_version(event.target.value);">
+                        <optgroup label="Supported"></optgroup>
+                        <option value="dev">~dev</option>
+                        <optgroup label="Deprecated"></optgroup>
+                        <option value="beta.4">beta.4</option>
+                        <option value="beta.3">beta.3</option>
+                        <option value="beta.2">beta.2</option>
+                        <option value="beta.1">beta.1</option>
+                        <option value="alpha.8">alpha.8</option>
+                        <option value="alpha.7">alpha.7</option>
+                        <option value="alpha.6">alpha.6</option>
+                        <option value="alpha.5">alpha.5</option>
+                        <option value="alpha.4">alpha.4</option>
+                    </select>
+                </div>
+            </main>
         </div>
-        <iframe id="content"></iframe>
+        <iframe id="sample-frame"></iframe>
     </body>
 
     <script>
@@ -105,7 +106,31 @@
         {
             sampleSelector.value = sample;
             rendererSelector.value = renderer;
-            document.getElementById("content").src = `./${sample}/?renderer=${renderer}`;
+
+            const frameEl = document.getElementById("sample-frame");
+            frameEl.src = `./${sample}/?renderer=${renderer}`;
+            frameEl.onload = ()=>
+            {
+                const headerEl = document.getElementById("header");
+
+                const usageInfo = window.USAGE;
+                if (usageInfo)
+                {
+                    const usageEl = document.createElement("aside");
+                    usageEl.id = "usage";
+                    usageEl.innerHTML = usageInfo;
+                    headerEl.append(usageEl)
+                }
+
+                const copyrightInfo = window.COPYRIGHT;
+                if (copyrightInfo)
+                {
+                    const copyrightEl = document.createElement("aside");
+                    copyrightEl.id = "copyright";
+                    copyrightEl.innerHTML = copyrightInfo;
+                    headerEl.append(copyrightEl)
+                }
+            }
         }
 
         function set_version(newEngineName)

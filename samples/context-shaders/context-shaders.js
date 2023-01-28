@@ -145,20 +145,19 @@ function cs_osd({context, image})
     context.putImageData(image, 0, 0);
 
     const fontSize = 9;
-
     const selfString = "Retro n-gon renderer";
     const versionString = `${this.Rngon.version.family}.${this.Rngon.version.major}.${this.Rngon.version.minor}`;
     context.font = `${fontSize}px monospace`;
     context.fillStyle = "black";
-    context.fillText(selfString, 1, fontSize+1);
+    context.fillText(selfString, 1, fontSize+21);
     context.font = `italic ${fontSize}px monospace`;
     context.fillStyle = "black";
-    context.fillText(versionString, context.measureText(selfString + " ").width, fontSize+1);
+    context.fillText(versionString, context.measureText(selfString + " ").width, fontSize+21);
     context.fillStyle = "gold";
-    context.fillText(versionString, context.measureText(selfString + " ").width, fontSize);
+    context.fillText(versionString, context.measureText(selfString + " ").width, fontSize+20);
 
     if (isFlogImgLoaded) {
-        context.drawImage(flogImg, 2, fontSize*3+3, 32, 32);
+        context.drawImage(flogImg, 2, fontSize*3+23, 32, 32);
     }
     
     context.shadowOffsetY = 3;
@@ -169,7 +168,7 @@ function cs_osd({context, image})
         const offsetx = Math.cos((Math.cos(idx) - 0.5) + (this.numTicks * 0.15))*3;
         const offsety = Math.sin((Math.cos(idx) - 0.5) + (this.numTicks * 0.15))*3;
         context.fillStyle = "black";
-        context.fillText(ch, x+offsetx+5, fontSize*2+offsety+4);
+        context.fillText(ch, x+offsetx+5, fontSize*2+offsety+24);
         x += context.measureText(ch).width;
     });
 }

@@ -97,10 +97,11 @@ body
 .infoboxes-container
 {
     position: absolute;
-    top: 50px;
+    top: 10px;
     right: 10px;
     display: flex;
     flex-direction: row;
+    height: 4rem;
 }
 
 /* For infoboxes created by individual samples.*/
@@ -110,8 +111,9 @@ body
     justify-content: center;
     top: unset;
     right: unset;
-    bottom: 35px;
+    bottom: 20px;
     pointer-events: none;
+    height: 5rem;
 }
 
 .infoboxes-container .infobox + .infobox
@@ -121,38 +123,28 @@ body
 
 .infobox
 {
-    border: 1px solid black;
-    line-height: 21px;
     pointer-events: initial;
     position: relative;
     display: flex;
-    flex-direction: column;
-    padding: 0 16px;
-    width: 100px;
-    height: 65px;
+    min-width: 7rem;
+    height: 100%;
     background-color: rgba(0, 0, 0, 0.45);
     color: lightgray;
     justify-content: center;
     align-items: center;
-    border-radius: 0;
+    border-radius: 10px;
+    backdrop-filter: blur(4px);
+    overflow: hidden;
 }
 
-.infoboxes-container.additional .infobox
+.infobox > *
 {
-    width: 150px;
-    height: 75px;
-    line-height: 21px;
-}
-
-.infobox > .title
-{
-    text-align: center;
+    white-space: nowrap;
 }
 
 .infobox > .value
 {
     color: whitesmoke;
-    font-weight: bold;
     text-align: center;
     margin: 0 5px;
 }
@@ -161,21 +153,35 @@ body
 {
     font-size: 75%;
     cursor: pointer;
-    padding: 5px 15px;
     font-weight: bold;
-    position: absolute;
-    transform: translateY(-50%);
     color: white;
+    height: 100%;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+}
+
+.infobox > .content
+{
+    user-select: none;
+    margin: 0 0.35rem;
+}
+
+.infobox > .content > .title
+{
+    color: #b7b7b7;
+    text-align: center;
+}
+
+.infobox > .content > .value
+{
+    color: whitesmoke;
 }
 
 .infoboxes-container.additional > .infobox > .adjust
 {
     font-size: 100%;
-}
-
-.infoboxes-container.additional > .infobox > .title
-{
-    margin-bottom: 2px;
 }
 
 .infobox > .adjust.left
@@ -243,14 +249,7 @@ body
 {
     .infoboxes-container.additional
     {
-        bottom: 25px;
-    }
-}
-
-@media only screen and (max-width: 1000px)
-{
-    .infoboxes-container.additional
-    {
+        height: 4rem;
         bottom: 10px;
         right: 10px;
         width: unset;
@@ -274,13 +273,12 @@ body
     }
 }
 
-@media only screen and (max-width: 850px)
+@media only screen and (max-width: 1000px)
 {
     .infoboxes-container.additional
     {
-        bottom: 10px;
-        right: 10px;
-        width: unset;
+        width: 100%;
+        justify-content: right;
     }
 
     .infoboxes-container .infobox.polycount
@@ -289,17 +287,10 @@ body
     }
 }
 
-@media only screen and (max-width: 600px)
+@media only screen and (max-width: 850px)
 {
     .infoboxes-container:not(.additional)
     {
         display: none;
-    }
-    
-    .infoboxes-container.additional
-    {
-        width: 100%;
-        right: unset;
-        bottom: 5px;
     }
 }

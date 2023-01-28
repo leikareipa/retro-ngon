@@ -20,37 +20,36 @@
             </iframe>
 
             <div class="infoboxes-container additional">
-                <div class="infobox lightmap-mode" style="width: 180px;">
-                    <div class="title">Lightmap</div>
-                    <div class="value"><i class="fas fa-sm fa-spin fa-spinner"></i></div>
+                <div class="infobox lightmap-mode">
                     <div class="adjust left" onclick="change_lightmap_mode(-1);"></div>
+                    <div class="content" style="width: 6rem;">
+                        <div class="title">Lightmap</div>
+                        <div class="value"><i class="fas fa-sm fa-spin fa-spinner"></i></div>
+                    </div>
                     <div class="adjust right" onclick="change_lightmap_mode(1);"></div>
                 </div>
-                <div class="infobox texturing-mode" style="width: 180px;">
-                    <div class="title">Texturing</div>
-                    <div class="value"><i class="fas fa-sm fa-spin fa-spinner"></i></div>
+                <div class="infobox texturing-mode">
                     <div class="adjust left" onclick="toggle_texturing();"></div>
+                    <div class="content" style="width: 6rem;">
+                        <div class="title">Texturing</div>
+                        <div class="value"><i class="fas fa-sm fa-spin fa-spinner"></i></div>
+                    </div>
                     <div class="adjust right" onclick="toggle_texturing();"></div>
                 </div>
             </div>
 
         </div>
 
-        <div class="notification">
-
-            <span class="copyright">
-                Assets:
-                <a href="https://en.wikipedia.org/wiki/Tomb_Raider_(1996_video_game)" target="_blank">
-                Tomb Raider</a> &copy; 1996 Core Design / Eidos
-            </span>
-
-            <span class="info">
-                Click to capture the mouse, ESDF & QA move
-            </span>
-
-        </div>
-
         <script type="module">
+            parent.COPYRIGHT = `
+                Core Design / Eidos
+                (<a href='https://en.wikipedia.org/wiki/Tomb_Raider_(1996_video_game)' target='_blank'>Tomb Raider</a>)
+            `;
+
+            parent.USAGE = `
+                Click to capture mouse, ESDF & QA to move
+            `;
+
             import {sample} from "./lightmaps.js";
 
             const lightmapModes = sample.lightmappingModes;

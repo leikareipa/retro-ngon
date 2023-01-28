@@ -15,27 +15,20 @@
     </head>
     <body id="sample-container">
         <div class="content">
-            
             <iframe id="render-target">
             </iframe>
-
-        </div>
-
-        <div class="notification">
-
-            <span class="copyright">
-                Assets:
-                <a href="https://en.wikipedia.org/wiki/Tomb_Raider_(1996_video_game)" target="_blank">
-                Tomb Raider</a> &copy; 1996 Core Design / Eidos
-            </span>
-
-            <span class="info">
-                Click to capture the mouse, ESDF & QA to move
-            </span>
-
         </div>
 
         <script>
+            parent.COPYRIGHT = `
+                Core Design / Eidos
+                (<a href='https://en.wikipedia.org/wiki/Tomb_Raider_(1996_video_game)' target='_blank'>Tomb Raider</a>)
+            `;
+
+            parent.USAGE = `
+                Click to capture mouse, ESDF & QA to move
+            `;
+            
             const renderer = (new URLSearchParams(window.location.search).get("renderer") || "dev");
             const renderTarget = document.getElementById("render-target");
             renderTarget.src = `../sample-base.html?sample=wireframe-rendering&renderer=${renderer}`;

@@ -17,17 +17,66 @@ body
 
 #header
 {
-    padding: 0 5px;
+    padding: 1rem;
     display: flex;
+    flex-direction: column;
     box-sizing: border-box;
     position: relative;
     z-index: 1;
-    width: 100%;
-    height: 34px;
     background-color: rgba(0, 0, 0, 0.45);
     color: lightgray;
-    border-bottom: 1px solid black;
     position: absolute;
+    top: 10px;
+    left: 10px;
+    border-radius: 10px;
+    backdrop-filter: blur(4px);
+    overflow-x: auto;
+    white-space: nowrap;
+    justify-content: center;
+}
+
+#header main
+{
+    display: flex;
+    gap: 1rem;
+}
+
+#header aside
+{
+    padding-top: 0.6rem;
+    font-size: 90%;
+}
+
+#header aside + aside
+{
+    padding-top: 0.3rem;
+}
+
+#header #usage
+{
+    color: #71d779;
+}
+
+#header #usage::before
+{
+    content: "Usage: ";
+}
+
+#header #copyright
+{
+    color: #d7d571;
+}
+
+#header #copyright::before
+{
+    content: "Assets © ";
+}
+
+#header #copyright a
+{
+    text-decoration: none;
+    color: inherit;
+    border-bottom: 1px solid;
 }
 
 .selector-container
@@ -41,13 +90,12 @@ body
 {
     height: 100%;
     border: none;
-    color: whitesmoke;
+    color: white;
     border-radius: 0;
-    padding: 6px;
+    margin-left: 0.5em;
     outline: none;
-    flex-basis: 100%;
-    font-family: sans-serif;
-    font-size: 100%;
+    font-family: inherit;
+    font-size: inherit;
     appearance: none;
     cursor: pointer;
     background-color: inherit;
@@ -62,6 +110,7 @@ body
 
 .selector-container .selector-tag
 {
+    color: #b7b7b7;
     background-color: inherit;
     border: none;
     white-space: nowrap;
@@ -70,7 +119,7 @@ body
     align-items: inherit;
 }
 
-#content
+#sample-frame
 {
     position: relative;
     z-index: 0;
@@ -84,6 +133,14 @@ body
 #sample-selector-container
 {
     flex-grow: 1;
+}
+
+@media only screen and (max-width: 850px)
+{
+    #header
+    {
+        width: calc(100% - 20px);
+    }
 }
 
 @media only screen and (max-width: 600px)

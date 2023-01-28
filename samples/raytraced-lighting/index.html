@@ -20,10 +20,12 @@
             </iframe>
 
             <div class="infoboxes-container additional">
-                <div class="infobox raytracing-enabled" style="width: 185px;">
-                    <div class="title">Ray tracing</div>
-                    <div class="value">Off</div>
+                <div class="infobox raytracing-enabled">
                     <div class="adjust left" onclick="toggle_raytracing_enabled();"></div>
+                    <div class="content" style="width: 7em;">
+                        <div class="title">Ray tracing</div>
+                        <div class="value">Off</div>
+                    </div>
                     <div class="adjust right" onclick="toggle_raytracing_enabled();"></div>
                 </div>
             </div>
@@ -31,6 +33,10 @@
         </div>
 
         <script>
+            parent.USAGE = `
+                Click to capture mouse, ESDF & QA to move
+            `;
+
             var RAYTRACING_ENABLED = false;
 
             function toggle_raytracing_enabled()

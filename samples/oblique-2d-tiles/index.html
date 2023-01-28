@@ -21,20 +21,26 @@
 
             <div class="infoboxes-container additional">
                 <div class="infobox time">
-                    <div class="title">Time</div>
-                    <div class="value">Day</div>
                     <div class="adjust left" onclick="change_time(-1);"></div>
+                    <div class="content" style="width: 4rem;">
+                        <div class="title">Time</div>
+                        <div class="value">Day</div>
+                    </div>
                     <div class="adjust right" onclick="change_time(1);"></div>
                 </div>
             </div>
 
         </div>
 
-        <div class="notification">
-            <span class="info">Click to focus, ESDF to move</span>
-        </div>
-
         <script>
+            parent.COPYRIGHT = `
+                Tarpeeksi Hyvae Soft
+            `;
+
+            parent.USAGE = `
+                Click to focus, ESDF to move
+            `;
+
             const timeTypes = ["Day", "Night"];
             let timeTypeIdx = 0;
 
