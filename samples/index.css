@@ -43,28 +43,19 @@ body
 
 #header aside
 {
-    padding-top: 0.6rem;
+    padding-top: 0.5rem;
     font-size: 90%;
+    color: #b7b7b7;
 }
 
 #header aside + aside
 {
-    padding-top: 0.3rem;
-}
-
-#header #usage
-{
-    color: #71d779;
+    padding-top: 0.3em;
 }
 
 #header #usage::before
 {
     content: "Usage: ";
-}
-
-#header #copyright
-{
-    color: #d7d571;
 }
 
 #header #copyright::before
