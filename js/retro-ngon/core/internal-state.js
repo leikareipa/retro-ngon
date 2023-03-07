@@ -44,6 +44,9 @@ export const internalState = {
     usePalette: false,
     palette: undefined,
 
+    // Optional user-supplied pixel buffer to render into.
+    externalPixelBuffer: undefined,
+
     // Pixel buffer for rasterization. This will be scaled to match the requested
     // render resolution; and the renderer's rasterization pass will populate it
     // with the rendered frame's pixel values.

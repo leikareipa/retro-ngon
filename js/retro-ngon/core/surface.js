@@ -73,6 +73,17 @@ export function surface(canvasElement)
         // this surface, the rasterized pixels will also be painted onto that canvas.
         display_meshes: function(meshes = [])
         {
+            // If the user provided an external pixel buffer, we'll temporarily substitute
+            // the renderer's internal pixel buffer with the user's buffer, restoring it
+            // at the end of the function call. This is done so that the renderer can be
+            // invoked multiple times per frame (e.g. when rendering into a texture that
+            // is then rendered as part of the scene) without regenerating the internal
+            // pixel buffer, which would happen if its resolution was found to have changed
+            // between invocations, which in turn would be the case if we had replaced it
+            // with the custom buffer.
+            const origPixelBuffer = state.pixelBuffer;
+            state.pixelBuffer = (state.externalPixelBuffer || state.pixelBuffer);
+
             state.modules.surface_wipe?.();
 
             // Prepare the meshes' n-gons for rendering. This will place the transformed
@@ -154,6 +165,8 @@ export function surface(canvasElement)
                     }
                 }
             }
+
+            state.pixelBuffer = origPixelBuffer;
         },
 
         // Returns true if any horizontal part of the surface's DOM canvas is within
@@ -191,16 +204,17 @@ export function surface(canvasElement)
         }
 
         if (
-            (state.pixelBuffer.width != surfaceWidth) ||
-            (state.pixelBuffer.height != surfaceHeight)
+            !state.externalPixelBuffer &&
+            ((state.pixelBuffer.width != surfaceWidth) ||
+             (state.pixelBuffer.height != surfaceHeight))
         ){
             state.pixelBuffer = renderContext.createImageData(surfaceWidth, surfaceHeight);
         }
 
         if (
             state.usePixelShader &&
-            (state.fragmentBuffer.width != surfaceWidth) ||
-            (state.fragmentBuffer.height != surfaceHeight)
+            ((state.fragmentBuffer.width != surfaceWidth) ||
+             (state.fragmentBuffer.height != surfaceHeight))
         ){
             state.fragmentBuffer.width = surfaceWidth;
             state.fragmentBuffer.height = surfaceHeight;
@@ -209,9 +223,9 @@ export function surface(canvasElement)
 
         if (
             state.useDepthBuffer &&
-            (state.depthBuffer.width != surfaceWidth) ||
-            (state.depthBuffer.height != surfaceHeight) ||
-            !state.depthBuffer.data.length
+            ((state.depthBuffer.width != surfaceWidth) ||
+             (state.depthBuffer.height != surfaceHeight) ||
+             !state.depthBuffer.data.length)
         ){
             state.depthBuffer.width = surfaceWidth;
             state.depthBuffer.height = surfaceHeight;

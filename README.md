@@ -611,15 +611,15 @@ The renderer's public API consists of the following objects:
 | light                                           | (A description is coming.)                  |
 
 ## render(target[, meshes[, options]])
-Renders an image of the given n-gon meshes into the given target. This call is blocking and will return once the rendering is completed. For non-blocking rendering, see render_async().
+Renders an image of the given n-gon meshes into the given render target (a canvas element). This call is blocking and will return once the rendering is completed; for non-blocking rendering, see [render_async()](#render_async-meshes-options-rngonurl).
 
-After the call, the resulting raw pixel buffer is also available via *Rngon.internalState.pixelBuffer*, and the corresponding screen-space n-gons via *Rngon.internalState.ngonCache*.
+After the call, the resulting raw pixel buffer is also available via *Rngon.internalState.pixelBuffer* (or via the ImageData object passed in as *options.pixelBuffer*), and the corresponding screen-space n-gons via *Rngon.internalState.ngonCache*.
 
 *Parameters:*
 
 | Type      | Name            | Description |
 | --------- | --------------- | ----------- |
-| *mixed*   | target   | A value identifying the recipient of the rendering. Possible types: HTMLCanvasElement, string, *null*. If HTMLCanvasElement, the rendering will be displayed on the corresponding canvas element. A string will be interpreted as the **id** property of the desired target canvas element. If *null*, the rendered image will be available only via *Rngon.internalState.pixelBuffer*. |
+| *mixed*   | target   | A value identifying the target canvas element. Possible types: HTMLCanvasElement, string, *null*. If HTMLCanvasElement, the rendering will be displayed on the corresponding canvas element. A string will be interpreted as the `id` property of the desired target canvas element. If *null*, the image will only be rendered into an off-screen pixel buffer, which can be accessed via *Rngon.internalState.pixelBuffer* (or *options.pixelBuffer*, if given) after the call. |
 | *array*   | meshes          | An array providing the **mesh** objects to be rendered. Defaults to *[Rngon.mesh()]*. |
 | *object*  | options         | An object providing optional directives (see below). |
 
@@ -630,6 +630,7 @@ After the call, the resulting raw pixel buffer is also available via *Rngon.inte
 | *number*              | scale                    | If the render target is a canvas, this value sets the resolution of the rendering relative to the size of the canvas. For instance, a scale of 0.5 would result in rendering an image half the resolution of the canvas. The finished rendering is then scaled to the size of the canvas according to the *image-rendering* CSS property. If the render target is not a canvas, this value will be ignored. Defaults to *1*. |
 | *number*    | width         | If the render target is *null*, this value sets the width (in pixels) of the image to be rendered. Ignored if the render target is not *null*. Defaults to *640*. |
 | *number*    | height        | If the render target is *null*, this value sets the height (in pixels) of the image to be rendered. Ignored if the render target is not *null*. Defaults to *480*. |
+| *ImageData*           | pixelBuffer              | If *undefined*, the rendered image's raw pixel data will be stored in *Rngon.internalState.pixelBuffer*. Otherwise, the ImageData object referred to by this property will be the recipient of the pixel data. Note that if you provide a custom pixel buffer, it's up to you to ensure that it's of the correct resolution to hold the rendering. Defaults to *undefined*. |
 | *number*              | fov                      | Field of view. Defaults to *43*. |
 | *string*              | depthSort                | Type of depth sorting to use when ordering n-gons for rasterization. Possible values: "none" (no depth sorting; n-gons will be rendered in the order they were given), "painter" (painter's algorithm; n-gons furthest from the camera will be rendered first), "painter-reverse" (n-gons closest to the camera will be rendered first). If the *useDepthBuffer* option is true, "painter-reverse" may provide the best performance, as this combination allows for early rejection of occluded pixels. Defaults to *"painter-reverse"*. |
 | *boolean*             | useDepthBuffer           | If true, a depth buffer will be used during rasterization to discard occluded pixels. For best performance, consider combining depth buffering with the "painter-reverse" *depthSort* option. Defaults to *true*. |
@@ -675,31 +676,46 @@ After the call, the resulting raw pixel buffer is also available via *Rngon.inte
 ```
 // Create a mesh out of a single-vertex n-gon, and render it onto a canvas.
 
-const ngon = Rngon.ngon([Rngon.vertex(0, 0, 0)],
-                        {
-                            color: Rngon.color_rgba(255, 255, 0),
-                        });
+const ngon = Rngon.ngon(
+    [Rngon.vertex(0, 0, 0)],
+    {
+        color: Rngon.color_rgba(255, 255, 0),
+    }
+);
 
-const mesh = Rngon.mesh([ngon],
-                        {
-                            rotation: Rngon.rotation_vector(0, 0, 45)
-                        });
+const mesh = Rngon.mesh(
+    [ngon],
+    {
+        rotation: Rngon.rotation_vector(0, 0, 45)
+    }
+);
 
-Rngon.render("canvas", [mesh],
-             {
-                 cameraPosition: Rngon.translation_vector(0, 0, -5),
-             });
+Rngon.render("canvas", [mesh], {
+    cameraPosition: Rngon.translation_vector(0, 0, -5),
+});
+```
+
+```
+//  Render into an off-screen pixel buffer.
+
+const pbuf = new ImageData(100, 100);
+const point = Rngon.ngon([Rngon.vertex(0, 0, 0)]);
+
+Rngon.render(null, [Rngon.mesh(point)], {
+    pixelBuffer: pbuf,
+    width: pbuf.width,
+    height: pbuf.height,
+});
 ```
 
 ```
 // Create and use a custom rasterizer function.
 
-Rngon.render(canvas, [meshes],
-             {
-                modules: {
-                    rasterize: custom_rasterizer
-                }
-             });
+Rngon.render(canvas, [meshes], {
+    modules: {
+        rasterize: custom_rasterizer
+    }
+});
 
 // This function will be called when Rngon.render() wants to rasterize
 // the n-gons it's been given (after they've been e.g. transformed into
@@ -737,29 +753,30 @@ function custom_rasterizer()
 ```
 // Employ an auxiliary render buffer for mouse picking.
 
-const ngon = Rngon.ngon([Rngon.vertex(0, 0, 0)],
-                        {
-                            color: Rngon.color_rgba(255, 255, 0),
+const ngon = Rngon.ngon(
+    [Rngon.vertex(0, 0, 0)],
+    {
+        color: Rngon.color_rgba(255, 255, 0),
 
-                            // The 'auxiliary' property holds sub-properties that
-                            // are available to auxiliary buffers.
-                            auxiliary:
-                            {
-                                // A value that uniquely identifies this n-gon.
-                                mousePickingId: 5,
-                            }
-                        });
+        // The 'auxiliary' property holds sub-properties that
+        // are available to auxiliary buffers.
+        auxiliary:
+        {
+            // A value that uniquely identifies this n-gon.
+            mousePickingId: 5,
+        }
+    }
+);
 
 const mousePickingBuffer = [];
 
-Rngon.render("canvas", [Rngon.mesh([ngon])],
-             {
-                 cameraPosition: Rngon.translation_vector(0, 0, -5),
-                 auxiliaryBuffers:
-                 [
-                     {buffer: mousePickingBuffer, property: "mousePickingId"},
-                 ],
-             });
+Rngon.render("canvas", [Rngon.mesh([ngon])], {
+    cameraPosition: Rngon.translation_vector(0, 0, -5),
+    auxiliaryBuffers:
+    [
+        {buffer: mousePickingBuffer, property: "mousePickingId"},
+    ],
+});
 
 // The 'mousePickingBuffer' array now holds the rendered n-gon's
 // 'mousePickingId' value wherever the n-gon is visibile in the rendered
@@ -817,29 +834,30 @@ Returns a Promise that will resolve when the rendering is completed.
 // Web Worker thread, and paint the rendered image onto an existing <canvas>
 // element whose DOM id is "target-canvas".
 
-const ngon = Rngon.ngon([Rngon.vertex(0, 0, 5)],
-                        {
-                            color: Rngon.color_rgba(255, 255, 0),
-                        });
+const ngon = Rngon.ngon(
+    [Rngon.vertex(0, 0, 5)],
+    {
+        color: Rngon.color_rgba(255, 255, 0),
+    }
+);
 
 const mesh = Rngon.mesh([ngon]);
 
-Rngon.render_async([mesh], {width: 640, height: 480})
-     .then((result)=>
-     {
-         if (result.image instanceof ImageData)
-         {
-             const canvas = document.getElementById("target-canvas");
+Rngon.render_async([mesh], {width: 640, height: 480}).then(result=>
+{
+    if (result.image instanceof ImageData)
+    {
+        const canvas = document.getElementById("target-canvas");
 
-             canvas.width = result.renderWidth;
-             canvas.height = result.renderHeight;
-             canvas.getContext("2d").putImageData(result.image, 0, 0);
-         }
-         else
-         {
-             throw `Rendering failed. ${result}`;
-         }
-     });
+        canvas.width = result.renderWidth;
+        canvas.height = result.renderHeight;
+        canvas.getContext("2d").putImageData(result.image, 0, 0);
+    }
+    else
+    {
+        throw `Rendering failed. ${result}`;
+    }
+});
 ```
 
 ```

@@ -24,6 +24,8 @@ export const renderShared = {
 
         state.depthSortingMode = options.depthSort;
 
+        state.externalPixelBuffer = options.pixelBuffer;
+
         state.auxiliaryBuffers = options.auxiliaryBuffers;
 
         state.nearPlaneDistance = options.nearPlane;
@@ -227,6 +229,7 @@ export const renderShared = {
             pixelShader: null, // If null, all pixel shader functionality will be disabled.
             vertexShader: null, // If null, all vertex shader functionality will be disabled.
             rasterShaders: [],
+            externalPixelBuffer: undefined,
             scale: 1,
             fov: 43,
             nearPlane: 1,

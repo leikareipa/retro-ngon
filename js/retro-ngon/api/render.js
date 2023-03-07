@@ -5,8 +5,9 @@
  *
  */
 
-// Renders the given meshes onto a given DOM <canvas> element. Note that the target element
-// must already exist.
+// Renders the given meshes onto a given DOM <canvas> element (ote that the target element
+// must already exist). If a null target is given, the image will be rendered into an
+// offscreen pixel buffer, accessible after this call via Rngon.internalState.pixelBuffer.
 export function render(
     target,
     meshes = [Rngon.mesh()],
