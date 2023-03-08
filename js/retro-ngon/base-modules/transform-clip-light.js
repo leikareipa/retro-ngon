@@ -17,8 +17,8 @@ export function transform_clip_light(
 )
 {
     const viewVector = {x:0.0, y:0.0, z:0.0};
-    const ngonCache = Rngon.internalState.ngonCache;
-    const vertexCache = Rngon.internalState.vertexCache;
+    const ngonCache = Rngon.state.active.ngonCache;
+    const vertexCache = Rngon.state.active.vertexCache;
     const clipSpaceMatrix = Rngon.matrix44.multiply(projectionMatrix, cameraMatrix);
 
     for (const ngon of ngons)
@@ -63,7 +63,7 @@ export function transform_clip_light(
                 dstVertex.w = srcVertex.w;
                 dstVertex.shade = srcVertex.shade;
 
-                if (Rngon.internalState.useVertexShader ||
+                if (Rngon.state.active.useVertexShader ||
                     (ngon.material.vertexShading === "gouraud"))
                 {
                     cachedNgon.vertexNormals[v] = Rngon.vector3(
@@ -94,7 +94,7 @@ export function transform_clip_light(
 
                 // Interpolated world XYZ coordinates will be made available to shaders,
                 // but aren't needed if shaders are disabled.
-                if (Rngon.internalState.usePixelShader)
+                if (Rngon.state.active.usePixelShader)
                 {
                     for (let v = 0; v < cachedNgon.vertices.length; v++)
                     {
@@ -106,7 +106,7 @@ export function transform_clip_light(
 
                 // If using Gouraud shading, we need to transform all vertex normals; but
                 // the face normal won't be used and so can be ignored.
-                if (Rngon.internalState.useVertexShader ||
+                if (Rngon.state.active.useVertexShader ||
                     (cachedNgon.material.vertexShading === "gouraud"))
                 {
                     for (let v = 0; v < cachedNgon.vertices.length; v++)
@@ -133,7 +133,7 @@ export function transform_clip_light(
                 }
 
                 // Apply an optional, user-defined vertex shader.
-                if (Rngon.internalState.useVertexShader)
+                if (Rngon.state.active.useVertexShader)
                 {
                     const args = [
                         cachedNgon,
@@ -142,11 +142,11 @@ export function transform_clip_light(
 
                     const paramNamesString = "ngon, cameraPos";
 
-                    switch (typeof Rngon.internalState.vertex_shader)
+                    switch (typeof Rngon.state.active.vertex_shader)
                     {
                         case "function":
                         {
-                            Rngon.internalState.vertex_shader(...args);
+                            Rngon.state.active.vertex_shader(...args);
                             break;
                         }
                         // Shader functions as strings are supported to allow shaders to be
@@ -154,7 +154,7 @@ export function transform_clip_light(
                         // equivalent to - the form "(a)=>{console.log(a)}".
                         case "string":
                         {
-                            Function(paramNamesString, `(${Rngon.internalState.vertex_shader})(${paramNamesString})`)(...args);
+                            Function(paramNamesString, `(${Rngon.state.active.vertex_shader})(${paramNamesString})`)(...args);
                             break;
                         }
                         default:
@@ -170,7 +170,7 @@ export function transform_clip_light(
             {
                 Rngon.ngon.transform(cachedNgon, clipSpaceMatrix);
 
-                if (Rngon.internalState.applyViewportClipping)
+                if (Rngon.state.active.applyViewportClipping)
                 {
                     Rngon.ngon.clip_to_viewport(cachedNgon);
                 }
@@ -233,7 +233,7 @@ function apply_lighting(ngon)
     }
 
     // Find the brightest shade falling on this n-gon.
-    for (const light of Rngon.internalState.lights)
+    for (const light of Rngon.state.active.lights)
     {
         // If we've already found the maximum brightness, we don't need to continue.
         //if (shade >= 255) break;

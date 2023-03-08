@@ -153,7 +153,7 @@ function ps_raytraced_lighting({renderWidth, renderHeight, fragmentBuffer, pixel
         return;
     }
 
-    const light = this.Rngon.internalState.lights[0];
+    const light = this.Rngon.state.active.lights[0];
 
     // Pre-create storage objects, so we don't need to keep re-creating them in the
     // render loop.

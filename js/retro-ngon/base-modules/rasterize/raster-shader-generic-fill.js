@@ -18,11 +18,11 @@ export function generic_fill({
     auxiliaryBuffers
 })
 {
-    const usePalette = Rngon.internalState.usePalette;
-    const usePixelShader = Rngon.internalState.usePixelShader;
-    const fragmentBuffer = Rngon.internalState.fragmentBuffer.data;
-    const depthBuffer = (Rngon.internalState.useDepthBuffer? Rngon.internalState.depthBuffer.data : null);
-    const pixelBufferImage = Rngon.internalState.pixelBuffer;
+    const usePalette = Rngon.state.active.usePalette;
+    const usePixelShader = Rngon.state.active.usePixelShader;
+    const fragmentBuffer = Rngon.state.active.fragmentBuffer.data;
+    const depthBuffer = (Rngon.state.active.useDepthBuffer? Rngon.state.active.depthBuffer.data : null);
+    const pixelBufferImage = Rngon.state.active.pixelBuffer;
     const pixelBufferClamped8 = pixelBufferImage.data;
     const pixelBufferWidth = pixelBufferImage.width;
     const material = ngon.material;

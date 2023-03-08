@@ -446,7 +446,7 @@ function ps_backlight({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, c
 // Pixel shader.
 function ps_per_pixel_light({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
 {
-    const light = this.Rngon.internalState.lights[0];
+    const light = this.Rngon.state.active.lights[0];
     const lightReach = (100 * 100);
     const lightIntensity = 2.5;
     const lightDirection = this.Rngon.vector3();

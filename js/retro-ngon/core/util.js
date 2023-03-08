@@ -37,7 +37,7 @@ export function bilinear_sample(sampler, biasX = 0.5, biasY = biasX)
 
 export function $throw(errMessage = "")
 {
-    if (Rngon.internalState.allowWindowAlert)
+    if (Rngon.state.active.allowWindowAlert)
     {
         window.alert("Retro n-gon error: " + errMessage);
     }

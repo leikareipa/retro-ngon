@@ -12,7 +12,7 @@
 // Returns null if the surface could not be created.
 export function surface(canvasElement)
 {
-    const state = Rngon.internalState;
+    const state = Rngon.state.active;
     const renderOffscreen = (canvasElement === null);
 
     let surfaceWidth = undefined,
@@ -67,27 +67,16 @@ export function surface(canvasElement)
         height: surfaceHeight,
 
         // Rasterizes the given meshes' n-gons onto this surface. Following this call,
-        // the rasterized pixels will be in Rngon.internalState.pixelBuffer, and the
+        // the rasterized pixels will be in Rngon.state.active.pixelBuffer, and the
         // meshes' n-gons - with their vertices transformed to screen space - in
-        // Rngon.internalState.ngonCache. If a <canvas> element id was specified for
+        // Rngon.state.active.ngonCache. If a <canvas> element id was specified for
         // this surface, the rasterized pixels will also be painted onto that canvas.
         display_meshes: function(meshes = [])
         {
-            // If the user provided an external pixel buffer, we'll temporarily substitute
-            // the renderer's internal pixel buffer with the user's buffer, restoring it
-            // at the end of the function call. This is done so that the renderer can be
-            // invoked multiple times per frame (e.g. when rendering into a texture that
-            // is then rendered as part of the scene) without regenerating the internal
-            // pixel buffer, which would happen if its resolution was found to have changed
-            // between invocations, which in turn would be the case if we had replaced it
-            // with the custom buffer.
-            const origPixelBuffer = state.pixelBuffer;
-            state.pixelBuffer = (state.externalPixelBuffer || state.pixelBuffer);
-
             state.modules.surface_wipe?.();
 
             // Prepare the meshes' n-gons for rendering. This will place the transformed
-            // n-gons into the internal n-gon cache, Rngon.internalState.ngonCache.
+            // n-gons into the internal n-gon cache, Rngon.state.active.ngonCache.
             {
                 Rngon.renderShared.prepare_vertex_cache(meshes);
                 Rngon.renderShared.prepare_ngon_cache(meshes);
@@ -112,7 +101,7 @@ export function surface(canvasElement)
             }
 
             // Render the n-gons from the n-gon cache. The rendering will go into the
-            // renderer's internal pixel buffer, Rngon.internalState.pixelBuffer.
+            // renderer's internal pixel buffer, Rngon.state.active.pixelBuffer.
             if (state.modules.rasterize)
             {
                 state.modules.rasterize(state.auxiliaryBuffers);
@@ -165,8 +154,6 @@ export function surface(canvasElement)
                     }
                 }
             }
-
-            state.pixelBuffer = origPixelBuffer;
         },
 
         // Returns true if any horizontal part of the surface's DOM canvas is within
@@ -204,9 +191,8 @@ export function surface(canvasElement)
         }
 
         if (
-            !state.externalPixelBuffer &&
-            ((state.pixelBuffer.width != surfaceWidth) ||
-             (state.pixelBuffer.height != surfaceHeight))
+            (state.pixelBuffer.width != surfaceWidth) ||
+            (state.pixelBuffer.height != surfaceHeight)
         ){
             state.pixelBuffer = renderContext.createImageData(surfaceWidth, surfaceHeight);
         }

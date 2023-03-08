@@ -132,8 +132,8 @@ export const sample = {
 
         // Construct the ground tile mesh.
         {
-            const numTilesX = 1 + Math.ceil(Rngon.internalState.pixelBuffer.width / groundTileWidth);
-            const numTilesY = 1 + Math.ceil(Rngon.internalState.pixelBuffer.height / (groundTileHeight / 2));
+            const numTilesX = 1 + Math.ceil(Rngon.state.active.pixelBuffer.width / groundTileWidth);
+            const numTilesY = 1 + Math.ceil(Rngon.state.active.pixelBuffer.height / (groundTileHeight / 2));
             
             let startX = Math.floor(this.camera.pos.x + -(groundTileWidth / 2));
             let startY = Math.floor(this.camera.pos.y + -(groundTileHeight / 2));
@@ -160,7 +160,7 @@ export const sample = {
             }
         }
 
-        // Consturct the meshes of decor tiles; e.g. walls.
+        // Construct the meshes of decor tiles; e.g. walls.
         for (const decor of decors)
         {
             const offsX = Math.floor(this.camera.pos.x + (decor.x * (groundTileWidth / 2)));
@@ -189,8 +189,8 @@ export const sample = {
 
                         // The n-gons don't need transforming, so we can just assign them directly
                         // to the renderer's n-gon cache; from which they'll be picked up for rasterization.
-                        Rngon.internalState.ngonCache.ngons = ngons;
-                        Rngon.internalState.ngonCache.count = ngons.length;
+                        Rngon.state().ngonCache.ngons = ngons;
+                        Rngon.state().ngonCache.count = ngons.length;
                     },
                 },
                 get lights()

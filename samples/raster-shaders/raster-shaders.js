@@ -63,7 +63,7 @@ function rs_top_glow({
 {
     if (!numLeftEdges || !numRightEdges) return;
 
-    const renderHeight = this.Rngon.internalState.pixelBuffer.height;
+    const renderHeight = this.Rngon.state.active.pixelBuffer.height;
     const edges = [...leftEdges.slice(0, numLeftEdges), ...rightEdges.slice(0, numRightEdges)];
 
     for (const edge of edges)
@@ -160,10 +160,10 @@ function rs_scanlines({
     numRightEdges,
 })
 {
-    const pixelBufferClamped8 = this.Rngon.internalState.pixelBuffer.data;
-    const pixelBufferWidth = this.Rngon.internalState.pixelBuffer.width;
-    const depthBuffer = (this.Rngon.internalState.useDepthBuffer
-        ? this.Rngon.internalState.depthBuffer.data
+    const pixelBufferClamped8 = this.Rngon.state.active.pixelBuffer.data;
+    const pixelBufferWidth = this.Rngon.state.active.pixelBuffer.width;
+    const depthBuffer = (this.Rngon.state.active.useDepthBuffer
+        ? this.Rngon.state.active.depthBuffer.data
         : null
     );
     const material = ngon.material;

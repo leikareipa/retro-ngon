@@ -23,7 +23,7 @@ import {
     color_rgba,
     color_index,
 } from "./core/color.js";
-import {internalState} from "./core/internal-state.js";
+import {state} from "./core/internal-state.js";
 import {light} from "./core/light.js";
 import {material} from "./core/material.js";
 import {matrix44} from "./core/matrix44.js";
@@ -70,7 +70,7 @@ export {
     renderable_height_of,
     color_rgba,
     color_index,
-    internalState,
+    state,
     light,
     material,
     matrix44,

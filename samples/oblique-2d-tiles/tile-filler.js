@@ -13,15 +13,15 @@
 // Note: Only supports square polygons.
 export function tile_filler()
 {
-    const pixelBuffer = Rngon.internalState.pixelBuffer.data;
-    const renderWidth = Rngon.internalState.pixelBuffer.width;
-    const renderHeight = Rngon.internalState.pixelBuffer.height;
+    const pixelBuffer = Rngon.state.active.pixelBuffer.data;
+    const renderWidth = Rngon.state.active.pixelBuffer.width;
+    const renderHeight = Rngon.state.active.pixelBuffer.height;
     const leftEdge = {};
     const rightEdge = {};
 
-    for (let n = 0; n < Rngon.internalState.ngonCache.count; n++)
+    for (let n = 0; n < Rngon.state.active.ngonCache.count; n++)
     {
-        const ngon = Rngon.internalState.ngonCache.ngons[n];
+        const ngon = Rngon.state.active.ngonCache.ngons[n];
         const material = ngon.material;
         const texture = material.texture;
 

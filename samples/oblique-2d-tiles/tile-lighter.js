@@ -26,7 +26,7 @@ export function apply_lighting_to_tile(ngon)
     }
 
     // Find the brightest shade falling on this n-gon's vertices.
-    for (const light of Rngon.internalState.lights)
+    for (const light of Rngon.state.active.lights)
     {
         for (let v = 0; v < ngon.vertices.length; v++)
         {

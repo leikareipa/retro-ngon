@@ -22,11 +22,11 @@ export function plain_solid_fill({
     pixelBuffer32,
 })
 {
-    const usePalette = Rngon.internalState.usePalette;
-    const pixelBufferImage = Rngon.internalState.pixelBuffer;
+    const usePalette = Rngon.state.active.usePalette;
+    const pixelBufferImage = Rngon.state.active.pixelBuffer;
     const pixelBufferClamped8 = pixelBufferImage.data;
     const pixelBufferWidth = pixelBufferImage.width;
-    const depthBuffer = (Rngon.internalState.useDepthBuffer? Rngon.internalState.depthBuffer.data : null);
+    const depthBuffer = (Rngon.state.active.useDepthBuffer? Rngon.state.active.depthBuffer.data : null);
     const material = ngon.material;
 
     let curLeftEdgeIdx = 0;

@@ -178,7 +178,7 @@ function render_worker()
         }
     };
 
-    // Renders the given meshes into the internal pixel buffer, Rngon.internalState.pixelBuffer.
+    // Renders the given meshes into the internal pixel buffer, Rngon.state.active.pixelBuffer.
     function render(meshes, renderOptions)
     {
         Rngon.assert?.(
@@ -196,7 +196,7 @@ function render_worker()
         Rngon.renderShared.initialize_internal_render_state(options);
 
         // Disable the use of window.alert() while inside a Worker.
-        Rngon.internalState.allowWindowAlert = false;
+        Rngon.state.active.allowWindowAlert = false;
         
         // Render a single frame.
         {
@@ -211,8 +211,8 @@ function render_worker()
 
             renderCallInfo.renderWidth = options.width;
             renderCallInfo.renderHeight = options.height;
-            renderCallInfo.numNgonsRendered = Rngon.internalState.ngonCache.count;
-            renderCallInfo.image = Rngon.internalState.pixelBuffer;
+            renderCallInfo.numNgonsRendered = Rngon.state.active.ngonCache.count;
+            renderCallInfo.image = Rngon.state.active.pixelBuffer;
         }
     
         renderCallInfo.totalRenderTimeMs = (performance.now() - renderCallInfo.totalRenderTimeMs);

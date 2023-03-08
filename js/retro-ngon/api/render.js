@@ -7,7 +7,7 @@
 
 // Renders the given meshes onto a given DOM <canvas> element (ote that the target element
 // must already exist). If a null target is given, the image will be rendered into an
-// offscreen pixel buffer, accessible after this call via Rngon.internalState.pixelBuffer.
+// offscreen pixel buffer, accessible after this call via Rngon.state.active.pixelBuffer.
 export function render(
     target,
     meshes = [Rngon.mesh()],
@@ -39,7 +39,7 @@ export function render(
     );
 
     Rngon.assert?.(
-        (!Rngon.internalState.usePalette || (target instanceof HTMLPalettedCanvasElement)),
+        (!Rngon.state.active.usePalette || (target instanceof HTMLPalettedCanvasElement)),
         "For paletted rendering, the attribute is='paletted-canvas' must be present on the target <canvas>."
     );
     
@@ -56,7 +56,7 @@ export function render(
 
             renderCallInfo.renderWidth = renderSurface.width;
             renderCallInfo.renderHeight = renderSurface.height;
-            renderCallInfo.numNgonsRendered = Rngon.internalState.ngonCache.count;
+            renderCallInfo.numNgonsRendered = Rngon.state.active.ngonCache.count;
         }
     }
 

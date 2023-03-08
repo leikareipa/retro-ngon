@@ -11,7 +11,7 @@ export const renderShared = {
     // The 'options' object is a reference to or copy of the options passed to render().
     initialize_internal_render_state: function(options = {})
     {
-        const state = Rngon.internalState;
+        const state = (Rngon.state.active = Rngon.state(options.state));
 
         state.useDepthBuffer = Boolean(options.useDepthBuffer);
         state.showGlobalWireframe = Boolean(options.globalWireframe);
@@ -23,8 +23,6 @@ export const renderShared = {
         state.offscreenRenderHeight = options.height;
 
         state.depthSortingMode = options.depthSort;
-
-        state.externalPixelBuffer = options.pixelBuffer;
 
         state.auxiliaryBuffers = options.auxiliaryBuffers;
 
@@ -93,7 +91,7 @@ export const renderShared = {
             "Invalid arguments to n-gon cache initialization."
         );
 
-        const ngonCache = Rngon.internalState.ngonCache;
+        const ngonCache = Rngon.state.active.ngonCache;
         const totalNgonCount = meshes.reduce((totalCount, mesh)=>(totalCount + mesh.ngons.length), 0);
 
         if (!ngonCache ||
@@ -119,7 +117,7 @@ export const renderShared = {
             "Invalid arguments to n-gon cache initialization."
         );
 
-        const vertexCache = Rngon.internalState.vertexCache;
+        const vertexCache = Rngon.state.active.vertexCache;
         let totalVertexCount = 0;
 
         for (const mesh of meshes)
@@ -147,7 +145,7 @@ export const renderShared = {
     // Sorts all vertices in the n-gon cache by their Z coordinate.
     depth_sort_ngon_cache: function(depthSortinMode = "")
     {
-        const ngons = Rngon.internalState.ngonCache.ngons;
+        const ngons = Rngon.state.active.ngonCache.ngons;
 
         switch (depthSortinMode)
         {
@@ -198,9 +196,9 @@ export const renderShared = {
     // affine mapper expects textures to be power-of-two.
     mark_npot_textures_in_ngon_cache: function()
     {
-        for (let i = 0; i < Rngon.internalState.ngonCache.count; i++)
+        for (let i = 0; i < Rngon.state.active.ngonCache.count; i++)
         {
-            const ngon = Rngon.internalState.ngonCache.ngons[i];
+            const ngon = Rngon.state.active.ngonCache.ngons[i];
 
             if (ngon.material.texture &&
                 ngon.material.textureMapping === "affine")
@@ -229,7 +227,7 @@ export const renderShared = {
             pixelShader: null, // If null, all pixel shader functionality will be disabled.
             vertexShader: null, // If null, all vertex shader functionality will be disabled.
             rasterShaders: [],
-            externalPixelBuffer: undefined,
+            state: undefined,
             scale: 1,
             fov: 43,
             nearPlane: 1,

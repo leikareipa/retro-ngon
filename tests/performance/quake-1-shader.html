@@ -40,9 +40,9 @@
 
                     let strongestShade = 0;
 
-                    for (let l = 0; l < Rngon.internalState.lights.length; l++)
+                    for (let l = 0; l < Rngon.state.active.lights.length; l++)
                     {
-                        const light = Rngon.internalState.lights[l];
+                        const light = Rngon.state.active.lights[l];
 
                         const distance = (((thisFragment.worldX - light.position.x) * (thisFragment.worldX - light.position.x)) +
                                           ((thisFragment.worldY - light.position.y) * (thisFragment.worldY - light.position.y)) +
