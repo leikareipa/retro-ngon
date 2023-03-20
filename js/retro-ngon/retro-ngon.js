@@ -1,16 +1,9 @@
 /*
- * 2019-2022 Tarpeeksi Hyvae Soft
+ * 2019-2023 Tarpeeksi Hyvae Soft
  *
  * Software: Retro n-gon renderer
  *
  */
-
-const version = {
-    family: "beta",
-    major: "5",
-    minor: "0",
-    dev: true,
-};
 
 import "../paletted-canvas/paletted-canvas.js";
 
@@ -50,17 +43,20 @@ import {
 } from "./core/vector3.js";
 import {vertex} from "./core/vertex.js";
 
-const baseModules = {
-    rasterize,
-    surface_wipe,
-    transform_clip_light,
-};
-
-export {
-    version,
+export const Rngon = {
+    version: {
+        family: "beta",
+        major: "5",
+        minor: "0",
+        dev: true,
+    },
+    baseModules: {
+        rasterize,
+        surface_wipe,
+        transform_clip_light,
+    },
     render,
     render_async,
-    baseModules,
     assert,
     $throw,
     lerp,

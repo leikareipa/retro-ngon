@@ -7,7 +7,6 @@ module.exports = {
     },
     output: {
         library: {
-            name: "Rngon",
             type: "umd",
         },
         path: path.resolve(__dirname, "distributable"),
