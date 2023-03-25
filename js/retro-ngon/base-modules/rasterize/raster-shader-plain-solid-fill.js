@@ -5,8 +5,6 @@
  * 
  */
 
-import { color_index } from "../../core/color";
-
 // The n-gon and render state must fulfill the following criteria:
 // - No texture
 // - No pixel shader

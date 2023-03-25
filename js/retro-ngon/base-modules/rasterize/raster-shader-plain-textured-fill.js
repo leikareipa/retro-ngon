@@ -9,9 +9,9 @@
 // - Depth buffering enabled
 // - No pixel shader
 // - No alpha operations
-// - Textured
+// - Textured, the texture resolution being power of two
 // - White material color
-// - Only affine texture-mapping
+// - Affine texture-mapping
 export function plain_textured_fill({
     ngon,
     leftEdges,
@@ -96,29 +96,21 @@ export function plain_textured_fill({
                 {
                     case "clamp":
                     {
-                        const signU = Math.sign(u);
-                        const signV = Math.sign(v);
                         const upperLimit = (1 - Number.EPSILON);
 
-                        u = Math.max(0, Math.min(Math.abs(u), upperLimit));
-                        v = Math.max(0, Math.min(Math.abs(v), upperLimit));
-
                         // Negative UV coordinates flip the texture.
-                        if (signU === -1) u = (upperLimit - u);
-                        if (signV === -1) v = (upperLimit - v);
-
-                        u *= textureMipLevel.width;
-                        v *= textureMipLevel.height;
+                        u = ((u < 0)? (upperLimit + u) : u);
+                        v = ((v < 0)? (upperLimit + v) : v);
+                        
+                        u = (textureMipLevel.width * ((u < 0)? 0 : (u > upperLimit)? upperLimit : u));
+                        v = (textureMipLevel.height * ((v < 0)? 0 : (v > upperLimit)? upperLimit : v));
 
                         break;
                     }
                     case "repeat":
                     {
-                        u -= Math.floor(u);
-                        v -= Math.floor(v);
-
-                        u *= textureMipLevel.width;
-                        v *= textureMipLevel.height;
+                        u = (textureMipLevel.width * (u - Math.floor(u)));
+                        v = (textureMipLevel.height * (v - Math.floor(v)));
 
                         // Modulo for power-of-two. This will also flip the texture for
                         // negative UV coordinates.
