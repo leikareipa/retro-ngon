@@ -48,8 +48,8 @@ export function generic_fill({
     const ngonStartY = leftEdges[0].top;
     const ngonEndY = leftEdges[numLeftEdges-1].bottom;
     
-    // Rasterize the n-gon in horizontal pixel spans over its height.
-    for (let y = ngonStartY; y < ngonEndY; y++)
+    let y = (ngonStartY - 1);
+    while (++y < ngonEndY)
     {
         const spanStartX = Math.min(pixelBufferWidth, Math.max(0, Math.round(leftEdge.start.x)));
         const spanEndX = Math.min(pixelBufferWidth, Math.max(0, Math.ceil(rightEdge.start.x)));
@@ -87,20 +87,22 @@ export function generic_fill({
             // Assumes the depth buffer consists of 1 element per pixel.
             let pixelBufferIdx = ((spanStartX + y * pixelBufferWidth) - 1);
 
-            // Draw the span into the pixel buffer.
-            for (let x = spanStartX; x < spanEndX; x++)
+            let x = (spanStartX - 1);
+            while (++x < spanEndX)
             {
                 // Will hold the texture coordinates used if we end up drawing
                 // a textured pixel at the current x,y screen location.
                 let u = 0.0, v = 0.0;
 
                 // Update values that're interpolated horizontally along the span.
-                iplDepth += deltaDepth;
-                iplShade += deltaShade;
-                iplU += deltaU;
-                iplV += deltaV;
-                iplInvW += deltaInvW;
-                pixelBufferIdx++;
+                {
+                    iplDepth += deltaDepth;
+                    iplShade += deltaShade;
+                    iplU += deltaU;
+                    iplV += deltaV;
+                    iplInvW += deltaInvW;
+                    pixelBufferIdx++;
+                }
 
                 if (usePixelShader)
                 {
@@ -110,9 +112,10 @@ export function generic_fill({
                 }
 
                 const depth = (iplDepth / iplInvW);
-
-                // Depth test.
-                if (depthBuffer && (depthBuffer[pixelBufferIdx] <= depth)) continue;
+                if (depthBuffer && (depthBuffer[pixelBufferIdx] <= depth))
+                {
+                    continue;
+                }
 
                 let shade = (material.renderVertexShade? iplShade  : 1);
 
@@ -238,7 +241,7 @@ export function generic_fill({
 
                     const texel = textureMipLevel.pixels[(~~u) + (~~v) * textureMipLevel.width];
 
-                    // Make sure we gracefully exit if accessing the texture out of bounds.
+                    // Gracefully handle attempts to access the texture out of bounds.
                     if (!texel)
                     {
                         continue;

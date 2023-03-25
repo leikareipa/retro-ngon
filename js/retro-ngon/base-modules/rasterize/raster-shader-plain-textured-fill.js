@@ -49,7 +49,8 @@ export function plain_textured_fill({
     const ngonStartY = leftEdges[0].top;
     const ngonEndY = leftEdges[numLeftEdges-1].bottom;
 
-    for (let y = ngonStartY; y < ngonEndY; y++)
+    let y = (ngonStartY - 1);
+    while (++y < ngonEndY)
     {
         const spanStartX = Math.min(pixelBufferWidth, Math.max(0, Math.round(leftEdge.start.x)));
         const spanEndX = Math.min(pixelBufferWidth, Math.max(0, Math.ceil(rightEdge.start.x)));
@@ -74,24 +75,28 @@ export function plain_textured_fill({
 
             let pixelBufferIdx = ((spanStartX + y * pixelBufferWidth) - 1);
 
-            // Draw the span into the pixel buffer.
-            for (let x = spanStartX; x < spanEndX; x++)
+            let x = (spanStartX - 1);
+            while (++x < spanEndX)
             {
                 // Update values that're interpolated horizontally along the span.
-                iplDepth += deltaDepth;
-                iplShade += deltaShade;
-                iplU += deltaU;
-                iplV += deltaV;
-                iplInvW += deltaInvW;
-                pixelBufferIdx++;
+                {
+                    iplDepth += deltaDepth;
+                    iplShade += deltaShade;
+                    iplU += deltaU;
+                    iplV += deltaV;
+                    iplInvW += deltaInvW;
+                    pixelBufferIdx++;
+                }
 
                 const depth = (iplDepth / iplInvW);
-                if (depthBuffer[pixelBufferIdx] <= depth) continue;
+                if (depthBuffer[pixelBufferIdx] <= depth)
+                {
+                    continue;
+                }
 
-                // Texture UV coordinates.
+                // Compute texture UV coordinates.
                 let u = (iplU / iplInvW);
                 let v = (iplV / iplInvW);
-
                 switch (material.uvWrapping)
                 {
                     case "clamp":
@@ -124,45 +129,48 @@ export function plain_textured_fill({
 
                 const texel = textureMipLevel.pixels[(~~u) + (~~v) * textureMipLevel.width];
                 
-                // Make sure we gracefully exit if accessing the texture out of bounds.
+                // Gracefully handle attempts to access the texture out of bounds.
                 if (!texel)
                 {
                     continue;
                 }
 
-                if (usePalette)
+                // Draw the pixel.
                 {
-                    pixelBufferClamped8[pixelBufferIdx] = texel.color.index;
-                }
-                else
-                {
-                    const shade = (material.renderVertexShade? iplShade : 1);
-                    const red   = (texel.red   * shade);
-                    const green = (texel.green * shade);
-                    const blue  = (texel.blue  * shade);
-
-                    // If shade is > 1, the color values may exceed 255, in which case we write into
-                    // the clamped 8-bit view to get 'free' clamping.
-                    if (shade > 1)
+                    if (usePalette)
                     {
-                        const idx = (pixelBufferIdx * 4);
-                        pixelBufferClamped8[idx+0] = red;
-                        pixelBufferClamped8[idx+1] = green;
-                        pixelBufferClamped8[idx+2] = blue;
-                        pixelBufferClamped8[idx+3] = 255;
+                        pixelBufferClamped8[pixelBufferIdx] = texel.color.index;
                     }
                     else
                     {
-                        pixelBuffer32[pixelBufferIdx] = (
-                            (255 << 24) +
-                            (blue << 16) +
-                            (green << 8) +
-                            red
-                        );
-                    }
-                }
+                        const shade = (material.renderVertexShade? iplShade : 1);
+                        const red   = (texel.red   * shade);
+                        const green = (texel.green * shade);
+                        const blue  = (texel.blue  * shade);
 
-                depthBuffer[pixelBufferIdx] = depth;
+                        // If shade is > 1, the color values may exceed 255, in which case we write into
+                        // the clamped 8-bit view to get 'free' clamping.
+                        if (shade > 1)
+                        {
+                            const idx = (pixelBufferIdx * 4);
+                            pixelBufferClamped8[idx+0] = red;
+                            pixelBufferClamped8[idx+1] = green;
+                            pixelBufferClamped8[idx+2] = blue;
+                            pixelBufferClamped8[idx+3] = 255;
+                        }
+                        else
+                        {
+                            pixelBuffer32[pixelBufferIdx] = (
+                                (255 << 24) +
+                                (blue << 16) +
+                                (green << 8) +
+                                red
+                            );
+                        }
+                    }
+
+                    depthBuffer[pixelBufferIdx] = depth;
+                }
             }
         }
 
