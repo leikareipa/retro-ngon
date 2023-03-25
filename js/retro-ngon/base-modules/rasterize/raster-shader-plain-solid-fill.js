@@ -105,7 +105,7 @@ export function plain_solid_fill({
                                 (255 << 24) +
                                 (blue << 16) +
                                 (green << 8) +
-                                red
+                                ~~red
                             );
                         }
                     }

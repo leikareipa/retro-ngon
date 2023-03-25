@@ -164,7 +164,7 @@ export function plain_textured_fill({
                                 (255 << 24) +
                                 (blue << 16) +
                                 (green << 8) +
-                                red
+                                ~~red
                             );
                         }
                     }
