@@ -47,9 +47,12 @@ export const sample = {
         {title:"On-screen display",  function:cs_osd},
         {title:"Pixels as ASCII",    function:cs_ascii},
         {title:"Dotty",              function:cs_dotty},
+        {title:"Spiral",             function:cs_spiral_pattern},
         {title:"Rasterized overlay", function:cs_rasterized_overlay},
         {title:"Screen fade",        function:cs_screen_fade},
         {title:"Radial fade",        function:cs_radial_fade},
+        {title:"Pixelation",         function:cs_pixelate},
+        {title:"Horizontal wave",    function:cs_horizontal_wave},
         {title:"Shake",              function:cs_shake},
         {title:"Slide show",         function:cs_slide_show},
         {title:"Vignette",           function:cs_vignette},
@@ -254,4 +257,84 @@ function cs_slide_show({context, image})
         0,
         Math.tan(this.numTicks/30)*20
     );
+}
+
+function cs_pixelate({context, image, pixelSize = 8})
+{
+    context.putImageData(image, 0, 0);
+
+    for (let y = 0; y < image.height; y += pixelSize)
+    {
+        for (let x = 0; x < image.width; x += pixelSize)
+        {
+            const color = context.getImageData(x, y, 1, 1).data;
+            context.fillStyle = `rgba(${color[0]}, ${color[1]}, ${color[2]}, ${color[3] / 255})`;
+            context.fillRect(x, y, pixelSize, pixelSize);
+        }
+    }
+}
+
+function cs_horizontal_wave({context, image})
+{
+    const waveFrequency = 20;
+    const waveAmplitude = 10;
+
+    context.putImageData(image, 0, 0);
+    const sourceData = context.getImageData(0, 0, image.width, image.height);
+    const targetData = context.createImageData(image.width, image.height);
+    
+    for (let y = 0; y < image.height; y++)
+    {
+        for (let x = 0; x < image.width; x++)
+        {
+            const xOffset = Math.round(Math.sin((y / waveFrequency) + (this.numTicks / 20)) * waveAmplitude);
+            const newX = x + xOffset;
+
+            if ((newX >= 0) && (newX < image.width))
+            {
+                const sourcePixelIdx = (y * image.width + x) * 4;
+                const targetPixelIdx = (y * image.width + newX) * 4;
+                targetData.data[targetPixelIdx] = sourceData.data[sourcePixelIdx];
+                targetData.data[targetPixelIdx + 1] = sourceData.data[sourcePixelIdx + 1];
+                targetData.data[targetPixelIdx + 2] = sourceData.data[sourcePixelIdx + 2];
+                targetData.data[targetPixelIdx + 3] = sourceData.data[sourcePixelIdx + 3];
+            }
+        }
+    }
+
+    context.putImageData(targetData, 0, 0);
+}
+
+function cs_spiral_pattern({context, image})
+{
+    context.putImageData(image, 0, 0);
+
+    const centerX = image.width / 2;
+    const centerY = image.height / 2;
+    const spiralRadius = (Math.max(image.width, image.height) / 2);
+    const numPoints = 500;
+    const lineWidth = 3;
+
+    context.strokeStyle = "rgba(255, 200, 255, 0.3)";
+    context.lineWidth = lineWidth;
+    context.beginPath();
+
+    for (let i = 0; i < numPoints; i++)
+    {
+        const angle = ((i / numPoints) * (2 * Math.PI) * 10);
+        const r = ((i / numPoints) * spiralRadius);
+        const x = (centerX + r * Math.cos(angle));
+        const y = (centerY + r * Math.sin(angle));
+
+        if (i === 0)
+        {
+            context.moveTo(x, y);
+        }
+        else
+        {
+            context.lineTo(x, y);
+        }
+    }
+
+    context.stroke();
 }

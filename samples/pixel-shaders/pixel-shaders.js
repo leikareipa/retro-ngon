@@ -72,17 +72,17 @@ export const sample = {
     },
     shaders: [
         {title:"None",                   function:null},
-        {title:"Backlight",              function:ps_backlight},
+        {title:"Vignette",               function:ps_vignette},
         {title:"Depth desaturation",     function:ps_depth_desaturate},
         {title:"Distance fog",           function:ps_distance_fog},
         {title:"Reduced color fidelity", function:ps_reduce_color_fidelity},
         {title:"Aberration",             function:ps_aberration},
         {title:"Grid pattern",           function:ps_grid_pattern},
         {title:"Waviness",               function:ps_waviness},
+        {title:"Radial blur",            function:ps_radial_blur},
+        {title:"Fisheye",                function:ps_fisheye_projection},
         {title:"Selective outline",      function:ps_selective_outline},
-        {title:"Selective blur",         function:ps_selective_blur},
         {title:"Selective grayscale",    function:ps_selective_grayscale},
-        {title:"Selective scanlines",    function:ps_selective_scanlines},
         {title:"Per-pixel lighting",     function:ps_per_pixel_light},
         {title:"Wireframe",              function:ps_wireframe},
         {title:"Texture blend",          function:ps_texture_blend},
@@ -701,5 +701,147 @@ function ps_texture_blend({renderWidth, renderHeight, fragmentBuffer, pixelBuffe
         pixelBuffer[(i * 4) + 0] = this.Rngon.lerp(pixelBuffer[(i * 4) + 0], (texel.red   * thisNgon.material.color.unitRange.red),   lerpAmt);
         pixelBuffer[(i * 4) + 1] = this.Rngon.lerp(pixelBuffer[(i * 4) + 1], (texel.green * thisNgon.material.color.unitRange.green), lerpAmt);
         pixelBuffer[(i * 4) + 2] = this.Rngon.lerp(pixelBuffer[(i * 4) + 2], (texel.blue  * thisNgon.material.color.unitRange.blue),  lerpAmt);
+    }
+}
+
+// Pixel shader. Applies a radial blur effect centered on the screen.
+function ps_radial_blur({renderWidth, renderHeight, pixelBuffer}) {
+    const centerX = (renderWidth / 2);
+    const centerY = (renderHeight / 2);
+    const blurRadius = 10;
+    const blurSamples = 3;
+    
+    const tempPixelBuffer = [];
+    
+    // Iterate through each pixel in the buffer.
+    for (let y = 0; y < renderHeight; y++)
+    {
+        for (let x = 0; x < renderWidth; x++)
+        {
+            let sumR = 0;
+            let sumG = 0;
+            let sumB = 0;
+    
+            // Calculate the distance from the current pixel to the center.
+            const dx = (x - centerX);
+            const dy = (y - centerY);
+            const distance = Math.sqrt(dx * dx + dy * dy);
+    
+            // Determine the number of samples for the radial blur based on the distance from the center.
+            const samples = Math.max(1, Math.round(blurSamples * (distance / blurRadius)));
+    
+            // Collect the color samples for the radial blur.
+            for (let i = 0; i < samples; i++)
+            {
+                const sampleX = Math.round(x - (dx * i / samples));
+                const sampleY = Math.round(y - (dy * i / samples));
+    
+                // Clamp the sample coordinates within the pixel buffer bounds.
+                const clampedX = Math.min(renderWidth - 1, Math.max(0, sampleX));
+                const clampedY = Math.min(renderHeight - 1, Math.max(0, sampleY));
+    
+                const sampleIdx = (clampedX + clampedY * renderWidth) * 4;
+    
+                sumR += pixelBuffer[sampleIdx + 0];
+                sumG += pixelBuffer[sampleIdx + 1];
+                sumB += pixelBuffer[sampleIdx + 2];
+            }
+    
+            // Calculate the average color of the samples.
+            const averageR = sumR / samples;
+            const averageG = sumG / samples;
+            const averageB = sumB / samples;
+    
+            const thisIdx = (x + y * renderWidth) * 4;
+            tempPixelBuffer[thisIdx + 0] = averageR;
+            tempPixelBuffer[thisIdx + 1] = averageG;
+            tempPixelBuffer[thisIdx + 2] = averageB;
+            tempPixelBuffer[thisIdx + 3] = pixelBuffer[thisIdx + 3];
+        }
+    }
+    
+    for (let i = 0; i < pixelBuffer.length; i++)
+    {
+        pixelBuffer[i] = tempPixelBuffer[i];
+    }
+}
+// Pixel shader. Applies a sepia tone to the pixel buffer.
+function ps_sepia({renderWidth, renderHeight, pixelBuffer})
+{
+    for (let i = 0; i < (renderWidth * renderHeight); i++)
+    {
+        const red = pixelBuffer[(i * 4) + 0];
+        const green = pixelBuffer[(i * 4) + 1];
+        const blue = pixelBuffer[(i * 4) + 2];
+
+        const tr = ((0.393 * red) + (0.769 * green) + (0.189 * blue));
+        const tg = ((0.349 * red) + (0.686 * green) + (0.168 * blue));
+        const tb = ((0.272 * red) + (0.534 * green) + (0.131 * blue));
+
+        pixelBuffer[(i * 4) + 0] = Math.min(tr, 255);
+        pixelBuffer[(i * 4) + 1] = Math.min(tg, 255);
+        pixelBuffer[(i * 4) + 2] = Math.min(tb, 255);
+    }
+}
+
+// Pixel shader. Applies a vignette effect to the pixel buffer.
+function ps_vignette({renderWidth, renderHeight, pixelBuffer})
+{
+    const centerX = (renderWidth / 2);
+    const centerY = (renderHeight / 2);
+    const radius = Math.min(centerX, centerY);
+    const intensity = 0.6;
+
+    for (let y = 0; y < renderHeight; y++)
+    {
+        for (let x = 0; x < renderWidth; x++)
+        {
+            const dx = x - centerX;
+            const dy = y - centerY;
+            const distanceSquared = (dx * dx) + (dy * dy);
+            const vignette = Math.max(0, 1 - (distanceSquared / (radius * radius)));
+
+            const i = (x + y * renderWidth) * 4;
+            pixelBuffer[i + 0] *= (1 - intensity + (vignette * intensity));
+            pixelBuffer[i + 1] *= (1 - intensity + (vignette * intensity));
+            pixelBuffer[i + 2] *= (1 - intensity + (vignette * intensity));
+        }
+    }
+}
+
+// Pixel shader. Applies fisheye projection to the image.
+function ps_fisheye_projection({ renderWidth, renderHeight, pixelBuffer })
+{
+    const widthHalf = (renderWidth / 2);
+    const heightHalf = (renderHeight / 2);
+    const maxRadius = Math.sqrt(widthHalf * widthHalf + heightHalf * heightHalf);
+    const outputBuffer = new Uint8ClampedArray(pixelBuffer.length);
+    
+    for (let y = 0; y < renderHeight; y++)
+    {
+        for (let x = 0; x < renderWidth; x++)
+        {
+            const dx = x - widthHalf;
+            const dy = y - heightHalf;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            const theta = Math.atan2(dy, dx);
+            const radius = (distance / maxRadius);
+            const fisheyeRadius = ((radius * radius) / Math.max(radius, 1));
+            const fisheyeX = widthHalf + fisheyeRadius * maxRadius * Math.cos(theta);
+            const fisheyeY = heightHalf + fisheyeRadius * maxRadius * Math.sin(theta);
+
+            const srcIdx = ((Math.floor(fisheyeY) * renderWidth + Math.floor(fisheyeX)) * 4);
+            const destIdx = ((y * renderWidth + x) * 4);
+
+            outputBuffer[destIdx + 0] = pixelBuffer[srcIdx + 0];
+            outputBuffer[destIdx + 1] = pixelBuffer[srcIdx + 1];
+            outputBuffer[destIdx + 2] = pixelBuffer[srcIdx + 2];
+            outputBuffer[destIdx + 3] = pixelBuffer[srcIdx + 3];
+        }
+    }
+
+    for (let i = 0; i < pixelBuffer.length; i++)
+    {
+        pixelBuffer[i] = outputBuffer[i];
     }
 }

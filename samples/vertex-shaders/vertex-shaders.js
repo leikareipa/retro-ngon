@@ -41,6 +41,9 @@ export const sample = {
     },
     shaders: [
         {title:"None",          function:null},
+        {title:"Bend",          function:vs_bendy},
+        {title:"Glitch",        function:vs_glitchy},
+        {title:"Shear",         function:vs_shear},
         {title:"Distance fog",  function:vs_depth_fog},
         {title:"Grow",          function:vs_grow},
         {title:"Wave",          function:vs_wavy},
@@ -117,7 +120,8 @@ function vs_vertex_points(ngon)
     }
 }
 
-// Vertex shader.
+// Vertex shader. Makes the n-gon pulsate between light and dark. When applied to all
+// n-gons in the scene, will fade the screen in and out.
 function vs_fade_in_out(ngon)
 {
     for (let v = 0; v < ngon.vertices.length; v++)
@@ -126,11 +130,54 @@ function vs_fade_in_out(ngon)
     }
 }
 
-// Vertex shader.
+// Vertex shader. Shifts UV coordinates to cause a 'swimming' effect.
 function vs_uv_shift(ngon)
 {
     for (let v = 0; v < ngon.vertices.length; v++)
     {
         ngon.vertices[v].v += (this.numTicks / 1500);
+    }
+}
+
+// Vertex shader. Scales vertices based on their height (Y value), creating a tapered, bendy effect.
+function vs_bendy(ngon)
+{
+    const taperFactor = ((Math.sin(this.numTicks / 75)) * 0.004);
+
+    for (let v = 0; v < ngon.vertices.length; v++)
+    {
+        const scaleFactor = (1 + (ngon.vertices[v].y - 0.5) * taperFactor);
+        ngon.vertices[v].x *= scaleFactor;
+        ngon.vertices[v].z *= scaleFactor;
+    }
+}
+
+// Vertex shader. Randomly jitter vertices, simulating noise.
+function vs_glitchy(ngon)
+{
+    if (this.numTicks % 15 !== 0)
+    {
+        return;
+    }
+
+    const noiseFactor = 0.3;
+
+    for (let v = 0; v < ngon.vertices.length; v++)
+    {
+        ngon.vertices[v].x += ((Math.random() * 2 - 1) * noiseFactor);
+        ngon.vertices[v].y += ((Math.random() * 2 - 1) * noiseFactor);
+        ngon.vertices[v].z += ((Math.random() * 2 - 1) * noiseFactor);
+    }
+}
+
+// Vertex shader. Shear the mesh along the X axis based on Y position.
+function vs_shear(ngon)
+{
+    const shearFactor = 0.5;
+
+    for (let v = 0; v < ngon.vertices.length; v++)
+    {
+        const yOffset = (ngon.vertices[v].y - 0.5) * 2;
+        ngon.vertices[v].x += yOffset * shearFactor;
     }
 }
