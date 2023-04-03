@@ -75,12 +75,11 @@ export const sample = {
         {title:"Vignette",               function:ps_vignette},
         {title:"Depth desaturation",     function:ps_depth_desaturate},
         {title:"Distance fog",           function:ps_distance_fog},
-        {title:"Reduced color fidelity", function:ps_reduce_color_fidelity},
         {title:"Aberration",             function:ps_aberration},
         {title:"Grid pattern",           function:ps_grid_pattern},
         {title:"Waviness",               function:ps_waviness},
-        {title:"Radial blur",            function:ps_radial_blur},
         {title:"Fisheye",                function:ps_fisheye_projection},
+        {title:"Ambient occlusion",      function:ps_ambient_occlusion},
         {title:"Selective outline",      function:ps_selective_outline},
         {title:"Selective grayscale",    function:ps_selective_grayscale},
         {title:"Per-pixel lighting",     function:ps_per_pixel_light},
@@ -781,6 +780,74 @@ function ps_sepia({renderWidth, renderHeight, pixelBuffer})
         pixelBuffer[(i * 4) + 0] = Math.min(tr, 255);
         pixelBuffer[(i * 4) + 1] = Math.min(tg, 255);
         pixelBuffer[(i * 4) + 2] = Math.min(tb, 255);
+    }
+}
+
+// Pixel shader. Applies ambient occlusion to the pixel buffer.
+function ps_ambient_occlusion({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
+{
+    const radius = 1;
+    const depthThreshold = 0.03;
+    const occlusionStrength = 1;
+
+    for (let y = 0; y < renderHeight; y++)
+    {
+        for (let x = 0; x < renderWidth; x++)
+        {
+            const bufferIdx = (x + y * renderWidth);
+            const thisFragment = fragmentBuffer[bufferIdx];
+
+            if (!thisFragment)
+            {
+                continue;
+            }
+
+            // Check neighboring pixels within the radius.
+            let occlusionValue = 0;
+            let numSamples = 0;
+            for (let dy = -radius; dy <= radius; dy++)
+            {
+                for (let dx = -radius; dx <= radius; dx++)
+                {
+                    if (dx === 0 && dy === 0) {
+                        continue;
+                    }
+
+                    const nx = (x + dx);
+                    const ny = (y + dy);
+
+                    if ((nx < 0) || (nx >= renderWidth) || (ny < 0) || (ny >= renderHeight))
+                    {
+                        continue;
+                    }
+
+                    const neighborIdx = (nx + ny * renderWidth);
+                    const neighborFragment = fragmentBuffer[neighborIdx];
+
+                    if (!neighborFragment)
+                    {
+                        continue;
+                    }
+
+                    const depthDifference = Math.abs(thisFragment.depth - neighborFragment.depth);
+
+                    if (depthDifference < depthThreshold) {
+                        occlusionValue += (1.0 - depthDifference / depthThreshold);
+                        numSamples++;
+                    }
+                }
+            }
+
+            if (numSamples)
+            {
+                occlusionValue = (1.0 - occlusionStrength * (occlusionValue / numSamples));
+
+                const pixelValue = (200 * (1 - occlusionValue));
+                pixelBuffer[(bufferIdx * 4) + 0] = pixelValue;
+                pixelBuffer[(bufferIdx * 4) + 1] = pixelValue;
+                pixelBuffer[(bufferIdx * 4) + 2] = pixelValue;
+            }
+        }
     }
 }
 
