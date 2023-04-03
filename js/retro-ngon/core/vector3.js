@@ -64,36 +64,6 @@ vector3.dot = function(v, other)
     return ((v.x * other.x) + (v.y * other.y) + (v.z * other.z));
 }
 
-vector3.mul_scalar = function(v, scalar)
-{
-    return Rngon.vector3((v.x * scalar), (v.y * scalar), (v.z * scalar));
-}
-
-vector3.add_scalar = function(v, scalar)
-{
-    return Rngon.vector3((v.x + scalar), (v.y + scalar), (v.z + scalar));
-}
-
-vector3.sub_scalar = function(v, scalar)
-{
-    return Rngon.vector3((v.x - scalar), (v.y - scalar), (v.z - scalar));
-}
-
-vector3.mul = function(v, other)
-{
-    return Rngon.vector3((v.x * other.x), (v.y * other.y), (v.z * other.z));
-}
-
-vector3.add = function(v, other)
-{
-    return Rngon.vector3((v.x + other.x), (v.y + other.y), (v.z + other.z));
-}
-
-vector3.sub = function(v, other)
-{
-    return Rngon.vector3((v.x - other.x), (v.y - other.y), (v.z - other.z));
-}
-
 vector3.cross = function(v, other)
 {
     const c = Rngon.vector3();
