@@ -72,6 +72,7 @@ export const sample = {
     },
     shaders: [
         {title:"None",                   function:null},
+        {title:"Edge anti-aliasing",     function:ps_fxaa},
         {title:"Vignette",               function:ps_vignette},
         {title:"Depth desaturation",     function:ps_depth_desaturate},
         {title:"Distance fog",           function:ps_distance_fog},
@@ -846,6 +847,51 @@ function ps_ambient_occlusion({renderWidth, renderHeight, fragmentBuffer, pixelB
                 pixelBuffer[(bufferIdx * 4) + 0] = pixelValue;
                 pixelBuffer[(bufferIdx * 4) + 1] = pixelValue;
                 pixelBuffer[(bufferIdx * 4) + 2] = pixelValue;
+            }
+        }
+    }
+}
+
+// Pixel shader. Applies edge anti-aliasing to the pixel buffer
+function ps_fxaa({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
+{
+    for (let y = 0; y < renderHeight; y++)
+    {
+        for (let x = 0; x < renderWidth; x++)
+        {
+            const thisFragment = fragmentBuffer[x + y * renderWidth];
+            const thisMaterial = ngonCache[thisFragment.ngonIdx].material;
+
+            let leftFragment   = fragmentBuffer[((x - 1) + (y    ) * renderWidth)];
+            let topFragment    = fragmentBuffer[((x    ) + (y - 1) * renderWidth)];
+            let rightFragment  = fragmentBuffer[((x + 1) + (y    ) * renderWidth)];
+            let bottomFragment = fragmentBuffer[((x    ) + (y + 1) * renderWidth)] ;
+
+            if (x == 0) leftFragment = null;
+            if (y == 0) topFragment = null;
+            if (x == (renderWidth - 1)) rightFragment = null;
+            if (y == (renderHeight - 1)) bottomFragment = null;
+
+            if (
+                (leftFragment && (ngonCache[leftFragment.ngonIdx].material !== thisMaterial)) ||
+                (topFragment && (ngonCache[topFragment.ngonIdx].material !== thisMaterial)) ||
+                (rightFragment && (ngonCache[rightFragment.ngonIdx].material !== thisMaterial)) ||
+                (bottomFragment && (ngonCache[bottomFragment.ngonIdx].material !== thisMaterial))
+            ){
+                let idx = ((x + y * renderWidth) * 4);
+                
+                for (let i = 0; i < 3; i++)
+                {
+                    const neighborAvg = (
+                        (pixelBuffer[(x - 1 + y * renderWidth) * 4 + i] +
+                         pixelBuffer[(x + 1 + y * renderWidth) * 4 + i] +
+                         pixelBuffer[(x + (y - 1) * renderWidth) * 4 + i] +
+                         pixelBuffer[(x + (y + 1) * renderWidth) * 4 + i])
+                        * 0.25
+                    );
+
+                    pixelBuffer[idx + i] = ((pixelBuffer[idx + i] * 0.4) + (neighborAvg * 0.6));
+                }
             }
         }
     }
