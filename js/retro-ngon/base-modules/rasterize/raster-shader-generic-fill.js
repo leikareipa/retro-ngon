@@ -5,6 +5,19 @@
  * 
  */
 
+// UV offsets for applying Unreal-style dithered texture filtering.
+// See https://www.flipcode.com/archives/Texturing_As_In_Unreal.shtml.
+const textureDitherFilterKernel = {
+    enabled: [
+        [[0.25, 0.00], [0.50, 0.75]],
+        [[0.75, 0.50], [0.00, 0.25]],
+    ],
+    disabled: [
+        [[0, 0], [0, 0]],
+        [[0, 0], [0, 0]],
+    ],
+};
+
 // No performance-enhancing assumptions are made, so this is the most compatible filler,
 // but also potentially the slowest.
 export function generic_fill({
@@ -27,6 +40,11 @@ export function generic_fill({
     const pixelBufferWidth = pixelBufferImage.width;
     const material = ngon.material;
     const texture = (material.texture || null);
+    const uvDitherKernel = (
+        (material.textureFiltering === "none")
+            ? textureDitherFilterKernel.disabled
+            : textureDitherFilterKernel.enabled
+    );
     
     let textureMipLevel = null;
     let textureMipLevelIdx = 0;
@@ -164,6 +182,10 @@ export function generic_fill({
                                     // Negative UV coordinates flip the texture.
                                     u = ((u < 0)? (upperLimit + u) : u);
                                     v = ((v < 0)? (upperLimit + v) : v);
+                            
+                                    const ditherOffset = uvDitherKernel[y & 1][x & 1];
+                                    u += (ditherOffset[0] / textureMipLevel.width);
+                                    v += (ditherOffset[1] / textureMipLevel.height);
                                     
                                     u = (textureMipLevel.width * ((u < 0)? 0 : (u > upperLimit)? upperLimit : u));
                                     v = (textureMipLevel.height * ((v < 0)? 0 : (v > upperLimit)? upperLimit : v));
@@ -172,6 +194,10 @@ export function generic_fill({
                                 }
                                 case "repeat":
                                 {
+                                    const ditherOffset = uvDitherKernel[y & 1][x & 1];
+                                    u += (ditherOffset[0] / textureMipLevel.width);
+                                    v += (ditherOffset[1] / textureMipLevel.height);
+            
                                     u = (textureMipLevel.width * (u - Math.floor(u)));
                                     v = (textureMipLevel.height * (v - Math.floor(v)));
             
@@ -187,36 +213,33 @@ export function generic_fill({
 
                             break;
                         }
-                        // Affine mapping for wrapping non-power-of-two textures.
-                        /// FIXME: This implementation is a bit kludgy.
-                        /// TODO: Add clamped UV wrapping mode (we can just use the one for
-                        /// power-of-two textures).
+                        // Affine mapping for non-power-of-two textures.
                         case "affine-npot":
                         {
-                            u = (iplU / iplInvW);
-                            v = (iplV / iplInvW);
-
-                            u *= textureMipLevel.width;
-                            v *= textureMipLevel.height;
-    
-                            // Wrap with repetition.
-                            /// FIXME: Why do we need to test for UV < 0 even when using positive
-                            /// but tiling UV coordinates? Doesn't render properly unless we do.
-                            if ((u < 0) ||
-                                (v < 0) ||
-                                (u >= textureMipLevel.width) ||
-                                (v >= textureMipLevel.height))
+                            // When (material.uvWrapping === "clamp").
                             {
-                                const uWasNeg = (u < 0);
-                                const vWasNeg = (v < 0);
-    
-                                u = (Math.abs(u) % textureMipLevel.width);
-                                v = (Math.abs(v) % textureMipLevel.height);
-    
-                                if (uWasNeg) u = (textureMipLevel.width - u);
-                                if (vWasNeg) v = (textureMipLevel.height - v);
+                                u = (iplU / iplInvW);
+                                v = (iplV / iplInvW);
+
+                                const upperLimit = (1 - Number.EPSILON);
+
+                                // Negative UV coordinates flip the texture.
+                                u = ((u < 0)? (upperLimit + u) : u);
+                                v = ((v < 0)? (upperLimit + v) : v);
+                        
+                                const ditherOffset = uvDitherKernel[y & 1][x & 1];
+                                u += (ditherOffset[0] / textureMipLevel.width);
+                                v += (ditherOffset[1] / textureMipLevel.height);
+                                
+                                u = (textureMipLevel.width * ((u < 0)? 0 : (u > upperLimit)? upperLimit : u));
+                                v = (textureMipLevel.height * ((v < 0)? 0 : (v > upperLimit)? upperLimit : v));
                             }
-    
+
+                            // When (material.uvWrapping === "repeat").
+                            {
+                                /// TODO.
+                            }
+                            
                             break;
                         }
                         // Screen-space UV mapping, as used e.g. in the DOS game Rally-Sport.
@@ -227,6 +250,10 @@ export function generic_fill({
                             // Pixel coordinates relative to the polygon.
                             const ngonX = (x - spanStartX + 1);
                             const ngonY = (y - ngonStartY + 1);
+                            
+                            const ditherOffset = uvDitherKernel[y & 1][x & 1];
+                            u += ditherOffset[0];
+                            v += ditherOffset[1];
 
                             u = (ngonX * (textureMipLevel.width / spanWidth));
                             v = (ngonY * (textureMipLevel.height / ngonHeight));

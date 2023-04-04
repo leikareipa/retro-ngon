@@ -12,6 +12,7 @@
 // - Textured, the texture resolution being power of two
 // - White material color
 // - Affine texture-mapping
+// - No texture filtering
 export function plain_textured_fill({
     ngon,
     leftEdges,
@@ -106,7 +107,7 @@ export function plain_textured_fill({
                         // Negative UV coordinates flip the texture.
                         u = ((u < 0)? (upperLimit + u) : u);
                         v = ((v < 0)? (upperLimit + v) : v);
-                        
+
                         u = (textureMipLevel.width * ((u < 0)? 0 : (u > upperLimit)? upperLimit : u));
                         v = (textureMipLevel.height * ((v < 0)? 0 : (v > upperLimit)? upperLimit : v));
 

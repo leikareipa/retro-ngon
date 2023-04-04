@@ -15,6 +15,7 @@ export function material(properties = {})
             wireframeColor: Rngon.color_rgba(),
             texture: null,
             textureMapping: "ortho",
+            textureFiltering: "none",
             uvWrapping: "repeat",
             vertexShading: "none",
             renderVertexShade: true,

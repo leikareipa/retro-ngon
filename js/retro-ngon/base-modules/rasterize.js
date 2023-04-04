@@ -130,6 +130,7 @@ rasterize.polygon = function(
                 !material.allowAlphaReject &&
                 !material.allowAlphaBlend &&
                 (material.textureMapping === "affine") &&
+                (material.textureFiltering === "none") &&
                 (material.color.red === 255) &&
                 (material.color.green === 255) &&
                 (material.color.blue === 255)
