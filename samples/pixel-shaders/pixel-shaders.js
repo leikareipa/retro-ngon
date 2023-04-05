@@ -72,14 +72,14 @@ export const sample = {
     },
     shaders: [
         {title:"None",                   function:null},
+        {title:"Dithering",              function:ps_dithering},
         {title:"Edge anti-aliasing",     function:ps_fxaa},
         {title:"Vignette",               function:ps_vignette},
         {title:"Depth desaturation",     function:ps_depth_desaturate},
         {title:"Distance fog",           function:ps_distance_fog},
-        {title:"Aberration",             function:ps_aberration},
-        {title:"Grid pattern",           function:ps_grid_pattern},
         {title:"Waviness",               function:ps_waviness},
         {title:"Fisheye",                function:ps_fisheye_projection},
+        {title:"CRT",                    function:ps_crt_effect},
         {title:"Ambient occlusion",      function:ps_ambient_occlusion},
         {title:"Selective outline",      function:ps_selective_outline},
         {title:"Selective grayscale",    function:ps_selective_grayscale},
@@ -99,6 +99,149 @@ export const sample = {
     Rngon: undefined,
     numTicks: 0,
 };
+
+function ps_crt_effect({renderWidth, renderHeight, pixelBuffer})
+{
+    const sourceBuffer = new Uint8Array(pixelBuffer.length);
+    sourceBuffer.set(pixelBuffer);
+    
+    const curvature = 0.05;
+    const scaleX = 1;
+    const scaleY = 1;
+    const colorSoftening = 1.4;
+    const scanlineIntensity = 0.1;
+    const chromaticAberration = 1; // Must be a positive integer.
+    
+    const centerX = (renderWidth / 2);
+    const centerY = (renderHeight / 2);
+    
+    for (let y = 0; y < renderHeight; y++)
+    {
+        for (let x = 0; x < renderWidth; x++)
+        {
+            const bufferIdx = ((x + y * renderWidth) * 4);
+    
+            // Normalize the coordinates to -1, 1 range
+            const normX = ((x - centerX) / centerX);
+            const normY = ((y - centerY) / centerY);
+    
+            // Barrel distortion.
+            {
+                const radius = Math.sqrt(normX * normX + normY * normY);
+                const barrelFactor = (1 + curvature * radius * radius);
+                const barrelX = normX * barrelFactor;
+                const barrelY = normY * barrelFactor;
+        
+                // Denormalize the coordinates
+                const sourceX = Math.round((barrelX * centerX / scaleX) + centerX);
+                const sourceY = Math.round((barrelY * centerY / scaleY) + centerY);
+        
+                // Check if the source pixel is within bounds
+                if (sourceX >= 0 && sourceX < renderWidth && sourceY >= 0 && sourceY < renderHeight)
+                {
+                    // Copy the source pixel color
+                    const sourceIdx = (sourceX + sourceY * renderWidth) * 4;
+                    pixelBuffer[bufferIdx + 0] = sourceBuffer[sourceIdx + 0];
+                    pixelBuffer[bufferIdx + 1] = sourceBuffer[sourceIdx + 1];
+                    pixelBuffer[bufferIdx + 2] = sourceBuffer[sourceIdx + 2];
+                }
+                else
+                {
+                    // Set the pixel to black if it's out of bounds
+                    pixelBuffer[bufferIdx + 0] = 0;
+                    pixelBuffer[bufferIdx + 1] = 0;
+                    pixelBuffer[bufferIdx + 2] = 0;
+                }
+            }
+
+            // Scanlines.
+            const scanlineFactor = ((y % 2 === 0)? (1 - scanlineIntensity) : 1);
+
+            // Color softening.
+            const r = Math.min(pixelBuffer[bufferIdx] * colorSoftening, 255);
+            const g = Math.min(pixelBuffer[bufferIdx + 1] * colorSoftening, 255);
+            const b = Math.min(pixelBuffer[bufferIdx + 2] * colorSoftening, 255);
+
+            // Chromatic aberration.
+            const rIndex = ((y * renderWidth + Math.max(x - chromaticAberration, 0)) * 4);
+            const bIndex = ((y * renderWidth + Math.min(x + chromaticAberration, renderWidth - 1)) * 4);
+
+            pixelBuffer[bufferIdx] = (r * scanlineFactor);
+            pixelBuffer[bufferIdx + 1] = (g * scanlineFactor);
+            pixelBuffer[bufferIdx + 2] = (b * scanlineFactor);
+            pixelBuffer[rIndex] = (r * scanlineFactor);
+            pixelBuffer[bIndex + 2] = (b * scanlineFactor);
+        }
+    }
+}
+// Pixel shader. Applies a dithering effect to the rendered image.
+function ps_dithering({renderWidth, renderHeight, pixelBuffer})
+{
+    const ditherMatrix = [
+        [ 1, 9, 3, 11 ],
+        [ 13, 5, 15, 7 ],
+        [ 4, 12, 2, 10 ],
+        [ 16, 8, 14, 6 ]
+    ];
+
+    const ditherLevels = 16; // Number of color levels after dithering
+    const ditherScaleFactor = (255 / (ditherLevels - 1));
+
+    for (let y = 0; y < renderHeight; y++)
+    {
+        for (let x = 0; x < renderWidth; x++)
+        {
+            const bufferIdx = (x + y * renderWidth) * 4;
+
+            for (let channel = 0; channel < 3; channel++)
+            {
+                // Calculate the threshold for the current pixel position
+                const ditherThreshold = (ditherMatrix[y % 4][x % 4] / 17);
+
+                // Get the original pixel color value and normalize it to the range [0, 1]
+                const originalValue = (pixelBuffer[bufferIdx + channel] / 255);
+
+                // Quantize the pixel color value using ditherLevels
+                const quantizedValue = Math.round((originalValue * (ditherLevels - 1)) + ditherThreshold);
+
+                // Scale the quantized value back to the range [0, 255] and set it as the new pixel color
+                pixelBuffer[bufferIdx + channel] = Math.round(quantizedValue * ditherScaleFactor);
+            }
+        }
+    }
+}
+
+function ps_voodoo_effect({renderWidth, renderHeight, pixelBuffer})
+{
+    const ditherMatrix = [
+        [1, 9, 3, 11],
+        [13, 5, 15, 7],
+        [4, 12, 2, 10],
+        [16, 8, 14, 6]
+    ];
+  
+    const ditherMatrixSize = ditherMatrix.length;
+  
+    for (let y = 0; y < renderHeight; y++)
+    {
+        for (let x = 0; x < renderWidth; x++)
+        {
+            const idx = ((y * renderWidth + x) * 4);
+            const r = pixelBuffer[idx];
+            const g = pixelBuffer[idx + 1];
+            const b = pixelBuffer[idx + 2];
+
+            const ditherFactor = (ditherMatrix[y % ditherMatrixSize][x % ditherMatrixSize] / 17);
+            const r5 = Math.round((r / 255) * 31 + ditherFactor) * (255 / 31);
+            const g6 = Math.round((g / 255) * 63 + ditherFactor) * (255 / 63);
+            const b5 = Math.round((b / 255) * 31 + ditherFactor) * (255 / 31);
+
+            pixelBuffer[idx] = r5;
+            pixelBuffer[idx + 1] = g6;
+            pixelBuffer[idx + 2] = b5;
+        }
+    }
+}
 
 // Pixel shader. Blurs every pixel whose n-gon doesn't have the material property 'isInFocus'
 // set to true.
@@ -358,7 +501,7 @@ function ps_reduce_color_fidelity({renderWidth, renderHeight, pixelBuffer})
     }
 }
 
-// Pixel shader.  Draws black all pixels on scanlines divisible by 2; except for pixels
+// Pixel shader Draws black all pixels on scanlines divisible by 2; except for pixels
 // whose ngon has the material property 'hasNoScanlines' set to true.
 function ps_selective_scanlines({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
 {
