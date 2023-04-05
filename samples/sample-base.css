@@ -118,7 +118,7 @@ body
 
 .infoboxes-container .infobox + .infobox
 {
-    margin-left: 10px;
+    margin-left: 1rem;
 }
 
 .infobox
@@ -179,9 +179,25 @@ body
     color: whitesmoke;
 }
 
+.infoboxes-container.additional
+{
+    font-size: 110%;
+}
+
 .infoboxes-container.additional > .infobox > .adjust
 {
-    font-size: 100%;
+    font-size: 1rem;
+}
+
+.infoboxes-container.additional .content > .value
+{
+    font-weight: bold;
+    font-size: 110%;
+}
+
+.infoboxes-container.additional .content > .title
+{
+    margin-bottom: 0.15rem;
 }
 
 .infobox > .adjust.left
