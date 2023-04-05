@@ -40,10 +40,11 @@ export function generic_fill({
     const pixelBufferWidth = pixelBufferImage.width;
     const material = ngon.material;
     const texture = (material.texture || null);
+    const useBilinearTextureFiltering = (texture && material.textureFiltering === "bilinear");
     const uvDitherKernel = (
-        (material.textureFiltering === "none")
-            ? textureDitherFilterKernel.disabled
-            : textureDitherFilterKernel.enabled
+        (texture && (material.textureFiltering === "dither"))
+            ? textureDitherFilterKernel.enabled
+            : textureDitherFilterKernel.disabled
     );
     
     let textureMipLevel = null;
@@ -143,6 +144,7 @@ export function generic_fill({
                 let green = 0;
                 let blue = 0;
                 let index = 0;
+                let texel = undefined;
 
                 // Solid fill.
                 if (!texture)
@@ -266,7 +268,7 @@ export function generic_fill({
                         default: Rngon.$throw("Unknown texture-mapping mode."); break;
                     }
 
-                    const texel = textureMipLevel.pixels[(~~u) + (~~v) * textureMipLevel.width];
+                    texel = textureMipLevel.pixels[(~~u) + (~~v) * textureMipLevel.width];
 
                     // Gracefully handle attempts to access the texture out of bounds.
                     if (!texel)
@@ -287,9 +289,9 @@ export function generic_fill({
                     }
 
                     index = texel.index;
-                    red   = (texel.red   * material.color.unitRange.red   * shade);
-                    green = (texel.green * material.color.unitRange.green * shade);
-                    blue  = (texel.blue  * material.color.unitRange.blue  * shade);
+                    red   = texel.red;
+                    green = texel.green;
+                    blue  = texel.blue;
                 }
 
                 // The pixel passed its alpha test, depth test, etc., and should be drawn
@@ -301,6 +303,41 @@ export function generic_fill({
                     }
                     else
                     {
+                        if (useBilinearTextureFiltering)
+                        {
+                            const tx = (u - (u = ~~u));
+                            const ty = (v - (v = ~~v));
+                            let c10 = (textureMipLevel.pixels[(u + 1) + v * textureMipLevel.width] || texel);
+                            let c01 = (textureMipLevel.pixels[u + (v + 1) * textureMipLevel.width] || texel);
+                            let c11 = (textureMipLevel.pixels[(u + 1) + (v + 1) * textureMipLevel.width] || texel);
+
+                            if (c10.alpha !== 255) c10 = texel;
+                            if (c01.alpha !== 255) c01 = texel;
+                            if (c11.alpha !== 255) c11 = texel;
+        
+                            const cx0 = {
+                                red: Rngon.lerp(red, c10.red, tx),
+                                green: Rngon.lerp(green, c10.green, tx),
+                                blue: Rngon.lerp( blue, c10.blue, tx),
+                            };
+        
+                            const cx1 = {
+                                red: Rngon.lerp(c01.red, c11.red, tx),
+                                green: Rngon.lerp(c01.green, c11.green, tx),
+                                blue: Rngon.lerp(c01.blue, c11.blue, tx),
+                            };
+        
+                            red = (shade * material.color.unitRange.red * Rngon.lerp(cx0.red, cx1.red, ty));
+                            green = (shade * material.color.unitRange.green * Rngon.lerp(cx0.green, cx1.green, ty));
+                            blue = (shade * material.color.unitRange.blue * Rngon.lerp(cx0.blue, cx1.blue, ty));
+                        }
+                        else
+                        {
+                            red *= (shade * material.color.unitRange.red);
+                            green *= (shade * material.color.unitRange.green);
+                            blue *= (shade * material.color.unitRange.blue);
+                        }
+
                         // If shade is > 1, the color values may exceed 255, in which case we write into
                         // the clamped 8-bit view to get 'free' clamping.
                         if (shade > 1)
