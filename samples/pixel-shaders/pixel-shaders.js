@@ -71,7 +71,6 @@ export const sample = {
         };
     },
     shaders: [
-        {title:"None",                   function:null},
         {title:"Dithering",              function:ps_dithering},
         {title:"Edge anti-aliasing",     function:ps_fxaa},
         {title:"Vignette",               function:ps_vignette},
@@ -79,8 +78,8 @@ export const sample = {
         {title:"Distance fog",           function:ps_distance_fog},
         {title:"Waviness",               function:ps_waviness},
         {title:"Fisheye",                function:ps_fisheye_projection},
+        {title:"Aberration",             function:ps_aberration},
         {title:"CRT",                    function:ps_crt_effect},
-        {title:"Ambient occlusion",      function:ps_ambient_occlusion},
         {title:"Selective outline",      function:ps_selective_outline},
         {title:"Selective grayscale",    function:ps_selective_grayscale},
         {title:"Per-pixel lighting",     function:ps_per_pixel_light},
@@ -108,9 +107,8 @@ function ps_crt_effect({renderWidth, renderHeight, pixelBuffer})
     const curvature = 0.05;
     const scaleX = 1;
     const scaleY = 1;
-    const colorSoftening = 1.4;
+    const colorSoftening = 2;
     const scanlineIntensity = 0.1;
-    const chromaticAberration = 1; // Must be a positive integer.
     
     const centerX = (renderWidth / 2);
     const centerY = (renderHeight / 2);
@@ -162,15 +160,9 @@ function ps_crt_effect({renderWidth, renderHeight, pixelBuffer})
             const g = Math.min(pixelBuffer[bufferIdx + 1] * colorSoftening, 255);
             const b = Math.min(pixelBuffer[bufferIdx + 2] * colorSoftening, 255);
 
-            // Chromatic aberration.
-            const rIndex = ((y * renderWidth + Math.max(x - chromaticAberration, 0)) * 4);
-            const bIndex = ((y * renderWidth + Math.min(x + chromaticAberration, renderWidth - 1)) * 4);
-
             pixelBuffer[bufferIdx] = (r * scanlineFactor);
             pixelBuffer[bufferIdx + 1] = (g * scanlineFactor);
             pixelBuffer[bufferIdx + 2] = (b * scanlineFactor);
-            pixelBuffer[rIndex] = (r * scanlineFactor);
-            pixelBuffer[bIndex + 2] = (b * scanlineFactor);
         }
     }
 }
@@ -207,38 +199,6 @@ function ps_dithering({renderWidth, renderHeight, pixelBuffer})
                 // Scale the quantized value back to the range [0, 255] and set it as the new pixel color
                 pixelBuffer[bufferIdx + channel] = Math.round(quantizedValue * ditherScaleFactor);
             }
-        }
-    }
-}
-
-function ps_voodoo_effect({renderWidth, renderHeight, pixelBuffer})
-{
-    const ditherMatrix = [
-        [1, 9, 3, 11],
-        [13, 5, 15, 7],
-        [4, 12, 2, 10],
-        [16, 8, 14, 6]
-    ];
-  
-    const ditherMatrixSize = ditherMatrix.length;
-  
-    for (let y = 0; y < renderHeight; y++)
-    {
-        for (let x = 0; x < renderWidth; x++)
-        {
-            const idx = ((y * renderWidth + x) * 4);
-            const r = pixelBuffer[idx];
-            const g = pixelBuffer[idx + 1];
-            const b = pixelBuffer[idx + 2];
-
-            const ditherFactor = (ditherMatrix[y % ditherMatrixSize][x % ditherMatrixSize] / 17);
-            const r5 = Math.round((r / 255) * 31 + ditherFactor) * (255 / 31);
-            const g6 = Math.round((g / 255) * 63 + ditherFactor) * (255 / 63);
-            const b5 = Math.round((b / 255) * 31 + ditherFactor) * (255 / 31);
-
-            pixelBuffer[idx] = r5;
-            pixelBuffer[idx + 1] = g6;
-            pixelBuffer[idx + 2] = b5;
         }
     }
 }
@@ -676,16 +636,40 @@ function ps_depth_desaturate({renderWidth, renderHeight, fragmentBuffer, pixelBu
 // Pixel shader.
 function ps_aberration({renderWidth, renderHeight, pixelBuffer})
 {
-    for (let y = 0; y < renderHeight; y++)
-    {
-        for (let x = 0; x < renderWidth; x++)
-        {
-            const thisIdx = ((x + y * renderWidth) * 4);
-            const shiftIdx = ((Math.min((renderWidth - 1), (x + 1)) + y * renderWidth) * 4);
+    const redOffset = 2;
+    const greenOffset = 0;
+    const blueOffset = -2;
+    
+    const redScale = 1;
+    const greenScale = 1;
+    const blueScale = 1;
 
-            pixelBuffer[thisIdx + 0] = pixelBuffer[shiftIdx + 0];
+    const outputPixels = new Uint8Array(pixelBuffer.length);
+
+    for (let y = 0; y < renderHeight; y++) {
+        for (let x = 0; x < renderWidth; x++) {
+            const pixelIndex = (y * renderWidth + x) * 4;
+
+            const redX = Math.floor(x + redOffset * Math.cos(y / renderHeight * Math.PI * 2));
+            const redY = Math.floor(y + redOffset * Math.sin(x / renderWidth * Math.PI * 2));
+            const redPixelIndex = (redY * renderWidth + redX) * 4;
+
+            const greenX = Math.floor(x + greenOffset * Math.cos(y / renderHeight * Math.PI * 2));
+            const greenY = Math.floor(y + greenOffset * Math.sin(x / renderWidth * Math.PI * 2));
+            const greenPixelIndex = (greenY * renderWidth + greenX) * 4;
+
+            const blueX = Math.floor(x + blueOffset * Math.cos(y / renderHeight * Math.PI * 2));
+            const blueY = Math.floor(y + blueOffset * Math.sin(x / renderWidth * Math.PI * 2));
+            const bluePixelIndex = (blueY * renderWidth + blueX) * 4;
+
+            outputPixels[pixelIndex] = pixelBuffer[redPixelIndex] * redScale;
+            outputPixels[pixelIndex + 1] = pixelBuffer[greenPixelIndex + 1] * greenScale;
+            outputPixels[pixelIndex + 2] = pixelBuffer[bluePixelIndex + 2] * blueScale;
+            outputPixels[pixelIndex + 3] = 255;
         }
     }
+
+    pixelBuffer.set(outputPixels);
 }
 
 // Pixel shader. Lightens every xth pixel to create a perspective-correct grid pattern.
