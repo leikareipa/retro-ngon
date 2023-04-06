@@ -44,9 +44,11 @@ export const sample = {
         return {
             renderOptions: {
                 lights: this.lights,
-                pixelShader: parent.ACTIVE_SHADER.function
-                             ? parent.ACTIVE_SHADER.function.bind(this)
-                             : null,
+                pixelShader: (
+                    (parent.SHADER_PIPELINE_ENABLED && parent.ACTIVE_SHADER.function)
+                        ? parent.ACTIVE_SHADER.function.bind(this)
+                        : null
+                ),
                 // For the mip level map shader to work, we need to enable mipmapping.
                 // So when that shader is in use, let's set n-gon's mipmap level based
                 // on its distance to the camera.
