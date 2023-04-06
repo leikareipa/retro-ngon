@@ -611,53 +611,57 @@ The renderer's public API consists of the following objects:
 | light                                           | (A description is coming.)                  |
 
 ## render(target[, meshes[, options]])
-Renders an image of the given n-gon meshes into the given render target (a canvas element). This call is blocking and will return once the rendering is completed; for non-blocking rendering, see [render_async()](#render_async-meshes-options-rngonurl).
 
-After the call, the resulting raw pixel buffer is also available via *Rngon.state.active.pixelBuffer*, and the corresponding screen-space n-gons via *Rngon.state.active.ngonCache*.
+Renders the specified n-gon meshes onto the provided render target (a canvas element or an off-screen pixel buffer). This function is blocking and will return after rendering is completed. For non-blocking rendering, see [render_async()](#render_async-meshes-options-rngonurl).
+
+After the call, the rendered pixel buffer is accessible via *Rngon.state.active.pixelBuffer*, and the corresponding screen-space n-gons are available from *Rngon.state.active.ngonCache*.
 
 *Parameters:*
 
 | Type      | Name            | Description |
 | --------- | --------------- | ----------- |
-| *mixed*   | target   | A value identifying the target canvas element. Possible types: HTMLCanvasElement, string, *null*. If HTMLCanvasElement, the rendering will be displayed on the corresponding canvas element. A string will be interpreted as the `id` property of the desired target canvas element. If *null*, the image will only be rendered into an off-screen pixel buffer, which can be accessed via *Rngon.state.active.pixelBuffer* after the call. |
-| *array*   | meshes          | An array providing the **mesh** objects to be rendered. Defaults to *[Rngon.mesh()]*. |
-| *object*  | options         | An object providing optional directives (see below). |
+| *mixed*   | target   | Identifies the target canvas element. Accepted types: HTMLCanvasElement, string, *null*. If HTMLCanvasElement, the rendering will be displayed on the corresponding canvas element. A string will be interpreted as the `id` property of the target canvas element. If *null*, the image will only be rendered into an off-screen pixel buffer, accessible via *Rngon.state.active.pixelBuffer* after the call. |
+| *array*   | meshes          | An array of **mesh** objects to be rendered. Defaults to *[Rngon.mesh()]*. |
+| *object*  | options         | An object containing optional directives (see below). |
 
 *The **options** parameter object recognizes the following properties:*
 
 | Type                  | Property                 | Description |
 | --------------------- | ------------------------ | ----------- |
 | *string*              | state                    | The renderer stores certain internal data, like the raw pixel buffer, in a render state object, which it reuses on subsequent render calls to avoid having to recreate the data buffers each time. This string identifies which render state object should be used by this call to [render()](#rendertarget-meshes-options). The first time render() is called with a particular state identifier value, a corresponding state object is automatically created and initialized; subsequent calls with that value will reuse the corresponding state object. Normally, you can ignore this setting; but if you want to e.g. render something into textures before rendering the scene proper, it can be more performant to use separate render states. You can access the state object via *Rngon.state[\<identifier\>]* after the render call. Note that the value *"active"* is reserved and should not be used. Defaults to *"default"*. |
-| *number*              | scale                    | If the render target is a canvas, this value sets the resolution of the rendering relative to the size of the canvas. For instance, a scale of 0.5 would result in rendering an image half the resolution of the canvas. The finished rendering is then scaled to the size of the canvas according to the *image-rendering* CSS property. If the render target is not a canvas, this value will be ignored. Defaults to *1*. |
-| *number*    | width         | If the render target is *null*, this value sets the width (in pixels) of the image to be rendered. Ignored if the render target is not *null*. Defaults to *640*. |
-| *number*    | height        | If the render target is *null*, this value sets the height (in pixels) of the image to be rendered. Ignored if the render target is not *null*. Defaults to *480*. |
+| *number*              | scale                    | If the render target is a canvas, sets the resolution of the rendering relative to the size of the canvas. For example, a value of 0.5 results in an image half the resolution of the canvas. The image is then sized to fit the canvas. If the render target is not a canvas, the value will be ignored. Defaults to *1*. |
+| *number*    | width         | If the render target is *null*, sets the width (in pixels) of the image to be rendered. Ignored if the render target is not *null*. Defaults to *640*. |
+| *number*    | height        | If the render target is *null*, sets the height (in pixels) of the image to be rendered. Ignored if the render target is not *null*. Defaults to *480*. |
 | *number*              | fov                      | Field of view. Defaults to *43*. |
-| *string*              | depthSort                | Type of depth sorting to use when ordering n-gons for rasterization. Possible values: "none" (no depth sorting; n-gons will be rendered in the order they were given), "painter" (painter's algorithm; n-gons furthest from the camera will be rendered first), "painter-reverse" (n-gons closest to the camera will be rendered first). If the *useDepthBuffer* option is true, "painter-reverse" may provide the best performance, as this combination allows for early rejection of occluded pixels. Defaults to *"painter-reverse"*. |
+| *string*              | depthSort                | Determines the depth sorting method for n-gons prior to rasterization. Possible values: "none" (no depth sorting; n-gons rendered in given order), "painter" (painter's algorithm; furthest n-gons rendered first), "painter-reverse" (closest n-gons rendered first). If the *useDepthBuffer* option is true, "painter-reverse" may provide the best performance, as this combination allows for early rejection of occluded pixels. Defaults to *"painter-reverse"*. |
 | *boolean*             | useDepthBuffer           | If true, a depth buffer will be used during rasterization to discard occluded pixels. For best performance, consider combining depth buffering with the "painter-reverse" *depthSort* option. Defaults to *true*. |
-| *boolean*             | hibernateWhenNotOnScreen | If true, rendering will be skipped if the target canvas is not at least partially within the current viewport. Defaults to *true*. |
+| *boolean*             | hibernateWhenNotOnScreen | If true and the target canvas is not within the browser's viewport, the function will return without rendering anything. Defaults to *true*. |
 | *number*              | nearPlane                | Distance from the camera to the near plane. Vertices closer to the camera will be clipped. Defaults to *1*.|
 | *number*              | farPlane                 | Distance from the camera to the far plane. Vertices further from the camera will be clipped. Defaults to *1000*.|
-| *number*              | perspectiveCorrectInterpolation | When set to true, any properties that are linearly interpolated between vertices (e.g. texture coordinates) will be perspective-corrected. This results in less view-dependent distortion, but will reduce performance to some extent. Defaults to *false*.|
-| *boolean*             | clipToViewport           | If set to true, the renderer will clip all n-gons against the viewport prior to rendering. If none of your n-gons extend beyond the screen's boundaries, setting this to false may save you some performance. Defaults to *true*. |
+| *number*              | perspectiveCorrectInterpolation | If *true*, any properties that are linearly interpolated between vertices (e.g. texture coordinates) will be perspective-corrected. This results in less view-dependent distortion, but will reduce performance to some extent. Defaults to *false*.|
+| *boolean*             | clipToViewport           | If *true*, the renderer will clip all n-gons against the viewport prior to rendering. If none of your n-gons extend beyond the screen's boundaries, setting this to *false* may save you some performance. Defaults to *true*. |
 | *translation_vector*  | cameraPosition           | The camera's position. Defaults to *vector3(0, 0, 0)*. |
 | *rotation_vector*     | cameraDirection          | The camera's direction. Defaults to *vector3(0, 0, 0)*. |
 | *array*               | auxiliaryBuffers         | One or more auxiliary render buffers. Each buffer is an object containing the properties *buffer* and *property*; where *buffer* points to an array containing as many elements as there are pixels in the rendering, and *property* names a source property in an n-gon's material. For each pixel rendered, the corresponding element in an auxiliary buffer will be written with the n-gon's material source value. Defaults to *[]*. |
-| *function*            | pixelShader              | A function that will be called once all of the frame's n-gons have been rasterized but before the rasterized image is drawn on screen. The function takes as its only parameter an object containing the following: {renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache}. The pixel buffer contains the RGBA color values of the rasterized image; the fragment buffer corresponding metadata about each rasterized pixel (like its interpolated texture and world coordinates); and the n-gon cache the transformed n-gons that were rasterized (including e.g. their material properties). With this information, the function can apply shader effects to the RGBA pixel buffer. Setting this property to *null* will fully disable shader functionality. Defaults to *null*.  |
-| *array*              | lights          | An array of **light** objects that defines the scene's light sources. The way in which these lights affect a given n-gon is controlled by the n-gon's 'vertexShading' material property. Defaults to *[]*.  |
+| *function*            | pixelShader              | A function to be called by the renderer at the completion of rasterization but before the rendered image is displayed on the canvas, for applying a pixel shader effect on the image. See the [pixel shaders sample](./samples/pixel-shaders/pixel-shaders.js) for examples of usage. Setting the value to *null* will disable pixel shader functionality. Defaults to *null*.  |
+| *function*            | vertexShader             | A function to be called by the renderer for each of the input n-gons after the n-gon has been transformed into world-space coordinates (prior to rasterization), for applying a vertex shader effect on the properties of the n-gon. See the [vertex shaders sample](./samples/vertex-shaders/vertex-shaders.js) for examples of usage. Setting the value to *null* will disable vertex shader functionality. Defaults to *null*.  |
+| *array*              | lights          | An array of **light** objects to be assigned as the scene's light sources. The vertices in the scene will be affected by these lights according to their parent n-gon's 'vertexShading' material property. Defaults to *[]*.  |
 | *object*             | modules | Modules are an advanced feature providing a way to override default core renderer behavior. For instance, you can provide a custom rasterizer function that will be called by the renderer in place of the default rasterizer. Defaults to all properties being *null* (see below for documentation of the properties).  |
 
 *The **options.modules** object recognizes the following properties:*
 
 | Type                  | Name                     | Description |
 | --------------------- | ------------------------ | ----------- |
-| *mixed*               | transformClipLight       | A function that will be called by the renderer to transform, clip, and light the n-gons that were passed to **render()**; or *null* to disable that functionality. For more information, including the list of parameters, see the default function. Defaults to *undefined*, which will invoke the default function, *Rngon.baseModules.transform_clip_light*. |
-| *mixed*               | rasterize                 | A function that will be called by the renderer to rasterize the n-gons that were passed to **render()**; or *null* to disable rasterization. If you intend to disable rasterization, setting this value to *null* instead of an empty function is recommended, as the former will also inhibit the unnecessary allocation of raster buffers. For more information, including the list of parameters, see the default function. Defaults to *undefined*, which will invoke the default function, *Rngon.baseModules.rasterize*. |
-| *mixed*               | surfaceWipe              | A function that will be called by the renderer to clear the render surface of previous renderings (pixel colors, depth values, etc.); or *null* to disable that functionality. For more information, including the list of parameters, see the default function. Defaults to *undefined*, which will invoke the default function, *Rngon.baseModules.surface_wipe*. |
+| *mixed*               | transformClipLight       | A function to be called by the renderer to transform, clip, and light the input n-gons; or *null* to disable this functionality in the render path. For more information, including the list of parameters, see [the default function](./js/retro-ngon/base-modules/transform-clip-light.js). Defaults to *undefined*, which will invoke the default function. |
+| *mixed*               | rasterize                 | A function to be called by the renderer to rasterize the input n-gons; or *null* to disable rasterization in the render path. If you intend to disable rasterization, setting this value to *null* instead of an empty function is recommended, as the former will also inhibit the unnecessary allocation of raster buffers. For more information, including the list of parameters, see [the default function](./js/retro-ngon/base-modules/rasterize.js). Defaults to *undefined*, which will invoke the default function. |
+| *mixed*               | surfaceWipe              | A function tp be called by the renderer to clear the render surface of previous renderings (pixel colors, depth values, etc.); or *null* to disable this functionality in the render path. For more information, including the list of parameters, see [the default function](./js/retro-ngon/base-modules/surface-wipe.js). Defaults to *undefined*, which will invoke the default function. |
 
 *Returns:*
 
 ```
 {
+    // The resolution of the output image. May be smaller or larger than the target
+    // canvas element, depending on the value of the 'scale' render option.
     renderWidth,
     renderHeight,
 
@@ -666,7 +670,7 @@ After the call, the resulting raw pixel buffer is also available via *Rngon.stat
     // during the rendering process.
     numNgonsRendered,
 
-    // The total time this call to render() took, in milliseconds.
+    // The total time it took to complete the render call, in milliseconds.
     totalRenderTimeMs,
 }
 ```
@@ -719,24 +723,15 @@ Rngon.state["custom-state"].pixelBuffer;
 
 Rngon.render(canvas, [meshes], {
     modules: {
-        rasterize: custom_rasterizer
-    }
+        rasterize: custom_rasterizer,
+    },
 });
 
-// This function will be called when Rngon.render() wants to rasterize
-// the n-gons it's been given (after they've been e.g. transformed into
-// screen space). The n-gons to be rasterized are in the n-gon cache,
-// Rngon.state.active.ngonCache.ngons; only the first 'count' n-gons
-// should be rasterized, the rest are stale cache filler. The pixel
-// array to render into is Rngon.state.active.pixelBuffer.data.
-//
-// For more info on how the rasterizer operates, see the default
-// rasterizer, Rngon.baseModules.rasterize().
-//
 function custom_rasterizer()
 {
     console.log("I've been asked to rasterize some n-gons.");
 
+    // Rasterize the screen-space n-gons.
     for (let n = 0; n < Rngon.state.active.ngonCache.count; n++)
     {
         const ngon = Rngon.state.active.ngonCache.ngons[n];
@@ -748,45 +743,12 @@ function custom_rasterizer()
         pixelBuffer[pixelIdx + 0] = red;
         pixelBuffer[pixelIdx + 1] = green;
         pixelBuffer[pixelIdx + 2] = blue;
-        pixelBuffer[pixelIdx + 3] = 255;
+        pixelBuffer[pixelIdx + 3] = alpha;
     }
 
-    // Optional: we could also evoke the renderer's default rasterizer.
+    // Optional: we could also call the renderer's default rasterizer.
     Rngon.baseModules.rasterize();
 }
-```
-
-```
-// Employ an auxiliary render buffer for mouse picking.
-
-const ngon = Rngon.ngon(
-    [Rngon.vertex(0, 0, 0)],
-    {
-        color: Rngon.color_rgba(255, 255, 0),
-
-        // The 'auxiliary' property holds sub-properties that
-        // are available to auxiliary buffers.
-        auxiliary:
-        {
-            // A value that uniquely identifies this n-gon.
-            mousePickingId: 5,
-        }
-    }
-);
-
-const mousePickingBuffer = [];
-
-Rngon.render("canvas", [Rngon.mesh([ngon])], {
-    cameraPosition: Rngon.translation_vector(0, 0, -5),
-    auxiliaryBuffers:
-    [
-        {buffer: mousePickingBuffer, property: "mousePickingId"},
-    ],
-});
-
-// The 'mousePickingBuffer' array now holds the rendered n-gon's
-// 'mousePickingId' value wherever the n-gon is visibile in the rendered
-// image.
 ```
 
 ## render_async([, meshes[, options[, rngonUrl]]])
