@@ -50,6 +50,13 @@ export const renderShared = {
             options.pixelShader
         );
 
+        state.useFragmentBuffer = Boolean(
+            options.useFragmentBuffer ||
+            // Detect whether the shader function's parameter list includes the fragment buffer.
+            // Note that this doesn't always work, e.g. when the function has been .bind()ed.
+            (state.usePixelShader && state.pixel_shader?.toString().match(/{(.+)?}/)[1].includes("fragmentBuffer"))
+        );
+
         state.rasterShaders = options.rasterShaders.filter(e=>typeof e === "function");
 
         state.usePalette = Array.isArray(options.palette);
@@ -234,6 +241,7 @@ export const renderShared = {
             farPlane: 1000,
             depthSort: "", // An empty string will make the renderer use its default depth sort option.
             useDepthBuffer: true,
+            useFragmentBuffer: false,
             clipToViewport: true,
             globalWireframe: false,
             hibernateWhenNotOnScreen: true,

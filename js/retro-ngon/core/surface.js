@@ -198,7 +198,7 @@ export function surface(canvasElement)
         }
 
         if (
-            state.usePixelShader &&
+            state.useFragmentBuffer &&
             ((state.fragmentBuffer.width != surfaceWidth) ||
              (state.fragmentBuffer.height != surfaceHeight))
         ){

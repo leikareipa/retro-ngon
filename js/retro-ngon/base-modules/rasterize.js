@@ -85,7 +85,7 @@ rasterize.polygon = function(
     );
 
     const interpolatePerspective = Rngon.state.active.usePerspectiveCorrectInterpolation;
-    const usePixelShader = Rngon.state.active.usePixelShader;
+    const useFragmentBuffer = Rngon.state.active.useFragmentBuffer;
     const useAuxiliaryBuffers = auxiliaryBuffers.length;
     const depthBuffer = (Rngon.state.active.useDepthBuffer? Rngon.state.active.depthBuffer.data : null);
     const renderWidth = Rngon.state.active.pixelBuffer.width;
@@ -126,7 +126,7 @@ rasterize.polygon = function(
             if (
                 material.texture &&
                 depthBuffer &&
-                !usePixelShader &&
+                !useFragmentBuffer &&
                 !material.allowAlphaReject &&
                 !material.allowAlphaBlend &&
                 (material.textureMapping === "affine") &&
@@ -140,7 +140,7 @@ rasterize.polygon = function(
             else if (
                 !material.texture &&
                 depthBuffer &&
-                !usePixelShader &&
+                !useFragmentBuffer &&
                 !useAuxiliaryBuffers &&
                 !material.allowAlphaReject &&
                 !material.allowAlphaBlend
@@ -227,7 +227,7 @@ rasterize.polygon = function(
             edge.delta.v = deltaV;
             edge.start.invW = startInvW;
             edge.delta.invW = deltaInvW;
-            if (usePixelShader)
+            if (useFragmentBuffer)
             {
                 edge.start.worldX = vert1.worldX/w1;
                 edge.delta.worldX = ((vert2.worldX/w2 - vert1.worldX/w1) / edgeHeight);
@@ -293,7 +293,7 @@ rasterize.line = function(
     
     const interpolatePerspective = Rngon.state.active.usePerspectiveCorrectInterpolation;
     const farPlane = Rngon.state.active.farPlaneDistance;
-    const usePixelShader = Rngon.state.active.usePixelShader;
+    const useFragmentBuffer = Rngon.state.active.useFragmentBuffer;
     const depthBuffer = (Rngon.state.active.useDepthBuffer? Rngon.state.active.depthBuffer.data : null);
     const pixelBufferClamped8 = Rngon.state.active.pixelBuffer.data;
     const pixelBuffer = new Uint32Array(pixelBufferClamped8.buffer);
@@ -321,7 +321,7 @@ rasterize.line = function(
     const deltaShade = ((vert2.shade/w2 - vert1.shade/w1) / lineLength);
     let startInvW = 1/w1;
     const deltaInvW = ((1/w2 - 1/w1) / lineLength);
-    if (usePixelShader)
+    if (useFragmentBuffer)
     {
         var startWorldX = vert1.worldX/w1;
         var deltaWorldX = ((vert2.worldX/w2 - vert1.worldX/w1) / lineLength);
@@ -348,7 +348,7 @@ rasterize.line = function(
             startShade += deltaShade;
             startInvW += deltaInvW;
 
-            if (usePixelShader)
+            if (useFragmentBuffer)
             {
                 startWorldX += deltaWorldX;
                 startWorldY += deltaWorldY;
@@ -404,7 +404,7 @@ rasterize.line = function(
                 depthBuffer[pixelBufferIdx] = depth;
             }
 
-            if (usePixelShader)
+            if (useFragmentBuffer)
             {
                 const fragment = Rngon.state.active.fragmentBuffer.data[pixelBufferIdx];
                 fragment.ngonIdx = ngonIdx;
@@ -434,7 +434,7 @@ rasterize.point = function(
         return;
     }
 
-    const usePixelShader = Rngon.state.active.usePixelShader;
+    const useFragmentBuffer = Rngon.state.active.useFragmentBuffer;
     const depthBuffer = (Rngon.state.active.useDepthBuffer? Rngon.state.active.depthBuffer.data : null);
     const pixelBufferClamped8 = Rngon.state.active.pixelBuffer.data;
     const pixelBuffer = new Uint32Array(pixelBufferClamped8.buffer);
@@ -492,7 +492,7 @@ rasterize.point = function(
             depthBuffer[pixelBufferIdx] = depth;
         }
 
-        if (usePixelShader)
+        if (useFragmentBuffer)
         {
             const fragment = Rngon.state.active.fragmentBuffer.data[pixelBufferIdx];
             fragment.ngonIdx = ngonIdx;

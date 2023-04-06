@@ -32,7 +32,7 @@ export function generic_fill({
 })
 {
     const usePalette = Rngon.state.active.usePalette;
-    const usePixelShader = Rngon.state.active.usePixelShader;
+    const useFragmentBuffer = Rngon.state.active.useFragmentBuffer;
     const fragmentBuffer = Rngon.state.active.fragmentBuffer.data;
     const depthBuffer = (Rngon.state.active.useDepthBuffer? Rngon.state.active.depthBuffer.data : null);
     const pixelBufferImage = Rngon.state.active.pixelBuffer;
@@ -46,7 +46,7 @@ export function generic_fill({
             ? textureDitherFilterKernel.enabled
             : textureDitherFilterKernel.disabled
     );
-    
+
     let textureMipLevel = null;
     let textureMipLevelIdx = 0;
     if (texture)
@@ -91,7 +91,7 @@ export function generic_fill({
             const deltaInvW = ((rightEdge.start.invW - leftEdge.start.invW) / spanWidth);
             let iplInvW = (leftEdge.start.invW - deltaInvW);
 
-            if (usePixelShader)
+            if (useFragmentBuffer)
             {
                 var deltaWorldX = ((rightEdge.start.worldX - leftEdge.start.worldX) / spanWidth);
                 var iplWorldX = (leftEdge.start.worldX - deltaWorldX);
@@ -123,7 +123,7 @@ export function generic_fill({
                     pixelBufferIdx++;
                 }
 
-                if (usePixelShader)
+                if (useFragmentBuffer)
                 {
                     iplWorldX += deltaWorldX;
                     iplWorldY += deltaWorldY;
@@ -364,7 +364,7 @@ export function generic_fill({
                         depthBuffer[pixelBufferIdx] = depth;
                     }
 
-                    if (usePixelShader)
+                    if (useFragmentBuffer)
                     {
                         const fragment = fragmentBuffer[pixelBufferIdx];
                         fragment.ngonIdx = ngonIdx;
@@ -406,7 +406,7 @@ export function generic_fill({
             rightEdge.start.v     += rightEdge.delta.v;
             rightEdge.start.invW  += rightEdge.delta.invW;
 
-            if (usePixelShader)
+            if (useFragmentBuffer)
             {
                 leftEdge.start.worldX  += leftEdge.delta.worldX;
                 leftEdge.start.worldY  += leftEdge.delta.worldY;

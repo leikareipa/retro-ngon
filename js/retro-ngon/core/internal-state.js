@@ -59,6 +59,7 @@ function default_state() {
         // For each pixel in the rendered frame, metadata about the state of the renderer
         // at that pixel, intended to be used by shaders. The array's size will be set to
         // match the requested render resolution.
+        useFragmentBuffer: false,
         fragmentBuffer: {
             width: 1,
             height: 1,
@@ -96,9 +97,7 @@ function default_state() {
             }
         },
 
-        // If true, enables the fragment buffer and allows the use of pixel shaders. Note
-        // that enabling shaders carries a performance penalty even if you don't actually
-        // make use of any pixel shaders.
+        // If true, enables the fragment buffer and allows the use of pixel shaders.
         usePixelShader: false,
         pixel_shader: undefined,
 

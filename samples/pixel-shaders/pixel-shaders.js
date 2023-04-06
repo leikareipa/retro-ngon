@@ -46,8 +46,18 @@ export const sample = {
                 lights: this.lights,
                 pixelShader: (
                     (parent.SHADER_PIPELINE_ENABLED && parent.ACTIVE_SHADER.function)
-                        ? parent.ACTIVE_SHADER.function.bind(this)
+                        ? Object.assign(parent.ACTIVE_SHADER.function.bind(this), parent.ACTIVE_SHADER.function)
                         : null
+                ),
+                // We use .bind() on the shader functions passed to the renderer, which
+                // makes the renderer unable to determine whether the shaders use the
+                // fragment buffer, so we need to manually inform it. We could just set
+                // this to 'true' always, but there's a performance gain in not using
+                // the fragment buffer when it's not needed.
+                useFragmentBuffer: (
+                    parent.ACTIVE_SHADER.function
+                        ? parent.ACTIVE_SHADER.function.toString().match(/{(.+)?}/)[1].includes("fragmentBuffer")
+                        : false
                 ),
                 // For the mip level map shader to work, we need to enable mipmapping.
                 // So when that shader is in use, let's set n-gon's mipmap level based
@@ -490,7 +500,7 @@ function ps_selective_scanlines({renderWidth, renderHeight, fragmentBuffer, pixe
 }
 
 // Pixel shader. Draws a wireframe (outline) around each visible n-gon.
-function ps_wireframe({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
+function ps_wireframe({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
 {
     for (let y = 0; y < renderHeight; y++)
     {
@@ -519,35 +529,6 @@ function ps_wireframe({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, n
                 pixelBuffer[(bufferIdx * 4) + 2] = 148;
             }
         }
-    }
-}
-
-// Pixel shader.  Lightens grazing angles wrt. the viewing direction on any n-gons whose
-// material has the 'isBacklit' property set to true.
-function ps_backlight({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, cameraPosition, ngonCache})
-{
-    const viewVector = this.Rngon.vector3();
-
-    for (let i = 0; i < (renderWidth * renderHeight); i++)
-    {
-        const thisFragment = fragmentBuffer[i];
-        const thisNgon = (thisFragment? ngonCache[thisFragment.ngonIdx] : null);
-
-        if (!thisNgon || !thisNgon.material.isBacklit)
-        {
-            continue;
-        }
-
-        viewVector.x = (thisFragment.worldX - cameraPosition.x);
-        viewVector.y = (thisFragment.worldY - cameraPosition.y);
-        viewVector.z = (thisFragment.worldZ - cameraPosition.z);
-        this.Rngon.vector3.normalize(viewVector);
-
-        const dot = this.Rngon.vector3.dot(thisNgon.normal, viewVector);
-
-        pixelBuffer[(i * 4) + 0] *= (2 + dot);
-        pixelBuffer[(i * 4) + 1] *= (2 + dot);
-        pixelBuffer[(i * 4) + 2] *= (2 + dot);
     }
 }
 
@@ -1055,7 +1036,7 @@ function ps_vignette({renderWidth, renderHeight, pixelBuffer})
 }
 
 // Pixel shader. Applies fisheye projection to the image.
-function ps_fisheye_projection({ renderWidth, renderHeight, pixelBuffer })
+function ps_fisheye_projection({renderWidth, renderHeight, pixelBuffer})
 {
     const widthHalf = (renderWidth / 2);
     const heightHalf = (renderHeight / 2);

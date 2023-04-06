@@ -87,14 +87,14 @@ export function transform_clip_light(
         // space.
         if (cachedNgon.material.allowTransform)
         {
-            // world space. Any built-in lighting is applied, if requested by the n-gon's
+            // World space. Any built-in lighting is applied, if requested by the n-gon's
             // material.
             {
                 Rngon.ngon.transform(cachedNgon, objectMatrix);
 
-                // Interpolated world XYZ coordinates will be made available to shaders,
-                // but aren't needed if shaders are disabled.
-                if (Rngon.state.active.usePixelShader)
+                // Interpolated world XYZ coordinates will be made available via the fragment
+                // buffer, but aren't needed if shaders are disabled.
+                if (Rngon.state.active.useFragmentBuffer)
                 {
                     for (let v = 0; v < cachedNgon.vertices.length; v++)
                     {
