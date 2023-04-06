@@ -28,6 +28,14 @@
                     </div>
                     <div class="adjust right" onclick="change_shader(1);"></div>
                 </div>
+                <div class="infobox enabled">
+                    <div class="adjust left" onclick="toggle_shaders_enabled();"></div>
+                    <div class="content" style="width: 8rem;">
+                        <div class="title">Shader pipeline</div>
+                        <div class="value"><i class="fas fa-sm fa-spin fa-spinner"></i></div>
+                    </div>
+                    <div class="adjust right" onclick="toggle_shaders_enabled();"></div>
+                </div>
             </div>
 
         </div>
@@ -46,7 +54,6 @@
             import {sample} from "./vertex-shaders.js";
 
             const shaders = sample.shaders;
-            window.ACTIVE_SHADER = shaders[0];
 
             window.change_shader = function(direction = 1)
             {
@@ -54,11 +61,22 @@
                 if (direction > 0) shaders.push(shaders.shift());
                 else if (direction < 0) shaders.unshift(shaders.pop());
 
-                ACTIVE_SHADER = sample.shaders[0];
+                window.ACTIVE_SHADER = sample.shaders[0];
                 document.querySelector(".infobox.shader .value").innerHTML = ACTIVE_SHADER.title;
 
                 return;
             }
+
+            window.toggle_shaders_enabled = function(isEnabled = !window.SHADER_PIPELINE_ENABLED)
+            {
+                window.SHADER_PIPELINE_ENABLED = isEnabled;
+                document.querySelector(".infobox.enabled .value").innerHTML = (isEnabled? "Enabled" : "Disabled");
+            } 
+            
+            // Select the first pixel shader option by default.
+            change_shader(0);
+
+            toggle_shaders_enabled(true);
 
             const renderer = (new URLSearchParams(window.location.search).get("renderer") || "dev");
             const renderTarget = document.getElementById("render-target");

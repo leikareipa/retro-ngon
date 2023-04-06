@@ -52,18 +52,21 @@ export const sample = {
                 // For the mip level map shader to work, we need to enable mipmapping.
                 // So when that shader is in use, let's set n-gon's mipmap level based
                 // on its distance to the camera.
-                vertexShader: parent.ACTIVE_SHADER.title !== "Mip level map"
-                              ? null
-                              : (ngon, cameraPosition)=>
-                              {
-                                  const maxDistance = (300 * 300);
-      
-                                  const distance = (((ngon.vertices[0].x - cameraPosition.x) * (ngon.vertices[0].x - cameraPosition.x)) +
-                                                  ((ngon.vertices[0].y - cameraPosition.y) * (ngon.vertices[0].y - cameraPosition.y)) +
-                                                  ((ngon.vertices[0].z - cameraPosition.z) * (ngon.vertices[0].z - cameraPosition.z)));
-      
-                                  ngon.mipLevel = Math.max(0, Math.min(0.25, (distance / maxDistance)));
-                              },
+                vertexShader: (
+                    (parent.ACTIVE_SHADER.title !== "Mip level map")
+                        ? null
+                        : (ngon, cameraPosition)=>{
+                            const maxDistance = (300 * 300);
+
+                            const distance = (
+                                ((ngon.vertices[0].x - cameraPosition.x) * (ngon.vertices[0].x - cameraPosition.x)) +
+                                ((ngon.vertices[0].y - cameraPosition.y) * (ngon.vertices[0].y - cameraPosition.y)) +
+                                ((ngon.vertices[0].z - cameraPosition.z) * (ngon.vertices[0].z - cameraPosition.z))
+                            );
+
+                            ngon.mipLevel = Math.max(0, Math.min(0.25, (distance / maxDistance)));
+                        }
+                ),
                 cameraDirection: this.camera.direction,
                 cameraPosition: this.camera.position,
             },

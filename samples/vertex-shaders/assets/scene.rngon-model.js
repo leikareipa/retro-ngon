@@ -35,13 +35,30 @@ export const scene =
 		});
 
 		m = this.materials = Object.freeze({
-			"Floor":{color:c(60,41,20),texture:t["ground"],textureMapping:"affine",},
-			"Object":{color:c(230,230,230),texture:t["bark"],textureMapping:"affine",isFlat:true,
-																					 isGrowing:true,
-																					 isWavy:true,
-																					 isPointCloud:true},
-			"Pillar":{color:c(163,126,88),texture:t["bark"],textureMapping:"affine",},
-			"Wall":{color:c(163,72,27),texture:t["shrub"],textureMapping:"affine",},
+			"Object": {
+				color: c(230,230,230),
+				texture: t["bark"],
+				textureMapping: "affine",
+				isFlat:true,
+				isGrowing: true,
+				isWavy: true,
+				isPointCloud: true,
+			},
+			"Floor": {
+				color: c(60,41,20),
+				texture: t["ground"],
+				textureMapping: "affine",
+			},
+			"Pillar": {
+				color: c(163,126,88),
+				texture: t["bark"],
+				textureMapping: "affine",
+			},
+			"Wall": {
+				color: c(163,72,27),
+				texture: t["shrub"],
+				textureMapping: "affine",
+			},
 		});
 
 		// Create the n-gons.

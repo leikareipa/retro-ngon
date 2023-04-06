@@ -28,9 +28,11 @@ export const sample = {
     
         return {
             renderOptions: {
-                vertexShader: parent.ACTIVE_SHADER.function
-                              ? parent.ACTIVE_SHADER.function.bind(this)
-                              : null,
+                vertexShader: (
+                    (parent.SHADER_PIPELINE_ENABLED && parent.ACTIVE_SHADER.function)
+                        ? parent.ACTIVE_SHADER.function.bind(this)
+                        : null
+                ),
                 cameraDirection: this.camera.direction,
                 cameraPosition: this.camera.position,
             },
@@ -40,7 +42,6 @@ export const sample = {
         };
     },
     shaders: [
-        {title:"None",          function:null},
         {title:"Bend",          function:vs_bendy},
         {title:"Glitch",        function:vs_glitchy},
         {title:"Shear",         function:vs_shear},
