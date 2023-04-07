@@ -189,8 +189,8 @@ export const sample = {
 
                         // The n-gons don't need transforming, so we can just assign them directly
                         // to the renderer's n-gon cache; from which they'll be picked up for rasterization.
-                        Rngon.state().ngonCache.ngons = ngons;
-                        Rngon.state().ngonCache.count = ngons.length;
+                        Rngon.state.active.ngonCache.ngons = ngons;
+                        Rngon.state.active.ngonCache.count = ngons.length;
                     },
                 },
                 get lights()

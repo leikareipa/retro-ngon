@@ -651,7 +651,7 @@ function ps_aberration({renderWidth, renderHeight, pixelBuffer})
             outputPixels[pixelIndex] = pixelBuffer[redPixelIndex] * redScale;
             outputPixels[pixelIndex + 1] = pixelBuffer[greenPixelIndex + 1] * greenScale;
             outputPixels[pixelIndex + 2] = pixelBuffer[bluePixelIndex + 2] * blueScale;
-            outputPixels[pixelIndex + 3] = 255;
+            outputPixels[pixelIndex + 3] = pixelBuffer[pixelIndex + 3];
         }
     }
 

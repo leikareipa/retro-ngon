@@ -86,9 +86,12 @@ export const sample = {
         return {
             renderOptions: {
                 lights: this.lights,
-                pixelShader: parent.RAYTRACING_ENABLED
-                             ? ps_raytraced_lighting.bind(this)
-                             : null, 
+                pixelShader: (
+                    parent.RAYTRACING_ENABLED
+                        ? ps_raytraced_lighting.bind(this)
+                        : null
+                ),
+                useFragmentBuffer: parent.RAYTRACING_ENABLED,
                 // We'll only copy the scene's polygons once. Once the BVH has been built,
                 // we know the polygons have been copied and don't need to do it any more.
                 vertexShader: this.sceneBVH? null : vs_copy_ngons.bind(this),
