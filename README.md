@@ -251,7 +251,7 @@ function sample_shader({renderWidth, renderHeight, pixelBuffer, fragmentBuffer})
 ![Before applying the shader](./images/tutorials/shader-before-corner-blue.png)
 ![After applying the shader](./images/tutorials/shader-after-corner-blue.png)
 
-### Exporting models from Blender
+## Exporting models from Blender
 
 A Python script for exporting scenes from Blender into a JSON format that supports this renderer is provided under [tools/conversion/](./tools/conversion/). At the moment, the export script is rudimentary but does the business.
 
@@ -289,7 +289,34 @@ Renders the specified n-gon meshes onto the provided render target (a canvas ele
 
 After the call, the rendered pixel buffer is accessible via *Rngon.state.active.pixelBuffer*, and the corresponding screen-space n-gons are available from *Rngon.state.active.ngonCache*.
 
-*Parameters:*
+### Rasterization paths
+
+Based on the material properties of the input n-gons and certain rendering options, the renderer will pass each n-gon through one of three possible rasterizations paths: Textured, Solid, or Generic.
+
+The paths are listed below, with the conditions required for that path to activate for a given n-gon:
+
+1. Textured
+    1. Render options:
+        1. Depth buffer enabled (`useDepthBuffer` set to *true*)
+        2. Fragment buffer disabled (`useFragmentBuffer` set to false, and `pixelShader` set to a falsy value or a function that doesn't use the fragment buffer)
+    3. N-gon material properties:
+        1. Textured
+        2. White base color (`color` set to *Rngon.color_rgba(255, 255, 255)*)
+        3. Alpha operations disabled (`allowAlphaReject` and `allowAlphaBlend` set to *false*)
+        4. Affine texture-mapping (`textureMapping` set to *"affine"*)
+        5. Texture filtering disabled (`textureFiltering` set to *"none"*)
+3. Solid
+    1. Depth buffer enabled (`useDepthBuffer` set to *true*)
+    2. Fragment buffer disabled (`useFragmentBuffer` set to false, and `pixelShader` set to a falsy value or a function that doesn't use the fragment buffer)
+    3. Auxiliary buffers disabled (`auxiliaryBuffers` set to an empty array)
+    4. N-gon material properties:
+        1. Not textured
+        2. Alpha operations disabled (`allowAlphaReject` and `allowAlphaBlend` set to *false*)
+2. Generic. N-gons not matching the criteria for the Textured or Solid paths will be rendered by the generic path.
+
+The Generic path is best-equipped to render all types of n-gons, but it can also make the fewest performance-increasing assumptions and so is the slowest of the paths. For textured n-gons, the Textured path can be up to twice as fast as the Generic path.
+
+### Parameters
 
 | Type      | Name            | Description |
 | --------- | --------------- | ----------- |
@@ -330,7 +357,7 @@ After the call, the rendered pixel buffer is accessible via *Rngon.state.active.
 | *mixed*               | rasterize                 | A function to be called by the renderer to rasterize the input n-gons; or *null* to disable rasterization in the render path. If you intend to disable rasterization, setting this value to *null* instead of an empty function is recommended, as the former will also inhibit the unnecessary allocation of raster buffers. For more information, including the list of parameters, see [the default function](./js/retro-ngon/base-modules/rasterize.js). Defaults to *undefined*, which will invoke the default function. |
 | *mixed*               | surfaceWipe              | A function tp be called by the renderer to clear the render surface of previous renderings (pixel colors, depth values, etc.); or *null* to disable this functionality in the render path. For more information, including the list of parameters, see [the default function](./js/retro-ngon/base-modules/surface-wipe.js). Defaults to *undefined*, which will invoke the default function. |
 
-*Returns:*
+### Returns:
 
 ```
 {
@@ -349,7 +376,7 @@ After the call, the rendered pixel buffer is accessible via *Rngon.state.active.
 }
 ```
 
-*Sample usage:*
+### Sample usage
 
 ```
 // Create a mesh out of a single-vertex n-gon, and render it onto a canvas.
