@@ -1,11 +1,17 @@
 # The retro n-gon renderer
 
-A retro-themed software 3D renderer for rasterizing *n*-sided polygons (as well as points and lines) onto a HTML5 canvas. Also supports async off-screen rendering.
-
-![A textured cube](./images/screenshots/beta/tomb-raider-1-texture-lightmap-2.png)\
-*A scene from Tomb Raider (1996) reproduced with this renderer. (Based on assets produced by Core Design for Tomb Raider. Core Design is not associated with the retro n-gon renderer.)*
+A well-featured retro-themed 3D software renderer for the HTML5 \<canvas\> (also supports off-screen rendering).
 
 You can view various interactive render samples [here](https://www.tarpeeksihyvaesoft.com/experimental/retro-ngon/samples/).
+
+![A textured cube](./images/screenshots/beta/tomb-raider-crt.webp)\
+*An indoor scene from Tomb Raider, with a CRT shader. (Based on assets created by Core Design for Tomb Raider. Core Design is not associated with this renderer.)*
+
+![A view from Grand Prix Legends](./images/screenshots/beta/gpl.webp)\
+*A view of the race track and stands at Rouen in Grand Prix Legends. (Based on textures and 3D models created by Papyrus Design Group for Grand Prix Legends. Papyrus Design Group is not associated with this renderer.)*
+
+![A view from Grand Prix Legends](./images/screenshots/beta/quake-bilinear.webp)\
+*A corridor in Quake, with bilinear texture filtering and per-pixel lighting. (Based on textures and 3D models created by id Software for Quake. id Software is not associated with this renderer.)*
 
 ## Documentation
 
