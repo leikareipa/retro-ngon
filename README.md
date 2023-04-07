@@ -15,7 +15,7 @@ You can view various interactive render samples [here](https://www.tarpeeksihyva
 
 ## Documentation
 
-- [User's manual](#users-manual)
+- [Quick-start guide](#quick-start-guide)
 - [API reference](#api-reference)
 
 ## Main features
@@ -76,230 +76,146 @@ Below are sample runs of the renderer's [performance benchmarks](tests/performan
     </tr>
 </table>
 
-# User's manual
-In this section, you'll find both theoretical and practical guidance on using the retro n-gon renderer; including a reference manual for the renderer's API.
+# Quick-start guide
 
-Contents:
-- [Introduction and intro tutorial](#introduction-and-intro-tutorial)
-    - [The gist of it in theory](#the-gist-of-it-in-theory)
-    - [Rendering a quad, in practice](#rendering-a-quad-in-practice)
-    - [Rendering a textured quad](#rendering-a-textured-quad)
-    - [Giving the quad a spin](#giving-the-quad-a-spin)
-    - [Adding pixelation](#adding-pixelation)
-    - [Creating pixel shaders for extra visual effects](#creating-pixel-shaders-for-extra-visual-effects)
-    - [More examples](#more-examples)
-- [Creating and rendering 3D models](#creating-and-rendering-3d-models)
-    - [N-gons](#n-gons)
-    - [Meshes](#meshes)
-    - [Models](#models)
-    - [Exporting models from Blender](#exporting-models-from-blender)
-    - [Texturing](#texturing)
+## Render a simple quad
 
-## Introduction and intro tutorial
-### The gist of it in theory
-At the heart of the renderer is the `render()` function, which transforms and rasterizes a set of n-gons onto a HTML5 canvas. You call it with the HTML id of the canvas you want the image rendered into, an array of the n-gon meshes you want rendered, and additional, optional parameters to define the position of the camera, etc.
+1. In your HTML document, create a canvas element:
 
-The following pseudocode outlines the basic program flow for rendering an n-gon onto a canvas element:
-```
-// Create the canvas element to render into.
-<canvas id="the-canvas" style="width: 100px; height: 100px;"></canvas>
-
-// Create the n-gon, and wrap it in a mesh for rendering.
-ngon = Rngon.ngon(...)
-mesh = Rngon.mesh([ngon])
-
-// Render the n-gon mesh onto the canvas.
-Rngon.render("the-canvas", [mesh], {options})
+```html
+<canvas id="canvas" style="width: 300px; height: 300px;"></canvas>
 ```
 
-Getting a bit ahead of ourselves, it's worth noting that you don't need to hand-code 3D models out of individual n-gons, either: you can also export models directly from Blender. You'll learn more about it in later sections of this document; but for now, the following pseudocode gives you a feel for how you would render a Blender-exported model called `scene`:
-```
-// Load the exported model file.
-<script src="scene.js"></script>
+2. Import the retro n-gon renderer's JavaScript distributable:
 
-// Initialize the model for rendering. This will load in any textures, as well.
-await scene.initialize()
-
-// Create a mesh of the model. We can then render it with render(), as we did above.
-const mesh = Rngon.mesh(scene.ngons)
-```
-
-### Rendering a quad, in practice
-The following code first constructs a HTML5 canvas element to render into, using CSS to set the size of the rendering to 300 x 300 pixels. It then creates an n-gon quad (i.e. a 4-gon), wraps it up in a mesh, and asks the renderer to draw the mesh onto the canvas. Note also that the mesh is given a 45-degree rotation, the renderer's camera is moved back by 5 units, and the quad is colored blue.
-```
-<canvas id="canvas" style="width: 300px; height: 300px; background-color: rgba(0, 0, 0, .05);"></canvas>
+```html
 <script src="distributable/rngon.js"></script>
 <script>
-    const quad = Rngon.ngon([Rngon.vertex(-1, -1, 0),
-                             Rngon.vertex( 1, -1, 0),
-                             Rngon.vertex( 1,  1, 0),
-                             Rngon.vertex(-1,  1, 0)],
-                            {
-                                color: Rngon.color_rgba(0, 150, 255)
-                            })
-
-    const quadMesh = Rngon.mesh([quad],
-                                {
-                                    rotation: Rngon.rotation_vector(0, 0, 45)
-                                })
-
-    Rngon.render("canvas", [quadMesh],
-                 {
-                     cameraPosition: Rngon.translation_vector(0, 0, -5),
-                     scale: 1
-                 })
+    // Your JavaScript rendering code can go here.
 </script>
 ```
+
+3. Define a quad and render it onto the canvas:
+
+```javascript
+const quad = Rngon.ngon([
+    Rngon.vertex(-1, -1, 0),
+    Rngon.vertex(1, -1, 0),
+    Rngon.vertex(1, 1, 0),
+    Rngon.vertex(-1, 1, 0)], {
+        color: Rngon.color_rgba(0, 150, 255)
+});
+
+const quadMesh = Rngon.mesh([quad], {
+    rotation: Rngon.rotation_vector(0, 0, 45),
+});
+
+Rngon.render("canvas", [quadMesh], {
+    cameraPosition: Rngon.translation_vector(0, 0, -5),
+    scale: 1,
+});
+```
+
 ![A blue quad](./images/tutorials/blue-quad.png)
 
-### Rendering a textured quad
-Textures are a staple of 3D rendering, so let's add one. The code below is otherwise the same as above, but additionally creates a `texture` object and appends it to the quad's material property. You'll learn more about textures later in this document, but for right now, the details don't need worrying about. Just know that this is roughly how textures are added to n-gons. Since the base color of an n-gon also modifies the color of its texture, we set the color to white instead of blue, as we don't want the texture to be tinted blue, here.
+## Add a texture
+
+1. Define a texture and assign it to the quad:
+
+```javascript
+const simpleTexture = Rngon.texture_rgba({
+    width: 2,
+    height: 2,
+    pixels: [
+        255, 200, 0, 255,
+        200, 255, 0, 255,
+        255, 0, 200, 255,
+        0, 255, 200, 255
+    ],
+});
+
+const quad = Rngon.ngon([
+    Rngon.vertex(-1, -1, 0),
+    Rngon.vertex(1, -1, 0),
+    Rngon.vertex(1, 1, 0),
+    Rngon.vertex(-1, 1, 0)], {
+        color: Rngon.color_rgba(255, 255, 255),
+        texture: simpleTexture,
+});
 ```
-<canvas id="canvas" style="width: 300px; height: 300px; background-color: rgba(0, 0, 0, .05);"></canvas>
-<script src="distributable/rngon.js"></script>
-<script>
-    const texture = Rngon.texture_rgba({width: 2, height: 2, pixels: [255, 200, 0, 255,
-                                                                      200, 255, 0, 255,
-                                                                      255, 0, 200, 255,
-                                                                      0, 255, 200, 255]})
 
-    const quad = Rngon.ngon([Rngon.vertex(-1, -1, 0),
-                             Rngon.vertex( 1, -1, 0),
-                             Rngon.vertex( 1,  1, 0),
-                             Rngon.vertex(-1,  1, 0)],
-                            {
-                                color: Rngon.color_rgba(255, 255, 255),
-                                texture: texture
-                            })
-
-    const quadMesh = Rngon.mesh([quad],
-                                {
-                                    rotation: Rngon.rotation_vector(0, 0, 45)
-                                })
-
-    Rngon.render("canvas", [quadMesh],
-                 {
-                     cameraPosition: Rngon.translation_vector(0, 0, -5),
-                     scale: 1
-                 })
-</script>
-```
 ![A textured quad](./images/tutorials/textured-quad.png)
 
-You might notice that the texture hasn't rotated with the quad: its lines are perpendicular to the horizon, while the quad's run diagonally, having been rotated by 45 degrees. This is an artefact of the renderer's default texture-mapping mode. You can learn more about the texturing modes further down, but for now, we can fix this by choosing a more suitable mode.
+2. Optionally, you can load the texture's data from a JSON file:
 
-The code below modifies the `quad` object given above to add UV texture coordinates to the quad's vertices, and the `affine` texture-mapping mode to the quad's material property. With these changes, the renderer will rotate the texture in sync with the quad.
+```javascript
+const quad = Rngon.ngon([
+    Rngon.vertex(-1, -1, 0),
+    Rngon.vertex(1, -1, 0),
+    Rngon.vertex(1, 1, 0),
+    Rngon.vertex(-1, 1, 0)], {
+        color: Rngon.color_rgba(255, 255, 255),
+        texture: await Rngon.texture_rgba.create_with_data_from_file("texture.json"),
+});
 ```
-    const quad = Rngon.ngon([Rngon.vertex(-1, -1, 0, 0, 0),
-                             Rngon.vertex( 1, -1, 0, 1, 0),
-                             Rngon.vertex( 1,  1, 0, 1, 1),
-                             Rngon.vertex(-1,  1, 0, 0, 1)],
-                            {
-                                color: Rngon.color_rgba(255, 255, 255),
-                                texture: texture,
-                                textureMapping: "affine",
-                                uvWrapping: "clamp"
-                            })
+
+A PHP-based tool for converting PNG images into this JSON format is provided in the [tools/conversion/](./tools/conversion/) directory.
+
+3. Enable affine texture-mapping by adding vertex UV coordinates and setting the `textureMapping` and `uvWrapping` properties:
+
+```javascript
+const quad = Rngon.ngon([
+    Rngon.vertex(-1, -1, 0, 0, 0),
+    Rngon.vertex( 1, -1, 0, 1, 0),
+    Rngon.vertex(1, 1, 0, 1, 1),
+    Rngon.vertex(-1, 1, 0, 0, 1)], {
+        color: Rngon.color_rgba(255, 255, 255),
+        texture: simpleTexture,
+        textureMapping: "affine",
+        uvWrapping: "clamp",
+});
 ```
+
 ![A textured quad with affine mapping](./images/tutorials/textured-quad-affine.png)
 
-### Giving the quad a spin
-With a few simple additions, we can modify the code so far to add a spinning animation to the quad. We'll do this by repeatedly calling `render()` in sync with the device's refresh rate via `window.requestAnimationFrame()`, and for each frame wrapping the quad in a new mesh with a slightly increased rotation value. (The retro n-gon renderer favors immutable data, which is why we're creating the mesh object from scratch each frame, rather than modifying the rotation of an existing mesh. Although note that since alpha.5 and later versions, the renderer has now begun moving away from immutable structures, for reasons of performance.)
-```
-<canvas id="canvas" style="width: 300px; height: 300px; background-color: rgba(0, 0, 0, .05);"></canvas>
-<script src="distributable/rngon.js"></script>
-<script>
-    const texture = Rngon.texture_rgba({width: 2, height: 2, pixels: [255, 200, 0, 255,
-                                                                      200, 255, 0, 255,
-                                                                      255, 0, 200, 255,
-                                                                      0, 255, 200, 255]})
+## Make it pixelated
 
-    const quad = Rngon.ngon([Rngon.vertex(-1, -1, 0, 0, 0),
-                             Rngon.vertex( 1, -1, 0, 1, 0),
-                             Rngon.vertex( 1,  1, 0, 1, 1),
-                             Rngon.vertex(-1,  1, 0, 0, 1)],
-                            {
-                                color: Rngon.color_rgba(255, 255, 255),
-                                texture: texture,
-                                textureMapping: "affine",
-                                uvWrapping: "clamp"
-                            })
+Adjust the `scale` property in the render call:
 
-    const rotatingQuad = (frameCount)=>
-    {
-        const rotationSpeed = 0.6;
-        return Rngon.mesh([quad],
-                          {
-                              rotation: Rngon.rotation_vector(0, 0, 45 + (frameCount * rotationSpeed))
-                          });
-    };
-
-    (function render_loop(frameCount = 0)
-    {
-        Rngon.render("canvas", [rotatingQuad(frameCount)],
-        {
-            cameraPosition: Rngon.translation_vector(0, 0, -5),
-            scale: 1
-        })
-
-        window.requestAnimationFrame(()=>render_loop(frameCount + 1));
-    })();
-</script>
+```javascript
+Rngon.render("canvas", [quadMesh], {
+    cameraPosition: Rngon.translation_vector(0, 0, -5),
+    scale: 0.14
+});
 ```
 
-### Adding pixelation
-In the examples above, the renderer's pixel size is 1:1 with the output resolution, so there is no visible pixelation that one might expect from a retro style. Not to worry, though, as the degree of pixelation can be controlled via the `scale` property provided to `render()`. What happens if we set it to, say, 0.14?
-```
-Rngon.render("canvas", [rotatingQuad(frameCount)],
-             {
-                 cameraPosition: Rngon.translation_vector(0, 0, -5),
-                 scale: 0.14
-             })
-```
 ![A textured quad with blurry upscaling](./images/tutorials/textured-quad-upscaled-blurry.png)
+
+2. Modify the canvas's CSS to disable blurry upscaling:
+
+```html
+<canvas id="canvas" style="image-rendering: pixelated; width: 300px; height: 300px;"></canvas>
+```
 ![A textured quad with pixelated upscaling](./images/tutorials/textured-quad-upscaled-pixelated.png)
 
-Setting the `scale` property to a value less than 1 causes the pixel size to be upscaled by the inverse of the property's value &ndash; in this case, by 1 / 0.14 &asymp; 7. In other words, you get chunky pixels, while the display size remains the same.
+## Brief introduction to pixel shaders
 
-One thing to be aware of is that, under the hood, the upscaling is done by the browser and not by the retro n-gon renderer. This will typically result in a blurry image, as you see on the left. To have the browser upscale without blur, add `image-rendering: pixelated` to the canvas's CSS:
-```
-<canvas id="canvas" style="width: 300px;
-                           height: 300px;
-                           background-color: rgba(0, 0, 0, .05);
-                           image-rendering: pixelated;"></canvas>
-```
+1. Enable custom pixel shading by passing a shader function to render():
 
-This will result &ndash; with certain browsers, like Chrome &ndash; in the clean upscaling you see in the second image, above. Not all browsers, especially older versions of them, support this syntax, however, and may require one of the following variations:
-```
-image-rendering: -moz-crisp-edges;    /* For Firefox*/
-image-rendering: -o-crisp-edges;      /* For Opera*/
-image-rendering: -webkit-crisp-edges; /* For Safari*/
-```
+```javascript
+Rngon.render("...", [...], {
+    pixelShader: sample_shader,
+});
 
-### Creating pixel shaders for extra visual effects
-Pixel shaders allow you to add a variety of visual effects to your renderings, from simple 2d pixel manipulation to complex 3D lighting and more.
-
-To enable the renderer's shader functionality, we need to pass a shader function to `render()` via its `pixelShader` property. Like so:
-
-```
-Rngon.render("...", [...],
-             {
-                 pixelShader: sample_shader,
-             })
-
-function sample_shader({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache, cameraPosition})
+function sample_shader(...)
 {
     ...
 }
 ```
 
-The renderer will call the shader function once all n-gons have been rasterized but before the rasterized image is drawn onto the screen &ndash; the idea being that the shader function gets to modify the rasterized pixel data before it is shown to the user.
+2. A pixel shader to make every pixel in the image blue:
 
-The shader function receives as parameters the render resolution, the rasterized pixel data, some metadata in the fragment buffer about the state of the renderer at each rasterized pixel, the n-gons &ndash; transformed into screen space &ndash; that were rasterized, and the position &ndash; in world XYZ coordinates &ndash; of the camera.
-
-The following is a simple shader to make every pixel in the rendering blue:
-
-```
+```javascript
 function sample_shader({renderWidth, renderHeight, pixelBuffer})
 {
     for (let i = 0; i < (renderWidth * renderHeight); i++)
@@ -312,47 +228,17 @@ function sample_shader({renderWidth, renderHeight, pixelBuffer})
 }
 ```
 
-The shader iterates over all of the pixels in the rasterized image (RGBA, so four elements per pixel), setting their color to red:0, green:150, blue:255, and alpha:255. Once the function returns, the renderer will draw the modified pixel buffer onto the canvas, which presents as a solid blue image. The two pictures below show the rendering before and after applying the shader.
-
 ![Before applying the shader](./images/tutorials/shader-before-all-blue.png)
 ![After applying the shader](./images/tutorials/shader-after-all-blue.png)
 
-Although we've done so above, a shader doesn't normally need to explicitly set the alpha channel of a pixel, since any rasterized pixel will already have its alpha set to 255 by default. However, in the above example, where we render only a quad with nothing in the background, the unrendered background pixels have an alpha of 0 and will thus not be visible unless we manually assign them a more opaque value.
+3. A pixel shader to color half of our quad blue:
 
-To demonstrate that pixels with a default alpha of 0 are indeed part of the background, the following shader colors blue all pixels whose alpha is 0:
-
-```
-function sample_shader({renderWidth, renderHeight, pixelBuffer})
-{
-    for (let i = 0; i < (renderWidth * renderHeight); i++)
-    {
-        if (pixelBuffer[(i * 4) + 3] === 0)
-        {
-            pixelBuffer[(i * 4) + 0] = 0;
-            pixelBuffer[(i * 4) + 1] = 150;
-            pixelBuffer[(i * 4) + 2] = 255;
-            pixelBuffer[(i * 4) + 3] = 255;
-        }
-    }
-}
-```
-
-![Before applying the shader](./images/tutorials/shader-before-alpha-blue.png)
-![After applying the shader](./images/tutorials/shader-after-alpha-blue.png)
-
-With simple pixel shaders like these, you can create various effects like grayscaling, blurring and sharpening. However, by accessing the extra information passed to our shader &ndash; the fragment buffer and the n-gon cache &ndash; we can write even more powerful shaders!
-
-For example, to color only half of our quad blue, we can make use of the fragment buffer's XYZ world coordinates:
-
-```
+```javascript
 function sample_shader({renderWidth, renderHeight, pixelBuffer, fragmentBuffer})
 {
     for (let i = 0; i < (renderWidth * renderHeight); i++)
     {
-        const thisFragment = fragmentBuffer[i];
-
-        if (thisFragment &&
-            thisFragment.worldY < 0)
+        if (fragmentBuffer[i]?.worldY < 0))
         {
             pixelBuffer[(i * 4) + 0] = 0;
             pixelBuffer[(i * 4) + 1] = 150;
@@ -365,232 +251,24 @@ function sample_shader({renderWidth, renderHeight, pixelBuffer, fragmentBuffer})
 ![Before applying the shader](./images/tutorials/shader-before-corner-blue.png)
 ![After applying the shader](./images/tutorials/shader-after-corner-blue.png)
 
-Each of the fragment buffer's elements is an object that contains render-related information about a corresponding rasterized pixel; e.g. `fragmentBuffer[x]` provides information about the pixel in `pixelBuffer[x * 4]`. For a list of the properties available in the fragment buffer, see [js/retro-ngon/retro-ngon.js](js/retro-ngon/retro-ngon.js) &ndash; these include interpolated world coordinates, surface normals, texture coordinates, etc.
-
-Shaders can also use the n-gon cache to get information about the rasterized polygons. The following shader colors blue any corner of the quad whose vertex coordinates are within a certain distance of the corresponding screen pixel:
-
-```
-function sample_shader({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
-{
-    for (let y = 0; y < renderHeight; y++)
-    {
-        for (let x = 0; x < renderWidth; x++)
-        {
-            const thisFragment = fragmentBuffer[x + y * renderWidth];
-            const thisNgon = (thisFragment? ngonCache[thisFragment.ngonIdx] : null);
-
-            if (!thisNgon)
-            {
-                continue;
-            }
-
-            for (let v = 0; v < thisNgon.vertices.length; v++)
-            {
-                if ((Math.abs(x - Math.round(thisNgon.vertices[v].x)) < 20) &&
-                    (Math.abs(y - Math.round(thisNgon.vertices[v].y)) < 20))
-                {
-                    pixelBuffer[((x + y * renderWidth) * 4) + 0] = 0;
-                    pixelBuffer[((x + y * renderWidth) * 4) + 1] = 150;
-                    pixelBuffer[((x + y * renderWidth) * 4) + 2] = 255;
-                }
-            }
-        }
-    }
-}
-```
-
-![Before applying the shader](./images/tutorials/shader-before-blue-corners.png)
-![After applying the shader](./images/tutorials/shader-after-blue-corners.png)
-
-In the above shader, we use the fragment buffer's 'ngonIdx' property to find which of the n-gon cache's polygons a given pixel is part of. Once we know that, we can directly access that n-gon's public properties.
-
-The following shader uses the fragment buffer's world coordinates to apply an alpha fading effect. It exploits the fact that this particular quad's world coordinates are always in the range [-1, 1], using them as an alpha multiplier:
-
-```
-function sample_shader({renderWidth, renderHeight, pixelBuffer, fragmentBuffer})
-{
-    for (let i = 0; i < (renderWidth * renderHeight); i++)
-    {
-        const thisFragment = fragmentBuffer[i];
-
-        if (thisFragment)
-        {
-            const alpha = Math.max(0, Math.min(1, thisFragment.worldX));
-            pixelBuffer[(i * 4) + 3] = (alpha * 255);
-        }
-    }
-}
-```
-
-![Before applying the shader](./images/tutorials/shader-before-world-alpha.png)
-![After applying the shader](./images/tutorials/shader-after-world-alpha.png)
-
-Unlike the 2d screen-space vertex coordinates of the n-gon cache, the fragment buffer's world coordinates give you the corresponding 3D world position of any given rasterized pixel. This is rather powerful, as it allows you to e.g. compute per-pixel 3D lighting.
-
-Overall, pixel shaders let you create a variety of effects, from simple 2d pixel manipulation to complex 3D per-pixel lighting and more. Get creative and see what effects you can make happen!
-
-That said, a downside of shaders is that you pay a price for them in performance: even a slightly complex shader can readily halve your FPS. A basic trick is to limit yourself to relatively lower resolutions when using shaders.
-
-### More examples
-The [samples/](./samples/) directory contains various examples of the renderer in action. But note that some of them may not run on Apple devices due to the way they access their resource files.
-
-## Creating and rendering 3D models
-### N-gons
-The building-block of 3D models in the retro n-gon renderer is the n-gon. It's a polygon of _n_ sides (_n_-gon), or a line (2-gon), or a single point (1-gon). An n-gon is made up of one or more vertices, and a material that describes how the n-gon should look when rendered (its color, texture, and so on).
-
-A red triangle, for instance, could be created like so:
-```
-const ngon = Rngon.ngon([Rngon.vertex(0, 0, 0),
-                         Rngon.vertex(1, 0, 0),
-                         Rngon.vertex(1, 1, 0)],
-                        {
-                            color: Rngon.color_rgba(255, 0, 0),
-                        })
-```
-Here, we define the three vertices of the triangle, and specify the `color` property of its material. Note that the vertices are passed as an array that can include an arbitrary number of them &ndash; three to make a triangle, four to make a quad, and so on.
-
-### Meshes
-To render n-gons, you first wrap them in a mesh. Meshes are collections of n-gons that share a purpose; for instance, the n-gons that make up a model of a spoon. A mesh thus consists of an array one or more n-gons, and a particular set of 3D transformations that affect the mesh's n-gons in unison.
-
-A mesh containing one triangle rotated by 45 degrees and moved by 11 units along an axis could be created like so:
-```
-const triangle = Rngon.ngon([Rngon.vertex(0, 0, 0),
-                             Rngon.vertex(1, 0, 0),
-                             Rngon.vertex(1, 1, 0)])
-
-const mesh = Rngon.mesh([triangle],
-                        {
-                            rotation: Rngon.rotation_vector(45, 0, 0),
-                            translation: Rngon.translation_vector(11, 0, 0),
-                        })
-```
-
-The following are valid properties of a mesh's set of transformations, and the valid values of each property:
-```
-{
-    rotation: Rngon.rotation_vector(...)
-    translation: Rngon.translation_vector(...)
-    scaling: Rngon.scaling_vector(...)
-}
-```
-The `rotation` property sets the amount, in degrees between 0 and 359, of rotation of the mesh's n-gons along each of the three axes.
-
-The `translation` property moves the mesh's n-gons to the given location. This is in addition to the n-gons' local coordinates; such that if an n-gon's vertex is located at x = 10, and you translate the n-gon's mesh by 10 on x, that vertex's new location will be x = 20.
-
-The `scaling` property scales each of the mesh's n-gons by the given amount along each of the three axes.
-
-If both translation and rotation are defined, the rotation will be applied first.
-
-### Models
-Meshes and n-gons are the retro n-gon renderer's native objects. Models, on the other hand, are an interface between these native objects and external 3D assets.
-
-For instance, when you create a 3D scene in Blender and export it using the retro n-gon renderer's Blender export script (more of which in the sections, below), you get a model: a JavaScript file whose code, after some processing to load any assets from disk etc., returns an array of n-gons corresponding to the original scene's polygons. Something like the following:
-```
-const scene =
-{
-    ngons:[],
-    initialize: async function()
-    {
-        // ...Load textures, set up materials, etc.
-
-        this.ngons = Object.freeze(
-        [
-            // ...Create the model's n-gons.
-        ]);
-    }
-}
-```
-
-The `scene` object (though it could be called anything) contains the `ngons` array of n-gons, and the `initialize()` function, which populates the `ngons` array. Assuming the object is contained in a file called `scene.js`, we could render it like so:
-```
-<script src="distributable/rngon.js"></script>
-<script src="scene.js"></script>
-<canvas id="canvas" style="width: 300px; height: 300px;"></canvas>
-<script>
-    (async ()=>
-    {
-        await scene.initialize()
-        const sceneMesh = Rngon.mesh(scene.ngons)
-        Rngon.render("canvas", [sceneMesh])
-    })()
-</script>
-```
-
 ### Exporting models from Blender
-You can use the free 3D modeling program, [Blender](https://www.blender.org/), to create 3D assets for use with the retro n-gon renderer. A script to export scenes from Blender into the retro n-gon renderer's format is provided under [tools/conversion/](./tools/conversion/).
 
-At the moment, the Blender export script is quite rudimentary, and doesn't necessarily allow for a convenient asset workflow. Nonetheless, with certain precautions as discussed below, it allows you to create 3D scenes in Blender using native n-gons, and to import the results directly for use with the retro n-gon renderer.
+A Python script for exporting scenes from Blender into a JSON format that supports this renderer is provided under [tools/conversion/](./tools/conversion/). At the moment, the export script is rudimentary but does the business.
 
-To export a scene from Blender, simply load up the export script file in Blender, and run it. The exact way to load Python scripts into Blender will depend on your version of Blender &ndash; if you're uncertain, just have a look on Google for the specifics, but know that it's not a complicated process.
+To export a scene from Blender, load up the export script file in Blender, and run it. The script will export vertex coordinates, vertex UV coordinates, the diffuse color and intensity of each material, and, if any, the filename of the texture image in each material's first texture slot. Objects that are hidden won't be exported.
 
-At the moment, the script exports vertex coordinates, vertex UV coordinates, each material's diffuse color and its intensity, and, if any, the filename of the texture image in each material's first texture slot. Objects that are hidden will not be exported. Normals are ignored. You should first apply any pending transformations to the objects (Object > Apply in Blender's menu) before running export script, as any unapplied transformations will be ignored. The same goes for any other modifiers that have not yet been applied.
+Remember to first apply any pending transformations to the objects (Object > Apply in Blender's menu) before running the export script, as any unapplied transformations will be ignored. The same goes for any other mesh modifiers that haven't yet been applied.
 
-If you are not planning on using depth buffering in your rendering, you may need to subdivide larger polygons to prevent them from incorrectly occluding other nearby geometry. Without depth buffering, the renderer will average a polygon's depth information across its face into one value &ndash; which will become a less accurate approximation of the polygon's depth as its area grows. On the other hand, when depth buffering is enabled, the renderer will use per-pixel depth interpolation, which will be accurate for larger polygons as well as smaller ones.
+Once the scene has been exported into the JSON file, you may need to make a few edits to the file by hand. Texture filenames, for example, will probably need to be given correct paths. You'll also want to convert the texture images into the renderer's JSON format (see [Add a texture](#add-a-texture)).
 
-Once the file has been exported, it's likely that you'll have to make a few edits to it by hand. Texture filenames, for instance, will probably need to be given correct paths. If you have unused textures or materials in Blender, they will nonetheless also be exported, and may require manual deletion from the file (or, perhaps ideally, from Blender, so that they don't get exported in the first place).
+## More!
 
-As the retro n-gon renderer expects textures to be in its custom JSON format, you'll want to convert any textures to that format, first, and also adjust their filenames accordingly in the exported file. You'll find more information about converting textures, below.
+You can find various render samples under the [samples/](./samples/) directory.
 
-### Texturing
-Examples of the basics of texturing were given earlier in the documentation. Now, you'll find out about all the details.
-
-Each n-gon can have one texture applied to it. To apply a texture to an n-gon, assign it as the n-gon's `texture` material property:
-```
-const someTexture = Rngon.texture_rgba(...)
-
-const ngon = Rngon.ngon([...],
-                        {
-                            texture: someTexture
-                        })
-```
-
-By default, you don't need to provide UV coordinates for the n-gon's vertices for texturing to work. The texture will be mapped onto the n-gon's face disregarding its orientation, so no UV are needed. Depending on the n-gon's orientation, this mapping can result in texture-warping, however, as shown below.
-
-![A textured quad with ortho mapping](./images/tutorials/ortho-mapping-straight.png) ![A textured quad with ortho mapping, rotated](./images/tutorials/ortho-mapping.png)
-
-The texture-mapping mode can be changed via the n-gon's `textureMapping` material property, which by default is `ortho` and behaves as described above. The second mode is `affine` &ndash; it requires UV coordinates, but will eliminate texture warp in many cases. In the two images, below, `ortho` mapping is shown on the left, and `affine` mapping on the right.
-
-![A textured quad with ortho mapping](./images/tutorials/ortho-mapping.png) ![A textured quad with affine mapping](./images/tutorials/affine-mapping.png)
-
-The difference in performance between `ortho` and `affine` mapping should be negligible, but you can test for your target platforms using [tests/performance/perftest1.html](./tests/performance/perftest1.html).
-
-The texture for an n-gon's material is created using the `texture_rgba()` function. It takes as input an object specifying the texture's width, height, pixel data, and certain optional properties. The following code creates a red 1 x 1 texture:
-```
-const texture = Rngon.texture_rgba({width:1,
-                                    height:1,
-                                    pixels:[255, 0, 0, 0]})
-```
-
-In this example, the `pixels` property is an array of raw 8-bit color values, four per pixel for RGBA. Note that the retro n-gon renderer's alpha is either fully opaque (255) or fully transparent (any value but 255); there is no intermediate blending.
-
-The texture's pixel data can also be provided as a Base64-encoded string, with 16 bits per pixel (5 bits for RGB each and 1 bit for alpha). The same example as above but with Base64-encoded pixel data would be like so:
-```
-const texture = Rngon.texture_rgba({width:1,
-                                    height:1,
-                                    channels:"rgba:5+5+5+1",
-                                    encoding:"base64",
-                                    pixels:"H4A="})
-```
-
-When using Base64-encoded pixel data, the `encoding` property must be set to "base64". The `channels` property must be "rgba:5+5+5+1".
-
-The benefit of using Base64 encoding &ndash; in tandem with 16-bit color &ndash; is a notable reduction in file size. The reduced color depth causes some degradation in color fidelity, true, but given the renderer's low fidelity overall (low resolutions and polycounts), it's likely not going be visually disruptive in many cases.
-
-A simple PHP script for converting PNG images into the retro n-gon renderer's JSON format is provided under [tools/conversion/](./tools/conversion/).
-
-If your JSON texture data is stored in a JSON file rather than as a JavaScript object, you can create a texture from it by calling  the `texture_rgba.create_with_data_from_file()` function. It returns a Promise of a texture, resolved once the file has been loaded and a texture created from its data. The following code creates a texture from a JSON file:
-```
-(async ()=>
-{
-    const texture = await Rngon.texture_rgba.create_with_data_from_file("file.json")
-
-    // Safe to use the texture here, it's finished loading.
-})()
-```
-
-Be aware, however, that `texture_rgba.create_with_data_from_file()` uses the Fetch API, which typically requires the content to be served via a server rather than from a local file directly. If you want to use this functionality locally, you can set up a server on localhost &ndash; e.g. by executing `$ php -S localhost:8000` in the retro n-gon renderer's root &ndash; and then accessing the code's HTML via `localhost:8000/*`.
+You should also have a look at the [API reference](#api-reference), as it contains much more detail than is found in this quick-start guide. For example, you'll find out about vertex shaders, custom rasterizer functions, asynchronous rendering, raw render buffer access, and many other things.
 
 # API reference
+
 The renderer's public API consists of the following objects:
 
 | Object                                          | Brief description                           |
