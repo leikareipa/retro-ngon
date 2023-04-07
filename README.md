@@ -34,17 +34,6 @@ Among some of the possible use cases are:
 - To avoid idiosyncrasies of hardware rendering
 - Engagement in minimalism
 
-## Screenshots
-
-![A view from Grand Prix Legends](./images/screenshots/beta/grand-prix-legends-rouen.png)\
-*A view of the race track and stands at Rouen in Grand Prix Legends. (Based on textures and 3D models produced by Papyrus Design Group for Grand Prix Legends. Papyrus Design Group is not associated with the retro n-gon renderer.)*
-
-![Utah teapot](./images/screenshots/beta/teapt.png)\
-*The Utah teapot with Phong shading.*
-
-![Lightmapping sample](./images/screenshots/beta/lightmap-sample.png)
-*Viewing one of the included render samples, showcasing lightmapping.*
-
 ## Performance
 
 Below are sample runs of the renderer's [performance benchmarks](tests/performance/), showing average FPS counts across various render resolutions running in Google Chrome.
