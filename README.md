@@ -137,7 +137,7 @@ const quad = Rngon.ngon([
 
 ## Make it pixelated
 
-Adjust the `scale` property in the render call:
+1. Adjust the `scale` property in the render call:
 
 ```javascript
 Rngon.render("canvas", [quadMesh], {
@@ -208,7 +208,7 @@ function sample_shader({renderWidth, renderHeight, pixelBuffer, fragmentBuffer})
 ![Before applying the shader](./images/tutorials/shader-before-corner-blue.png)
 ![After applying the shader](./images/tutorials/shader-after-corner-blue.png)
 
-## Exporting models from Blender
+## Exporting scenes from Blender
 
 A Python script for exporting scenes from Blender into a JSON format that supports this renderer is provided under [tools/conversion/](./tools/conversion/). At the moment, the export script is rudimentary but does the business.
 
