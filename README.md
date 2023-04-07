@@ -13,69 +13,26 @@ You can view various interactive render samples [here](https://www.tarpeeksihyva
 ![A view from Grand Prix Legends](./images/screenshots/beta/quake-bilinear.webp)\
 *A corridor in Quake, with bilinear texture filtering and per-pixel lighting. (Based on textures and 3D models created by id Software for Quake. id Software is not associated with this renderer.)*
 
-## Documentation
-
-- [Quick-start guide](#quick-start-guide)
-- [API reference](#api-reference)
-
 ## Main features
 
 - Straightforward API
 - Genuine retro aesthetics
-- Modular design makes it easy to override parts of the render pipeline for specialized uses
-- No external dependencies
+- Customizable render pipeline
+- Reasonable performance (for retro uses)
 
 ## Suggested use cases
 
-Being a retro-oriented software 3D renderer for JavaScript, the retro n-gon renderer encourages low resolutions, low polycounts, and general creativity in navigating around technical and/or performance limitations.
+Being a retro-oriented software renderer written in JavaScript, the retro n-gon renderer thrives in low resolutions and low polycounts, its performance generally lacking for modern-style rendering.
 
-Among some of the possible use cases are:
-- Retro-themed 3D games and model visualization
-- To avoid idiosyncrasies of hardware rendering
-- Engagement in minimalism
+I'd generally expect the renderer to find a home powering nostalgia projects reminiscent of the 90s and early 2000. Retro-themed games, model visualization, etc.
 
-## Performance
+With its relatively simple API, this renderer may also be a good choice for prototyping.
 
-Below are sample runs of the renderer's [performance benchmarks](tests/performance/), showing average FPS counts across various render resolutions running in Google Chrome.
+## Documentation
 
-<table>
-    <tr>
-        <td align="left">AMD Ryzen 5 5600X</td>
-        <th align="center">480 &times; 270</th>
-        <th align="center">960 &times; 540</th>
-        <th align="center">1920 &times; 1080</th>
-        <th align="center">3840 &times; 2160</th>
-    </tr>
-    <tr>
-        <th align="left">Quake 1</th>
-        <td align="center">180</td>
-        <td align="center">88</td>
-        <td align="center">28</td>
-        <td align="center">7</td>
-    </tr>
-    <tr>
-        <th align="left">Quake 1 (untextured)</th>
-        <td align="center">252</td>
-        <td align="center">134</td>
-        <td align="center">52</td>
-        <td align="center">13</td>
-    </tr>
-    <tr>
-        <th align="left">Quake 1 (wireframe)</th>
-        <td align="center">286</td>
-        <td align="center">223</td>
-        <td align="center">135</td>
-        <td align="center">62</td>
-    </tr>
-    <tr>
-        <th align="left">Quake 1 (shader)</th>
-        <td align="center">83</td>
-        <td align="center">24</td>
-        <td align="center">6</td>
-        <td align="center">2</td>
-    </tr>
-</table>
-
+- [Quick-start guide](#quick-start-guide)
+- [API reference](#api-reference)
+   
 # Quick-start guide
 
 ## Render a simple quad
