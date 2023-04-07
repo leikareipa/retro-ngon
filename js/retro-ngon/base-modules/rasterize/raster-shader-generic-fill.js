@@ -202,11 +202,17 @@ export function generic_fill({
             
                                     u = (textureMipLevel.width * (u - Math.floor(u)));
                                     v = (textureMipLevel.height * (v - Math.floor(v)));
-            
+
+                                    const uAbs = Math.abs(u);
+                                    const vAbs = Math.abs(v);
+                                    const uFrac = (uAbs - ~~uAbs);
+                                    const vFrac = (vAbs - ~~vAbs);
+
                                     // Modulo for power-of-two. This will also flip the texture for
-                                    // negative UV coordinates.
-                                    u = (u & (textureMipLevel.width - 1));
-                                    v = (v & (textureMipLevel.height - 1));
+                                    // negative UV coordinates. Note that we restore the fractional
+                                    // part, for potential texture filtering etc. later on.
+                                    u = ((u & (textureMipLevel.width - 1)) + uFrac);
+                                    v = ((v & (textureMipLevel.height - 1)) + vFrac);
 
                                     break;
                                 }
