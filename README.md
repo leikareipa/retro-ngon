@@ -248,7 +248,7 @@ After the call, the rendered pixel buffer is accessible via *Rngon.state.active.
 
 ### Rasterization paths
 
-Based on the material properties of the input n-gons and certain rendering options, the renderer will pass each n-gon through one of three possible rasterizations paths: Textured, Solid, or Generic.
+Based on the material properties of the input n-gons and certain rendering options, the renderer will pass each n-gon through one of three possible rasterization paths: Textured, Solid, or Generic. (You can also implement your own custom rasterization paths. See the [the built-in paths](./js/retro-ngon/base-modules/rasterize/), [the additional sample paths](./samples/raster-shaders/), and the 'rasterShaders' render option for more details.)
 
 The paths are listed below, with the conditions required for that path to activate for a given n-gon:
 
@@ -300,6 +300,7 @@ The Generic path is best-equipped to render all types of n-gons, but it can also
 | *translation_vector*  | cameraPosition           | The camera's position. Defaults to *vector3(0, 0, 0)*. |
 | *rotation_vector*     | cameraDirection          | The camera's direction. Defaults to *vector3(0, 0, 0)*. |
 | *array*               | auxiliaryBuffers         | One or more auxiliary render buffers. Each buffer is an object containing the properties *buffer* and *property*; where *buffer* points to an array containing as many elements as there are pixels in the rendering, and *property* names a source property in an n-gon's material. For each pixel rendered, the corresponding element in an auxiliary buffer will be written with the n-gon's material source value. Defaults to *[]*. |
+| *array*               | rasterShaders         | An array of zero or more functions to be called by the rasterizer to implement the pixel drawing of each n-gon. The function will be passed the n-gon and the screen-space edges that delineate it, and the function can then plot the corresponding pixels into the renderer's output pixel buffer. The functions in this array will be called synchronously and in back-to-front order until one of them returns *true*. If no function returns *true*, or if the array provides no functions, the rasterizer will call [one of the built-in raster shaders](./js/retro-ngon/base-modules/rasterize/). Defaults to *[]*. |
 | *boolean*             | useFragmentBuffer        | If true, a fragment buffer will be created during rasterization to contain metadata about each pixel (e.g. depth value and world XYZ coordinates). Will be set to *true* automatically if the pixel shader function is detected (via *Function.toString*) to accept a "fragmentBuffer" parameter; but note that this detection may fail e.g. if the function was created from *Function.bind*. Defaults to *false*. |
 | *function*            | pixelShader              | A function to be called by the renderer at the completion of rasterization but before the rendered image is displayed on the canvas, for applying a pixel shader effect on the image. See the [pixel shaders sample](./samples/pixel-shaders/pixel-shaders.js) for examples of usage. Setting the value to *null* will disable pixel shader functionality. Note that the 'useFragmentBuffer' property must be set to *true* if the pixel shader accesses the fragment buffer; the renderer will in most cases automatically detect this and set the property accordingly, but in some cases you may need to manually assign it. Defaults to *null*.  |
 | *function*            | vertexShader             | A function to be called by the renderer for each of the input n-gons after the n-gon has been transformed into world-space coordinates (prior to rasterization), for applying a vertex shader effect on the properties of the n-gon. See the [vertex shaders sample](./samples/vertex-shaders/vertex-shaders.js) for examples of usage. Setting the value to *null* will disable vertex shader functionality. Defaults to *null*.  |
@@ -314,9 +315,9 @@ The Generic path is best-equipped to render all types of n-gons, but it can also
 | *mixed*               | rasterize                 | A function to be called by the renderer to rasterize the input n-gons; or *null* to disable rasterization in the render path. If you intend to disable rasterization, setting this value to *null* instead of an empty function is recommended, as the former will also inhibit the unnecessary allocation of raster buffers. For more information, including the list of parameters, see [the default function](./js/retro-ngon/base-modules/rasterize.js). Defaults to *undefined*, which will invoke the default function. |
 | *mixed*               | surfaceWipe              | A function tp be called by the renderer to clear the render surface of previous renderings (pixel colors, depth values, etc.); or *null* to disable this functionality in the render path. For more information, including the list of parameters, see [the default function](./js/retro-ngon/base-modules/surface-wipe.js). Defaults to *undefined*, which will invoke the default function. |
 
-### Returns:
+### Returns
 
-```
+```javascript
 {
     // The resolution of the output image. May be smaller or larger than the target
     // canvas element, depending on the value of the 'scale' render option.
@@ -335,7 +336,7 @@ The Generic path is best-equipped to render all types of n-gons, but it can also
 
 ### Sample usage
 
-```
+```javascript
 // Create a mesh out of a single-vertex n-gon, and render it onto a canvas.
 
 const ngon = Rngon.ngon(
@@ -357,7 +358,7 @@ Rngon.render("canvas", [mesh], {
 });
 ```
 
-```
+```javascript
 //  Render into an off-screen pixel buffer using a second render state.
 
 const point = Rngon.ngon([Rngon.vertex(0, 0, 0)]);
@@ -376,7 +377,7 @@ Rngon.state.active.pixelBuffer;
 Rngon.state["custom-state"].pixelBuffer;
 ```
 
-```
+```javascript
 // Create and use a custom rasterizer function.
 
 Rngon.render(canvas, [meshes], {
@@ -414,7 +415,7 @@ Renders an image of the given n-gon meshes into an off-screen target. This call 
 
 Returns a Promise that will resolve when the rendering is completed.
 
-*Parameters:*
+### Parameters 
 
 | Type      | Name            | Description |
 | --------- | --------------- | ----------- |
@@ -433,9 +434,9 @@ Returns a Promise that will resolve when the rendering is completed.
 | *string*    | vertexShader  | Same as for **render()**, but the function must now be provided as a string (e.g. of the form `"(a)=>{console.log(a)}"`) so that it can be passed to a Web Worker. If *null*, vertex shader functionality will be disabled. Defaults to *null*. |
 | *object*    | modules       | Ignored. Default parameter values will be used. |
 
-*Returns:*
+### Returns
 
-```
+```javascript
 {
     // An ImageData object containing the rendered pixels.
     image,
@@ -453,16 +454,15 @@ Returns a Promise that will resolve when the rendering is completed.
 }
 ```
 
-*Sample usage:*
+### Sample usage
 
-```
+```javascript
 // Create a mesh out of a single-vertex n-gon, render it asynchronously in a
 // Web Worker thread, and paint the rendered image onto an existing <canvas>
 // element whose DOM id is "target-canvas".
 
 const ngon = Rngon.ngon(
-    [Rngon.vertex(0, 0, 5)],
-    {
+    [Rngon.vertex(0, 0, 5)], {
         color: Rngon.color_rgba(255, 255, 0),
     }
 );
@@ -486,16 +486,17 @@ Rngon.render_async([mesh], {width: 640, height: 480}).then(result=>
 });
 ```
 
-```
+```javascript
 // Use async/await instead of .then().
 
 const result = await Rngon.render_async([mesh], {width: 640, height: 480});
 ```
 
 ## mesh([ngons[, transform]])
+
 A collection of thematically-related n-gons, rendered as a unit with shared transformations.
 
-*Parameters:*
+### Parameters
 
 | Type      | Name            | Description |
 | --------- | --------------- | ----------- |
@@ -512,9 +513,9 @@ A collection of thematically-related n-gons, rendered as a unit with shared tran
 
 *Note:* If both *translation* and *rotation* are given, the rotation will be applied first.
 
-*Returns:*
+### Returns
 
-```
+```javascript
 {
     rotation: transform.rotation,
     translation: transform.translation,
@@ -525,24 +526,24 @@ A collection of thematically-related n-gons, rendered as a unit with shared tran
 })
 ```
 
-*Sample usage:*
+### Sample usage
 
-```
+```javascript
 // Construct a mesh containing one n-gon, and apply rotation and scaling to it.
 
 const ngon = Rngon.ngon([Rngon.vertex(0, 0, 0)]);
 
-const mesh = Rngon.mesh([ngon],
-                        {
-                            rotation: Rngon.rotation_vector(20, 0, 0),
-                            scaling: Rngon.scaling_vector(10, 15, 5),
-                        });
+const mesh = Rngon.mesh([ngon], {
+    rotation: Rngon.rotation_vector(20, 0, 0),
+    scaling: Rngon.scaling_vector(10, 15, 5),
+});
 ```
 
 ## ngon([vertices[, material[, normal]]])
+
 An n-gon &ndash; a shape defined by *n* vertices; typically a triangle or a quad.
 
-*Parameters:*
+### Parameters
 
 | Type      | Name            | Description |
 | --------- | --------------- | ----------- |
@@ -570,9 +571,9 @@ An n-gon &ndash; a shape defined by *n* vertices; typically a triangle or a quad
 | *boolean*            | allowAlphaBlend   | If *true*, the n-gon will be blended with its background pixels to an extent determined by the 'color' property's alpha value (0 = fully transparent, 255 = fully opaque). If *false*, no blending will be performed. Note that the 'allowAlphaReject' property will also influence alpha rendering. Defaults to *false*. |
 | *boolean*            | allowAlphaReject  | If *true*, the rasterizer will discard any texel whose alpha value is not equal to 255, and any n-gon whose material color's alpha value is less than or equal to 0. Otherwise, texels will be rasterized regardless of their alpha, and n-gons will be either subjected to alpha blending (if the 'allowAlphaBlend' property is *true*) or rasterized regardless of their alpha. Defaults to *false*. |
 
-*Returns:*
+### Returns
 
-```
+```javascript
 {
     vertices,
     material,
@@ -587,35 +588,38 @@ An n-gon &ndash; a shape defined by *n* vertices; typically a triangle or a quad
 }
 ```
 
-*Sample usage:*
+### Sample usage
 
-```
+```javascript
 // Construct a 4-sided n-gon (quad) with a texture applied to it.
 
-const texture = Rngon.texture_rgba(
-                {
-                    width: 2,
-                    height: 2,
-                    pixels: [255, 200, 0, 255,
-                             200, 255, 0, 255,
-                             255, 0, 200, 255,
-                             0, 255, 200, 255],
-                });
+const texture = Rngon.texture_rgba({
+    width: 2,
+    height: 2,
+    pixels: [
+        255, 200, 0, 255,
+        200, 255, 0, 255,
+        255, 0, 200, 255,
+        0, 255, 200, 
+    ],
+});
 
-const quad = Rngon.ngon([Rngon.vertex(-1, -1, 0),
-                         Rngon.vertex( 1, -1, 0),
-                         Rngon.vertex( 1,  1, 0),
-                         Rngon.vertex(-1,  1, 0)],
-                        {
-                            color: Rngon.color_rgba(255, 255, 255),
-                            texture: texture
-                        });
+const quad = Rngon.ngon([
+    Rngon.vertex(-1, -1, 0),
+    Rngon.vertex( 1, -1, 0),
+    Rngon.vertex( 1,  1, 0),
+    Rngon.vertex(-1,  1, 0)], {
+        color: Rngon.color_rgba(255, 255, 255),
+        texture: texture
+    }
+);
 ```
 
 ## vertex([x[, y[, z[, u[, v[, w]]]]]])
+
 One corner of an n-gon.
 
-*Parameters:*
+### Parameters
 
 | Type          | Name     | Description |
 | ------------- | -------- | ----------- |
@@ -628,9 +632,9 @@ One corner of an n-gon.
 
 *Note:* In the coordinate space, *x* is horizontal (positive = right), and *y* is vertical (positive = up); positive *z* is forward. Of the texture coordinates, *u* is horizontal, and *v* is vertical.
 
-*Returns:*
+### Returns
 
-```
+```javascript
 {
     x, y, z, w, u, v,
 
@@ -644,15 +648,15 @@ One corner of an n-gon.
 }
 ```
 
-*Sample usage:*
+### Sample usage
 
-```
+```javascript
 // Create a vertex at coordinates (1, 1, 0), and give it UV coordinates (1, 0).
 
 const vertex = Rngon.vertex(1, 1, 0, 1, 0);
 ```
 
-```
+```javascript
 // Create an n-gon from two vertices.
 
 const vertex1 = Rngon.vertex(1, 1, 0);
@@ -662,13 +666,14 @@ const ngon = Rngon.ngon([vertex1, vertex2]);
 ```
 
 ## vector3([x[, y[, z]]])
+
 A three-component vector.
 
 *Aliases:* **rotation_vector**\*, **translation_vector**, **scaling_vector**
 
 \* Component values passed to **rotation_vector** are expected to be in units of degrees; and are automatically converted by value into the renderer's internal angle units.
 
-*Parameters:*
+### Parameters
 
 | Type          | Name     | Description |
 | ------------- | -------- | ----------- |
@@ -678,26 +683,27 @@ A three-component vector.
 
 *Note:* In the coordinate space, *x* is horizontal (positive = right), and *y* is vertical (positive = up); positive *z* is forward.
 
-*Returns:*
+### Returns
 
-```
+```javascript
 {
     x, y, z,
 }
 ```
 
-*Sample usage:*
+### Sample usage
 
-```
+```javascript
 // Create a vector (1, 2, 3).
 
 const vector = Rngon.vector3(1, 2, 3);
 ```
 
 ## color_rgba([red[, green[, blue[, alpha]]]])
+
 RGB color with transparency (alpha channel). The alpha channel is either fully transparent or fully opaque.
 
-*Parameters:*
+### Parameters
 
 | Type          | Name  | Description |
 | ------------- | ------| ----------- |
@@ -708,9 +714,9 @@ RGB color with transparency (alpha channel). The alpha channel is either fully t
 
 *Note:* All color channel values are to be given in the range [0, 255].
 
-*Returns:*
+### Returns
 
-```
+```javascript
 {
     red, green, blue, alpha,
 
@@ -720,9 +726,10 @@ RGB color with transparency (alpha channel). The alpha channel is either fully t
 ```
 
 ## texture_rgba([data])
+
 A texture whose pixels are RGB with alpha.
 
-*Parameters:*
+### Parameters
 
 | Type          | Name  | Description |
 | ------------- | ------| ----------- |
@@ -740,9 +747,9 @@ A texture whose pixels are RGB with alpha.
 
 *Note:* The texture's data can be provided either via the *data* parameter, or through a JSON file using the `texture_rgba.create_with_data_from_file()` helper function.
 
-*Returns:*
+### Returns
 
-```
+```javascript
 {
     width: data.width,
     height: data.height,
@@ -753,39 +760,39 @@ A texture whose pixels are RGB with alpha.
 }
 ```
 
-*Sample usage:*
+### Sample usage
 
-```
+```javascript
 // Create a 2-by-2 texture.
 
-const texture = Rngon.texture_rgba(
-                {
-                    width: 2,
-                    height: 2,
-                    pixels: [255, 200, 0, 255,
-                             200, 255, 0, 255,
-                             255, 0, 200, 255,
-                             0, 255, 200, 255],
-                });
+const texture = Rngon.texture_rgba({
+    width: 2,
+    height: 2,
+    pixels: [
+        255, 200, 0, 255,
+        200, 255, 0, 255,
+        255, 0, 200, 255,
+        0, 255, 200, 255
+    ],
+});
 ```
 
+```javascript
+// Create a texture whose pixels are Base64-encoded packed 16-bit integers.
+
+const texture = Rngon.texture_rgba({
+    width: 1,
+    height: 1,
+    channels: "rgba:5+5+5+1",
+    encoding: "base64",
+    pixels: "H4A=",
+});
 ```
+
+```javascript
 // Create a texture with data from a JSON file.
 
 const texture = await Rngon.texture_rgba.create_with_data_from_file("texture.json");
-```
-
-```
-// Create a texture whose pixels are Base64-encoded packed 16-bit integers.
-
-const texture = Rngon.texture_rgba(
-                {
-                    width: 1,
-                    height: 1,
-                    channels: "rgba:5+5+5+1",
-                    encoding: "base64",
-                    pixels: "H4A=",
-                });
 ```
 
 # Authors and credits
