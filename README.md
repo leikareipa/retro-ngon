@@ -228,17 +228,17 @@ You should also have a look at the [API reference](#api-reference), as it contai
 
 The renderer's public API consists of the following objects:
 
-| Object                                          | Brief description                           |
-| ----------------------------------------------- | ------------------------------------------- |
-| [render()](#rendertarget-meshes-options)        | Renders n-gon meshes.                       |
-| [render_async()](#render_async-meshes-options-rngonurl) | Renders n-gon meshes asynchronously.  |
-| [mesh](#meshngons-transform)                    | Collection of thematically-related n-gons.  |
-| [ngon](#ngonvertices-material-normal)           | Polygonal shape defined by *n* vertices.    |
-| [vertex](#vertexx-y-z-u-v-w)                    | Corner of an n-gon.                         |
-| [vector3](#vector3x-y-z)                        | Three-component vector. Aliases: *translation_vector*, *rotation_vector*, *scaling_vector*. |
-| [color_rgba](#color_rgbared-green-blue-alpha)   | RGB color with transparency.                |
-| [texture_rgba](#texture_rgbadata)               | RGB texture with transparency.              |
-| light                                           | (A description is coming.)                  |
+| Object                                          | Brief description                            |
+| ----------------------------------------------- | -------------------------------------------- |
+| [render()](#rendertarget-meshes-options)        | Renders n-gon meshes.                        |
+| [render_async()](#render_async-meshes-options-rngonurl) | Renders n-gon meshes asynchronously. |
+| [mesh](#meshngons-transform)                    | Collection of related n-gons.                |
+| [ngon](#ngonvertices-material-normal)           | Polygonal shape defined by *n* vertices.     |
+| [vertex](#vertexx-y-z-u-v-w)                    | Corner of an n-gon.                          |
+| [vector3](#vector3x-y-z)                        | Three-component vector.                      |
+| [color_rgba](#color_rgbared-green-blue-alpha)   | RGB color with transparency.                 |
+| [texture_rgba](#texture_rgbadata)               | RGB texture with transparency.               |
+| light                                           | (A description is coming.)                   |
 
 ## render(target[, meshes[, options]])
 
@@ -327,8 +327,7 @@ An object with the following properties:
 const ngon = Rngon.ngon(
     [Rngon.vertex(0, 0, 0)], {
         color: Rngon.color_rgba(255, 255, 0),
-    }
-);
+});
 
 const mesh = Rngon.mesh([ngon], {
     rotation: Rngon.rotation_vector(0, 0, 45)
@@ -415,21 +414,22 @@ A selection of n-gons related to each other in some way, rendered as a unit with
 
 Note: If both *transform.translation* and *transform.rotation* are given, rotation will be applied first.
 
+Note: Transformations are applied at render-time on copies of the mesh's n-gons.
+
 ### Returns
 
 An object with the following properties:
 
-- `ngons` (**array**): Corresponds to the *ngons* parameter.
-- `translation` (**translation_vector**): Corresponds to the *transform.translation* parameter.
-- `rotation` (**rotation_vector**): Corresponds to the *transform.rotation* parameter.
-- `scale` (**scaling_vector**): Corresponds to the *transform.scaling* parameter.
+- `ngons` (**array**): The *ngons* parameter.
+- `translation` (**translation_vector**): The *transform.translation* parameter.
+- `rotation` (**rotation_vector**): The *transform.rotation* parameter.
+- `scale` (**scaling_vector**): The *transform.scaling* parameter.
 
 ### Sample usage
 
 ```javascript
-// Construct a mesh containing one n-gon, and apply rotation and scaling to it.
+// Construct a mesh containing one n-gon, and apply scaling to it.
 const mesh = Rngon.mesh([ngon], {
-    rotation: Rngon.rotation_vector(20, 0, 0),
     scaling: Rngon.scaling_vector(10, 15, 5),
 });
 
@@ -445,110 +445,97 @@ A polygon made up of *n* vertices, also known as an n-gon. Single-vertex n-gons 
 
 - `vertices` (**array** = *[vertex()]*): The **vertex** objects that define the corners of the n-gon. The length of the array must be in the range [1,500].
 - `material` (**object**): The n-gon's material properties:
-    - `color` (**color_rgba** = *color_rgba(255, 255, 255, 255)*): Base color. If the *texture* material property is *null*, the entire n-gon will be rendered in this color. Otherwise, the renderer will multiply texel colors by (C / 255), where C is the corresponding channel of the base color.
+    - `color` (**color_rgba** = *color_rgba(255, 255, 255, 255)*): Base color. If the *texture* property is *null*, the n-gon will be rendered in this color. Otherwise, the renderer will multiply texel colors by (C / 255), where C is the corresponding channel of the base color.
     - `texture` (**texture_rgba | null** = *null*): The image to be rendered onto the n-gon's face. If *null*, or if there are fewer than 3 vertices, the n-gon will be rendered without a texture.
     - `textureMapping` (**string** = *"ortho"*): How textures should be mapped onto the n-gon's face during rendering.
         - Possible values:
-            - "ortho": The renderer calculates UV coordinates automatically in 2D screen space and so doesn't require the n-gon's **vertex** objects to explicitly include them. Ignores depth and rotation, so the texture will appear as a static image regardless of the orientation of the n-gon.
-            - "affine": The renderer will apply affine texture-mapping using the UV coordinates provided with the n-gon's **vertex** objects.
+            - "ortho": Vertex UV coordinates are calculated in 2D screen space, ignoring any UV coordinates provided by *vertices*. The calculations don't account for depth or rotation.
+            - "affine": Affine texture-mapping using the UV coordinates provided by *vertices*.
         - For "affine" to perform perspective-correct UV mapping, enable **render()**'s *perspectiveCorrectInterpolation* option.
-    - `textureFiltering` (**string** = *"none"*): The filtering effect to be applied when rasterizing the n-gon's texture.
+    - `textureFiltering` (**string** = *"none"*): The filtering effect to be applied when rasterizing *texture*.
         - Possible values:
-            - "none": No filtering. Textures will appear pixelated when viewed up close. Fastest to render.
-            - "dither": Mimics bilinear filtering by slightly offsetting texel coordinates. Faster to render than proper bilinear filtering, but can look messy at low render resolutions.
-            - "bilinear": Bilinear filtering by sampling neighboring texels. Best image quality, but also the slowest to render.
+            - "none": No filtering. The texture will appear pixelated when viewed up close.
+            - "dither": Faux bilinear filtering by jittering texel coordinates.
+            - "bilinear": Bilinear filtering.
     - `uvWrapping` (**string** = *"repeat"*): How the renderer should scale UV coordinates.
         - Possible values:
-            - "clamp": UV coordinates are clamped to [0,1]. For example, 2.75 becomes 1.
-            - "repeat": Discards the UV coordinates' integer part. For example, 2.75 becomes 0.75. 
-        - The "repeat" option is currently available only for textures whose resolution is a power of two. Non-power-of-two textures are clamped regardless of this setting.
+            - "clamp": UV coordinates are clamped to [0,1].
+            - "repeat": UV coordinates' integer part is discarded. 
+        - The "repeat" option is available only for power-of-two textures. Others will fall back to "clamp".
     - `hasWireframe` (**boolean** = *false*): Whether the n-gon should be rendered with a wireframe outline.
-        - Also see the *wireframeColor* material property.
-    - `wireframeColor` (**color_rgba** = *color_rgba(0, 0, 0)*): If the *hasWireframe* material property is *true*, this value sets the wireframe's color.
+        - Also see the *wireframeColor* property.
+    - `wireframeColor` (**color_rgba** = *color_rgba(0, 0, 0)*): If the *hasWireframe* property is *true*, this value sets the wireframe's color.
     - `hasFill` (**boolean** = *true*): Whether the face of the n-gon should be rendered. If *false* and *hasWireframe* is *true*, the n-gon's wireframe outline will be rendered.
-    - `isTwoSided` (**boolean** = *true*): Whether the n-gon should be rendered when viewed from behind, as determined by the direction of its face normal.
-        - Should always be set to *true* for n-gons that are part of a **mesh** to which you apply rotation, since rotation doesn't update face normals.
+    - `isTwoSided` (**boolean** = *true*): Whether the n-gon should be visible from behind, as determined by the direction of its face normal.
+        - Should be set to *true* for n-gons that are part of a **mesh** to which you apply rotation, as rotation doesn't apply to normals.
     - `allowTransform` (**boolean** = *true*): Whether the n-gon's vertices should be transformed into screen space prior to rasterization. If *false*, the vertices are assumed to already be in screen space.
-        - If set to *false*, viewport clipping will also be disabled, so you must ensure that all vertex XY coordinates are inside the range [0,D-1], where D is the render width for X and render height for Y.
-    - `vertexShading` (**string** = *"none"*): The type of shading to be used when applying the scene's light sources to the n-gon's face.
+        - If *false*, you must ensure that all vertex XY coordinates are within the dimensions of the rendered image.
+    - `vertexShading` (**string** = *"none"*): The type of shading to be used when applying the scene's light sources to the n-gon.
         - Possible values:
-            - "none": Light sources will not affect the appearance of the n-gon.
-            - "flat": The n-gon's face will receive a solid shade based on the angle between the incident light and the n-gon's face normal.
+            - "none": Light sources do not affect the appearance of the n-gon.
+            - "flat": The n-gon's face receives a solid shade based on the angle between the incident light and the n-gon's face normal.
             - "gouraud": Same as "flat" but computed per vertex, resulting in smooth shading across the n-gon's face.
-        - For "gouraud", n-gons must have pre-computed smooth vertex normals.
-    - `renderVertexShade` (**boolean** = *true*): Whether the shading values calculated as per the **vertexShading** material property should be used during rendering. If *false*, the computed shading won't directly affect the rendered image, but is accessible to pixel shaders for optional post-processing effects.
-    - `allowAlphaBlend` (**boolean** = *false*): Whether to allow the alpha channel of the **color** material property to modify the appearance of the n-gon with alpha-blending. If *true*, the n-gon's pixels will be blended with their background according to the alpha value (0 = fully transparent, 255 = fully opaque).
-    - `allowAlphaReject` (**boolean** = *false*): Whether to allow the alpha channel of the **color** material property to modify the appearance of the n-gon with a binary visible/invisible choice. If the alpha value is 255, the pixel will be drawn, and otherwise it'll be ignored.
-- `normal` (**array | vector3** = *vector3(0, 1, 0)*): A normal vector determining the orientation of the n-gon's face. If given as a **vector3** object, represents the face normal, which will also be applied to all of the n-gon's vertices. If given as an array, each element must be a **vector3** object that represents the normal of the corresponding vertex in the **vertices** parameter, and in this case the n-gon's face normal will be automatically calculated as the normalized average of these vertex normals.
+        - For "gouraud" to work, n-gons must have pre-computed smooth vertex normals.
+    - `renderVertexShade` (**boolean** = *true*): Whether the shading values calculated as per the **vertexShading** property should be used during rendering. If *false*, this shading information won't directly affect the rendered image, but is accessible to pixel shaders.
+    - `allowAlphaBlend` (**boolean** = *false*): Whether the alpha channel of the **color** property can modify the appearance of the n-gon. If *true*, the n-gon's pixels will be blended with their background according to the alpha value (0 = fully transparent, 255 = fully opaque).
+    - `allowAlphaReject` (**boolean** = *false*): Whether the alpha channel of the **color** property can modify the appearance of the n-gon. If *true*, the pixel will be drawn only if the alpha value is 255.
+- `normal` (**array | vector3** = *vector3(0, 1, 0)*): A vector determining the orientation of the n-gon's face. If given as a **vector3** object, represents the face normal. If given as an array, each element must be a **vector3** object that represents the normal of the corresponding vertex in the **vertices** parameter, and in this case the n-gon's face normal will be automatically calculated as the normalized average of these vertex normals.
 
 ### Returns
 
 An object with the following properties:
 
-- `vertices` (**array**): Corresponds to the *vertices* parameter.
-- `material` (**object**): Corresponds to the *material* parameter.
-- `vertexNormals` (**array**): Corresponds to the *normal* parameter.
-- `normal` (**vector3**): The n-gon's face normal.
-- `mipLevel` (**number**): A value in the range [0,1] that defines which mip level of this n-gon's texture (if it has a texture) should be used when rendering. A value of 0 is the maximum-resolution mip level, 1 is the lowest-resolution mip level.
+- `vertices` (**array**): The *vertices* parameter.
+- `material` (**object**): The *material* parameter.
+- `vertexNormals` (**array**): For each element in the *vertices* parameter, a corresponding **vector3** object determining the normal of the vertex.
+- `normal` (**vector3**): The face normal.
+- `mipLevel` (**number**): The mip level to be used when rendering the n-gon's texture. The value is in the range [0,1], with 0 corresponding to the maximum resolution and 1 the minimum resolution.
 
 ### Sample usage
 
 ```javascript
-// Construct a 4-sided red n-gon (quad).
-const quad = Rngon.ngon([
+// Construct a 2-sided red n-gon.
+const line = Rngon.ngon([
     Rngon.vertex(-1, -1, 0),
-    Rngon.vertex( 1, -1, 0),
-    Rngon.vertex( 1,  1, 0),
-    Rngon.vertex(-1,  1, 0)], {
+    Rngon.vertex( 1, -1, 0)], {
         color: Rngon.color_rgba(255, 0, 0),
-    }
-);
+});
 ```
 
 ## vertex([x[, y[, z[, u[, v[, w]]]]]])
 
 A point in space representing a corner of an n-gon.
 
+Note: In the renderer's coordinate space, X is horizontal (positive = right), and Y is vertical (positive = up); positive Z is forward.
+
 ### Parameters
 
 - `x` (**number** = *0*): X coordinate. 
 - `y` (**number** = *0*): Y coordinate. 
 - `z` (**number** = *0*): Z coordinate. 
-- `u` (**number** = *0*): U texture coordinate. 
-- `v` (**number** = *0*): V texture coordinate. 
-- `w` (**number** = *1*): W coordinate. This is mainly for internal matrix operations and can be ignored in most end-user use-cases.
-
-Note: In the renderer's coordinate space, X is horizontal (positive = right), and Y is vertical (positive = up); positive Z is forward. Of the texture coordinates, U is horizontal, and V is vertical.
+- `u` (**number** = *0*): U texel coordinate. 
+- `v` (**number** = *0*): V texel coordinate. 
+- `w` (**number** = *1*): W coordinate.
 
 ### Returns
 
 An object with the following properties:
 
-- `x` (**number**): Corresponds to the *x* parameter.
-- `y` (**number**): Corresponds to the *y* parameter.
-- `z` (**number**): Corresponds to the *z* parameter.
-- `u` (**number**): Corresponds to the *u* parameter.
-- `v` (**number**): Corresponds to the *v* parameter.
-- `w` (**number**): Corresponds to the *w* parameter.
-- `shade` (**number**): A positive number that defines how lit the vertex is, where 0 is fully unlit and 1 is fully lit (values above 1 correspond to overbrightness).
-- `worldX` (**number**): Object-space X coordinate.
-- `worldY` (**number**): Object-space Y coordinate.
-- `worldZ` (**number**): Object-space Z coordinate.
-
-### Sample usage
-
-```javascript
-// Create a vertex at coordinates (1, 1, 0), and give it UV coordinates (1, 0).
-const vertex = Rngon.vertex(1, 1, 0, 1, 0);
-```
+- `x` (**number**): The *x* parameter.
+- `y` (**number**): The *y* parameter.
+- `z` (**number**): The *z* parameter.
+- `u` (**number**): The *u* parameter.
+- `v` (**number**): The *v* parameter.
+- `w` (**number**): The *w* parameter.
+- `shade` (**number**): A positive number defining the vertex's degree of shade, with 0 being fully unlit and 1 fully lit.
 
 ## vector3([x[, y[, z]]])
 
 A three-component vector.
 
-Aliases: **rotation_vector**, **translation_vector**, **scaling_vector**
+Aliases: **rotation_vector**, **translation_vector**, **scaling_vector**.
 
-Note: The parameters to **rotation_vector** are expected to be in degrees (range: [0,359]).
+Note: The parameters to **rotation_vector** are in degrees, [0,359].
 
 ### Parameters
 
@@ -560,16 +547,9 @@ Note: The parameters to **rotation_vector** are expected to be in degrees (range
 
 An object with the following properties:
 
-- `x` (**number**): Corresponds to the *x* parameter.
-- `y` (**number**): Corresponds to the *y* parameter.
-- `z` (**number**): Corresponds to the *z* parameter.
-
-### Sample usage
-
-```javascript
-// Create a vector with XYZ coordinates (1, 2, 3).
-const vector = Rngon.vector3(1, 2, 3);
-```
+- `x` (**number**): The *x* parameter.
+- `y` (**number**): The *y* parameter.
+- `z` (**number**): The *z* parameter.
 
 ## color_rgba([red[, green[, blue[, alpha]]]])
 
@@ -577,24 +557,20 @@ A 32-bit, four-channel, RGBA color value, where each color channel is 8 bits.
 
 ### Parameters
 
-- `red` (**number** = *55*): The red color channel.
-- `green` (**number** = *55*): The green color channel.
-- `blue` (**number** = *55*): The blue color channel.
-- `alpha` (**number** = *255*): The alpha color channel.
+- `red` (**number** = *55*): The red channel.
+- `green` (**number** = *55*): The green channel.
+- `blue` (**number** = *55*): The blue channel.
+- `alpha` (**number** = *255*): The alpha channel.
 
 ### Returns
 
 An object with the following properties:
 
-- `red` (**number**): Corresponds to the *red* parameter.
-- `green` (**number**): Corresponds to the *green* parameter.
-- `blue` (**number**): Corresponds to the *blue* parameter.
-- `alpha` (**number**): Corresponds to the *alpha* parameter.
-- `unitRange` (**object**): Floating-point versions of the color values, in the range [0,1]:
-    - `red` (**number**): The *red* parameter divided by 255.
-    - `green` (**number**): The *green* parameter divided by 255.
-    - `blue` (**number**): The *blue* parameter divided by 255.
-    - `alpha` (**number**): CThe *alpha* parameter divided by 255.
+- `red` (**number**): The *red* parameter.
+- `green` (**number**): The *green* parameter.
+- `blue` (**number**): The *blue* parameter.
+- `alpha` (**number**): The *alpha* parameter.
+- `unitRange` (**object**): The input color values divided by 255, in the range [0,1].
 
 ## texture_rgba([data])
 
@@ -622,10 +598,10 @@ Note: Textures with a power-of-two resolution tend to render faster than non-pow
 
 An object with the following properties:
 
-- `width` (**number**): Corresponds to the *data.width* property.
-- `height` (**number**): Corresponds to the *data.height* property.
+- `width` (**number**): The *data.width* property.
+- `height` (**number**): The *data.height* property.
 - `pixels` (**array**): The decoded, processed pixel data from *data.pixels*. Each element in the array is an object of the form "{red, green, blue, alpha}".
-- `mipLevels` (**array**): Progressively smaller versions of the original image, intended for mipmapping. Each element in the array is an object of the form "{width, height, pixels: [{red, green, blue, alpha, red, green, ...}]}". The first element is the full-sized image, the second element is half the size of the first, the third half the size of the second, etc., down to an image of 1 &times; 1.
+- `mipLevels` (**array**): Downscaled versions of the original image. Each element in the array is an object of the form "{width, height, pixels: [{red, green, blue, alpha, red, green, ...}]}". The first element is the full-sized image, the second element is half the size of the first, the third half the size of the second, etc., down to an image the size of 1 &times; 1.
 
 ### Sample usage
 
@@ -644,17 +620,6 @@ const texture = Rngon.texture_rgba({
 ```
 
 ```javascript
-// Create a texture whose pixels are Base64-encoded packed 16-bit integers.
-const texture = Rngon.texture_rgba({
-    width: 1,
-    height: 1,
-    channels: "rgba:5+5+5+1",
-    encoding: "base64",
-    pixels: "H4A=",
-});
-```
-
-```javascript
 // Create a texture with data from a JSON file.
 const texture = await Rngon.texture_rgba.create_with_data_from_file("texture.json");
 ```
@@ -667,11 +632,11 @@ Creates a **texture_rgba** object with data from a JSON file.
 
 ##### Parameters
 
-- `filename` (**string**): URL or File path to a JSON file containing an object corresponding to the structure of the *data* parameter of **texture_rgba**.
+- `filename` (**string**): URL or File path to a JSON file containing an object with the structure of the *data* parameter of **texture_rgba**.
 
 ##### Returns
 
-- (**Promise**): A Promise of a **texture_rgba** object whose data has been loaded from the file pointed to by *filename*.
+- (**Promise**): A Promise of a **texture_rgba** object with data loaded from the file pointed to by *filename*.
 
 # Authors and credits
 
