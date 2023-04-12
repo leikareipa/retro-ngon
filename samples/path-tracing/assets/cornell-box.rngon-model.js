@@ -20,7 +20,7 @@ export const cornellBox =
 	{
 		// Shorthands.
 		const n = Rngon.ngon;
-		const no = Rngon.vector3; // Normal vector.
+		const no = Rngon.vector; // Normal vector.
 		const v = Rngon.vertex;
 		const c = Rngon.color_rgba;
 		const ct = Rngon.texture_rgba.create_with_data_from_file;

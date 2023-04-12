@@ -134,32 +134,32 @@ function insert_light_source_meshes(lights = [Rngon.light()],
                         Rngon.vertex(-light.meshRadius, -light.meshRadius,  light.meshRadius),
                         Rngon.vertex( light.meshRadius, -light.meshRadius,  light.meshRadius),
                         Rngon.vertex( light.meshRadius,  light.meshRadius,  light.meshRadius)],
-                        lightMaterial, Rngon.vector3(0, 0, -1)),
+                        lightMaterial, Rngon.vector(0, 0, -1)),
             Rngon.ngon([Rngon.vertex(-light.meshRadius,  light.meshRadius, -light.meshRadius),
                         Rngon.vertex(-light.meshRadius, -light.meshRadius, -light.meshRadius),
                         Rngon.vertex( light.meshRadius, -light.meshRadius, -light.meshRadius),
                         Rngon.vertex( light.meshRadius,  light.meshRadius, -light.meshRadius)],
-                        lightMaterial, Rngon.vector3(0, 0, 1)),
+                        lightMaterial, Rngon.vector(0, 0, 1)),
             Rngon.ngon([Rngon.vertex(-light.meshRadius,  light.meshRadius,  light.meshRadius),
                         Rngon.vertex(-light.meshRadius,  light.meshRadius, -light.meshRadius),
                         Rngon.vertex(-light.meshRadius, -light.meshRadius, -light.meshRadius),
                         Rngon.vertex(-light.meshRadius, -light.meshRadius,  light.meshRadius)],
-                        lightMaterial, Rngon.vector3(-1, 0, 0)),
+                        lightMaterial, Rngon.vector(-1, 0, 0)),
             Rngon.ngon([Rngon.vertex( light.meshRadius,  light.meshRadius,  light.meshRadius),
                         Rngon.vertex( light.meshRadius,  light.meshRadius, -light.meshRadius),
                         Rngon.vertex( light.meshRadius, -light.meshRadius, -light.meshRadius),
                         Rngon.vertex( light.meshRadius, -light.meshRadius,  light.meshRadius)],
-                        lightMaterial, Rngon.vector3(1, 0, 0)),
+                        lightMaterial, Rngon.vector(1, 0, 0)),
             Rngon.ngon([Rngon.vertex(-light.meshRadius,  light.meshRadius,  light.meshRadius),
                         Rngon.vertex( light.meshRadius,  light.meshRadius,  light.meshRadius),
                         Rngon.vertex( light.meshRadius,  light.meshRadius, -light.meshRadius),
                         Rngon.vertex(-light.meshRadius,  light.meshRadius, -light.meshRadius)],
-                        lightMaterial, Rngon.vector3(0, 1, 0)),
+                        lightMaterial, Rngon.vector(0, 1, 0)),
             Rngon.ngon([Rngon.vertex(-light.meshRadius, -light.meshRadius,  light.meshRadius),
                         Rngon.vertex( light.meshRadius, -light.meshRadius,  light.meshRadius),
                         Rngon.vertex( light.meshRadius, -light.meshRadius, -light.meshRadius),
                         Rngon.vertex(-light.meshRadius, -light.meshRadius, -light.meshRadius)],
-                        lightMaterial, Rngon.vector3(0, -1, 0)),
+                        lightMaterial, Rngon.vector(0, -1, 0)),
         ];
 
         cubeNgons.map(ngon=>{
@@ -204,7 +204,7 @@ function bake_shade_map(triangles = [Rngon.ngon()],
         const x = (1 - r1) * randomTriangle.vertices[0].x + (r1 * (1 - r2)) * randomTriangle.vertices[1].x + (r1 * r2) * randomTriangle.vertices[2].x;
         const y = (1 - r1) * randomTriangle.vertices[0].y + (r1 * (1 - r2)) * randomTriangle.vertices[1].y + (r1 * r2) * randomTriangle.vertices[2].y;
         const z = (1 - r1) * randomTriangle.vertices[0].z + (r1 * (1 - r2)) * randomTriangle.vertices[1].z + (r1 * r2) * randomTriangle.vertices[2].z;
-        const randomPointOnTriangle = Rngon.vector3(x, y, z);
+        const randomPointOnTriangle = Rngon.vector(x, y, z);
 
         const lightRay = ray({...randomPointOnTriangle});
         lightRay.step(EPSILON, randomTriangle.normal);
@@ -213,7 +213,7 @@ function bake_shade_map(triangles = [Rngon.ngon()],
         const [u, v] = (()=>
         {
             lightRay.dir = {...randomTriangle.normal};
-            Rngon.vector3.invert(lightRay.dir);
+            Rngon.vector.invert(lightRay.dir);
             const [distance, u, v] = lightRay.intersect_triangle(randomTriangle);
 
             const w = (1 - u - v);
@@ -241,8 +241,8 @@ function bake_shade_map(triangles = [Rngon.ngon()],
         {
             const lightRay = ray({...randomPointOnTriangle});
             lightRay.aimAt.random_in_hemisphere_cosine_weighted(randomTriangle.normal);
-            const brdf = (Rngon.vector3.dot(randomTriangle.normal, lightRay.dir) * (0.8 / Math.PI));
-            const pdf = (Rngon.vector3.dot(randomTriangle.normal, lightRay.dir) / Math.PI); // For cosine-weighted sampling.
+            const brdf = (Rngon.vector.dot(randomTriangle.normal, lightRay.dir) * (0.8 / Math.PI));
+            const pdf = (Rngon.vector.dot(randomTriangle.normal, lightRay.dir) / Math.PI); // For cosine-weighted sampling.
             const inLight = ((brdf / pdf) * trace_ray(lightRay, sceneBVH));
 
             // Write the incoming light into the triangle's shade map.
@@ -285,7 +285,7 @@ function trace_ray(ray, sceneBVH, depth = 0)
 
     // If the ray intersected a triangle from behind.
     if (!triangle.material.isTwoSided &&
-        Rngon.vector3.dot(surfaceNormal, ray.dir) >= 0)
+        Rngon.vector.dot(surfaceNormal, ray.dir) >= 0)
     {
         return 0;
     }
@@ -294,9 +294,9 @@ function trace_ray(ray, sceneBVH, depth = 0)
     // that we correctly treat this side of the triangle as a front-facing
     // side.
     if (triangle.material.isTwoSided &&
-        Rngon.vector3.dot(surfaceNormal, ray.dir) >= 0)
+        Rngon.vector.dot(surfaceNormal, ray.dir) >= 0)
     {
-        Rngon.vector3.invert(surfaceNormal);
+        Rngon.vector.invert(surfaceNormal);
     }
 
     // If the ray intersected a texel that contains light.
@@ -324,8 +324,8 @@ function trace_ray(ray, sceneBVH, depth = 0)
     ray.aimAt.random_in_hemisphere_cosine_weighted(surfaceNormal);
 
     const surfaceAlbedo = 0.8;
-    const brdf = (Rngon.vector3.dot(surfaceNormal, ray.dir) * (surfaceAlbedo / Math.PI));
-    const pdf = (Rngon.vector3.dot(surfaceNormal, ray.dir) / Math.PI); // For cosine-weighted sampling.
+    const brdf = (Rngon.vector.dot(surfaceNormal, ray.dir) * (surfaceAlbedo / Math.PI));
+    const pdf = (Rngon.vector.dot(surfaceNormal, ray.dir) / Math.PI); // For cosine-weighted sampling.
 
     return ((brdf / pdf) * trace_ray(ray, sceneBVH, (depth + 1)));
 }

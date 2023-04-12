@@ -20,13 +20,13 @@ export const sample = {
     
         return {
             renderOptions: {
-                cameraDirection: Rngon.vector3(7, 90, 0),
-                cameraPosition: Rngon.vector3(-70, 33, -7),
+                cameraDirection: Rngon.vector(7, 90, 0),
+                cameraPosition: Rngon.vector(-70, 33, -7),
             },
             mesh: Rngon.mesh(teapot.ngons, {
-                rotation: Rngon.vector3(90, 20, (0 + (this.numTicks / 2))),
-                translation: Rngon.vector3(0, 15, -7),
-                scaling: Rngon.vector3(7, 7, 7)
+                rotation: Rngon.vector(90, 20, (0 + (this.numTicks / 2))),
+                translation: Rngon.vector(0, 15, -7),
+                scaling: Rngon.vector(7, 7, 7)
             }),
         };
     },

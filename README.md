@@ -64,11 +64,11 @@ const quad = Rngon.ngon([
 });
 
 const quadMesh = Rngon.mesh([quad], {
-    rotation: Rngon.vector3(0, 0, 45),
+    rotation: Rngon.vector(0, 0, 45),
 });
 
 Rngon.render("canvas", [quadMesh], {
-    cameraPosition: Rngon.vector3(0, 0, -5),
+    cameraPosition: Rngon.vector(0, 0, -5),
     scale: 1,
 });
 ```
@@ -141,7 +141,7 @@ const quad = Rngon.ngon([
 
 ```javascript
 Rngon.render("canvas", [quadMesh], {
-    cameraPosition: Rngon.vector3(0, 0, -5),
+    cameraPosition: Rngon.vector(0, 0, -5),
     scale: 0.14
 });
 ```
@@ -235,7 +235,7 @@ The renderer's public API consists of the following objects:
 | [mesh](#meshngons-transform)                    | Collection of related n-gons.                |
 | [ngon](#ngonvertices-material-normal)           | Polygonal shape defined by *n* vertices.     |
 | [vertex](#vertexx-y-z-u-v-w)                    | Corner of an n-gon.                          |
-| [vector3](#vector3x-y-z)                        | Three-component vector.                      |
+| [vector](#vectorx-y-z)                          | Three-component vector.                      |
 | [color_rgba](#color_rgbared-green-blue-alpha)   | RGB color with transparency.                 |
 | [texture_rgba](#texture_rgbadata)               | RGB texture with transparency.               |
 | light                                           | (A description is coming.)                   |
@@ -272,8 +272,8 @@ After the call, the rendered pixel buffer is accessible via *Rngon.state.active.
     - **farPlane** (number = *1000*): Vertices further from the camera than this will be clipped.
     - **perspectiveCorrectInterpolation** (number = *false*): Whether properties that are linearly interpolated between vertices during rasterization (e.g. texture coordinates) are perspective-corrected, eliminating view-dependent distortion.
     - **clipToViewport** (boolean = *true*): Whether n-gons are to be clipped against the viewport prior to rendering.
-    - **cameraPosition** (vector3 = *vector3(0, 0, 0)*): The position from which the scene is rendered.
-    - **cameraDirection** (vector3 = *vector3(0, 0, 0)*): The direction in which the scene is viewed for rendering.
+    - **cameraPosition** (vector = *vector(0, 0, 0)*): The position from which the scene is rendered.
+    - **cameraDirection** (vector = *vector(0, 0, 0)*): The direction in which the scene is viewed for rendering.
     - **useFragmentBuffer** (boolean = *false*): Whether the renderer should generate a fragment buffer to provide per-pixel metadata (e.g. depth value and world XYZ coordinates). Will be set to *true* automatically if the `pixelShader` function accepts a "fragmentBuffer" parameter. If enabled, the fragment buffer is also accessible via `Rngon.state.active.fragmentBuffer` after the call.
     - **rasterShaders** (array = *[]*): Zero or more functions to be called by the renderer to implement custom rasterization of the scene's pre-processed screen-space n-gons. The functions in this array are called synchronously in back-to-front order until one of them returns *true*. If no function returns *true*, or if the array is empty, the renderer will call the appropriate [built-in raster shader](./js/retro-ngon/base-modules/rasterize/).
     - **pixelShader** (function | null = *null*): A function to be called by the renderer for applying pixel-shading effects to the rendered image. See the [pixel shaders sample](./samples/pixel-shaders/pixel-shaders.js) for examples of usage.
@@ -304,11 +304,11 @@ const ngon = Rngon.ngon(
 });
 
 const mesh = Rngon.mesh([ngon], {
-    rotation: Rngon.vector3(0, 0, 45)
+    rotation: Rngon.vector(0, 0, 45)
 });
 
 Rngon.render("canvas", [mesh], {
-    cameraPosition: Rngon.vector3(0, 0, -5),
+    cameraPosition: Rngon.vector(0, 0, -5),
 });
 ```
 
@@ -406,31 +406,29 @@ A selection of n-gons related to each other in some way, rendered as a unit with
 ### Parameters
 
 - **ngons** (array = *[ngon()]*): The n-gons that make up the mesh.
-- **transform** (object): Transformations to be applied to the mesh's n-gons:
-    - **translation** (vector3 = *vector3(0, 0, 0)*): Delta increments to XYZ vertex coordinates.
-    - **rotation** (vector3 = *vector3(0, 0, 0)*): Rotation around the origin of (0, 0, 0), in degrees.
+- **transform** (object): Transformations to the mesh's n-gons, to be applied at render-time:
+    - **translation** (vector = *vector(0, 0, 0)*): Delta increments to XYZ vertex coordinates.
+    - **rotation** (vector = *vector(0, 0, 0)*): Rotation around the origin of (0, 0, 0), in degrees.
         - Note: Rotation is not applied to normals.
-    - **scaling** (vector3 = *vector3(1, 1, 1)*): Multipliers to XYZ vertex coordinates.
+    - **scaling** (vector = *vector(1, 1, 1)*): Multipliers to XYZ vertex coordinates.
 
 Note: If both `transform.translation` and `transform.rotation` are given, rotation will be applied first.
-
-Note: Transformations are applied at render-time on copies of the mesh's n-gons.
 
 ### Returns
 
 An object with the following properties:
 
 - **ngons** (array): The `ngons` parameter.
-- **translation** (vector3): The `transform.translation` parameter.
-- **rotation** (vector3): The `transform.rotation` parameter.
-- **scale** (vector3): The `transform.scaling` parameter.
+- **translation** (vector): The `transform.translation` parameter.
+- **rotation** (vector): The `transform.rotation` parameter.
+- **scale** (vector): The `transform.scaling` parameter.
 
 ### Sample usage
 
 ```javascript
 // Construct a mesh containing one n-gon, and apply scaling to it.
 const mesh = Rngon.mesh([ngon], {
-    scaling: Rngon.vector3(10, 15, 5),
+    scaling: Rngon.vector(10, 15, 5),
 });
 
 // Transformations can be edited directly:
@@ -479,7 +477,7 @@ A polygon made up of *n* vertices, also known as an n-gon. Single-vertex n-gons 
     - **renderVertexShade** (boolean = *true*): Whether the shading values calculated as per the `vertexShading` property should be used during rendering. If *false*, this shading information won't directly affect the rendered image, but is accessible to pixel shaders.
     - **allowAlphaBlend** (boolean = *false*): Whether the alpha channel of the `color` property can modify the appearance of the n-gon. If *true*, the n-gon's pixels will be blended with their background according to the alpha value (0 = fully transparent, 255 = fully opaque).
     - **allowAlphaReject** (boolean = *false*): Whether the alpha channel of the `color` property can modify the appearance of the n-gon. If *true*, the pixel will be drawn only if the alpha value is 255.
-- **normal** (array | vector3 = *vector3(0, 1, 0)*): A vector determining the orientation of the n-gon's face. If given as a `vector3` object, represents the face normal. If given as an array, each element must be a `vector3` object that represents the normal of the corresponding vertex in the `vertices` parameter, and in this case the n-gon's face normal will be automatically calculated as the normalized average of these vertex normals.
+- **normal** (array | vector = *vector(0, 1, 0)*): A vector determining the orientation of the n-gon's face. If given as a `vector` object, represents the face normal. If given as an array, each element must be a `vector` object that represents the normal of the corresponding vertex in the `vertices` parameter, and in this case the n-gon's face normal will be automatically calculated as the normalized average of these vertex normals.
 
 ### Returns
 
@@ -487,8 +485,8 @@ An object with the following properties:
 
 - **vertices** (array): The `vertices` parameter.
 - **material** (object): The `material` parameter.
-- **vertexNormals** (array): For each element in the `vertices` parameter, a corresponding `vector3` object determining the normal of the vertex.
-- **normal** (vector3): The face normal.
+- **vertexNormals** (array): For each element in the `vertices` parameter, a corresponding `vector` object determining the normal of the vertex.
+- **normal** (vector): The face normal.
 - **mipLevel** (number): The mip level to be used when rendering the n-gon's texture. The value is in the range [0,1], with 0 corresponding to the maximum resolution and 1 the minimum resolution.
 
 ### Sample usage
@@ -529,7 +527,7 @@ An object with the following properties:
 - **w** (number): The `w` parameter.
 - **shade** (number): A positive number defining the vertex's degree of shade, with 0 being fully unlit and 1 fully lit.
 
-## vector3([x[, y[, z]]])
+## vector([x[, y[, z]]])
 
 A three-component vector.
 

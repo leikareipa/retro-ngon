@@ -77,7 +77,7 @@ const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
 
         // Vectors.
         {
-            const vector = Rngon.vector3(1.1, 2.2, 3.3);
+            const vector = Rngon.vector(1.1, 2.2, 3.3);
 
             expect_true([()=>(vector.x === 1.1),
                          ()=>(vector.y === 2.2),
@@ -122,9 +122,9 @@ const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
                                     });
             const mesh = Rngon.mesh([ngon],
                                     {
-                                        translation: Rngon.vector3(1, 2, 3),
-                                        rotation: Rngon.vector3(4, 5, 6),
-                                        scaling: Rngon.vector3(7, 8, 9)
+                                        translation: Rngon.vector(1, 2, 3),
+                                        rotation: Rngon.vector(4, 5, 6),
+                                        scaling: Rngon.vector(7, 8, 9)
                                     });
 
             expect_true([()=>(mesh.ngons.length === 1),
@@ -204,8 +204,8 @@ const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
             const renderSurface = Rngon.surface(canvas,
                                                 {
                                                     scale: 1,
-                                                    cameraDirection: Rngon.vector3(),
-                                                    cameraPosition: Rngon.vector3(),
+                                                    cameraDirection: Rngon.vector(),
+                                                    cameraPosition: Rngon.vector(),
                                                 });
 
             expect_true([()=>(renderSurface.width === testCanvasWidth),
@@ -233,9 +233,9 @@ const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
                                     });
             const mesh = Rngon.mesh([ngon],
                                     {
-                                        translation: Rngon.vector3(0, 0, 1),
-                                        rotation: Rngon.vector3(0, 0, 0),
-                                        scaling: Rngon.vector3(1, 1, 1)
+                                        translation: Rngon.vector(0, 0, 1),
+                                        rotation: Rngon.vector(0, 0, 0),
+                                        scaling: Rngon.vector(1, 1, 1)
                                     });
  
             // Render the rectangle into the canvas, and check that the canvas came to have correctly-colored pixels.
@@ -247,8 +247,8 @@ const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
 
                 Rngon.render(testCanvasId, [mesh],
                              {
-                                 cameraDirection: Rngon.vector3(0, 0, 0),
-                                 cameraPosition: Rngon.vector3(0, 0, 0),
+                                 cameraDirection: Rngon.vector(0, 0, 0),
+                                 cameraPosition: Rngon.vector(0, 0, 0),
                                  scale: 1,
                              });
 

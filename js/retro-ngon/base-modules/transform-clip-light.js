@@ -38,7 +38,7 @@ export function transform_clip_light(
             viewVector.y = (ngon.vertices[0].y - cameraPos.y);
             viewVector.z = (ngon.vertices[0].z - cameraPos.z);
 
-            if (Rngon.vector3.dot(ngon.normal, viewVector) >= 0)
+            if (Rngon.vector.dot(ngon.normal, viewVector) >= 0)
             {
                 continue;
             }
@@ -66,7 +66,7 @@ export function transform_clip_light(
                 if (Rngon.state.active.useVertexShader ||
                     (ngon.material.vertexShading === "gouraud"))
                 {
-                    cachedNgon.vertexNormals[v] = Rngon.vector3(
+                    cachedNgon.vertexNormals[v] = Rngon.vector(
                         ngon.vertexNormals[v].x,
                         ngon.vertexNormals[v].y,
                         ngon.vertexNormals[v].z
@@ -111,8 +111,8 @@ export function transform_clip_light(
                 {
                     for (let v = 0; v < cachedNgon.vertices.length; v++)
                     {
-                        Rngon.vector3.transform(cachedNgon.vertexNormals[v], objectMatrix);
-                        Rngon.vector3.normalize(cachedNgon.vertexNormals[v]);
+                        Rngon.vector.transform(cachedNgon.vertexNormals[v], objectMatrix);
+                        Rngon.vector.normalize(cachedNgon.vertexNormals[v]);
 
                         cachedNgon.vertices[v].normalX = cachedNgon.vertexNormals[v].x;
                         cachedNgon.vertices[v].normalY = cachedNgon.vertexNormals[v].y;
@@ -123,8 +123,8 @@ export function transform_clip_light(
                 // we can ignore the vertex normals.
                 else
                 {
-                    Rngon.vector3.transform(cachedNgon.normal, objectMatrix);
-                    Rngon.vector3.normalize(cachedNgon.normal);
+                    Rngon.vector.transform(cachedNgon.normal, objectMatrix);
+                    Rngon.vector.normalize(cachedNgon.normal);
                 }
 
                 if (cachedNgon.material.vertexShading !== "none")
@@ -208,7 +208,7 @@ export function transform_clip_light(
 function apply_lighting(ngon)
 {
     // Pre-allocate a vector object to operate on, so we don't need to create one repeatedly.
-    const lightDirection = Rngon.vector3();
+    const lightDirection = Rngon.vector();
 
     let faceShade = ngon.material.ambientLightLevel;
     for (let v = 0; v < ngon.vertices.length; v++)
@@ -253,9 +253,9 @@ function apply_lighting(ngon)
                 lightDirection.x = (light.position.x - vertex.x);
                 lightDirection.y = (light.position.y - vertex.y);
                 lightDirection.z = (light.position.z - vertex.z);
-                Rngon.vector3.normalize(lightDirection);
+                Rngon.vector.normalize(lightDirection);
 
-                const shadeFromThisLight = Math.max(0, Math.min(1, Rngon.vector3.dot(ngon.vertexNormals[v], lightDirection)));
+                const shadeFromThisLight = Math.max(0, Math.min(1, Rngon.vector.dot(ngon.vertexNormals[v], lightDirection)));
                 vertex.shade = Math.max(vertex.shade, Math.min(light.clip, (shadeFromThisLight * distanceMul * light.intensity)));
             }
         }
@@ -270,9 +270,9 @@ function apply_lighting(ngon)
             lightDirection.x = (light.position.x - faceX);
             lightDirection.y = (light.position.y - faceY);
             lightDirection.z = (light.position.z - faceZ);
-            Rngon.vector3.normalize(lightDirection);
+            Rngon.vector.normalize(lightDirection);
 
-            const shadeFromThisLight = Math.max(0, Math.min(1, Rngon.vector3.dot(ngon.normal, lightDirection)));
+            const shadeFromThisLight = Math.max(0, Math.min(1, Rngon.vector.dot(ngon.normal, lightDirection)));
             faceShade = Math.max(faceShade, Math.min(light.clip, (shadeFromThisLight * distanceMul * light.intensity)));
         }
         else

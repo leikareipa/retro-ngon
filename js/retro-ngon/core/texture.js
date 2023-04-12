@@ -100,10 +100,12 @@ export function texture_rgba(data = {})
         {
             const idx = ((x + (data.needsFlip? (data.height - y - 1) : y) * data.width) * numColorChannels);
 
-            pixelArray.push({red:   data.pixels[idx + 0],
-                             green: data.pixels[idx + 1],
-                             blue:  data.pixels[idx + 2],
-                             alpha: data.pixels[idx + 3]});
+            pixelArray.push({
+                red: data.pixels[idx + 0],
+                green: data.pixels[idx + 1],
+                blue: data.pixels[idx + 2],
+                alpha: data.pixels[idx + 3]
+            });
         }
     }
 

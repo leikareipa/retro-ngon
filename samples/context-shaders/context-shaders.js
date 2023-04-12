@@ -31,7 +31,7 @@ export const sample = {
 
         return {
             mesh: this.Rngon.mesh(scene.ngons, {
-                scaling: this.Rngon.vector3(25, 25, 25)
+                scaling: this.Rngon.vector(25, 25, 25)
             }),
             renderOptions: {
                 contextShader: parent.ACTIVE_SHADER.function

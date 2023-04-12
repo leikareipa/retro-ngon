@@ -25,7 +25,7 @@ export const scene =
 	{
 		// Shorthands.
 		const n = Rngon.ngon;
-		const no = Rngon.vector3;
+		const no = Rngon.vector;
 		const v = Rngon.vertex;
 
         const material = {

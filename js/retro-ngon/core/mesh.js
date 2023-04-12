@@ -24,9 +24,9 @@ export function mesh(
     mesh.defaultTransform = (
         mesh.defaultTransform ||
         {
-            translation: Rngon.vector3(0, 0, 0),
-            rotation: Rngon.vector3(0, 0, 0),
-            scaling: Rngon.vector3(1, 1, 1),
+            translation: Rngon.vector(0, 0, 0),
+            rotation: Rngon.vector(0, 0, 0),
+            scaling: Rngon.vector(1, 1, 1),
         }
     );
 

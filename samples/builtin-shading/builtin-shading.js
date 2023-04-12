@@ -21,16 +21,16 @@ export const sample = {
         const rotationSpeed = 0.4;
 
         const meshSettings = {
-            scaling: Rngon.vector3(30, 30, 30),
-            translation: Rngon.vector3(-3, 3, 0),
-            rotation: Rngon.vector3(
+            scaling: Rngon.vector(30, 30, 30),
+            translation: Rngon.vector(-3, 3, 0),
+            rotation: Rngon.vector(
                 (-60 + rotationSpeed * this.numTicks),
                 (-60 + rotationSpeed * this.numTicks),
                 0
             ),
         };
 
-        const lightSource = Rngon.light(Rngon.vector3(0, 70, -120), {
+        const lightSource = Rngon.light(Rngon.vector(0, 70, -120), {
             clip: 1.5,
             attenuation: 1,
             intensity: 150,

@@ -35,9 +35,7 @@ import {
     renderable_width_of,
     renderable_height_of,
 } from "./core/util.js";
-import {
-    vector3,
-} from "./core/vector3.js";
+import {vector} from "./core/vector.js";
 import {vertex} from "./core/vertex.js";
 
 export const Rngon = {
@@ -73,6 +71,6 @@ export const Rngon = {
     surface,
     texture_rgba,
     trig,
-    vector3,
+    vector,
     vertex,
 };

@@ -16,8 +16,8 @@ function bvh_aabb(mesh = [Rngon.ngon()], isLeaf = false)
 {
     const [min, max] = (()=>
     {
-        const min = Rngon.vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
-        const max = Rngon.vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
+        const min = Rngon.vector(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+        const max = Rngon.vector(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
 
         for (const triangle of mesh)
         {
@@ -107,10 +107,10 @@ export function bvh(mesh = [Rngon.ngon()])
                     {
                         switch (splitAxis)
                         {
-                            case "x": return Rngon.vector3(proposedSplitStart, parentAABB.max.y, parentAABB.max.z);
-                            case "y": return Rngon.vector3(parentAABB.max.x, proposedSplitStart, parentAABB.max.z);
-                            case "z": return Rngon.vector3(parentAABB.max.x, parentAABB.max.y, proposedSplitStart);
-                            default: Rngon.$throw("Unknown BVH split direction."); return Rngon.vector3(0, 0, 0);
+                            case "x": return Rngon.vector(proposedSplitStart, parentAABB.max.y, parentAABB.max.z);
+                            case "y": return Rngon.vector(parentAABB.max.x, proposedSplitStart, parentAABB.max.z);
+                            case "z": return Rngon.vector(parentAABB.max.x, parentAABB.max.y, proposedSplitStart);
+                            default: Rngon.$throw("Unknown BVH split direction."); return Rngon.vector(0, 0, 0);
                         }
                     })();
 
@@ -146,7 +146,7 @@ export function bvh(mesh = [Rngon.ngon()])
             split(parentAABB.mutable.right, rightMesh, depth + 1);
 
             // Returns true if the given triangle is fully inside the given AABB; otherwise returns false.
-            function is_triangle_fully_inside_box(triangle = Rngon.ngon(), min = Rngon.vector3(), max = Rngon.vector3())
+            function is_triangle_fully_inside_box(triangle = Rngon.ngon(), min = Rngon.vector(), max = Rngon.vector())
             {
                 return triangle.vertices.every(vertex=>
                 {

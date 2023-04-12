@@ -229,8 +229,8 @@ export const renderShared = {
     // (See the root README.md for documentation on these parameters.)
     get defaultRenderOptions() {
         return {
-            cameraPosition: Rngon.vector3(0, 0, 0),
-            cameraDirection: Rngon.vector3(0, 0, 0),
+            cameraPosition: Rngon.vector(0, 0, 0),
+            cameraDirection: Rngon.vector(0, 0, 0),
             pixelShader: null, // If null, all pixel shader functionality will be disabled.
             vertexShader: null, // If null, all vertex shader functionality will be disabled.
             rasterShaders: [],

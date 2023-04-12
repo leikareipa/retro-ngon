@@ -9,7 +9,7 @@
 
 "use strict";
 
-function ray(pos = Rngon.vector3(0, 0, 0), dir = Rngon.vector3(0, 0, 1))
+function ray(pos = Rngon.vector(0, 0, 0), dir = Rngon.vector(0, 0, 1))
 {
     const publicInterface =
     {
@@ -21,17 +21,17 @@ function ray(pos = Rngon.vector3(0, 0, 0), dir = Rngon.vector3(0, 0, 1))
         {
             // Points the ray at a random direction about the hemisphere of the
             // given normal.
-            random_in_hemisphere: function(normal = Rngon.vector3())
+            random_in_hemisphere: function(normal = Rngon.vector())
             {
-                let newDir = Rngon.vector3((Math.random() - Math.random()),
+                let newDir = Rngon.vector((Math.random() - Math.random()),
                                            (Math.random() - Math.random()),
                                            (Math.random() - Math.random()));
 
-                Rngon.vector3.normalize(newDir);
+                Rngon.vector.normalize(newDir);
 
-                if (Rngon.vector3.dot(normal, newDir) < 0)
+                if (Rngon.vector.dot(normal, newDir) < 0)
                 {
-                    newDir = Rngon.vector3((newDir.x * -1),
+                    newDir = Rngon.vector((newDir.x * -1),
                                            (newDir.y * -1),
                                            (newDir.z * -1));
                 }
@@ -42,7 +42,7 @@ function ray(pos = Rngon.vector3(0, 0, 0), dir = Rngon.vector3(0, 0, 1))
             // Points the ray at a random direction about the hemisphere of the given
             // normal. The direction is cosine-weighted, i.e. more likely to be closer
             // to the normal.
-            random_in_hemisphere_cosine_weighted: function(normal = Rngon.vector3())
+            random_in_hemisphere_cosine_weighted: function(normal = Rngon.vector())
             {
                 const rand1 = Math.random();
                 const rand2 = Math.random();
@@ -59,14 +59,14 @@ function ray(pos = Rngon.vector3(0, 0, 0), dir = Rngon.vector3(0, 0, 1))
                 // Transform the cosine-weighted vector's hemisphere to the direction of
                 // the normal.
                 const t = (Math.abs(normal.x) > Math.abs(normal.y))
-                          ? Rngon.vector3(normal.z, 0, -normal.x)
-                          : Rngon.vector3(0, -normal.z, normal.y);
-                Rngon.vector3.normalize(t);
-                const b = Rngon.vector3.cross(normal, t);
-                const newDir = Rngon.vector3((x * b.x + y * normal.x + z * t.x),
+                          ? Rngon.vector(normal.z, 0, -normal.x)
+                          : Rngon.vector(0, -normal.z, normal.y);
+                Rngon.vector.normalize(t);
+                const b = Rngon.vector.cross(normal, t);
+                const newDir = Rngon.vector((x * b.x + y * normal.x + z * t.x),
                                              (x * b.y + y * normal.y + z * t.y),
                                              (x * b.z + y * normal.z + z * t.z));
-                Rngon.vector3.normalize(newDir);
+                Rngon.vector.normalize(newDir);
                                 
                 publicInterface.dir = newDir;
             },
@@ -97,30 +97,30 @@ function ray(pos = Rngon.vector3(0, 0, 0), dir = Rngon.vector3(0, 0, 1))
             const epsilon = 0.00001;
             const noHit = [null, 0, 0];
         
-            const e1 = Rngon.vector3((triangle.vertices[1].x - triangle.vertices[0].x),
+            const e1 = Rngon.vector((triangle.vertices[1].x - triangle.vertices[0].x),
                                      (triangle.vertices[1].y - triangle.vertices[0].y),
                                      (triangle.vertices[1].z - triangle.vertices[0].z));
         
-            const e2 = Rngon.vector3((triangle.vertices[2].x - triangle.vertices[0].x),
+            const e2 = Rngon.vector((triangle.vertices[2].x - triangle.vertices[0].x),
                                      (triangle.vertices[2].y - triangle.vertices[0].y),
                                      (triangle.vertices[2].z - triangle.vertices[0].z));
         
-            const pv = Rngon.vector3.cross(ray.dir, e2);
-            const det = Rngon.vector3.dot(e1, pv);
+            const pv = Rngon.vector.cross(ray.dir, e2);
+            const det = Rngon.vector.dot(e1, pv);
             if ((det > -epsilon) && (det < epsilon)) return noHit;
         
             const invD = (1.0 / det);
-            const tv = Rngon.vector3((ray.pos.x - triangle.vertices[0].x),
+            const tv = Rngon.vector((ray.pos.x - triangle.vertices[0].x),
                                      (ray.pos.y - triangle.vertices[0].y),
                                      (ray.pos.z - triangle.vertices[0].z));
-            const u = (Rngon.vector3.dot(tv, pv) * invD);
+            const u = (Rngon.vector.dot(tv, pv) * invD);
             if ((u < 0) || (u > 1)) return noHit;
         
-            const qv = Rngon.vector3.cross(tv, e1);
-            const v = (Rngon.vector3.dot(ray.dir, qv) * invD);
+            const qv = Rngon.vector.cross(tv, e1);
+            const v = (Rngon.vector.dot(ray.dir, qv) * invD);
             if ((v < 0) || ((u + v) > 1)) return noHit;
         
-            const distance = (Rngon.vector3.dot(e2, qv) * invD);
+            const distance = (Rngon.vector.dot(e2, qv) * invD);
             if (distance <= 0) return noHit;
 
             // If we've been told to ignore transparency, we'll consider an intersection

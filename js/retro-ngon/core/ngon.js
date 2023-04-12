@@ -9,7 +9,7 @@
 export function ngon(
     vertices = [Rngon.vertex()],
     material = Rngon.material(),
-    vertexNormals = Rngon.vector3(0, 1, 0)
+    vertexNormals = Rngon.vector(0, 1, 0)
 )
 {
     Rngon.assert?.(
@@ -29,7 +29,7 @@ export function ngon(
     // duplicate that normal for all vertices.
     if (!Array.isArray(vertexNormals))
     {
-        vertexNormals = new Array(vertices.length).fill().map(n=>Rngon.vector3(vertexNormals.x, vertexNormals.y, vertexNormals.z));
+        vertexNormals = new Array(vertices.length).fill().map(n=>Rngon.vector(vertexNormals.x, vertexNormals.y, vertexNormals.z));
     }
 
     const faceNormal = vertexNormals.reduce((faceNormal, vertexNormal)=>{
@@ -37,9 +37,9 @@ export function ngon(
         faceNormal.y += vertexNormal.y;
         faceNormal.z += vertexNormal.z;
         return faceNormal;
-    }, Rngon.vector3(0, 0, 0));
+    }, Rngon.vector(0, 0, 0));
 
-    Rngon.vector3.normalize(faceNormal);
+    Rngon.vector.normalize(faceNormal);
 
     // If we get vertex U or V coordinates in the range [0,-x], we want to change 0 to
     // -eps to avoid incorrect rounding during texture-mapping.

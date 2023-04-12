@@ -227,8 +227,8 @@ function run_bencmark(sceneMeshes = [],
     return new Promise(resolve=>
     {
         const fpsReadings = [];
-        const cameraDirection = Rngon.vector3(initialCameraDir.x, initialCameraDir.y, initialCameraDir.z);
-        const cameraPosition = Rngon.vector3(initialCameraPos.x, initialCameraPos.y, initialCameraPos.z);
+        const cameraDirection = Rngon.vector(initialCameraDir.x, initialCameraDir.y, initialCameraDir.z);
+        const cameraPosition = Rngon.vector(initialCameraPos.x, initialCameraPos.y, initialCameraPos.z);
 
         // 'timeDeltaMs' is the number of milliseconds elapsed since the previous call
         // to this render function.
@@ -275,7 +275,7 @@ function run_bencmark(sceneMeshes = [],
                 depthSort: "painter-reverse",
                 useDepthBuffer: true,
                 perspectiveCorrectInterpolation: true,
-                cameraDirection: Rngon.vector3(cameraDirection.x, cameraDirection.y, cameraDirection.z),
+                cameraDirection: Rngon.vector(cameraDirection.x, cameraDirection.y, cameraDirection.z),
                 cameraPosition: cameraPosition,
                 ...extraRenderOptions,
             });

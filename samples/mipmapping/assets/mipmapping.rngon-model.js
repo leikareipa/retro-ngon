@@ -19,7 +19,7 @@ export const scene =
 	{
 		// Shorthands.
 		const n = Rngon.ngon;
-		const no = Rngon.vector3; // Normal.
+		const no = Rngon.vector; // Normal.
 		const v = Rngon.vertex;
 		const c = Rngon.color_rgba;
 

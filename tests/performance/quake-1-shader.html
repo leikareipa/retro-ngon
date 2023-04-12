@@ -19,8 +19,8 @@
                     nearPlane: 2,
                     farPlane: 5000,
                     lights: [
-                        Rngon.light(Rngon.vector3(409, 115, 758), {reach: 350, intensity: 1.5}),
-                        Rngon.light(Rngon.vector3(481, 182, 113), {reach: 450, intensity: 2}),
+                        Rngon.light(Rngon.vector(409, 115, 758), {reach: 350, intensity: 1.5}),
+                        Rngon.light(Rngon.vector(481, 182, 113), {reach: 450, intensity: 2}),
                     ],
                     pixelShader: perpixel_light_shader,
                 },
@@ -31,7 +31,7 @@
 
             function perpixel_light_shader({renderWidth, renderHeight, pixelBuffer, fragmentBuffer, ngonCache})
             {
-                const lightDirection = Rngon.vector3();
+                const lightDirection = Rngon.vector();
 
                 for (let i = 0; i < (renderWidth * renderHeight); i++)
                 {
@@ -55,9 +55,9 @@
                             lightDirection.x = (light.position.x - thisFragment.worldX);
                             lightDirection.y = (light.position.y - thisFragment.worldY);
                             lightDirection.z = (light.position.z - thisFragment.worldZ);
-                            Rngon.vector3.normalize(lightDirection);
+                            Rngon.vector.normalize(lightDirection);
 
-                            const shadeMul = Math.max(0, Math.min(1, Rngon.vector3.dot(thisNgon.normal, lightDirection)));
+                            const shadeMul = Math.max(0, Math.min(1, Rngon.vector.dot(thisNgon.normal, lightDirection)));
 
                             strongestShade = Math.max(strongestShade, (distanceMul * shadeMul * light.intensity));
                         }

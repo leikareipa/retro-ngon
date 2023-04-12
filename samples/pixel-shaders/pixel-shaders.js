@@ -20,7 +20,7 @@ export const sample = {
         });
 
         this.lights = [
-            Rngon.light(Rngon.vector3(11, 45, -35), {
+            Rngon.light(Rngon.vector(11, 45, -35), {
                 intensity: 70,
                 clip: 1,
                 attenuation: 1,
@@ -81,7 +81,7 @@ export const sample = {
                 cameraPosition: this.camera.position,
             },
             mesh: this.Rngon.mesh(scene.ngons, {
-                scaling: this.Rngon.vector3(25, 25, 25)
+                scaling: this.Rngon.vector(25, 25, 25)
             }),
         };
     },
@@ -134,12 +134,12 @@ function ps_crt_effect({renderWidth, renderHeight, pixelBuffer})
         {
             const bufferIdx = ((x + y * renderWidth) * 4);
     
-            // Normalize the coordinates to -1, 1 range
-            const normX = ((x - centerX) / centerX);
-            const normY = ((y - centerY) / centerY);
-    
             // Barrel distortion.
             {
+                // Normalize the coordinates to -1, 1 range
+                const normX = ((x - centerX) / centerX);
+                const normY = ((y - centerY) / centerY);
+
                 const radius = Math.sqrt(normX * normX + normY * normY);
                 const barrelFactor = (1 + curvature * radius * radius);
                 const barrelX = normX * barrelFactor;
@@ -181,6 +181,7 @@ function ps_crt_effect({renderWidth, renderHeight, pixelBuffer})
         }
     }
 }
+
 // Pixel shader. Applies a dithering effect to the rendered image.
 function ps_dithering({renderWidth, renderHeight, pixelBuffer})
 {
@@ -538,7 +539,7 @@ function ps_per_pixel_light({renderWidth, renderHeight, fragmentBuffer, pixelBuf
     const light = this.Rngon.state.active.lights[0];
     const lightReach = (100 * 100);
     const lightIntensity = 2.5;
-    const lightDirection = this.Rngon.vector3();
+    const lightDirection = this.Rngon.vector();
 
     for (let i = 0; i < (renderWidth * renderHeight); i++)
     {
@@ -565,9 +566,9 @@ function ps_per_pixel_light({renderWidth, renderHeight, fragmentBuffer, pixelBuf
                     lightDirection.x = (light.position.x - thisFragment.worldX);
                     lightDirection.y = (light.position.y - thisFragment.worldY);
                     lightDirection.z = (light.position.z - thisFragment.worldZ);
-                    this.Rngon.vector3.normalize(lightDirection);
+                    this.Rngon.vector.normalize(lightDirection);
 
-                    shadeMul = Math.max(0, Math.min(1, this.Rngon.vector3.dot(thisNgon.normal, lightDirection)));
+                    shadeMul = Math.max(0, Math.min(1, this.Rngon.vector.dot(thisNgon.normal, lightDirection)));
                 }
             }
 

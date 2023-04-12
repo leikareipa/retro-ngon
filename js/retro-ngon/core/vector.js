@@ -5,14 +5,13 @@
  *
  */
 
-// NOTE: The returned object is not immutable.
-export function vector3(x = 0, y = 0, z = 0)
+export function vector(x = 0, y = 0, z = 0)
 {
     Rngon.assert?.(
         ((typeof x === "number") &&
          (typeof y === "number") &&
          (typeof z === "number")),
-        "Expected numbers as parameters to the vector3 factory."
+        "Expected numbers as parameters to the vector factory."
     );
 
     const publicInterface = {
@@ -25,7 +24,7 @@ export function vector3(x = 0, y = 0, z = 0)
 }
 
 // Transforms the vector by the given 4x4 matrix.
-vector3.transform = function(v, m = [])
+vector.transform = function(v, m = [])
 {
     Rngon.assert?.(
         (m.length === 16),
@@ -41,7 +40,7 @@ vector3.transform = function(v, m = [])
     v.z = z_;
 }
 
-vector3.normalize = function(v)
+vector.normalize = function(v)
 {
     const sn = ((v.x * v.x) + (v.y * v.y) + (v.z * v.z));
 
@@ -54,14 +53,14 @@ vector3.normalize = function(v)
     }
 }
 
-vector3.dot = function(v, other)
+vector.dot = function(v, other)
 {
     return ((v.x * other.x) + (v.y * other.y) + (v.z * other.z));
 }
 
-vector3.cross = function(v, other)
+vector.cross = function(v, other)
 {
-    const c = Rngon.vector3();
+    const c = Rngon.vector();
 
     c.x = ((v.y * other.z) - (v.z * other.y));
     c.y = ((v.z * other.x) - (v.x * other.z));
@@ -70,7 +69,7 @@ vector3.cross = function(v, other)
     return c;
 }
 
-vector3.invert = function(v)
+vector.invert = function(v)
 {
     v.x *= -1;
     v.y *= -1;

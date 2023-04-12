@@ -22,8 +22,8 @@ export const sample = {
     
         return {
             mesh: Rngon.mesh(texturedCubeModel.ngons, {
-                scaling: Rngon.vector3(30, 25, 25),
-                rotation: Rngon.vector3(
+                scaling: Rngon.vector(30, 25, 25),
+                rotation: Rngon.vector(
                     (-60 + rotationSpeed * this.numTicks),
                     (-60 + rotationSpeed * this.numTicks),
                     0

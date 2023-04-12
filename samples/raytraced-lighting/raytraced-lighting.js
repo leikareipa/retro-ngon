@@ -48,7 +48,7 @@ export const sample = {
         });
 
         this.lights = [
-            Rngon.light(Rngon.vector3(11, 45, -35), {
+            Rngon.light(Rngon.vector(11, 45, -35), {
                 intensity: 20,
                 clip: 1,
                 attenuation: 1,
@@ -99,7 +99,7 @@ export const sample = {
                 cameraPosition: this.camera.position,
             },
             mesh: Rngon.mesh(scene.ngons, {
-                scaling: Rngon.vector3(25, 25, 25)
+                scaling: Rngon.vector(25, 25, 25)
             }),
         };
     },
@@ -160,8 +160,8 @@ function ps_raytraced_lighting({renderWidth, renderHeight, fragmentBuffer, pixel
 
     // Pre-create storage objects, so we don't need to keep re-creating them in the
     // render loop.
-    const lightDirection = this.Rngon.vector3();
-    const pixelWorldPosition = this.Rngon.vector3();
+    const lightDirection = this.Rngon.vector();
+    const pixelWorldPosition = this.Rngon.vector();
 
     for (let i = 0; i < (renderWidth * renderHeight); i++)
     {
@@ -186,7 +186,7 @@ function ps_raytraced_lighting({renderWidth, renderHeight, fragmentBuffer, pixel
         lightDirection.x = (light.position.x - thisFragment.worldX);
         lightDirection.y = (light.position.y - thisFragment.worldY);
         lightDirection.z = (light.position.z - thisFragment.worldZ);
-        this.Rngon.vector3.normalize(lightDirection);
+        this.Rngon.vector.normalize(lightDirection);
 
         const lightDistance = Math.sqrt(((pixelWorldPosition.x - light.position.x) * (pixelWorldPosition.x - light.position.x)) +
                                         ((pixelWorldPosition.y - light.position.y) * (pixelWorldPosition.y - light.position.y)) +
@@ -194,7 +194,7 @@ function ps_raytraced_lighting({renderWidth, renderHeight, fragmentBuffer, pixel
         
         const distanceMul = (1 / (1 + (light.attenuation * lightDistance)));
 
-        const shadeMul = Math.max(0, Math.min(1, this.Rngon.vector3.dot(thisNgon.normal, lightDirection)));
+        const shadeMul = Math.max(0, Math.min(1, this.Rngon.vector.dot(thisNgon.normal, lightDirection)));
 
         // If distanceMul * shadeMul is <= 0, it means there's no light falling on this
         // pixel from the light source, and so we don't need to cast a light ray. Otherwise,

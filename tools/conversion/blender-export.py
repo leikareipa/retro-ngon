@@ -50,7 +50,7 @@ with open(outFilename, 'w') as f:
 
     f.write("\t\t// Shorthands.\n")
     f.write("\t\tconst n = Rngon.ngon;\n")
-    f.write("\t\tconst no = Rngon.vector3; // Normal vector.\n")
+    f.write("\t\tconst no = Rngon.vector; // Normal vector.\n")
     f.write("\t\tconst v = Rngon.vertex;\n")
     f.write("\t\tconst c = Rngon.color_rgba;\n")
     f.write("\t\tconst ct = Rngon.texture_rgba.create_with_data_from_file;\n")

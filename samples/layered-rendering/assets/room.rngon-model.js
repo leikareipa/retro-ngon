@@ -19,7 +19,7 @@ export const room =
 	{
 		// Shorthands.
 		const n = Rngon.ngon;
-		const no = Rngon.vector3; // Normal.
+		const no = Rngon.vector; // Normal.
 		const v = Rngon.vertex;
 		const c = Rngon.color_rgba;
 		const ct = Rngon.texture_rgba.create_with_data_from_file;

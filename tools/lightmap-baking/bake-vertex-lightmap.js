@@ -154,7 +154,7 @@ function bake_vertex_lightmap(ngons = [Rngon.ngon()],
             updateTimer = performance.now();
         }
 
-        const triangleMidpoint = Rngon.vector3(((triangle.vertices[0].x + triangle.vertices[1].x + triangle.vertices[2].x) / 3),
+        const triangleMidpoint = Rngon.vector(((triangle.vertices[0].x + triangle.vertices[1].x + triangle.vertices[2].x) / 3),
                                                ((triangle.vertices[0].y + triangle.vertices[1].y + triangle.vertices[2].y) / 3),
                                                ((triangle.vertices[0].z + triangle.vertices[1].z + triangle.vertices[2].z) / 3));
 
@@ -164,7 +164,7 @@ function bake_vertex_lightmap(ngons = [Rngon.ngon()],
 
             // Move each vertex slightly towards the triangle's midpoint, to avoid
             // spurious intersections at shared vertices.
-            const adjustexVertexPos = Rngon.vector3(Rngon.lerp(vertex.x, triangleMidpoint.x, epsilon),
+            const adjustexVertexPos = Rngon.vector(Rngon.lerp(vertex.x, triangleMidpoint.x, epsilon),
                                                     Rngon.lerp(vertex.y, triangleMidpoint.y, epsilon),
                                                     Rngon.lerp(vertex.z, triangleMidpoint.z, epsilon));
                                         
@@ -173,17 +173,17 @@ function bake_vertex_lightmap(ngons = [Rngon.ngon()],
                 // We only need to consider lights that this vertex isn't facing
                 // away from.
                 {
-                    const lightDirection = Rngon.vector3((vertex.x - light.position.x),
+                    const lightDirection = Rngon.vector((vertex.x - light.position.x),
                                                          (vertex.y - light.position.y),
                                                          (vertex.z - light.position.z));
 
-                    Rngon.vector3.normalize(lightDirection);
+                    Rngon.vector.normalize(lightDirection);
 
-                    if (Rngon.vector3.dot(lightDirection, vertexNormal) >= 0)
+                    if (Rngon.vector.dot(lightDirection, vertexNormal) >= 0)
                     {
                         if (triangle.material.isTwoSided)
                         {
-                            Rngon.vector3.invert(vertexNormal);
+                            Rngon.vector.invert(vertexNormal);
                         }
                         else
                         {
@@ -194,7 +194,7 @@ function bake_vertex_lightmap(ngons = [Rngon.ngon()],
 
                 // Calculate the amount of light falling on this vertex from
                 // this light source.
-                if (point_sees_point(Rngon.vector3((adjustexVertexPos.x + (vertexNormal.x * epsilon)),
+                if (point_sees_point(Rngon.vector((adjustexVertexPos.x + (vertexNormal.x * epsilon)),
                                                    (adjustexVertexPos.y + (vertexNormal.y * epsilon)),
                                                    (adjustexVertexPos.z + (vertexNormal.z * epsilon))),
                                      light.position,
@@ -223,7 +223,7 @@ function bake_vertex_lightmap(ngons = [Rngon.ngon()],
                         continue;
                     }
 
-                    const dstTriangleMidpoint = Rngon.vector3((dstTriangle.vertices[0].x + dstTriangle.vertices[1].x + dstTriangle.vertices[2].x)/3,
+                    const dstTriangleMidpoint = Rngon.vector((dstTriangle.vertices[0].x + dstTriangle.vertices[1].x + dstTriangle.vertices[2].x)/3,
                                                               (dstTriangle.vertices[0].y + dstTriangle.vertices[1].y + dstTriangle.vertices[2].y)/3,
                                                               (dstTriangle.vertices[0].z + dstTriangle.vertices[1].z + dstTriangle.vertices[2].z)/3);
 
@@ -238,11 +238,11 @@ function bake_vertex_lightmap(ngons = [Rngon.ngon()],
                         // We only need to consider destination vertices that point toward
                         // the source vertex, unless their material is two-sided (in which
                         // case one side is always considered to point toward the source).
-                        if (Rngon.vector3.dot(vertexNormal, dstVertexNormal) >= 0)
+                        if (Rngon.vector.dot(vertexNormal, dstVertexNormal) >= 0)
                         {
                             if (dstTriangle.material.isTwoSided)
                             {
-                                Rngon.vector3.invert(dstVertexNormal);
+                                Rngon.vector.invert(dstVertexNormal);
                             }
                             else
                             {
@@ -257,16 +257,16 @@ function bake_vertex_lightmap(ngons = [Rngon.ngon()],
 
                         // Move each vertex slightly towards the triangle's midpoint, to avoid
                         // spurious intersections at shared vertices.
-                        const adjustexDstVertexPos = Rngon.vector3(Rngon.lerp(dstVertex.x, dstTriangleMidpoint.x, epsilon),
+                        const adjustexDstVertexPos = Rngon.vector(Rngon.lerp(dstVertex.x, dstTriangleMidpoint.x, epsilon),
                                                                    Rngon.lerp(dstVertex.y, dstTriangleMidpoint.y, epsilon),
                                                                    Rngon.lerp(dstVertex.z, dstTriangleMidpoint.z, epsilon));
 
                         // Calculate the amount of light falling on this vertex from
                         // the source vertex.
-                        if (point_sees_point(Rngon.vector3((adjustexDstVertexPos.x + (dstVertexNormal.x * epsilon)),
+                        if (point_sees_point(Rngon.vector((adjustexDstVertexPos.x + (dstVertexNormal.x * epsilon)),
                                                            (adjustexDstVertexPos.y + (dstVertexNormal.y * epsilon)),
                                                            (adjustexDstVertexPos.z + (dstVertexNormal.z * epsilon))),
-                                                Rngon.vector3((adjustexVertexPos.x + (vertexNormal.x * epsilon)),
+                                                Rngon.vector((adjustexVertexPos.x + (vertexNormal.x * epsilon)),
                                                               (adjustexVertexPos.y + (vertexNormal.y * epsilon)),
                                                               (adjustexVertexPos.z + (vertexNormal.z * epsilon))),
                                                 sceneBVH,
@@ -302,8 +302,8 @@ function bake_vertex_lightmap(ngons = [Rngon.ngon()],
 // another if there is no occluding geometry between the points, i.e. if the
 // distance from point A to the closest intersected triangle in the scene is
 // greater than the distance from point A to point B.
-function point_sees_point(pointA = Rngon.vector3(),
-                          pointB = Rngon.vector3(),
+function point_sees_point(pointA = Rngon.vector(),
+                          pointB = Rngon.vector(),
                           sceneBVH,
                           epsilon)
 {
@@ -311,11 +311,11 @@ function point_sees_point(pointA = Rngon.vector3(),
                                     ((pointA.y - pointB.y) * (pointA.y - pointB.y)) +
                                     ((pointA.z - pointB.z) * (pointA.z - pointB.z)));
 
-    const pointDirection = Rngon.vector3((pointB.x - pointA.x),
+    const pointDirection = Rngon.vector((pointB.x - pointA.x),
                                          (pointB.y - pointA.y),
                                          (pointB.z - pointA.z));
 
-    Rngon.vector3.normalize(pointDirection);
+    Rngon.vector.normalize(pointDirection);
 
     const intersection = ray(pointA, pointDirection).intersect_bvh(sceneBVH, epsilon, {ignoreTransparency: true});
 
@@ -339,8 +339,8 @@ function point_sees_point(pointA = Rngon.vector3(),
 // of light would be attenuated when arriving to point A from point B given also
 // the surface normal n associated with point A. A custom distance attenuation
 // factor can also be given; or set to 1 for the default value.
-function scatter_attenuation(pointA = Rngon.vector3(),
-                             pointB = Rngon.vector3(),
+function scatter_attenuation(pointA = Rngon.vector(),
+                             pointB = Rngon.vector(),
                              distanceAttenuationFactor)
 {
     const surfaceAlbedo = 0.8;
@@ -348,14 +348,14 @@ function scatter_attenuation(pointA = Rngon.vector3(),
                                     ((pointA.y - pointB.y) * (pointA.y - pointB.y)) +
                                     ((pointA.z - pointB.z) * (pointA.z - pointB.z)));
 
-    const outDirection = Rngon.vector3((pointB.x - pointA.x),
+    const outDirection = Rngon.vector((pointB.x - pointA.x),
                                        (pointB.y - pointA.y),
                                        (pointB.z - pointA.z));
 
-    Rngon.vector3.normalize(outDirection);
+    Rngon.vector.normalize(outDirection);
 
     const distanceAttenuation = (1 / (1 + (pointDistance * distanceAttenuationFactor)));
-    const brdf = (Rngon.vector3.dot(pointA.normal, outDirection) * (surfaceAlbedo / Math.PI));
+    const brdf = (Rngon.vector.dot(pointA.normal, outDirection) * (surfaceAlbedo / Math.PI));
     const pdf = (1 / (2 * Math.PI));
     const incidenceMul = Math.max(0, Math.min(1, (brdf / pdf)));
     const distanceMul = Math.max(0, Math.min(1, distanceAttenuation));

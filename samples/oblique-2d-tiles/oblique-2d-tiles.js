@@ -196,16 +196,16 @@ export const sample = {
                 get lights()
                 {
                     return [
-                        Rngon.light(Rngon.vector3(...tile_pos_to_world_pos(21, 7)),{
+                        Rngon.light(Rngon.vector(...tile_pos_to_world_pos(21, 7)),{
                             intensity: 20,
                         }),
 
-                        Rngon.light(Rngon.vector3(...tile_pos_to_world_pos(15, 7)),{
+                        Rngon.light(Rngon.vector(...tile_pos_to_world_pos(15, 7)),{
                             intensity: 20,
                         }),
 
                         // A light that follows the mouse cursor.
-                        Rngon.light(Rngon.vector3((mousePos.x * renderSettings.scale),
+                        Rngon.light(Rngon.vector((mousePos.x * renderSettings.scale),
                                                              (mousePos.y * renderSettings.scale)),{
                             intensity: 20,
                         }),

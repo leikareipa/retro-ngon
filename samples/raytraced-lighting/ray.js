@@ -9,7 +9,7 @@
 
 "use strict";
 
-export function ray(pos = Rngon.vector3(0, 0, 0), dir = Rngon.vector3(0, 0, 1))
+export function ray(pos = Rngon.vector(0, 0, 0), dir = Rngon.vector(0, 0, 1))
 {
     const publicInterface =
     {
@@ -25,30 +25,34 @@ export function ray(pos = Rngon.vector3(0, 0, 0), dir = Rngon.vector3(0, 0, 1))
             const epsilon = 0.00001;
             const noHit = Infinity;
         
-            const e1 = Rngon.vector3((triangle.vertices[1].worldX - triangle.vertices[0].worldX),
-                                     (triangle.vertices[1].worldY - triangle.vertices[0].worldY),
-                                     (triangle.vertices[1].worldZ - triangle.vertices[0].worldZ));
+            const e1 = Rngon.vector(
+                (triangle.vertices[1].worldX - triangle.vertices[0].worldX),
+                (triangle.vertices[1].worldY - triangle.vertices[0].worldY),
+                (triangle.vertices[1].worldZ - triangle.vertices[0].worldZ)
+            );
         
-            const e2 = Rngon.vector3((triangle.vertices[2].worldX - triangle.vertices[0].worldX),
-                                     (triangle.vertices[2].worldY - triangle.vertices[0].worldY),
-                                     (triangle.vertices[2].worldZ - triangle.vertices[0].worldZ));
+            const e2 = Rngon.vector(
+                (triangle.vertices[2].worldX - triangle.vertices[0].worldX),
+                (triangle.vertices[2].worldY - triangle.vertices[0].worldY),
+                (triangle.vertices[2].worldZ - triangle.vertices[0].worldZ)
+            );
         
-            const pv = Rngon.vector3.cross(ray.dir, e2);
-            const det = Rngon.vector3.dot(e1, pv);
+            const pv = Rngon.vector.cross(ray.dir, e2);
+            const det = Rngon.vector.dot(e1, pv);
             if ((det > -epsilon) && (det < epsilon)) return noHit;
         
             const invD = (1.0 / det);
-            const tv = Rngon.vector3((ray.pos.x - triangle.vertices[0].worldX),
+            const tv = Rngon.vector((ray.pos.x - triangle.vertices[0].worldX),
                                      (ray.pos.y - triangle.vertices[0].worldY),
                                      (ray.pos.z - triangle.vertices[0].worldZ));
-            const u = (Rngon.vector3.dot(tv, pv) * invD);
+            const u = (Rngon.vector.dot(tv, pv) * invD);
             if ((u < 0) || (u > 1)) return noHit;
         
-            const qv = Rngon.vector3.cross(tv, e1);
-            const v = (Rngon.vector3.dot(ray.dir, qv) * invD);
+            const qv = Rngon.vector.cross(tv, e1);
+            const v = (Rngon.vector.dot(ray.dir, qv) * invD);
             if ((v < 0) || ((u + v) > 1)) return noHit;
         
-            const distance = (Rngon.vector3.dot(e2, qv) * invD);
+            const distance = (Rngon.vector.dot(e2, qv) * invD);
             if (distance <= 0) return noHit; 
         
             return distance;
