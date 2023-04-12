@@ -98,12 +98,12 @@ export function first_person_camera(canvasID = "", {
     return {
         get position()
         {
-            return Rngon.translation_vector(position.x, position.y, position.z);
+            return Rngon.vector3(position.x, position.y, position.z);
         },
 
         get direction()
         {
-            return Rngon.rotation_vector(direction.x, direction.y, direction.z);
+            return Rngon.vector3(direction.x, direction.y, direction.z);
         },
 
         update: function()
@@ -111,7 +111,7 @@ export function first_person_camera(canvasID = "", {
             frameDelta = (performance.now() - totalRunTime);
             totalRunTime += frameDelta;
 
-            const forwardVector = Rngon.rotation_vector(direction.x, direction.y, direction.z);
+            const forwardVector = Rngon.vector3(direction.x, direction.y, direction.z);
             const movement = get_accumulated_movement(forwardVector, (movementSpeed * frameDelta));
 
             position.x -= movement.x;
@@ -164,13 +164,16 @@ export function first_person_camera(canvasID = "", {
 
     function get_accumulated_movement(forwardVector, movementSpeed)
     {
-        const cameraRotationMatrix = (Rngon.matrix44.rotation
-                                      ? Rngon.matrix44.rotation
-                                      : Rngon.matrix44.rotate)(0, forwardVector.y, 0);
+        // Backwards compatibility for when matrix.rotation had a different name.
+        const m44Rotation = (Rngon.matrix44.rotation? Rngon.matrix44.rotation : Rngon.matrix44.rotate);
 
-        const accumulatedMovement = Rngon.vector3((movementStatus.left?    1 : movementStatus.right?    -1 : 0),
-                                                  (movementStatus.up?      1 : movementStatus.down?     -1 : 0),
-                                                  (movementStatus.forward? 1 : movementStatus.backward? -1 : 0));
+        const cameraRotationMatrix = m44Rotation(0, forwardVector.y, 0);
+
+        const accumulatedMovement = Rngon.vector3(
+            (movementStatus.left?    1 : movementStatus.right?    -1 : 0),
+            (movementStatus.up?      1 : movementStatus.down?     -1 : 0),
+            (movementStatus.forward? 1 : movementStatus.backward? -1 : 0)
+        );
 
         if (Rngon.vector3.normalize)
         {

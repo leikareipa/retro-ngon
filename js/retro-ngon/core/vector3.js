@@ -24,11 +24,6 @@ export function vector3(x = 0, y = 0, z = 0)
     return publicInterface;
 }
 
-// Convenience aliases for vector3.
-export const translation_vector = vector3;
-export const scaling_vector = vector3;
-export const rotation_vector = (x, y, z)=>Rngon.vector3(Rngon.trig.deg(x), Rngon.trig.deg(y), Rngon.trig.deg(z));
-
 // Transforms the vector by the given 4x4 matrix.
 vector3.transform = function(v, m = [])
 {

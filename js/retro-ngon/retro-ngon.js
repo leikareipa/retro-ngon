@@ -37,9 +37,6 @@ import {
 } from "./core/util.js";
 import {
     vector3,
-    translation_vector,
-    rotation_vector,
-    scaling_vector
 } from "./core/vector3.js";
 import {vertex} from "./core/vertex.js";
 
@@ -77,8 +74,5 @@ export const Rngon = {
     texture_rgba,
     trig,
     vector3,
-    rotation_vector,
-    scaling_vector,
-    translation_vector,
     vertex,
 };

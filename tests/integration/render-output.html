@@ -76,11 +76,11 @@
                                  Rngon.vertex(-0.5,  1.5,  1, 0, 1)];
 
             const meshSettings = {
-                rotation: Rngon.rotation_vector(0, 0, 45),
+                rotation: Rngon.vector3(0, 0, 45),
             };
             const renderSettings = {
                 scale: 1,
-                cameraPosition: Rngon.translation_vector(0, 0, -5),
+                cameraPosition: Rngon.vector3(0, 0, -5),
                 hibernateWhenNotOnScreen: false,
                 depthSort: "none",
             };
@@ -328,7 +328,7 @@
                                                                   texture
                                                               });
 
-                                      const quadMesh = Rngon.mesh([quad], {...meshSettings, rotation: Rngon.rotation_vector(0, 30, 45)});
+                                      const quadMesh = Rngon.mesh([quad], {...meshSettings, rotation: Rngon.vector3(0, 30, 45)});
 
                                       Rngon.render(canvasId, [quadMesh], {...renderSettings, perspectiveCorrectInterpolation: false});
                                   }),
@@ -343,7 +343,7 @@
                                                                   texture
                                                               });
 
-                                      const quadMesh = Rngon.mesh([quad], {...meshSettings, rotation: Rngon.rotation_vector(0, 30, 45)});
+                                      const quadMesh = Rngon.mesh([quad], {...meshSettings, rotation: Rngon.vector3(0, 30, 45)});
 
                                       Rngon.render(canvasId, [quadMesh], {...renderSettings, perspectiveCorrectInterpolation: true});
                                   }),

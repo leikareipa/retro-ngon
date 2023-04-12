@@ -20,7 +20,7 @@ export const sample = {
         });
 
         this.lights = [
-            Rngon.light(Rngon.translation_vector(11, 45, -35), {
+            Rngon.light(Rngon.vector3(11, 45, -35), {
                 intensity: 70,
                 clip: 1,
                 attenuation: 1,
@@ -81,7 +81,7 @@ export const sample = {
                 cameraPosition: this.camera.position,
             },
             mesh: this.Rngon.mesh(scene.ngons, {
-                scaling: this.Rngon.scaling_vector(25, 25, 25)
+                scaling: this.Rngon.vector3(25, 25, 25)
             }),
         };
     },

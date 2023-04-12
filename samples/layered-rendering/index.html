@@ -208,12 +208,12 @@
                 camera.update();
 
                 const roomMesh = Rngon.mesh(room.ngons, {
-                    scaling: Rngon.scaling_vector(25, 25, 25)
+                    scaling: Rngon.vector3(25, 25, 25)
                 });
 
                 const objectMesh = Rngon.mesh(object.ngons, {
-                    scaling: Rngon.scaling_vector(65, 65, 65),
-                    translation: Rngon.translation_vector(0, -40, 0),
+                    scaling: Rngon.vector3(65, 65, 65),
+                    translation: Rngon.vector3(0, -40, 0),
                 });
 
                 const options = {

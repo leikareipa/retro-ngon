@@ -122,9 +122,9 @@ const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
                                     });
             const mesh = Rngon.mesh([ngon],
                                     {
-                                        translation: Rngon.translation_vector(1, 2, 3),
-                                        rotation: Rngon.rotation_vector(4, 5, 6),
-                                        scaling: Rngon.scaling_vector(7, 8, 9)
+                                        translation: Rngon.vector3(1, 2, 3),
+                                        rotation: Rngon.vector3(4, 5, 6),
+                                        scaling: Rngon.vector3(7, 8, 9)
                                     });
 
             expect_true([()=>(mesh.ngons.length === 1),
@@ -233,9 +233,9 @@ const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
                                     });
             const mesh = Rngon.mesh([ngon],
                                     {
-                                        translation: Rngon.translation_vector(0, 0, 1),
-                                        rotation: Rngon.rotation_vector(0, 0, 0),
-                                        scaling: Rngon.scaling_vector(1, 1, 1)
+                                        translation: Rngon.vector3(0, 0, 1),
+                                        rotation: Rngon.vector3(0, 0, 0),
+                                        scaling: Rngon.vector3(1, 1, 1)
                                     });
  
             // Render the rectangle into the canvas, and check that the canvas came to have correctly-colored pixels.
@@ -247,8 +247,8 @@ const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
 
                 Rngon.render(testCanvasId, [mesh],
                              {
-                                 cameraDirection: Rngon.translation_vector(0, 0, 0),
-                                 cameraPosition: Rngon.rotation_vector(0, 0, 0),
+                                 cameraDirection: Rngon.vector3(0, 0, 0),
+                                 cameraPosition: Rngon.vector3(0, 0, 0),
                                  scale: 1,
                              });
 

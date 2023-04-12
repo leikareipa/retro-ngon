@@ -56,6 +56,9 @@ export const matrix44 = {
 
     rotation: function(x = 0, y = 0, z = 0)
     {
+        x = Rngon.trig.deg(x);
+        y = Rngon.trig.deg(y);
+        z = Rngon.trig.deg(z);
         const cos = Rngon.trig.cos;
         const sin = Rngon.trig.sin;
 

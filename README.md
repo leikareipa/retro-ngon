@@ -32,7 +32,7 @@ With its relatively simple API, this renderer may also be a good choice for prot
 
 - [Quick-start guide](#quick-start-guide)
 - [API reference](#api-reference)
-   
+
 # Quick-start guide
 
 ## Render a simple quad
@@ -64,11 +64,11 @@ const quad = Rngon.ngon([
 });
 
 const quadMesh = Rngon.mesh([quad], {
-    rotation: Rngon.rotation_vector(0, 0, 45),
+    rotation: Rngon.vector3(0, 0, 45),
 });
 
 Rngon.render("canvas", [quadMesh], {
-    cameraPosition: Rngon.translation_vector(0, 0, -5),
+    cameraPosition: Rngon.vector3(0, 0, -5),
     scale: 1,
 });
 ```
@@ -141,7 +141,7 @@ const quad = Rngon.ngon([
 
 ```javascript
 Rngon.render("canvas", [quadMesh], {
-    cameraPosition: Rngon.translation_vector(0, 0, -5),
+    cameraPosition: Rngon.vector3(0, 0, -5),
     scale: 0.14
 });
 ```
@@ -256,7 +256,7 @@ After the call, the rendered pixel buffer is accessible via *Rngon.state.active.
 - **meshes** (array = *[mesh()]*): The `mesh` objects to be rendered.
 - **options** (object): Additional rendering options:
     - **state** (string = *"default"*): The name of the state object to be used for storing internal state during rendering. Subsequent calls to `render()` with this name will re-use the corresponding state object, so that e.g. render buffers won't be re-allocated if there are intervening calls to `render()` with different parameters using a different state name. You can access the state object via `Rngon.state[name]` after the call.
-        - The value *"active"* is reserved and should not be used.
+        - The value "active" is reserved and should not be used.
     - **scale** (number = *1*): The size of the rendered image, as a multiplier of the size of the target canvas. Ignored if the `target` parameter is *null*, i.e. when there is no target canvas, in which case the `width` and `height` options will be used.
     - **width** (number = *640*): The width of the image to be rendered. Ignored if the `target` parameter is not *null*.
     - **height** (number = *480*): The height of the image to be rendered. Ignored if the `target` parameter is not *null*.
@@ -272,8 +272,8 @@ After the call, the rendered pixel buffer is accessible via *Rngon.state.active.
     - **farPlane** (number = *1000*): Vertices further from the camera than this will be clipped.
     - **perspectiveCorrectInterpolation** (number = *false*): Whether properties that are linearly interpolated between vertices during rasterization (e.g. texture coordinates) are perspective-corrected, eliminating view-dependent distortion.
     - **clipToViewport** (boolean = *true*): Whether n-gons are to be clipped against the viewport prior to rendering.
-    - **cameraPosition** (translation_vector = *vector3(0, 0, 0)*): The position from which the scene is rendered.
-    - **cameraDirection** (rotation_vector = *vector3(0, 0, 0)*): The direction in which the scene is viewed for rendering.
+    - **cameraPosition** (vector3 = *vector3(0, 0, 0)*): The position from which the scene is rendered.
+    - **cameraDirection** (vector3 = *vector3(0, 0, 0)*): The direction in which the scene is viewed for rendering.
     - **useFragmentBuffer** (boolean = *false*): Whether the renderer should generate a fragment buffer to provide per-pixel metadata (e.g. depth value and world XYZ coordinates). Will be set to *true* automatically if the `pixelShader` function accepts a "fragmentBuffer" parameter. If enabled, the fragment buffer is also accessible via `Rngon.state.active.fragmentBuffer` after the call.
     - **rasterShaders** (array = *[]*): Zero or more functions to be called by the renderer to implement custom rasterization of the scene's pre-processed screen-space n-gons. The functions in this array are called synchronously in back-to-front order until one of them returns *true*. If no function returns *true*, or if the array is empty, the renderer will call the appropriate [built-in raster shader](./js/retro-ngon/base-modules/rasterize/).
     - **pixelShader** (function | null = *null*): A function to be called by the renderer for applying pixel-shading effects to the rendered image. See the [pixel shaders sample](./samples/pixel-shaders/pixel-shaders.js) for examples of usage.
@@ -304,11 +304,11 @@ const ngon = Rngon.ngon(
 });
 
 const mesh = Rngon.mesh([ngon], {
-    rotation: Rngon.rotation_vector(0, 0, 45)
+    rotation: Rngon.vector3(0, 0, 45)
 });
 
 Rngon.render("canvas", [mesh], {
-    cameraPosition: Rngon.translation_vector(0, 0, -5),
+    cameraPosition: Rngon.vector3(0, 0, -5),
 });
 ```
 
@@ -344,8 +344,8 @@ The paths are listed below, with the conditions required for that path to activa
         1. Textured
         2. White base color (`color` set to *Rngon.color_rgba(255, 255, 255)*)
         3. Alpha operations disabled (`allowAlphaReject` and `allowAlphaBlend` set to *false*)
-        4. Affine texture-mapping (`textureMapping` set to *"affine"*)
-        5. Texture filtering disabled (`textureFiltering` set to *"none"*)
+        4. Affine texture-mapping (`textureMapping` set to "affine")
+        5. Texture filtering disabled (`textureFiltering` set to "none")
 3. Solid
     1. Depth buffer enabled (`useDepthBuffer` set to *true*)
     2. Fragment buffer disabled (`useFragmentBuffer` set to false, and `pixelShader` set to a falsy value or a function that doesn't use the fragment buffer)
@@ -364,7 +364,7 @@ An non-blocking version of **render()** that executes in a Web Worker.
 
 Accepts the same parameters as **render()**, with the following differences:
 
-- **options**:
+- **options** (object):
     - **pixelShader** (string | undefined = *undefined*): Same as for **render()**, but the function must now be provided as a string.
     - **vertexShader** (string | undefined = *undefined*): Same as for **render()**, but the function must now be provided as a string.
     - **scale**: Ignored. Use the `width` and `height` options instead.
@@ -407,10 +407,10 @@ A selection of n-gons related to each other in some way, rendered as a unit with
 
 - **ngons** (array = *[ngon()]*): The n-gons that make up the mesh.
 - **transform** (object): Transformations to be applied to the mesh's n-gons:
-    - **translation** (translation_vector = *translation_vector(0, 0, 0)*): Delta increments to XYZ vertex coordinates.
-    - **rotation** (rotation_vector = *rotation_vector(0, 0, 0)*): Rotation around the origin of (0, 0, 0), in degrees.
+    - **translation** (vector3 = *vector3(0, 0, 0)*): Delta increments to XYZ vertex coordinates.
+    - **rotation** (vector3 = *vector3(0, 0, 0)*): Rotation around the origin of (0, 0, 0), in degrees.
         - Note: Rotation is not applied to normals.
-    - **scaling** (scaling_vector = *scaling_vector(1, 1, 1)*): Multipliers to XYZ vertex coordinates.
+    - **scaling** (vector3 = *vector3(1, 1, 1)*): Multipliers to XYZ vertex coordinates.
 
 Note: If both `transform.translation` and `transform.rotation` are given, rotation will be applied first.
 
@@ -421,16 +421,16 @@ Note: Transformations are applied at render-time on copies of the mesh's n-gons.
 An object with the following properties:
 
 - **ngons** (array): The `ngons` parameter.
-- **translation** (translation_vector): The `transform.translation` parameter.
-- **rotation** (rotation_vector): The `transform.rotation` parameter.
-- **scale** (scaling_vector): The `transform.scaling` parameter.
+- **translation** (vector3): The `transform.translation` parameter.
+- **rotation** (vector3): The `transform.rotation` parameter.
+- **scale** (vector3): The `transform.scaling` parameter.
 
 ### Sample usage
 
 ```javascript
 // Construct a mesh containing one n-gon, and apply scaling to it.
 const mesh = Rngon.mesh([ngon], {
-    scaling: Rngon.scaling_vector(10, 15, 5),
+    scaling: Rngon.vector3(10, 15, 5),
 });
 
 // Transformations can be edited directly:
@@ -532,10 +532,6 @@ An object with the following properties:
 ## vector3([x[, y[, z]]])
 
 A three-component vector.
-
-Aliases: `rotation_vector`, `translation_vector`, `scaling_vector`.
-
-Note: The parameters to `rotation_vector` are in degrees, [0,359].
 
 ### Parameters
 

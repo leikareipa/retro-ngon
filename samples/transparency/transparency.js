@@ -27,11 +27,13 @@ export const sample = {
     
         return {
             mesh: Rngon.mesh(torusModel.ngons, {
-                scaling: Rngon.scaling_vector(30, 30, 30),
-                translation: Rngon.translation_vector(-3, 3, 0),
-                rotation: Rngon.rotation_vector((-60 + rotationSpeed * this.numTicks),
-                                                (-60 + rotationSpeed * this.numTicks),
-                                                0),
+                scaling: Rngon.vector3(30, 30, 30),
+                translation: Rngon.vector3(-3, 3, 0),
+                rotation: Rngon.vector3(
+                    (-60 + rotationSpeed * this.numTicks),
+                    (-60 + rotationSpeed * this.numTicks),
+                    0
+                ),
             }),
         };
     },

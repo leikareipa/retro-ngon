@@ -7,7 +7,7 @@
 
 // A light source. This is a work-in-progress implementation.
 export function light(
-    position = Rngon.translation_vector(0, 0, 0),
+    position = Rngon.vector3(0, 0, 0),
     settings = {}
 )
 {

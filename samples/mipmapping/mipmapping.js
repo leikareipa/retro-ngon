@@ -23,9 +23,9 @@ export const sample = {
                 vertexShader: vs_set_mipmap_level,
             },
             mesh: Rngon.mesh(scene.ngons, {
-                translation: Rngon.translation_vector(-80, -40, (200 + Math.cos(this.numTicks / 100) * 340)),
-                rotation: Rngon.rotation_vector(0, -90, 0),
-                scaling: Rngon.scaling_vector(25, 25, 45)
+                translation: Rngon.vector3(-80, -40, (200 + Math.cos(this.numTicks / 100) * 340)),
+                rotation: Rngon.vector3(0, -90, 0),
+                scaling: Rngon.vector3(25, 25, 45)
             }),
         };
     },

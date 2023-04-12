@@ -22,10 +22,12 @@ export const sample = {
     
         return {
             mesh: Rngon.mesh(texturedCubeModel.ngons, {
-                scaling: Rngon.scaling_vector(30, 25, 25),
-                rotation: Rngon.rotation_vector((-60 + rotationSpeed * this.numTicks),
-                                                (-60 + rotationSpeed * this.numTicks),
-                                                0),
+                scaling: Rngon.vector3(30, 25, 25),
+                rotation: Rngon.vector3(
+                    (-60 + rotationSpeed * this.numTicks),
+                    (-60 + rotationSpeed * this.numTicks),
+                    0
+                ),
             }),
         };
     },
