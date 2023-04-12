@@ -614,23 +614,9 @@ const texture = Rngon.texture({
 ```
 
 ```javascript
-// Create a texture with data from a JSON file.
+// Create a texture with the 'data' object loaded from a JSON file.
 const texture = await Rngon.texture.load("texture.json");
 ```
-
-### Utility functions
-
-#### texture.load(filename)
-
-Creates a `texture` object with data from a JSON file.
-
-##### Parameters
-
-- **filename** (string): URL or File path to a JSON file containing an object with the structure of the `data` parameter of `texture`.
-
-##### Returns
-
-- (Promise): A Promise of a `texture` object with data loaded from the file pointed to by `filename`.
 
 # Authors and credits
 
