@@ -126,7 +126,7 @@ function insert_light_source_meshes(lights = [Rngon.light()],
         const lightMaterial = {
             [LIGHT_EMISSION_PROPERTY]: light.intensity,
             ambientLightLevel: 1,
-            color:Rngon.color_rgba(255,255,255),
+            color:Rngon.color(255,255,255),
         };
 
         const cubeNgons = [

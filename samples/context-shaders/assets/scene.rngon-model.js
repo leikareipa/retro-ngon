@@ -21,7 +21,7 @@ export const scene =
 		const n = Rngon.ngon;
 		const no = Rngon.vector; // Normal vector.
 		const v = Rngon.vertex;
-		const c = Rngon.color_rgba;
+		const c = Rngon.color;
 
 		const m = this.materials = Object.freeze({
 			"Floor":{color:c(254,254,254)},

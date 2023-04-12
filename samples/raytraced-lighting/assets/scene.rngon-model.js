@@ -20,7 +20,7 @@ export const scene =
 		const n = Rngon.ngon;
 		const no = Rngon.vector; // Normal vector.
 		const v = Rngon.vertex;
-		const c = Rngon.color_rgba;
+		const c = Rngon.color;
 		let m; // Will point to this.materials.
 
 		m = this.materials = {

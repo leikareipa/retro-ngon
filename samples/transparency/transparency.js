@@ -20,7 +20,7 @@ export const sample = {
         
         for (const ngon of torusModel.ngons)
         {
-            ngon.material.color = Rngon.color_rgba(215, 215, 115, parent.MODEL_ALPHA);
+            ngon.material.color = Rngon.color(215, 215, 115, parent.MODEL_ALPHA);
         }
 
         const rotationSpeed = 0.4;

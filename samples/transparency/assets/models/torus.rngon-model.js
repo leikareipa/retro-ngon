@@ -19,7 +19,7 @@ export const torusModel =
 		const n = Rngon.ngon;
 		const no = Rngon.vector; // Normal.
 		const v = Rngon.vertex;
-		const c = Rngon.color_rgba;
+		const c = Rngon.color;
 		const ct = Rngon.texture.load;
 
 		// Load the textures.

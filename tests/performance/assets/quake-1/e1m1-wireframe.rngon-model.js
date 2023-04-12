@@ -26,7 +26,7 @@ export const benchmarkScene =
 			isTwoSided: true,
 			hasFill: false,
 			hasWireframe: true,
-			wireframeColor: Rngon.color_rgba(1, 150, 1)
+			wireframeColor: Rngon.color(1, 150, 1)
 		};
 
 		// N-gons.

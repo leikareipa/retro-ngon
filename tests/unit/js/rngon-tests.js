@@ -94,7 +94,7 @@ const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
         {
             const vertex = Rngon.vertex(1.1, 2.2, 3.3);
             const ngon = Rngon.ngon([vertex],
-                                    {color: Rngon.color_rgba(0, 111, 222), texture: null, hasWireframe: false});
+                                    {color: Rngon.color(0, 111, 222), texture: null, hasWireframe: false});
 
             expect_true([()=>(ngon.vertices.length === 1),
                          ()=>(ngon.vertices[0] === vertex),
@@ -116,7 +116,7 @@ const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
             const vertex = Rngon.vertex(1.1, 2.2, 3.3);
             const ngon = Rngon.ngon([vertex],
                                     {
-                                        color: Rngon.color_rgba(0, 111, 222),
+                                        color: Rngon.color(0, 111, 222),
                                         texture: null,
                                         hasWireframe: false,
                                     });
@@ -144,7 +144,7 @@ const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
 
     unit("Color", ()=>
     {
-        const color = Rngon.color_rgba(1, 2, 3, 4);
+        const color = Rngon.color(1, 2, 3, 4);
 
         expect_true([()=>(color.red === 1),
                      ()=>(color.green === 2),
@@ -157,8 +157,8 @@ const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
                      ()=>{color.blue = 1}]);
 
         // Values out of bounds.
-        expect_fail([()=>{Rngon.color_rgba(256, 255, 255)},
-                     ()=>{Rngon.color_rgba(-1, 255, 255)}]);
+        expect_fail([()=>{Rngon.color(256, 255, 255)},
+                     ()=>{Rngon.color(-1, 255, 255)}]);
     });
 
     unit("Texture (RGBA)", ()=>
@@ -227,7 +227,7 @@ const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
                                      Rngon.vertex( 1,  1, 1),
                                      Rngon.vertex(-1,  1, 1)],
                                     {
-                                        color: Rngon.color_rgba(colorShade, colorShade, colorShade, colorShade),
+                                        color: Rngon.color(colorShade, colorShade, colorShade, colorShade),
                                         texture: null,
                                         hasWireframe: false
                                     });

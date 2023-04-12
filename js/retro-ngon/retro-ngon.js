@@ -13,7 +13,7 @@ import {rasterize} from "./base-modules/rasterize.js";
 import {surface_wipe} from "./base-modules/surface-wipe.js";
 import {transform_clip_light} from "./base-modules/transform-clip-light.js";
 import {
-    color_rgba,
+    color,
     color_index,
 } from "./core/color.js";
 import {state} from "./core/internal-state.js";
@@ -59,7 +59,7 @@ export const Rngon = {
     log,
     renderable_width_of,
     renderable_height_of,
-    color_rgba,
+    color,
     color_index,
     state,
     light,

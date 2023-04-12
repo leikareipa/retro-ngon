@@ -19,7 +19,7 @@ export const teapot =
 		// Shorthands.
 		const n = Rngon.ngon;
 		const v = Rngon.vertex;
-		const c = Rngon.color_rgba;
+		const c = Rngon.color;
 		const m = this.materials = {
 			"Object":{
 				isTwoSided: true,

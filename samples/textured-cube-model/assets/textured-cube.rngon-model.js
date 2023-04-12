@@ -16,7 +16,7 @@ export const texturedCubeModel =
 		// Shorthands, for a smaller file size.
 		const n = Rngon.ngon;
 		const v = Rngon.vertex;
-		const c = Rngon.color_rgba;
+		const c = Rngon.color;
 
 		// Load the textures.
 		const t = {

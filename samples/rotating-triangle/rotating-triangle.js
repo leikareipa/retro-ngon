@@ -18,7 +18,7 @@ export const sample = {
         const triangle = Rngon.ngon([Rngon.vertex(-30, -30, 0),
                                      Rngon.vertex(30, -30, 0),
                                      Rngon.vertex(30, 30, 0)], {
-            color: Rngon.color_rgba(255, 255, 0),
+            color: Rngon.color(255, 255, 0),
             texture: null,
         });
 

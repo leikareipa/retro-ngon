@@ -60,7 +60,7 @@ const quad = Rngon.ngon([
     Rngon.vertex(1, -1, 0),
     Rngon.vertex(1, 1, 0),
     Rngon.vertex(-1, 1, 0)], {
-        color: Rngon.color_rgba(0, 150, 255)
+        color: Rngon.color(0, 150, 255)
 });
 
 const quadMesh = Rngon.mesh([quad], {
@@ -96,7 +96,7 @@ const quad = Rngon.ngon([
     Rngon.vertex(1, -1, 0),
     Rngon.vertex(1, 1, 0),
     Rngon.vertex(-1, 1, 0)], {
-        color: Rngon.color_rgba(255, 255, 255),
+        color: Rngon.color(255, 255, 255),
         texture: simpleTexture,
 });
 ```
@@ -111,7 +111,7 @@ const quad = Rngon.ngon([
     Rngon.vertex(1, -1, 0),
     Rngon.vertex(1, 1, 0),
     Rngon.vertex(-1, 1, 0)], {
-        color: Rngon.color_rgba(255, 255, 255),
+        color: Rngon.color(255, 255, 255),
         texture: await Rngon.texture.load("texture.json"),
 });
 ```
@@ -126,7 +126,7 @@ const quad = Rngon.ngon([
     Rngon.vertex( 1, -1, 0, 1, 0),
     Rngon.vertex(1, 1, 0, 1, 1),
     Rngon.vertex(-1, 1, 0, 0, 1)], {
-        color: Rngon.color_rgba(255, 255, 255),
+        color: Rngon.color(255, 255, 255),
         texture: simpleTexture,
         textureMapping: "affine",
         uvWrapping: "clamp",
@@ -236,7 +236,7 @@ The renderer's public API consists of the following objects:
 | [ngon](#ngonvertices-material-normal)           | Polygonal shape defined by *n* vertices.     |
 | [vertex](#vertexx-y-z-u-v-w)                    | Corner of an n-gon.                          |
 | [vector](#vectorx-y-z)                          | Three-component vector.                      |
-| [color_rgba](#color_rgbared-green-blue-alpha)   | RGBA color.                                  |
+| [color](#colorred-green-blue-alpha)             | 32-bit RGBA color.                           |
 | [texture](#texturedata)                         | 2D RGBA image for texturing n-gons.          |
 | light                                           | (A description is coming.)                   |
 
@@ -300,7 +300,7 @@ An object with the following properties:
 // Create a mesh out of a single-vertex n-gon, and render it onto a canvas.
 const ngon = Rngon.ngon(
     [Rngon.vertex(0, 0, 0)], {
-        color: Rngon.color_rgba(255, 255, 0),
+        color: Rngon.color(255, 255, 0),
 });
 
 const mesh = Rngon.mesh([ngon], {
@@ -342,7 +342,7 @@ The paths are listed below, with the conditions required for that path to activa
         2. Fragment buffer disabled (`useFragmentBuffer` set to false, and `pixelShader` set to a falsy value or a function that doesn't use the fragment buffer)
     3. N-gon material properties:
         1. Textured
-        2. White base color (`color` set to *Rngon.color_rgba(255, 255, 255)*)
+        2. White base color (`color` set to *Rngon.color(255, 255, 255)*)
         3. Alpha operations disabled (`allowAlphaReject` and `allowAlphaBlend` set to *false*)
         4. Affine texture-mapping (`textureMapping` set to "affine")
         5. Texture filtering disabled (`textureFiltering` set to "none")
@@ -443,7 +443,7 @@ A polygon made up of *n* vertices, also known as an n-gon. Single-vertex n-gons 
 
 - **vertices** (array = *[vertex()]*): The `vertex` objects that define the corners of the n-gon. The length of the array must be in the range [1,500].
 - **material** (object): The n-gon's material properties:
-    - **color** (color_rgba = *color_rgba(255, 255, 255, 255)*): Base color. If the `texture` property is *null*, the n-gon will be rendered in this color. Otherwise, the renderer will multiply texel colors by (C / 255), where C is the corresponding channel of the base color.
+    - **color** (color = *color(255, 255, 255, 255)*): Base color. If the `texture` property is *null*, the n-gon will be rendered in this color. Otherwise, the renderer will multiply texel colors by (C / 255), where C is the corresponding channel of the base color.
     - **texture** (texture | null = *null*): The image to be rendered onto the n-gon's face. If *null*, or if there are fewer than 3 vertices, the n-gon will be rendered without a texture.
     - **textureMapping** (string = *"ortho"*): The method by which `texture` should be mapped onto the n-gon's face.
         - Possible values:
@@ -462,7 +462,7 @@ A polygon made up of *n* vertices, also known as an n-gon. Single-vertex n-gons 
         - The "repeat" option is available only for power-of-two textures. Others will fall back to "clamp".
     - **hasWireframe** (boolean = *false*): Whether the n-gon should be rendered with a wireframe outline.
         - Also see the `wireframeColor` property.
-    - **wireframeColor** (color_rgba = *color_rgba(0, 0, 0)*): If the `hasWireframe` property is *true*, this value sets the wireframe's color.
+    - **wireframeColor** (color = *color(0, 0, 0)*): If the `hasWireframe` property is *true*, this value sets the wireframe's color.
     - **hasFill** (boolean = *true*): Whether the face of the n-gon should be rendered. If *false* and `hasWireframe` is *true*, the n-gon's wireframe outline will be rendered.
     - **isTwoSided** (boolean = *true*): Whether the n-gon should be visible from behind, as determined by the direction of its face normal.
         - Should be set to *true* for n-gons that are part of a **mesh** to which you apply rotation, as rotation doesn't apply to normals.
@@ -496,7 +496,7 @@ An object with the following properties:
 const line = Rngon.ngon([
     Rngon.vertex(-1, -1, 0),
     Rngon.vertex( 1, -1, 0)], {
-        color: Rngon.color_rgba(255, 0, 0),
+        color: Rngon.color(255, 0, 0),
 });
 ```
 
@@ -545,20 +545,20 @@ An object with the following properties:
 - **y** (number): The `y` parameter.
 - **z** (number): The `z` parameter.
 
-## color_rgba([red[, green[, blue[, alpha]]]])
+## color([red[, green[, blue[, alpha]]]])
 
 A 32-bit, four-channel, RGBA color value, where each color channel is 8 bits.
 
 ### Parameters
 
-- **red** (number = *55*): The red channel.
-- **green** (number = *55*): The green channel.
-- **blue** (number = *55*): The blue channel.
+- **red** (number = *0*): The red channel.
+- **green** (number = *0*): The green channel.
+- **blue** (number = *0*): The blue channel.
 - **alpha** (number = *255*): The alpha channel.
 
 ### Returns
 
-An object with the following properties:
+A frozen object with the following properties:
 
 - **red** (number): The `red` parameter.
 - **green** (number): The `green` parameter.

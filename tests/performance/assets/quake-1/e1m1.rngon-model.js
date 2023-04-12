@@ -23,7 +23,7 @@ export const benchmarkScene =
 		const n = Rngon.ngon;
 		const no = Rngon.vector; // Normal.
 		const v = Rngon.vertex;
-		const c = Rngon.color_rgba;
+		const c = Rngon.color;
 		const trgba = Rngon.texture;
 
 		// Default material.

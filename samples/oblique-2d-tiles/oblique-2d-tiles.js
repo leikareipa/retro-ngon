@@ -173,7 +173,7 @@ export const sample = {
                 texture: decor.object,
                 allowTransform: false,
                 vertexShading: (((parent.TIME_TYPE == "Night") && !decor.lightEmitting)? "gouraud" : "none"),
-                color: Rngon.color_rgba(255, 255, 255, (decor.transparent? 125 : 255)),
+                color: Rngon.color(255, 255, 255, (decor.transparent? 125 : 255)),
             }));
         }
     

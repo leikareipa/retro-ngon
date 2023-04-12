@@ -32,7 +32,7 @@ export const scene =
 			isTwoSided: true,
 			hasWireframe: true,
 			hasFill: false,
-			wireframeColor: Rngon.color_rgba(40, 40, 40),
+			wireframeColor: Rngon.color(40, 40, 40),
 		};
 
 		this.ngons = [
