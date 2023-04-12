@@ -79,14 +79,8 @@
             // Transform the given render options to be backwards compatible with older
             // versions of the renderer (while maintaining support for the current version,
             // as well).
-            function be_backwards_compatible(renderOptions = {})
+            function make_render_options_backwards_compatible(renderOptions = {})
             {
-                // Pre-beta.2 didn't implement Rngon.light().
-                if (!Rngon.light)
-                {
-                    Rngon.light = (position, settings)=>({position, ...settings});
-                }
-
                 // Pre-alpha.8 didn't implement a default case for the depth-sorting
                 // mode and will throw if an unrecognized mode is used.
                 if ((Rngon.version.family == "alpha") &&
@@ -110,6 +104,34 @@
 
                     renderOptions.ngonRasterizerFunction = (renderOptions.modules.rasterize || renderOptions.modules.ngonFill);
                     renderOptions.ngonTransformClipLighterFunction = renderOptions.modules.transformClipLight;
+                }
+            }
+
+            function polyfill_api()
+            {
+                // Post-beta.5 API renaming.
+                Rngon.vector = (Rngon.vector || Rngon.vector3);
+                Rngon.texture = (Rngon.texture || Rngon.texture_rgba);
+
+                // In pre-beta.6, Rngon.rotation_vector was an alias for Rngon.vector3 that additionally
+                // transformed the input XYZ coordinates into Rngon.trig's space, whereas later versions
+                // baked the transformation into Rngon.matrix44.rotate() and obsoleted Rngon.rotation_vector.
+                // So when using a pre-beta.6 renderer with newer render calls, we need to bake the
+                // transformation step into its matrix functionality.
+                if (Rngon.rotation_vector)
+                {
+                    const rotKey = (Rngon.matrix44.rotation? "rotation" : "rotate");
+                    const orig_rot_fn = Rngon.matrix44[rotKey];
+                    Rngon.matrix44[rotKey] = function(x = 0, y = 0, z = 0)
+                    {
+                        return orig_rot_fn(Rngon.trig.deg(x), Rngon.trig.deg(y), Rngon.trig.deg(z));
+                    }
+                }
+
+                // Pre-beta.2 didn't implement Rngon.light().
+                if (!Rngon.light)
+                {
+                    Rngon.light = (position, settings)=>({position, ...settings});
                 }
             }
         </script>
@@ -137,6 +159,8 @@
 
             async function run()
             {
+                polyfill_api();
+
                 const sampleId = (new URLSearchParams(window.location.search).get("sample") || "textured-cube-model");
                 const {sample} = await import(`./${sampleId}/${sampleId}.js`);
 
@@ -184,7 +208,7 @@
                         return;
                     }
 
-                    be_backwards_compatible(options);
+                    make_render_options_backwards_compatible(options);
 
                     // We have two <canvas> elements available, one for normal rendering and the
                     // other for paletted rendering. Based on which the user has requested, we

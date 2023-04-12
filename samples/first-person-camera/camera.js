@@ -165,7 +165,7 @@ export function first_person_camera(canvasID = "", {
     function get_accumulated_movement(forwardVector, movementSpeed)
     {
         // Backwards compatibility for when matrix.rotation had a different name.
-        const m44Rotation = (Rngon.matrix44.rotation? Rngon.matrix44.rotation : Rngon.matrix44.rotate);
+        const m44Rotation = (Rngon.matrix44.rotation || Rngon.matrix44.rotate);
 
         const cameraRotationMatrix = m44Rotation(0, forwardVector.y, 0);
 
