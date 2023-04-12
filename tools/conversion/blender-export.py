@@ -53,7 +53,7 @@ with open(outFilename, 'w') as f:
     f.write("\t\tconst no = Rngon.vector; // Normal vector.\n")
     f.write("\t\tconst v = Rngon.vertex;\n")
     f.write("\t\tconst c = Rngon.color_rgba;\n")
-    f.write("\t\tconst ct = Rngon.texture_rgba.create_with_data_from_file;\n")
+    f.write("\t\tconst ct = Rngon.texture.create_with_data_from_file;\n")
     f.write("\t\tlet t; // Will point to this.textures.\n")
     f.write("\t\tlet m; // Will point to this.materials.\n\n")
 

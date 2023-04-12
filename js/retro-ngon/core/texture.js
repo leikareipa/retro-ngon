@@ -6,7 +6,7 @@
  */
 
 // A 32-bit texture.
-export function texture_rgba(data = {})
+export function texture(data = {})
 {
     // Append default parameter arguments.
     data = {
@@ -166,7 +166,7 @@ export function texture_rgba(data = {})
 
 
 // Returns a new texture whose pixel data are a deep copy of the given texture.
-texture_rgba.deep_copy = function(texture)
+texture.deep_copy = function(texture)
 {
     const copiedPixels = new Array(texture.width * texture.height * 4);
 
@@ -178,7 +178,7 @@ texture_rgba.deep_copy = function(texture)
         copiedPixels[i*4+3] = texture.pixels[i].alpha;
     }
 
-    return Rngon.texture_rgba({
+    return Rngon.texture({
         ...texture,
         pixels: copiedPixels,
     });
@@ -188,8 +188,8 @@ texture_rgba.deep_copy = function(texture)
 // texture is returned once the data has been loaded.
 //
 // NOTE: Only supports JSON files at the moment, expecting them to contain a valid
-// object to be passed as-is into texture_rgba().
-texture_rgba.create_with_data_from_file = function(filename)
+// object to be passed as-is into texture().
+texture.create_with_data_from_file = function(filename)
 {
     return new Promise((resolve, reject)=>
     {
@@ -197,7 +197,7 @@ texture_rgba.create_with_data_from_file = function(filename)
         .then((response)=>response.json())
         .then((data)=>
         {
-            resolve(Rngon.texture_rgba(data));
+            resolve(Rngon.texture(data));
         })
         .catch((error)=>{
             Rngon.$throw(`Failed to create a texture with data from file '${filename}'. Error: '${error}'.`)

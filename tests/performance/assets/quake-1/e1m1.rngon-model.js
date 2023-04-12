@@ -24,7 +24,7 @@ export const benchmarkScene =
 		const no = Rngon.vector; // Normal.
 		const v = Rngon.vertex;
 		const c = Rngon.color_rgba;
-		const trgba = Rngon.texture_rgba;
+		const trgba = Rngon.texture;
 
 		// Default material.
 		const defMat = {

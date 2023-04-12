@@ -24,7 +24,7 @@ import {mesh} from "./core/mesh.js";
 import {ngon} from "./core/ngon.js";
 import {renderShared} from "./core/render-shared.js";
 import {surface} from "./core/surface.js";
-import {texture_rgba} from "./core/texture.js";
+import {texture} from "./core/texture.js";
 import {trig} from "./core/trig.js";
 import {
     assert,
@@ -69,7 +69,7 @@ export const Rngon = {
     ngon,
     renderShared,
     surface,
-    texture_rgba,
+    texture,
     trig,
     vector,
     vertex,

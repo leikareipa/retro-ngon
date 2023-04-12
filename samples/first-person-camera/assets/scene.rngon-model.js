@@ -22,13 +22,13 @@ export const scene =
 		const no = Rngon.vector; // Normal.
 		const v = Rngon.vertex;
 		const c = Rngon.color_rgba;
-		const ct = Rngon.texture_rgba.create_with_data_from_file;
+		const ct = Rngon.texture.create_with_data_from_file;
 
 		// Load the textures.
 		const t = {
-			"shrub":Rngon.texture_rgba(textureAtlas["shrub"]),
-			"bark":Rngon.texture_rgba(textureAtlas["bark"]),
-			"ground":Rngon.texture_rgba(textureAtlas["ground"]),
+			"shrub":Rngon.texture(textureAtlas["shrub"]),
+			"bark":Rngon.texture(textureAtlas["bark"]),
+			"ground":Rngon.texture(textureAtlas["ground"]),
 		};
 
 		// Set up the materials.

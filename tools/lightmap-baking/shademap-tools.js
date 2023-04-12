@@ -256,7 +256,7 @@ export function duplicate_ngon_textures(ngons = [Rngon.ngon()])
             copiedPixels[t*4+3] = texelColor.alpha;
         }
 
-        const newTexture = Rngon.texture_rgba({
+        const newTexture = Rngon.texture({
             width: texture.width,
             height: texture.height,
             pixels: copiedPixels,

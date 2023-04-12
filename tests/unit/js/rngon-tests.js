@@ -163,8 +163,8 @@ const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
 
     unit("Texture (RGBA)", ()=>
     {
-        const texture = Rngon.texture_rgba({width: 1, height: 1, encoding: "none", pixels: [255, 22, 1, 255]});
-        const textureSeethrough = Rngon.texture_rgba({width: 1, height: 1, encoding: "none", pixels: [255, 22, 1, 1]});
+        const texture = Rngon.texture({width: 1, height: 1, encoding: "none", pixels: [255, 22, 1, 255]});
+        const textureSeethrough = Rngon.texture({width: 1, height: 1, encoding: "none", pixels: [255, 22, 1, 1]});
 
         expect_true([()=>(texture.width === 1),
                      ()=>(texture.height === 1),
@@ -177,12 +177,12 @@ const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
                      ()=>(textureSeethrough.pixels[0].alpha === 1)]);
 
         // Invalid values.
-        expect_fail([()=>{Rngon.texture_rgba({width: 1, height: 1, encoding: "none", pixels: [255, 0, 0, 0, 255, 0, 0, 0]})}, // Too many pixels for given resolution.
-                     ()=>{Rngon.texture_rgba({width: 2, height: 1, encoding: "none", pixels: [255, 0, 0, 0]})}, // Not enough pixels for given resolution.
-                     ()=>{Rngon.texture_rgba({width: 1, height: 1, encoding: "none", pixels: [255, 22, 1]})}, // Missing pixel alpha channel.
-                     ()=>{Rngon.texture_rgba({width: -1, height: 1, encoding: "none", pixels: [255, 22, 1, 0]})}, // Negative height.
-                     ()=>{Rngon.texture_rgba({width: 1, height: 1, encoding: "base64", pixels: "D"})}, // Missing pixel channels.
-                     ()=>{Rngon.texture_rgba({width: 1, height: 1, encoding: "qzxwesdxcdrfvgyhnmjiklp"})}]); // Invalid encoder id.
+        expect_fail([()=>{Rngon.texture({width: 1, height: 1, encoding: "none", pixels: [255, 0, 0, 0, 255, 0, 0, 0]})}, // Too many pixels for given resolution.
+                     ()=>{Rngon.texture({width: 2, height: 1, encoding: "none", pixels: [255, 0, 0, 0]})}, // Not enough pixels for given resolution.
+                     ()=>{Rngon.texture({width: 1, height: 1, encoding: "none", pixels: [255, 22, 1]})}, // Missing pixel alpha channel.
+                     ()=>{Rngon.texture({width: -1, height: 1, encoding: "none", pixels: [255, 22, 1, 0]})}, // Negative height.
+                     ()=>{Rngon.texture({width: 1, height: 1, encoding: "base64", pixels: "D"})}, // Missing pixel channels.
+                     ()=>{Rngon.texture({width: 1, height: 1, encoding: "qzxwesdxcdrfvgyhnmjiklp"})}]); // Invalid encoder id.
     });
 
     // The renderer.

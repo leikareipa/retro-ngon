@@ -29,7 +29,7 @@ export const sample = {
 
         for (const ngon of laraHome.ngons)
         {
-            this.originalTextures.push(Rngon.texture_rgba.deep_copy(ngon.material.texture));
+            this.originalTextures.push(Rngon.texture.deep_copy(ngon.material.texture));
         }
 
         this.isSceneInitialized = true;
@@ -90,7 +90,7 @@ async function apply_current_lightmapping_mode(newLightmapMode, newTexturingMode
     {
         for (const [idx, ngon] of laraHome.ngons.entries())
         {
-            ngon.material.texture = Rngon.texture_rgba.deep_copy(originalTextures[idx]);
+            ngon.material.texture = Rngon.texture.deep_copy(originalTextures[idx]);
 
             if (newTexturingMode == "Off")
             {

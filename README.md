@@ -80,7 +80,7 @@ Rngon.render("canvas", [quadMesh], {
 1. Define a texture and assign it to the quad:
 
 ```javascript
-const simpleTexture = Rngon.texture_rgba({
+const simpleTexture = Rngon.texture({
     width: 2,
     height: 2,
     pixels: [
@@ -112,7 +112,7 @@ const quad = Rngon.ngon([
     Rngon.vertex(1, 1, 0),
     Rngon.vertex(-1, 1, 0)], {
         color: Rngon.color_rgba(255, 255, 255),
-        texture: await Rngon.texture_rgba.create_with_data_from_file("texture.json"),
+        texture: await Rngon.texture.create_with_data_from_file("texture.json"),
 });
 ```
 
@@ -236,8 +236,8 @@ The renderer's public API consists of the following objects:
 | [ngon](#ngonvertices-material-normal)           | Polygonal shape defined by *n* vertices.     |
 | [vertex](#vertexx-y-z-u-v-w)                    | Corner of an n-gon.                          |
 | [vector](#vectorx-y-z)                          | Three-component vector.                      |
-| [color_rgba](#color_rgbared-green-blue-alpha)   | RGB color with transparency.                 |
-| [texture_rgba](#texture_rgbadata)               | RGB texture with transparency.               |
+| [color_rgba](#color_rgbared-green-blue-alpha)   | RGBA color.                                  |
+| [texture](#texturedata)                         | 2D image for rendering.                      |
 | light                                           | (A description is coming.)                   |
 
 ## render(target[, meshes[, options]])
@@ -444,7 +444,7 @@ A polygon made up of *n* vertices, also known as an n-gon. Single-vertex n-gons 
 - **vertices** (array = *[vertex()]*): The `vertex` objects that define the corners of the n-gon. The length of the array must be in the range [1,500].
 - **material** (object): The n-gon's material properties:
     - **color** (color_rgba = *color_rgba(255, 255, 255, 255)*): Base color. If the `texture` property is *null*, the n-gon will be rendered in this color. Otherwise, the renderer will multiply texel colors by (C / 255), where C is the corresponding channel of the base color.
-    - **texture** (texture_rgba | null = *null*): The image to be rendered onto the n-gon's face. If *null*, or if there are fewer than 3 vertices, the n-gon will be rendered without a texture.
+    - **texture** (texture | null = *null*): The image to be rendered onto the n-gon's face. If *null*, or if there are fewer than 3 vertices, the n-gon will be rendered without a texture.
     - **textureMapping** (string = *"ortho"*): The method by which `texture` should be mapped onto the n-gon's face.
         - Possible values:
             - "ortho": The texture is mapped using vertex UV coordinates that are generated automatically at render-time in 2D screen space. This method only works for planar n-gons; rotating the n-gon will produce a skewed mapping.
@@ -566,9 +566,9 @@ An object with the following properties:
 - **alpha** (number): The `alpha` parameter.
 - **unitRange** (object): The input color values divided by 255, in the range [0,1].
 
-## texture_rgba([data])
+## texture([data])
 
-An image with 32-bit pixels (see **color_rgba**).
+A 2D RGBA image object that supports 16 and 32-bit input data and automatically generates mipmapped output for rendering.
 
 Note: Textures with a power-of-two resolution tend to render faster than non-power-of two.
 
@@ -601,7 +601,7 @@ An object with the following properties:
 
 ```javascript
 // Create a 2-by-2 texture.
-const texture = Rngon.texture_rgba({
+const texture = Rngon.texture({
     width: 2,
     height: 2,
     pixels: [
@@ -615,22 +615,22 @@ const texture = Rngon.texture_rgba({
 
 ```javascript
 // Create a texture with data from a JSON file.
-const texture = await Rngon.texture_rgba.create_with_data_from_file("texture.json");
+const texture = await Rngon.texture.create_with_data_from_file("texture.json");
 ```
 
 ### Utility functions
 
-#### texture_rgba.create_with_data_from_file(filename)
+#### texture.create_with_data_from_file(filename)
 
-Creates a `texture_rgba` object with data from a JSON file.
+Creates a `texture` object with data from a JSON file.
 
 ##### Parameters
 
-- **filename** (string): URL or File path to a JSON file containing an object with the structure of the `data` parameter of `texture_rgba`.
+- **filename** (string): URL or File path to a JSON file containing an object with the structure of the `data` parameter of `texture`.
 
 ##### Returns
 
-- (Promise): A Promise of a `texture_rgba` object with data loaded from the file pointed to by `filename`.
+- (Promise): A Promise of a `texture` object with data loaded from the file pointed to by `filename`.
 
 # Authors and credits
 

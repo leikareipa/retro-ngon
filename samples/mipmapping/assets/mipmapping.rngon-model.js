@@ -25,7 +25,7 @@ export const scene =
 
 		// Load the textures.
 		const t = {
-			"painting.png":Rngon.texture_rgba(textureAtlas["painting"]),
+			"painting.png":Rngon.texture(textureAtlas["painting"]),
 		};
 
 		// Set up the materials.

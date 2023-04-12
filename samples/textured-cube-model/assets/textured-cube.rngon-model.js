@@ -20,8 +20,8 @@ export const texturedCubeModel =
 
 		// Load the textures.
 		const t = {
-			"wood":Rngon.texture_rgba(textureAtlas["wood"]),
-			"painting":Rngon.texture_rgba(textureAtlas["painting"]),
+			"wood":Rngon.texture(textureAtlas["wood"]),
+			"painting":Rngon.texture(textureAtlas["painting"]),
 		};
 
 		// Set up the materials.

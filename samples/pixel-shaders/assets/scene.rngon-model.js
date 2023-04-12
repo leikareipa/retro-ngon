@@ -29,9 +29,9 @@ export const scene =
 
 		// Load texture data.
 		t = this.textures = Object.freeze({
-			"shrub":Rngon.texture_rgba(textureAtlas["shrub"]),
-			"bark":Rngon.texture_rgba(textureAtlas["bark"]),
-			"ground":Rngon.texture_rgba(textureAtlas["ground"]),
+			"shrub":Rngon.texture(textureAtlas["shrub"]),
+			"bark":Rngon.texture(textureAtlas["bark"]),
+			"ground":Rngon.texture(textureAtlas["ground"]),
 		});
 
 		m = this.materials = Object.freeze({
