@@ -31,7 +31,7 @@ export const laraHome =
 		const no = Rngon.vector; // Normal vector.
 		const v = Rngon.vertex;
 		const c = Rngon.color_rgba;
-		const ct = Rngon.texture.create_with_data_from_file;
+		const ct = Rngon.texture.load;
 		let t; // Will point to this.textures.
 		let m; // Will point to this.materials.
 

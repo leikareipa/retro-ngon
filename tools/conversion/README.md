@@ -23,7 +23,7 @@ JSON files created with this converter can be loaded into the retro n-gon render
 ```
 (async ()=>
 {
-    const texture = await Rngon.texture.create_with_data_from_file("file.json")
+    const texture = await Rngon.texture.load("file.json")
 
     // Safe to use the texture here, it's finished loading.
 })()

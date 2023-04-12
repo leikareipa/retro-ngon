@@ -189,7 +189,7 @@ texture.deep_copy = function(texture)
 //
 // NOTE: Only supports JSON files at the moment, expecting them to contain a valid
 // object to be passed as-is into texture().
-texture.create_with_data_from_file = function(filename)
+texture.load = function(filename)
 {
     return new Promise((resolve, reject)=>
     {

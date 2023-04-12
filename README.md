@@ -112,7 +112,7 @@ const quad = Rngon.ngon([
     Rngon.vertex(1, 1, 0),
     Rngon.vertex(-1, 1, 0)], {
         color: Rngon.color_rgba(255, 255, 255),
-        texture: await Rngon.texture.create_with_data_from_file("texture.json"),
+        texture: await Rngon.texture.load("texture.json"),
 });
 ```
 
@@ -615,12 +615,12 @@ const texture = Rngon.texture({
 
 ```javascript
 // Create a texture with data from a JSON file.
-const texture = await Rngon.texture.create_with_data_from_file("texture.json");
+const texture = await Rngon.texture.load("texture.json");
 ```
 
 ### Utility functions
 
-#### texture.create_with_data_from_file(filename)
+#### texture.load(filename)
 
 Creates a `texture` object with data from a JSON file.
 
