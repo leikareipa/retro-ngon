@@ -237,7 +237,7 @@ The renderer's public API consists of the following objects:
 | [vertex](#vertexx-y-z-u-v-w)                    | Corner of an n-gon.                          |
 | [vector](#vectorx-y-z)                          | Three-component vector.                      |
 | [color_rgba](#color_rgbared-green-blue-alpha)   | RGBA color.                                  |
-| [texture](#texturedata)                         | 2D image for rendering.                      |
+| [texture](#texturedata)                         | 2D RGBA image for texturing n-gons.          |
 | light                                           | (A description is coming.)                   |
 
 ## render(target[, meshes[, options]])
@@ -568,9 +568,9 @@ An object with the following properties:
 
 ## texture([data])
 
-A 2D RGBA image object that supports 16 and 32-bit input data and automatically generates mipmapped output for rendering.
+A 2D RGBA image for texturing n-gons. Supports 16 and 32-bit input data and generates mipmaps automatically.
 
-Note: Textures with a power-of-two resolution tend to render faster than non-power-of two.
+Note: Textures with a power-of-two resolution may render faster and support more features than textures that are not a power of two.
 
 ### Parameters
 
