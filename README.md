@@ -271,7 +271,6 @@ After the call, the rendered pixel buffer is accessible via *Rngon.state.active.
     - **nearPlane** (number = *1*): Vertices closer to the camera than this will be clipped.
     - **farPlane** (number = *1000*): Vertices further from the camera than this will be clipped.
     - **perspectiveCorrectInterpolation** (number = *false*): Whether properties that are linearly interpolated between vertices during rasterization (e.g. texture coordinates) are perspective-corrected, eliminating view-dependent distortion.
-    - **clipToViewport** (boolean = *true*): Whether n-gons are to be clipped against the viewport prior to rendering.
     - **cameraPosition** (vector = *vector(0, 0, 0)*): The position from which the scene is rendered.
     - **cameraDirection** (vector = *vector(0, 0, 0)*): The direction in which the scene is viewed for rendering.
     - **useFragmentBuffer** (boolean = *false*): Whether the renderer should generate a fragment buffer to provide per-pixel metadata (e.g. depth value and world XYZ coordinates). Will be set to *true* automatically if the `pixelShader` function accepts a "fragmentBuffer" parameter. If enabled, the fragment buffer is also accessible via `Rngon.state.active.fragmentBuffer` after the call.
@@ -442,7 +441,7 @@ A polygon made up of *n* vertices, also known as an n-gon. Single-vertex n-gons 
 ### Parameters
 
 - **vertices** (array = *[vertex()]*): The `vertex` objects that define the corners of the n-gon. The length of the array must be in the range [1,500].
-- **material** (object): The n-gon's material properties:
+- **material** (object): The material properties that define the n-gon's appearance:
     - **color** (color = *color(255, 255, 255, 255)*): Base color. If the `texture` property is *null*, the n-gon will be rendered in this color. Otherwise, the renderer will multiply texel colors by (C / 255), where C is the corresponding channel of the base color.
     - **texture** (texture | null = *null*): The image to be rendered onto the n-gon's face. If *null*, or if there are fewer than 3 vertices, the n-gon will be rendered without a texture.
     - **textureMapping** (string = *"ortho"*): The method by which `texture` should be mapped onto the n-gon's face.

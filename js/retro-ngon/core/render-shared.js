@@ -15,7 +15,6 @@ export const renderShared = {
 
         state.useDepthBuffer = Boolean(options.useDepthBuffer);
         state.showGlobalWireframe = Boolean(options.globalWireframe);
-        state.applyViewportClipping = Boolean(options.clipToViewport);
         state.lights = options.lights;
 
         state.renderScale = options.scale;
@@ -242,7 +241,6 @@ export const renderShared = {
             depthSort: "", // An empty string will make the renderer use its default depth sort option.
             useDepthBuffer: true,
             useFragmentBuffer: false,
-            clipToViewport: true,
             globalWireframe: false,
             hibernateWhenNotOnScreen: true,
             perspectiveCorrectInterpolation: false,

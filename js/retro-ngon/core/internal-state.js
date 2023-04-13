@@ -124,9 +124,6 @@ function default_state() {
         // If set to true, all n-gons will be rendered with a wireframe.
         showGlobalWireframe: false,
 
-        // If true, all n-gons will be clipped against the viewport.
-        applyViewportClipping: true,
-
         // Distance, in world units, to the near and far clipping planes.
         nearPlaneDistance: 1,
         farPlaneDistance: 1,

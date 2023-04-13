@@ -169,11 +169,7 @@ export function transform_clip_light(
             // Clip space. Vertices that fall outside of the view frustum will be removed.
             {
                 Rngon.ngon.transform(cachedNgon, clipSpaceMatrix);
-
-                if (Rngon.state.active.applyViewportClipping)
-                {
-                    Rngon.ngon.clip_to_viewport(cachedNgon);
-                }
+                Rngon.ngon.clip_to_viewport(cachedNgon);
 
                 // If there are no vertices left after clipping, it means this n-gon is
                 // not visible on the screen at all, and so we don't need to consider it

@@ -271,7 +271,6 @@ function run_bencmark(sceneMeshes = [],
 
             const renderInfo = Rngon.render(canvasId, sceneMeshes,
             {
-                clipToViewport: true,
                 depthSort: "painter-reverse",
                 useDepthBuffer: true,
                 perspectiveCorrectInterpolation: true,
