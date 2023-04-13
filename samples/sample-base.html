@@ -88,23 +88,6 @@
                 {
                     renderOptions.depthSort = "painter";
                 }
-
-                // Shader-related parameter names were changed in beta.5.
-                {
-                    // We want to take care to replace 'undefined' with 'null', since some
-                    // versions of the renderer do a strict equality comparison for null
-                    // (which would exclude undefined).
-                    renderOptions.vertexShaderFunction = ((renderOptions.vertexShader == undefined)? null : renderOptions.vertexShader);
-                    renderOptions.pixelShaderFunction = ((renderOptions.pixelShader == undefined)? null : renderOptions.pixelShader);
-                }
-
-                // The overridable modules object was introduced in beta.5.
-                {
-                    renderOptions.modules = (renderOptions.modules || {});
-
-                    renderOptions.ngonRasterizerFunction = (renderOptions.modules.rasterize || renderOptions.modules.ngonFill);
-                    renderOptions.ngonTransformClipLighterFunction = renderOptions.modules.transformClipLight;
-                }
             }
 
             function polyfill_api()
@@ -190,7 +173,7 @@
 
                     const scene = sample.tick();
 
-                    const options = {
+                    const renderOptions = {
                         depthSort: "painter-reverse",
                         useDepthBuffer: true,
                         perspectiveCorrectInterpolation: true,
@@ -201,25 +184,26 @@
                     };
 
                     // Attempt to limit the renderer's refresh rate, if so requested by the user.
-                    if (options.targetRefreshRate &&
-                        (frameTimeDeltaMs < Math.floor(1000 / options.targetRefreshRate)))
+                    if (renderOptions.targetRefreshRate &&
+                        (frameTimeDeltaMs < Math.floor(1000 / renderOptions.targetRefreshRate)))
                     {
                         queue_new_frame(frameTimeDeltaMs);
                         return;
                     }
 
-                    make_render_options_backwards_compatible(options);
+                    make_render_options_backwards_compatible(renderOptions);
 
                     // We have two <canvas> elements available, one for normal rendering and the
                     // other for paletted rendering. Based on which the user has requested, we
                     // remove the other, unneeded canvas.
-                    document.getElementById((options.palette? "canvas" : "canvas-paletted"))?.remove?.();
+                    document.getElementById((renderOptions.palette? "canvas" : "canvas-paletted"))?.remove?.();
 
-                    const renderInfo = Rngon.render(
-                        (options.palette? "canvas-paletted" : "canvas"),
-                        [scene.mesh],
-                        options
-                    );
+                    const renderInfo = Rngon.render({
+                        target: (renderOptions.palette? "canvas-paletted" : "canvas"),
+                        scene: [scene.mesh],
+                        options: renderOptions,
+                        pipeline: (scene.renderPipeline || {}),
+                    });
 
                     if ((uiUpdateTimer += frameTimeDeltaMs) >= 500)
                     {

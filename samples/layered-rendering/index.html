@@ -228,13 +228,19 @@
 
                 let totalRenderTimeMs = 0;
 
-                totalRenderTimeMs += Rngon.render("layer-1", [roomMesh], options).totalRenderTimeMs;
+                totalRenderTimeMs += Rngon.render({
+                    target: "layer-1",
+                    scene: [roomMesh],
+                    options
+                }).totalRenderTimeMs;
                 
-                totalRenderTimeMs += Rngon.render("layer-2", [objectMesh], {
-                    ...options,
-                    modules: {
+                totalRenderTimeMs += Rngon.render({
+                    target: "layer-2",
+                    scene: [objectMesh],
+                    options,
+                    pipeline: {
                         surfaceWipe: ((layerVisibility !== "#2")? pixel_only_wiper : undefined),
-                    }
+                    },
                 }).totalRenderTimeMs;
 
                 if ((uiUpdateTimer += frameTimeDeltaMs) >= 500)

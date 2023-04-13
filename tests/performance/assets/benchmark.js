@@ -269,14 +269,17 @@ function run_bencmark(sceneMeshes = [],
                 return;
             }
 
-            const renderInfo = Rngon.render(canvasId, sceneMeshes,
-            {
-                depthSort: "painter-reverse",
-                useDepthBuffer: true,
-                perspectiveCorrectInterpolation: true,
-                cameraDirection: Rngon.vector(cameraDirection.x, cameraDirection.y, cameraDirection.z),
-                cameraPosition: cameraPosition,
-                ...extraRenderOptions,
+            const renderInfo = Rngon.render({
+                target: canvasId,
+                scene: sceneMeshes,
+                options: {
+                    depthSort: "painter-reverse",
+                    useDepthBuffer: true,
+                    perspectiveCorrectInterpolation: true,
+                    cameraDirection: Rngon.vector(cameraDirection.x, cameraDirection.y, cameraDirection.z),
+                    cameraPosition: cameraPosition,
+                    ...extraRenderOptions,
+                }
             });
 
             if (frameCount)

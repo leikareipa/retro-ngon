@@ -245,13 +245,16 @@ const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
                     expect_true([()=>(pixelMap.every((p)=>(p !== colorShade)))]);
                 }
 
-                Rngon.render(testCanvasId, [mesh],
-                             {
-                                 cameraDirection: Rngon.vector(0, 0, 0),
-                                 cameraPosition: Rngon.vector(0, 0, 0),
-                                 scale: 1,
-                             });
-
+                Rngon.render({
+                    target: testCanvasId,
+                    scene: [mesh],
+                    options: {
+                        cameraDirection: Rngon.vector(0, 0, 0),
+                        cameraPosition: Rngon.vector(0, 0, 0),
+                        scale: 1,
+                    }
+                });
+                
                 {
                     const pixelMap = canvas.getContext("2d").getImageData(0, 0, testCanvasWidth, testCanvasHeight).data;
                     expect_true([()=>(pixelMap.every((p)=>(p === colorShade)))]);

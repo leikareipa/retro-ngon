@@ -19,7 +19,7 @@ export const sample = {
         this.numTicks++;
     
         return {
-            renderOptions: {
+            renderPipeline: {
                 vertexShader: vs_set_mipmap_level,
             },
             mesh: Rngon.mesh(scene.ngons, {

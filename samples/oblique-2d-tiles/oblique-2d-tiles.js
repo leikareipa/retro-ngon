@@ -181,18 +181,6 @@ export const sample = {
             renderOptions: {
                 depthSort: "none",
                 useDepthBuffer: false,
-                modules: {
-                    rasterize: tile_filler,
-                    transformClipLight: (ngons)=>
-                    {
-                        ngons.forEach(n=>apply_lighting_to_tile(n));
-
-                        // The n-gons don't need transforming, so we can just assign them directly
-                        // to the renderer's n-gon cache; from which they'll be picked up for rasterization.
-                        Rngon.state.active.ngonCache.ngons = ngons;
-                        Rngon.state.active.ngonCache.count = ngons.length;
-                    },
-                },
                 get lights()
                 {
                     return [
@@ -218,6 +206,18 @@ export const sample = {
                             Math.floor(camera.pos.y + (tileY * (groundTileHeight / 2)))
                         ];
                     }
+                },
+            },
+            renderPipeline: {
+                rasterizer: tile_filler,
+                transformClipLighter: (ngons)=>
+                {
+                    ngons.forEach(n=>apply_lighting_to_tile(n));
+
+                    // The n-gons don't need transforming, so we can just assign them directly
+                    // to the renderer's n-gon cache; from which they'll be picked up for rasterization.
+                    Rngon.state.active.ngonCache.ngons = ngons;
+                    Rngon.state.active.ngonCache.count = ngons.length;
                 },
             },
             mesh: Rngon.mesh(ngons),

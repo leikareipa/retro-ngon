@@ -28,13 +28,15 @@ export const sample = {
     
         return {
             renderOptions: {
+                cameraDirection: this.camera.direction,
+                cameraPosition: this.camera.position,
+            },
+            renderPipeline: {
                 vertexShader: (
                     (parent.SHADER_PIPELINE_ENABLED && parent.ACTIVE_SHADER.function)
                         ? parent.ACTIVE_SHADER.function.bind(this)
                         : null
                 ),
-                cameraDirection: this.camera.direction,
-                cameraPosition: this.camera.position,
             },
             mesh: Rngon.mesh(scene.ngons, {
                 scaling: Rngon.vector(25, 25, 25)

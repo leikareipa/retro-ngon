@@ -8,11 +8,12 @@
 // Renders the given meshes onto a given DOM <canvas> element (ote that the target element
 // must already exist). If a null target is given, the image will be rendered into an
 // offscreen pixel buffer, accessible after this call via Rngon.state.active.pixelBuffer.
-export function render(
+export function render({
     target,
-    meshes = [Rngon.mesh()],
-    options = {}
-)
+    scene = [Rngon.mesh()],
+    options = {},
+    pipeline = {},
+} = {})
 {
     const renderCallInfo = Rngon.renderShared.setup_render_call_info();
 
@@ -21,7 +22,12 @@ export function render(
         ...options
     });
 
-    Rngon.renderShared.initialize_internal_render_state(options);
+    pipeline = Object.freeze({
+        ...Rngon.renderShared.defaultRenderPipeline,
+        ...pipeline
+    });
+
+    Rngon.renderShared.initialize_internal_render_state(options, pipeline);
 
     // The canvas element can be passed in in a couple of ways, e.g. as a string that
     // identifies the DOM element, or directly as a DOM element object. So let's figure
@@ -52,7 +58,7 @@ export function render(
         if (renderSurface &&
             (!options.hibernateWhenNotOnScreen || renderSurface.is_in_view()))
         {
-            renderSurface.display_meshes(meshes);
+            renderSurface.display_meshes(scene);
 
             renderCallInfo.renderWidth = renderSurface.width;
             renderCallInfo.renderHeight = renderSurface.height;

@@ -8,8 +8,7 @@
 // Functionality that may be shared between different implementations of Rngon.render()
 // and perhaps called by other subsystems, like Rngon.surface().
 export const renderShared = {
-    // The 'options' object is a reference to or copy of the options passed to render().
-    initialize_internal_render_state: function(options = {})
+    initialize_internal_render_state: function(options = {}, pipeline = {})
     {
         const state = (Rngon.state.active = Rngon.state(options.state));
 
@@ -37,18 +36,6 @@ export const renderShared = {
             options.perspectiveCorrectInterpolation
         );
 
-        state.useVertexShader = Boolean(options.vertexShader);
-        state.vertex_shader = options.vertexShader;
-
-        state.useContextShader = Boolean(options.contextShader);
-        state.context_shader = options.contextShader;
-
-        state.usePixelShader = Boolean(options.pixelShader);
-        state.pixel_shader = (
-            options.shaderFunction || // <- Name in pre-beta.3.
-            options.pixelShader
-        );
-
         state.useFragmentBuffer = Boolean(
             options.useFragmentBuffer ||
             // Detect whether the shader function's parameter list includes the fragment buffer.
@@ -56,33 +43,66 @@ export const renderShared = {
             (state.usePixelShader && state.pixel_shader?.toString().match(/{(.+)?}/)[1].includes("fragmentBuffer"))
         );
 
-        state.rasterShaders = options.rasterShaders.filter(e=>typeof e === "function");
-
         state.usePalette = Array.isArray(options.palette);
         state.palette = options.palette;
 
         state.modules.rasterize = (
-            (typeof options.modules.rasterize === "function")
-                ? options.modules.rasterize
-                : (options.modules.rasterize === null)
+            (typeof pipeline.rasterizer === "function")
+                ? pipeline.rasterizer
+                : (pipeline.rasterizer === null)
                     ? null
                     : Rngon.baseModules.rasterize
         );
 
         state.modules.transform_clip_light = (
-            (typeof options.modules.transformClipLight === "function")
-                ? options.modules.transformClipLight
-                : (options.modules.transformClipLight === null)
+            (typeof pipeline.transformClipLighter === "function")
+                ? pipeline.transformClipLighter
+                : (pipeline.transformClipLighter === null)
                     ? null
                     : Rngon.baseModules.transform_clip_light
         );
 
         state.modules.surface_wipe = (
-            (typeof options.modules.surfaceWipe === "function")
-                ? options.modules.surfaceWipe
-                : (options.modules.surfaceWipe === null)
+            (typeof pipeline.surfaceWiper === "function")
+                ? pipeline.surfaceWiper
+                : (pipeline.surfaceWiper === null)
                     ? null
                     : Rngon.baseModules.surface_wipe
+        );
+
+        state.usePixelShader = Boolean(pipeline.pixelShader);
+        state.modules.pixel_shader = (
+            (typeof pipeline.pixelShader === "function")
+                ? pipeline.pixelShader
+                : (pipeline.pixelShader === null)
+                    ? null
+                    : null /// TODO: Default pixel shader here.
+        );
+
+        state.useVertexShader = Boolean(pipeline.vertexShader);
+        state.modules.vertex_shader = (
+            (typeof pipeline.vertexShader === "function")
+                ? pipeline.vertexShader
+                : (pipeline.vertexShader === null)
+                    ? null
+                    : null /// TODO: Default vertex shader here.
+        );
+
+        state.modules.raster_shader = (
+            (typeof pipeline.rasterShader === "function")
+                ? pipeline.rasterShader
+                : (pipeline.rasterShader === null)
+                    ? null
+                    : null /// TODO: Default raster shader here.
+        );
+
+        state.useContextShader = Boolean(pipeline.contextShader);
+        state.modules.context_shader = (
+            (typeof pipeline.contextShader === "function")
+                ? pipeline.contextShader
+                : (pipeline.contextShader === null)
+                    ? null
+                    : null /// TODO: Default context shader here.
         );
 
         return;
@@ -230,15 +250,12 @@ export const renderShared = {
         return {
             cameraPosition: Rngon.vector(0, 0, 0),
             cameraDirection: Rngon.vector(0, 0, 0),
-            pixelShader: null, // If null, all pixel shader functionality will be disabled.
-            vertexShader: null, // If null, all vertex shader functionality will be disabled.
-            rasterShaders: [],
             state: undefined,
             scale: 1,
             fov: 43,
             nearPlane: 1,
             farPlane: 1000,
-            depthSort: "", // An empty string will make the renderer use its default depth sort option.
+            depthSort: "painter-reverse",
             useDepthBuffer: true,
             useFragmentBuffer: false,
             globalWireframe: false,
@@ -246,14 +263,22 @@ export const renderShared = {
             perspectiveCorrectInterpolation: false,
             auxiliaryBuffers: [],
             lights: [],
-            width: 640, // Used by render_async() only.
-            height: 480, // Used by render_async() only.
+            width: 640,
+            height: 480,
             palette: null,
-            modules: {
-                surfaceWipe: undefined, // Undefined defaults to Rngon.baseModules.rasterize.
-                rasterize: undefined, // Undefined defaults to Rngon.baseModules.rasterize.
-                transformClipLight: undefined, // Undefined defaults to Rngon.baseModules.transform_clip_light.
-            },
+        };
+    },
+
+    // (See the root README.md for documentation on these parameters.)
+    get defaultRenderPipeline() {
+        return {
+            surfaceWipe: undefined,
+            rasterize: undefined,
+            transformClipLighter: undefined,
+            pixelShader: null,
+            vertexShader: null,
+            contextShader: null,
+            rasterShaders: [],
         };
     },
 

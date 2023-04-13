@@ -67,9 +67,13 @@ const quadMesh = Rngon.mesh([quad], {
     rotation: Rngon.vector(0, 0, 45),
 });
 
-Rngon.render("canvas", [quadMesh], {
-    cameraPosition: Rngon.vector(0, 0, -5),
-    scale: 1,
+Rngon.render({
+    target: "canvas",
+    scene: [quadMesh],
+    options: {
+        cameraPosition: Rngon.vector(0, 0, -5),
+        scale: 1,
+    }
 });
 ```
 
@@ -140,9 +144,13 @@ const quad = Rngon.ngon([
 1. Adjust the `scale` property in the render call:
 
 ```javascript
-Rngon.render("canvas", [quadMesh], {
-    cameraPosition: Rngon.vector(0, 0, -5),
-    scale: 0.14
+Rngon.render({
+    target: "canvas",
+    scene: [quadMesh],
+    options: {
+        cameraPosition: Rngon.vector(0, 0, -5),
+        scale: 0.14,
+    },
 });
 ```
 
@@ -160,8 +168,13 @@ Rngon.render("canvas", [quadMesh], {
 1. Enable custom pixel shading by passing a shader function to render():
 
 ```javascript
-Rngon.render("...", [...], {
-    pixelShader: sample_shader,
+Rngon.render({
+    target: "...",
+    scene: [...],
+    options: {...},
+    pipeline: {
+        pixelShader: sample_shader,
+    },
 });
 
 function sample_shader(...)
@@ -230,8 +243,8 @@ The renderer's public API consists of the following objects:
 
 | Object                                          | Brief description                            |
 | ----------------------------------------------- | -------------------------------------------- |
-| [render()](#rendertarget-meshes-options)        | Renders n-gon meshes.                        |
-| [render_async()](#render_async-meshes-options-rngonurl) | Renders n-gon meshes asynchronously. |
+| [render()](#rendertarget-scene-options-pipeline) | Renders n-gon meshes.                       |
+| [render_async()](#render_asyncmeshes-options-rngonurl) | Renders n-gon meshes asynchronously.  |
 | [mesh](#meshngons-transform)                    | Collection of related n-gons.                |
 | [ngon](#ngonvertices-material-normal)           | Polygonal shape defined by *n* vertices.     |
 | [vertex](#vertexx-y-z-u-v-w)                    | Corner of an n-gon.                          |
@@ -240,9 +253,9 @@ The renderer's public API consists of the following objects:
 | [texture](#texturedata)                         | 2D RGBA image for texturing n-gons.          |
 | light                                           | (A description is coming.)                   |
 
-## render(target[, meshes[, options]])
+## render({target, scene, options, pipeline})
 
-Renders the specified n-gon meshes onto the provided render target (a canvas element or an off-screen pixel buffer). This function is blocking and will return after rendering is completed. For non-blocking rendering, see [render_async()](#render_async-meshes-options-rngonurl).
+Renders the specified n-gon meshes onto the provided render target (a canvas element or an off-screen pixel buffer). This function is blocking and will return after rendering is completed. For non-blocking rendering, see [render_async()](#render_asyncmeshes-options-rngonurl).
 
 After the call, the rendered pixel buffer is accessible via *Rngon.state.active.pixelBuffer*, and the corresponding screen-space n-gons are available from *Rngon.state.active.ngonCache*.
 
@@ -253,7 +266,7 @@ After the call, the rendered pixel buffer is accessible via *Rngon.state.active.
         - HTMLCanvasElement: The image will be displayed on this canvas element.
         - string: The image will be displayed on the canvas element found in `document.body` whose `id` property matches this string.
         - null: The image won't be displayed. It can be accessed as a raw pixel buffer via `Rngon.state.active.pixelBuffer`.
-- **meshes** (array = *[mesh()]*): The `mesh` objects to be rendered.
+- **scene** (array = *[mesh()]*): The `mesh` objects to be rendered.
 - **options** (object): Additional rendering options:
     - **state** (string = *"default"*): The name of the state object to be used for storing internal state during rendering. Subsequent calls to `render()` with this name will re-use the corresponding state object, so that e.g. render buffers won't be re-allocated if there are intervening calls to `render()` with different parameters using a different state name. You can access the state object via `Rngon.state[name]` after the call.
         - The value "active" is reserved and should not be used.
@@ -274,15 +287,34 @@ After the call, the rendered pixel buffer is accessible via *Rngon.state.active.
     - **cameraPosition** (vector = *vector(0, 0, 0)*): The position from which the scene is rendered.
     - **cameraDirection** (vector = *vector(0, 0, 0)*): The direction in which the scene is viewed for rendering.
     - **useFragmentBuffer** (boolean = *false*): Whether the renderer should generate a fragment buffer to provide per-pixel metadata (e.g. depth value and world XYZ coordinates). Will be set to *true* automatically if the `pixelShader` function accepts a "fragmentBuffer" parameter. If enabled, the fragment buffer is also accessible via `Rngon.state.active.fragmentBuffer` after the call.
-    - **rasterShaders** (array = *[]*): Zero or more functions to be called by the renderer to implement custom rasterization of the scene's pre-processed screen-space n-gons. The functions in this array are called synchronously in back-to-front order until one of them returns *true*. If no function returns *true*, or if the array is empty, the renderer will call the appropriate [built-in raster shader](./js/retro-ngon/base-modules/rasterize/).
-    - **pixelShader** (function | null = *null*): A function to be called by the renderer for applying pixel-shading effects to the rendered image. See the [pixel shaders sample](./samples/pixel-shaders/pixel-shaders.js) for examples of usage.
+    - **lights** (array = *[]*): The scene's light sources, as *`light`* objects. N-gons will be lit according to their `vertexShading` material property, or by the *vertexShader* function if provided.
+- **pipeline** (object): Customize the render pipeline:
+    - **transformClipLighter** (function | undefined | null = *undefined*): A function to be called by the renderer to transform, clip, and light the input n-gons; or [the built-in function](./js/retro-ngon/base-modules/transform-clip-light.js) if *undefined*; or disabled entirely if *null*.
+    - **rasterizer** (function | undefined | null = *undefined*): A function to be called by the renderer to rasterize the input n-gons; or [the built-in function](./js/retro-ngon/base-modules/rasterize.js) if *undefined*; or disabled entirely if *null*.
+    - **surfaceWiper** (function | undefined | null = *undefined*): A function tp be called by the renderer to clear the render surface of previous renderings (pixel colors, depth values, etc.); or [the built-in function](./js/retro-ngon/base-modules/surface-wipe.js) if *undefined*; or disabled entirely if *null*.
+    - **pixelShader** (function | null = *null*): A function to be called by the renderer at the completion of rasterization to apply pixel-shading effects to the rendered image ('pixelBuffer'). See the [pixel shaders sample](./samples/pixel-shaders/pixel-shaders.js) for examples of usage.
+        - Function signature: pixelShader({renderWidth, renderHeight, pixelBuffer, fragmentBuffer, ngonCache, cameraPosition}) {..}.
+            - **renderWidth** (number): The width of the rendered image.
+            - **renderHeight** (number): The height of the rendered image.
+            - **pixelBuffer** (Uint8ClampedArray): The pixels of the rendered image (32-bit RGBA).
+            - **fragmentBuffer** (array): For each pixel in `pixelBuffer`, an object containing metadata about the pixel:
+                - **ngonIdx** (number): Index in the `ngonCache` array identifying the pixel's n-gon.
+                - **textureUScaled** (number): The U texel coordinate that was used to fetch this pixel. In the range from 0 to the width of the texture.
+                - **textureVScaled** (number): The V texel coordinate that was used to fetch this pixel. In the range from 0 to the height of the texture.
+                - **textureMipLevelIdx** (number): The texture mip level that was used. A value in the range [0,*n*-1], where *n* is the count of mip levels in the texture.
+                - **worldX** (number): World X coordinate.
+                - **worldY** (number): World Y coordinate.
+                - **worldZ** (number): World Z coordinate.
+                - **depth** (number): The depth value written into the depth buffer by this fragment.
+                - **shade** (number): The lightness level, in the range [0,1]. 
+            - **ngonCache** (object): The screen-space n-gons that were rasterized:
+                - **count** (number): The number of n-gons.
+                - **ngons** (array): The n-gons, as an array of *`ngon`* objects. The length of this array may be larger than `count` due to caching, but only the first `count` elements are valid for this rendering.
+            - **cameraPosition** (vector): The position of the camera.
         - Note: The `useFragmentBuffer` option must be set to *true* if the pixel shader accesses the fragment buffer. The renderer will in most cases automatically detect this and set the property accordingly, but in some cases you may need to manually assign it.
-    - **vertexShader** (function | null = *null*): A function to be called by the renderer individually for each of the scene's n-gons for applying vertex-shading effects. The n-gons will have been transformed into world-space coordinates at this point. See the [vertex shaders sample](./samples/vertex-shaders/vertex-shaders.js) for examples of usage.
-    - **lights** (array = *[]*): The scene's light sources, as `light` objects. N-gons will be lit according to their `vertexShading` material property, or by the *vertexShader* function if provided.
-    - **modules** (object): Customize certain modular functionality in the render pipeline:
-        - **transformClipLight** (function | undefined | null = *undefined*): A function to be called by the renderer to transform, clip, and light the input n-gons; or [the built-in function](./js/retro-ngon/base-modules/transform-clip-light.js) if *undefined*; or disabled entirely if *null*.
-        - **rasterize** (function | undefined | null = *undefined*): A function to be called by the renderer to rasterize the input n-gons; or [the built-in function](./js/retro-ngon/base-modules/rasterize.js) if *undefined*; or disabled entirely if *null*.
-        - **surfaceWipe** (function | undefined | null = *undefined*): A function tp be called by the renderer to clear the render surface of previous renderings (pixel colors, depth values, etc.); or [the built-in function](./js/retro-ngon/base-modules/surface-wipe.js) if *undefined*; or disabled entirely if *null*.
+    - **vertexShader** (function | null = *null*): A function to be called by the renderer for each of the scene's n-gons to apply vertex-shading effects to the n-gon. The function will be called when the n-gon has been transformed into world-space coordinates but prior to clipping and rasterization. See the [vertex shaders sample](./samples/vertex-shaders/vertex-shaders.js) for examples of usage.
+        - Function signature: vertexShader({ngon, cameraPosition}) {..}.
+    - **rasterShader** (function | null = *null*): A function to be called by the renderer to implement custom rasterization of the transformed screen-space n-gons. If this function returns a falsy value, the renderer will call the appropriate [built-in raster shader](./js/retro-ngon/base-modules/rasterize/).
 
 ### Returns
 
@@ -306,8 +338,12 @@ const mesh = Rngon.mesh([ngon], {
     rotation: Rngon.vector(0, 0, 45)
 });
 
-Rngon.render("canvas", [mesh], {
-    cameraPosition: Rngon.vector(0, 0, -5),
+Rngon.render({
+    target: "canvas",
+    scene: [mesh],
+    options: {
+        cameraPosition: Rngon.vector(0, 0, -5),
+    },
 });
 ```
 
@@ -315,10 +351,14 @@ Rngon.render("canvas", [mesh], {
 //  Render into an off-screen pixel buffer using a custom render state.
 const point = Rngon.ngon([Rngon.vertex(0, 0, 0)]);
 
-Rngon.render(null, [Rngon.mesh(point)], {
-    state: "custom-state",
-    width: 100,
-    height: 100,
+Rngon.render({
+    target: null,
+    scene: [Rngon.mesh(point)],
+    options: {
+        state: "custom-state",
+        width: 100,
+        height: 100,
+    },
 });
 
 // Until render() is invoked with a different render state, the custom

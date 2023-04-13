@@ -117,9 +117,7 @@ rasterize.polygon = function(
             auxiliaryBuffers
         };
 
-        // If none of the user-provided raster shaders accept this n-gon, we'll use one
-        // of the built-in raster shaders.
-        if (Rngon.state.active.rasterShaders.every(fn=>!fn(rasterShaderArgs)))
+        if (!Rngon.state.active.modules.raster_shader?.(rasterShaderArgs))
         {
             let raster_fn = generic_fill;
 
@@ -281,7 +279,7 @@ rasterize.polygon = function(
 rasterize.line = function(
     vert1 = Rngon.vertex(),
     vert2 = Rngon.vertex(),
-    color = Rngon.color_rgba(),
+    color = Rngon.color(),
     ngonIdx = 0,
     ignoreDepthBuffer = false
 )

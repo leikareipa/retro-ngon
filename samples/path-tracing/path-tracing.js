@@ -95,15 +95,19 @@ export const sample = {
                 perspectiveCorrectInterpolation: true,
                 cameraDirection: this.camera.direction,
                 cameraPosition: this.camera.position,
+                useFragmentBuffer: (parent.PATH_TRACING_ENABLED && this.sceneBVH),
+            },
+            renderPipeline: {
+                vertexShader: (
+                    !this.sceneBVH
+                        ? vs_copy_ngons.bind(this)
+                        : undefined
+                ),
                 pixelShader: (
                     (parent.PATH_TRACING_ENABLED && this.sceneBVH)
                         ? ps_path_trace.bind(this)
                         : undefined
                 ),
-                useFragmentBuffer: (parent.PATH_TRACING_ENABLED && this.sceneBVH),
-                vertexShader: !this.sceneBVH
-                    ? vs_copy_ngons.bind(this)
-                    : undefined,
             },
         };
     },

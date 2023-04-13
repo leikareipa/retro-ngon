@@ -44,11 +44,6 @@ export const sample = {
         return {
             renderOptions: {
                 lights: this.lights,
-                pixelShader: (
-                    (parent.SHADER_PIPELINE_ENABLED && parent.ACTIVE_SHADER.function)
-                        ? Object.assign(parent.ACTIVE_SHADER.function.bind(this), parent.ACTIVE_SHADER.function)
-                        : null
-                ),
                 // We use .bind() on the shader functions passed to the renderer, which
                 // makes the renderer unable to determine whether the shaders use the
                 // fragment buffer, so we need to manually inform it. We could just set
@@ -58,6 +53,15 @@ export const sample = {
                     parent.ACTIVE_SHADER.function
                         ? parent.ACTIVE_SHADER.function.toString().match(/{(.+)?}/)[1].includes("fragmentBuffer")
                         : false
+                ),
+                cameraDirection: this.camera.direction,
+                cameraPosition: this.camera.position,
+            },
+            renderPipeline: {
+                pixelShader: (
+                    (parent.SHADER_PIPELINE_ENABLED && parent.ACTIVE_SHADER.function)
+                        ? Object.assign(parent.ACTIVE_SHADER.function.bind(this), parent.ACTIVE_SHADER.function)
+                        : null
                 ),
                 // For the mip level map shader to work, we need to enable mipmapping.
                 // So when that shader is in use, let's set n-gon's mipmap level based
@@ -77,8 +81,6 @@ export const sample = {
                             ngon.mipLevel = Math.max(0, Math.min(0.25, (distance / maxDistance)));
                         }
                 ),
-                cameraDirection: this.camera.direction,
-                cameraPosition: this.camera.position,
             },
             mesh: this.Rngon.mesh(scene.ngons, {
                 scaling: this.Rngon.vector(25, 25, 25)

@@ -119,17 +119,17 @@ export function surface(canvasElement)
 
                     const paramNamesString = `{${Object.keys(args).join(",")}}`;
 
-                    switch (typeof state.pixel_shader)
+                    switch (typeof state.modules.pixel_shader)
                     {
                         case "function": {
-                            state.pixel_shader(args);
+                            state.modules.pixel_shader(args);
                             break;
                         }
                         // Shader functions as strings are supported to allow shaders to be
                         // used in Web Workers. These strings are expected to be of - or
                         // equivalent to - the form "(a)=>{console.log(a)}".
                         case "string": {
-                            Function(paramNamesString, `(${state.pixel_shader})(${paramNamesString})`)(args);
+                            Function(paramNamesString, `(${state.modules.pixel_shader})(${paramNamesString})`)(args);
                             break;
                         }
                         default: {
@@ -143,7 +143,7 @@ export function surface(canvasElement)
                 {
                     if (state.useContextShader)
                     {
-                        state.context_shader({
+                        state.modules.context_shader({
                             context: renderContext,
                             image: state.pixelBuffer,
                         });

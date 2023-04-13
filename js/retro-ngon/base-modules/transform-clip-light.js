@@ -142,11 +142,11 @@ export function transform_clip_light(
 
                     const paramNamesString = "ngon, cameraPos";
 
-                    switch (typeof Rngon.state.active.vertex_shader)
+                    switch (typeof Rngon.state.active.modules.vertex_shader)
                     {
                         case "function":
                         {
-                            Rngon.state.active.vertex_shader(...args);
+                            Rngon.state.active.modules.vertex_shader(...args);
                             break;
                         }
                         // Shader functions as strings are supported to allow shaders to be
@@ -154,7 +154,7 @@ export function transform_clip_light(
                         // equivalent to - the form "(a)=>{console.log(a)}".
                         case "string":
                         {
-                            Function(paramNamesString, `(${Rngon.state.active.vertex_shader})(${paramNamesString})`)(...args);
+                            Function(paramNamesString, `(${Rngon.state.active.modules.vertex_shader})(${paramNamesString})`)(...args);
                             break;
                         }
                         default:

@@ -31,9 +31,11 @@ export const sample = {
 
         return {
             renderOptions: {
-                rasterShaders: [parent.ACTIVE_SHADER.function?.bind(this)],
                 cameraDirection: this.camera.direction,
                 cameraPosition: this.camera.position,
+            },
+            renderPipeline: {
+                rasterShader: parent.ACTIVE_SHADER.function?.bind(this),
             },
             mesh: this.Rngon.mesh(scene.ngons, {
                 scaling: this.Rngon.vector(25, 25, 25)

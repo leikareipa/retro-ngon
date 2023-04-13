@@ -34,11 +34,15 @@ export const sample = {
                 scaling: this.Rngon.vector(25, 25, 25)
             }),
             renderOptions: {
-                contextShader: parent.ACTIVE_SHADER.function
-                    ? parent.ACTIVE_SHADER.function.bind(this)
-                    : null,
                 cameraDirection: this.camera.direction,
                 cameraPosition: this.camera.position,
+            },
+            renderPipeline: {
+                contextShader: (
+                    parent.ACTIVE_SHADER.function
+                        ? parent.ACTIVE_SHADER.function.bind(this)
+                        : null
+                ),
             },
         };
     },

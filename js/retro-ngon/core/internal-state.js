@@ -24,11 +24,7 @@ function default_state() {
             // n-gons into the internal n-gon cache. Also applies lighting and viewport
             // clipping.
             transform_clip_light: undefined,
-
-            // Rasterizes the n-gons in the internal n-gon cache onto the current
-            // render surface.
-            ngon_fill: undefined,
-
+            
             // Removes all rendered pixels from the render surface.
             surface_wipe: undefined,
         },
@@ -109,6 +105,7 @@ function default_state() {
 
         // A list of end-user-provided raster shader functions to be called during rasterization.
         rasterShaders: [],
+        raster_shader: undefined,
 
         // The render resolution when using off-screen rendering. Has no effect on the
         // resolution of on-screen, into-canvas rendering.
