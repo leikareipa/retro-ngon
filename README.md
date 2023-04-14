@@ -469,7 +469,6 @@ An object with the following properties:
 - **material** (object): The `material` parameter.
 - **vertexNormals** (array): For each element in the `vertices` parameter, a corresponding *`vector`* object determining the normal of the vertex.
 - **normal** (vector): The face normal.
-- **mipLevel** (number): The mip level to be used when rendering the n-gon's texture. The value is in the range [0,1], with 0 corresponding to the maximum resolution and 1 the minimum resolution.
 
 ### Sample usage
 
@@ -482,7 +481,7 @@ const line = Rngon.ngon([
 });
 ```
 
-## vertex([x[, y[, z[, u[, v[, w]]]]]])
+## vertex([x[, y[, z[, u[, v]]]]])
 
 A point in space representing a corner of an n-gon.
 
@@ -490,12 +489,11 @@ Note: In the renderer's coordinate space, X is horizontal (positive = right), an
 
 ### Parameters
 
-- **x** (number = *0*): The X coordinate. 
-- **y** (number = *0*): The Y coordinate. 
-- **z** (number = *0*): The Z coordinate. 
-- **u** (number = *0*): The U texel coordinate. 
-- **v** (number = *0*): The V texel coordinate. 
-- **w** (number = *1*): The W coordinate.
+- **x** (number = *0*): The X coordinate.
+- **y** (number = *0*): The Y coordinate.
+- **z** (number = *0*): The Z coordinate.
+- **u** (number = *0*): The U texel coordinate.
+- **v** (number = *0*): The V texel coordinate.
 
 ### Returns
 
@@ -506,8 +504,6 @@ An object with the following properties:
 - **z** (number): The `z` parameter.
 - **u** (number): The `u` parameter.
 - **v** (number): The `v` parameter.
-- **w** (number): The `w` parameter.
-- **shade** (number): A positive number defining the vertex's degree of shade, with 0 being fully unlit and 1 fully lit.
 
 ## vector([x[, y[, z]]])
 
@@ -546,7 +542,6 @@ A frozen object with the following properties:
 - **green** (number): The `green` parameter.
 - **blue** (number): The `blue` parameter.
 - **alpha** (number): The `alpha` parameter.
-- **unitRange** (object): The input color values divided by 255, in the range [0,1].
 
 ## texture([data])
 
