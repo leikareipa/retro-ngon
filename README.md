@@ -338,32 +338,6 @@ Rngon.render({
 });
 ```
 
-### Rasterization paths
-
-Based on the material properties of the input n-gons and certain rendering options, the renderer will pass each n-gon through one of three possible rasterization paths: Textured, Solid, or Generic.
-
-The paths are listed below, with the conditions required for that path to activate for a given n-gon:
-
-1. Textured
-    1. Render options:
-        1. Depth buffer enabled (`useDepthBuffer` set to *true*)
-        2. Fragment buffer disabled (`useFragmentBuffer` set to false, and `pixelShader` set to a falsy value or a function that doesn't use the fragment buffer)
-    3. N-gon material properties:
-        1. Textured
-        2. White base color (`color` set to *Rngon.color(255, 255, 255)*)
-        3. Alpha operations disabled (`allowAlphaReject` and `allowAlphaBlend` set to *false*)
-        4. Affine texture-mapping (`textureMapping` set to "affine")
-        5. Texture filtering disabled (`textureFiltering` set to "none")
-3. Solid
-    1. Depth buffer enabled (`useDepthBuffer` set to *true*)
-    2. Fragment buffer disabled (`useFragmentBuffer` set to false, and `pixelShader` set to a falsy value or a function that doesn't use the fragment buffer)
-    4. N-gon material properties:
-        1. Not textured
-        2. Alpha operations disabled (`allowAlphaReject` and `allowAlphaBlend` set to *false*)
-2. Generic. N-gons not matching the criteria for the Textured or Solid paths will be rendered by  path.
-
-The Generic path is best-equipped to render all types of n-gons, but it can also make the fewest performance-increasing assumptions and so is the slowest of the paths. For textured n-gons, the Textured path can be up to twice as fast as the Generic path.
-
 ## render_async([meshes[, options[, rngonUrl]]])
 
 An non-blocking version of *`render()`* that executes in a Web Worker.
