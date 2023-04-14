@@ -113,10 +113,6 @@ export function transform_clip_lighter(
                     {
                         Rngon.vector.transform(cachedNgon.vertexNormals[v], objectMatrix);
                         Rngon.vector.normalize(cachedNgon.vertexNormals[v]);
-
-                        cachedNgon.vertices[v].normalX = cachedNgon.vertexNormals[v].x;
-                        cachedNgon.vertices[v].normalY = cachedNgon.vertexNormals[v].y;
-                        cachedNgon.vertices[v].normalZ = cachedNgon.vertexNormals[v].z;
                     }
                 }
                 // With shading other than Gouraud, only the face normal will be used, and

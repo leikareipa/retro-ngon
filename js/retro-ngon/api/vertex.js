@@ -16,9 +16,6 @@ export function vertex(
     worldX = x,
     worldY = y,
     worldZ = z,
-    normalX = 0,
-    normalY = 1,
-    normalZ = 0,
 )
 {
     Rngon.assert?.(
@@ -50,10 +47,6 @@ export function vertex(
         worldX,
         worldY,
         worldZ,
-
-        normalX,
-        normalY,
-        normalZ,
     };
 
     return publicInterface;

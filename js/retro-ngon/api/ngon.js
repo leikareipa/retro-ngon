@@ -155,9 +155,6 @@ ngon.clip_to_viewport = function(ngon)
                         Rngon.lerp(prevVertex.worldX, ngon.vertices[i].worldX, lerpStep),
                         Rngon.lerp(prevVertex.worldY, ngon.vertices[i].worldY, lerpStep),
                         Rngon.lerp(prevVertex.worldZ, ngon.vertices[i].worldZ, lerpStep),
-                        Rngon.lerp(prevVertex.normalX, ngon.vertices[i].normalX, lerpStep),
-                        Rngon.lerp(prevVertex.normalY, ngon.vertices[i].normalY, lerpStep),
-                        Rngon.lerp(prevVertex.normalZ, ngon.vertices[i].normalZ, lerpStep)
                     );
                 }
                 
