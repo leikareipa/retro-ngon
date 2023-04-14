@@ -201,7 +201,7 @@ export const renderShared = {
             useFragmentBuffer: false,
             usePerspectiveInterpolation: true,
             globalWireframe: false,
-            hibernateWhenNotOnScreen: true,
+            hibernateWhenTargetNotVisible: true,
             auxiliaryBuffers: [],
             lights: [],
             width: 640,
