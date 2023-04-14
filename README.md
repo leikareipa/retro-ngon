@@ -239,19 +239,21 @@ You should also have a look at the [API reference](#api-reference), as it contai
 
 # API reference
 
-The renderer's public API consists of the following objects:
+The renderer's public API consists of the following functions:
 
-| Object                                          | Brief description                            |
-| ----------------------------------------------- | -------------------------------------------- |
-| [render()](#rendertarget-scene-options-pipeline) | Renders n-gon meshes.                       |
-| [render_async()](#render_asyncmeshes-options-rngonurl) | Renders n-gon meshes asynchronously.  |
-| [mesh](#meshngons-transform)                    | Collection of related n-gons.                |
-| [ngon](#ngonvertices-material-normal)           | Polygonal shape defined by *n* vertices.     |
-| [vertex](#vertexx-y-z-u-v-w)                    | Corner of an n-gon.                          |
-| [vector](#vectorx-y-z)                          | Three-component vector.                      |
-| [color](#colorred-green-blue-alpha)             | 32-bit RGBA color.                           |
-| [texture](#texturedata)                         | 2D RGBA image for texturing n-gons.          |
-| light                                           | (A description is coming.)                   |
+| Function                                        | Brief description                          |
+| ----------------------------------------------- | ------------------------------------------ |
+| [render()](#rendertarget-scene-options-pipeline)  | Renders meshes.                          |
+| [render_async()](#render_asyncmeshes-options-rngonurl) | Renders meshes asynchronously.      |
+| [ngon](#ngonvertices-material-normal)           | A polygon with *n* vertices (*n*-gon).     |
+| [mesh](#meshngons-transform)                    | A collection of related n-gons.            |
+| [vertex](#vertexx-y-z-u-v-w)                    | A corner of an n-gon.                      |
+| [vector](#vectorx-y-z)                          | A three-component vector.                  |
+| [color](#colorred-green-blue-alpha)             | A 32-bit RGBA color value.                 |
+| [texture](#texturedata)                         | A 2D RGBA image for texturing n-gons.      |
+| light                                           | (A description is coming.)                 |
+
+All but *`render()`* and *`render_async()`* are factory functions, i.e. their purpose is to construct and return an object based on the input parameters.
 
 ## render({target, scene, options, pipeline})
 
