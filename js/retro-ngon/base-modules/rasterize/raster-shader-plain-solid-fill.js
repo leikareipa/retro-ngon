@@ -12,7 +12,7 @@
 // - No auxiliary buffers
 // - Depth buffering enabled
 export function plain_solid_fill({
-    ngon,
+    ngonIdx,
     leftEdges,
     rightEdges,
     numLeftEdges,
@@ -20,6 +20,7 @@ export function plain_solid_fill({
     pixelBuffer32,
 })
 {
+    const ngon = Rngon.state.active.ngonCache.ngons[ngonIdx];
     const usePalette = Rngon.state.active.usePalette;
     const pixelBufferImage = Rngon.state.active.pixelBuffer;
     const pixelBufferClamped8 = pixelBufferImage.data;
@@ -40,20 +41,20 @@ export function plain_solid_fill({
     let y = (ngonStartY - 1);
     while (++y < ngonEndY)
     {
-        const spanStartX = Math.min(pixelBufferWidth, Math.max(0, Math.round(leftEdge.start.x)));
-        const spanEndX = Math.min(pixelBufferWidth, Math.max(0, Math.ceil(rightEdge.start.x)));
+        const spanStartX = Math.min(pixelBufferWidth, Math.max(0, Math.round(leftEdge.x)));
+        const spanEndX = Math.min(pixelBufferWidth, Math.max(0, Math.ceil(rightEdge.x)));
         const spanWidth = ((spanEndX - spanStartX) + 1);
 
         if (spanWidth > 0)
         {
-            const deltaDepth = ((rightEdge.start.depth - leftEdge.start.depth) / spanWidth);
-            let iplDepth = (leftEdge.start.depth - deltaDepth);
+            const deltaDepth = ((rightEdge.depth - leftEdge.depth) / spanWidth);
+            let iplDepth = (leftEdge.depth - deltaDepth);
 
-            const deltaShade = ((rightEdge.start.shade - leftEdge.start.shade) / spanWidth);
-            let iplShade = (leftEdge.start.shade - deltaShade);
+            const deltaShade = ((rightEdge.shade - leftEdge.shade) / spanWidth);
+            let iplShade = (leftEdge.shade - deltaShade);
 
-            const deltaInvW = ((rightEdge.start.invW - leftEdge.start.invW) / spanWidth);
-            let iplInvW = (leftEdge.start.invW - deltaInvW);
+            const deltaInvW = ((rightEdge.invW - leftEdge.invW) / spanWidth);
+            let iplInvW = (leftEdge.invW - deltaInvW);
 
             let pixelBufferIdx = ((spanStartX + y * pixelBufferWidth) - 1);
 
@@ -117,15 +118,15 @@ export function plain_solid_fill({
 
         // Update values that're interpolated vertically along the edges.
         {
-            leftEdge.start.x      += leftEdge.delta.x;
-            leftEdge.start.depth  += leftEdge.delta.depth;
-            leftEdge.start.shade  += leftEdge.delta.shade;
-            leftEdge.start.invW   += leftEdge.delta.invW;
+            leftEdge.x      += leftEdge.delta.x;
+            leftEdge.depth  += leftEdge.delta.depth;
+            leftEdge.shade  += leftEdge.delta.shade;
+            leftEdge.invW   += leftEdge.delta.invW;
 
-            rightEdge.start.x     += rightEdge.delta.x;
-            rightEdge.start.depth += rightEdge.delta.depth;
-            rightEdge.start.shade += rightEdge.delta.shade;
-            rightEdge.start.invW  += rightEdge.delta.invW;
+            rightEdge.x     += rightEdge.delta.x;
+            rightEdge.depth += rightEdge.delta.depth;
+            rightEdge.shade += rightEdge.delta.shade;
+            rightEdge.invW  += rightEdge.delta.invW;
         }
 
         // We can move onto the next edge when we're at the end of the current one.

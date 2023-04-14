@@ -21,7 +21,6 @@ const textureDitherFilterKernel = {
 // No performance-enhancing assumptions are made, so this is the most compatible filler,
 // but also potentially the slowest.
 export function generic_fill({
-    ngon,
     ngonIdx,
     leftEdges,
     rightEdges,
@@ -31,6 +30,9 @@ export function generic_fill({
     auxiliaryBuffers
 })
 {
+    if (!numLeftEdges || !numRightEdges) return true;
+
+    const ngon = Rngon.state.active.ngonCache.ngons[ngonIdx];
     const usePalette = Rngon.state.active.usePalette;
     const useFragmentBuffer = Rngon.state.active.useFragmentBuffer;
     const fragmentBuffer = Rngon.state.active.fragmentBuffer.data;
@@ -60,8 +62,6 @@ export function generic_fill({
     let curRightEdgeIdx = 0;
     let leftEdge = leftEdges[curLeftEdgeIdx];
     let rightEdge = rightEdges[curRightEdgeIdx];
-    
-    if (!numLeftEdges || !numRightEdges) return;
 
     // Note: We assume the n-gon's vertices to be sorted by increasing Y.
     const ngonStartY = leftEdges[0].top;
@@ -70,37 +70,37 @@ export function generic_fill({
     let y = (ngonStartY - 1);
     while (++y < ngonEndY)
     {
-        const spanStartX = Math.min(pixelBufferWidth, Math.max(0, Math.round(leftEdge.start.x)));
-        const spanEndX = Math.min(pixelBufferWidth, Math.max(0, Math.ceil(rightEdge.start.x)));
+        const spanStartX = Math.min(pixelBufferWidth, Math.max(0, Math.round(leftEdge.x)));
+        const spanEndX = Math.min(pixelBufferWidth, Math.max(0, Math.ceil(rightEdge.x)));
         const spanWidth = ((spanEndX - spanStartX) + 1);
 
         if (spanWidth > 0)
         {
-            const deltaDepth = ((rightEdge.start.depth - leftEdge.start.depth) / spanWidth);
-            let iplDepth = (leftEdge.start.depth - deltaDepth);
+            const deltaDepth = ((rightEdge.depth - leftEdge.depth) / spanWidth);
+            let iplDepth = (leftEdge.depth - deltaDepth);
 
-            const deltaShade = ((rightEdge.start.shade - leftEdge.start.shade) / spanWidth);
-            let iplShade = (leftEdge.start.shade - deltaShade);
+            const deltaShade = ((rightEdge.shade - leftEdge.shade) / spanWidth);
+            let iplShade = (leftEdge.shade - deltaShade);
 
-            const deltaU = ((rightEdge.start.u - leftEdge.start.u) / spanWidth);
-            let iplU = (leftEdge.start.u - deltaU);
+            const deltaU = ((rightEdge.u - leftEdge.u) / spanWidth);
+            let iplU = (leftEdge.u - deltaU);
 
-            const deltaV = ((rightEdge.start.v - leftEdge.start.v) / spanWidth);
-            let iplV = (leftEdge.start.v - deltaV);
+            const deltaV = ((rightEdge.v - leftEdge.v) / spanWidth);
+            let iplV = (leftEdge.v - deltaV);
 
-            const deltaInvW = ((rightEdge.start.invW - leftEdge.start.invW) / spanWidth);
-            let iplInvW = (leftEdge.start.invW - deltaInvW);
+            const deltaInvW = ((rightEdge.invW - leftEdge.invW) / spanWidth);
+            let iplInvW = (leftEdge.invW - deltaInvW);
 
             if (useFragmentBuffer)
             {
-                var deltaWorldX = ((rightEdge.start.worldX - leftEdge.start.worldX) / spanWidth);
-                var iplWorldX = (leftEdge.start.worldX - deltaWorldX);
+                var deltaWorldX = ((rightEdge.worldX - leftEdge.worldX) / spanWidth);
+                var iplWorldX = (leftEdge.worldX - deltaWorldX);
 
-                var deltaWorldY = ((rightEdge.start.worldY - leftEdge.start.worldY) / spanWidth);
-                var iplWorldY = (leftEdge.start.worldY - deltaWorldY);
+                var deltaWorldY = ((rightEdge.worldY - leftEdge.worldY) / spanWidth);
+                var iplWorldY = (leftEdge.worldY - deltaWorldY);
 
-                var deltaWorldZ = ((rightEdge.start.worldZ - leftEdge.start.worldZ) / spanWidth);
-                var iplWorldZ = (leftEdge.start.worldZ - deltaWorldZ);
+                var deltaWorldZ = ((rightEdge.worldZ - leftEdge.worldZ) / spanWidth);
+                var iplWorldZ = (leftEdge.worldZ - deltaWorldZ);
             }
 
             // Assumes the depth buffer consists of 1 element per pixel.
@@ -398,29 +398,29 @@ export function generic_fill({
 
         // Update values that're interpolated vertically along the edges.
         {
-            leftEdge.start.x      += leftEdge.delta.x;
-            leftEdge.start.depth  += leftEdge.delta.depth;
-            leftEdge.start.shade  += leftEdge.delta.shade;
-            leftEdge.start.u      += leftEdge.delta.u;
-            leftEdge.start.v      += leftEdge.delta.v;
-            leftEdge.start.invW   += leftEdge.delta.invW;
+            leftEdge.x      += leftEdge.delta.x;
+            leftEdge.depth  += leftEdge.delta.depth;
+            leftEdge.shade  += leftEdge.delta.shade;
+            leftEdge.u      += leftEdge.delta.u;
+            leftEdge.v      += leftEdge.delta.v;
+            leftEdge.invW   += leftEdge.delta.invW;
 
-            rightEdge.start.x     += rightEdge.delta.x;
-            rightEdge.start.depth += rightEdge.delta.depth;
-            rightEdge.start.shade += rightEdge.delta.shade;
-            rightEdge.start.u     += rightEdge.delta.u;
-            rightEdge.start.v     += rightEdge.delta.v;
-            rightEdge.start.invW  += rightEdge.delta.invW;
+            rightEdge.x     += rightEdge.delta.x;
+            rightEdge.depth += rightEdge.delta.depth;
+            rightEdge.shade += rightEdge.delta.shade;
+            rightEdge.u     += rightEdge.delta.u;
+            rightEdge.v     += rightEdge.delta.v;
+            rightEdge.invW  += rightEdge.delta.invW;
 
             if (useFragmentBuffer)
             {
-                leftEdge.start.worldX  += leftEdge.delta.worldX;
-                leftEdge.start.worldY  += leftEdge.delta.worldY;
-                leftEdge.start.worldZ  += leftEdge.delta.worldZ;
+                leftEdge.worldX  += leftEdge.delta.worldX;
+                leftEdge.worldY  += leftEdge.delta.worldY;
+                leftEdge.worldZ  += leftEdge.delta.worldZ;
 
-                rightEdge.start.worldX += rightEdge.delta.worldX;
-                rightEdge.start.worldY += rightEdge.delta.worldY;
-                rightEdge.start.worldZ += rightEdge.delta.worldZ;
+                rightEdge.worldX += rightEdge.delta.worldX;
+                rightEdge.worldY += rightEdge.delta.worldY;
+                rightEdge.worldZ += rightEdge.delta.worldZ;
             }
         }
 

@@ -9,7 +9,7 @@
 // must already exist). If a null target is given, the image will be rendered into an
 // offscreen pixel buffer, accessible after this call via Rngon.state.active.pixelBuffer.
 export function render({
-    target,
+    target = null,
     scene = [Rngon.mesh()],
     options = {},
     pipeline = {},

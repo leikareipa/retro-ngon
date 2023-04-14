@@ -107,7 +107,6 @@ rasterize.polygon = function(
     if (material.hasFill)
     {
         const rasterShaderArgs = {
-            ngon,
             ngonIdx,
             leftEdges,
             rightEdges,
@@ -125,6 +124,7 @@ rasterize.polygon = function(
                 material.texture &&
                 depthBuffer &&
                 !useFragmentBuffer &&
+                !Rngon.state.active.usePalette &&
                 !material.allowAlphaReject &&
                 !material.allowAlphaBlend &&
                 (material.textureMapping === "affine") &&
@@ -140,6 +140,7 @@ rasterize.polygon = function(
                 depthBuffer &&
                 !useFragmentBuffer &&
                 !useAuxiliaryBuffers &&
+                !Rngon.state.active.usePalette &&
                 !material.allowAlphaReject &&
                 !material.allowAlphaBlend
             ){
@@ -213,25 +214,25 @@ rasterize.polygon = function(
             const edge = (isLeftEdge? leftEdges[numLeftEdges++] : rightEdges[numRightEdges++]);
             edge.top = startY;
             edge.bottom = endY;
-            edge.start.x = startX;
+            edge.x = startX;
             edge.delta.x = deltaX;
-            edge.start.depth = startDepth;
+            edge.depth = startDepth;
             edge.delta.depth = deltaDepth;
-            edge.start.shade = startShade;
+            edge.shade = startShade;
             edge.delta.shade = deltaShade;
-            edge.start.u = startU;
+            edge.u = startU;
             edge.delta.u = deltaU;
-            edge.start.v = startV;
+            edge.v = startV;
             edge.delta.v = deltaV;
-            edge.start.invW = startInvW;
+            edge.invW = startInvW;
             edge.delta.invW = deltaInvW;
             if (useFragmentBuffer)
             {
-                edge.start.worldX = vert1.worldX/w1;
+                edge.worldX = vert1.worldX/w1;
                 edge.delta.worldX = ((vert2.worldX/w2 - vert1.worldX/w1) / edgeHeight);
-                edge.start.worldY = vert1.worldY/w1;
+                edge.worldY = vert1.worldY/w1;
                 edge.delta.worldY = ((vert2.worldY/w2 - vert1.worldY/w1) / edgeHeight);
-                edge.start.worldZ = vert1.worldZ/w1;
+                edge.worldZ = vert1.worldZ/w1;
                 edge.delta.worldZ = ((vert2.worldZ/w2 - vert1.worldZ/w1) / edgeHeight);
             }
         }

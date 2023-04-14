@@ -91,9 +91,7 @@ export const renderShared = {
         state.modules.raster_shader = (
             (typeof pipeline.rasterShader === "function")
                 ? pipeline.rasterShader
-                : (pipeline.rasterShader === null)
-                    ? null
-                    : null /// TODO: Default raster shader here.
+                : null
         );
 
         state.useContextShader = Boolean(pipeline.contextShader);
@@ -278,7 +276,7 @@ export const renderShared = {
             pixelShader: null,
             vertexShader: null,
             contextShader: null,
-            rasterShaders: [],
+            rasterShader: undefined,
         };
     },
 

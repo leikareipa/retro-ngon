@@ -155,13 +155,14 @@ function rs_wireframe({
 }
 
 function rs_scanlines({
-    ngon,
+    ngonIdx,
     leftEdges,
     rightEdges,
     numLeftEdges,
     numRightEdges,
 })
 {
+    const ngon = Rngon.state.active.ngonCache.ngons[ngonIdx];
     const pixelBufferClamped8 = this.Rngon.state.active.pixelBuffer.data;
     const pixelBufferWidth = this.Rngon.state.active.pixelBuffer.width;
     const depthBuffer = (this.Rngon.state.active.useDepthBuffer
