@@ -72,8 +72,7 @@ Rngon.render({
     scene: [quadMesh],
     options: {
         cameraPosition: Rngon.vector(0, 0, -5),
-        scale: 1,
-    }
+    },
 });
 ```
 
@@ -141,15 +140,15 @@ const quad = Rngon.ngon([
 
 ## Make it pixelated
 
-1. Adjust the `scale` property in the render call:
+1. Adjust the `options.resolution` property in the render call:
 
 ```javascript
 Rngon.render({
     target: "canvas",
     scene: [quadMesh],
     options: {
+        resolution: 0.2,
         cameraPosition: Rngon.vector(0, 0, -5),
-        scale: 0.14,
     },
 });
 ```
@@ -253,42 +252,31 @@ The renderer's public API consists of the following functions:
 | [texture](#texturedata)                         | A 2D RGBA image for texturing n-gons.      |
 | light                                           | (A description is coming.)                 |
 
-All but *`render()`* and *`render_async()`* are factory functions, i.e. their purpose is to construct and return an object based on the input parameters.
+All but *`render()`* and *`render_async()`* are factory functions, i.e. their purpose is to construct and return an object based on the input arguments.
 
 ## render({target, scene, options, pipeline})
 
-Renders the specified n-gon meshes onto the provided render target (a canvas element or an off-screen pixel buffer). This function is blocking and will return after rendering is completed. For non-blocking rendering, see [render_async()](#render_asyncmeshes-options-rngonurl).
+Renders meshes into a 32-bit RGBA pixel buffer, and optionally displays the image on a \<canvas\> element.
 
-After the call, the rendered pixel buffer is accessible via *Rngon.state.active.pixelBuffer*, and the corresponding screen-space n-gons are available from *Rngon.state.active.ngonCache*.
+This function blocks until the rendering is completed. For non-blocking rendering, see [render_async()](#render_asyncmeshes-options-rngonurl).
 
 ### Parameters
 
-- **target** (HTMLCanvasElement | string | null = *null*): The target recepticle for the rendered image.
-    - Possible types:
-        - HTMLCanvasElement: The image will be displayed on this canvas element.
-        - string: The image will be displayed on the canvas element found in `document.body` whose `id` property matches this string.
-        - null: The image won't be displayed. It can be accessed as a raw pixel buffer via `Rngon.state.active.pixelBuffer`.
-- **scene** (array = *[mesh()]*): The *`mesh`* objects to be rendered.
+- **target** (HTMLCanvasElement | string | null = *null*): Destination for the rendered image. Canvas element; `id` attribute of canvas element; or *null* for none. The raw pixel buffer is accessible via `Rngon.state.active.pixelBuffer` after the call.
+- **scene** (array = *[mesh()]*): The *`mesh`* objects to be rendered. The array is iterated in back-to-front order.
 - **options** (object): Additional rendering options:
-    - **state** (string = *"default"*): The name of the state object to be used for storing internal state during rendering. Subsequent calls to *`render()`* with this name will re-use the corresponding state object, so that e.g. render buffers won't be re-allocated if there are intervening calls to *`render()`* with different parameters using a different state name. You can access the state object via `Rngon.state[name]` after the call.
-        - The value "active" is reserved and should not be used.
-    - **scale** (number = *1*): The size of the rendered image, as a multiplier of the size of the target canvas. Ignored if the `target` parameter is *null*, i.e. when there is no target canvas, in which case the values of `options.width` and `options.height` will be used.
-    - **width** (number = *640*): The width of the image to be rendered. Ignored if the `target` parameter is not *null*.
-    - **height** (number = *480*): The height of the image to be rendered. Ignored if the `target` parameter is not *null*.
+    - **resolution** (number | object = *0.5*): Resolution of the output image. If `target` is HTMLCanvasElement or string, the value is a multiplier for the canvas's size according to its style sheet. Otherwise, the value is an object with these properties:
+        - **width** (number = *640*): Width in pixels.
+        - **height** (number = *480*): Height in pixels.
     - **fov** (number = *43*): Field-of-view size.
-    - **depthSort** (string = *"painter-reverse"*): The method of sorting n-gons prior to rasterization.
-        - Possible values:
-            - "none": N-gons are rendered without additional sorting.
-            - "painter": Painter's algorithm; n-gons furthest from the camera are rendered first.
-            - "painter-reverse": N-gons closest to the camera are rendered first.
-    - **useDepthBuffer** (boolean = *true*): Whether a depth buffer should be generated and used during rasterization to discard occluded pixels. If enabled, the depth buffer is also accessible via `Rngon.state.active.depthBuffer` after the call.
-    - **hibernateWhenNotOnScreen** (boolean = *true*): Whether to inhibit rendering when the target canvas is not within the browser's viewport. Ignored if the `target` parameter is *null*.
-    - **nearPlane** (number = *1*): Vertices closer to the camera than this will be clipped.
-    - **farPlane** (number = *1000*): Vertices further from the camera than this will be clipped.
-    - **perspectiveCorrectInterpolation** (number = *false*): Whether properties that are linearly interpolated between vertices during rasterization (e.g. texture coordinates) are perspective-corrected, eliminating view-dependent distortion.
+    - **useDepthBuffer** (boolean = *true*): Whether to generate a depth buffer to discard occluded pixels. The depth buffer, if generated, is accessible via `Rngon.state.active.depthBuffer` after the call.
+    - **hibernateWhenTargetNotVisible** (boolean = *true*): Return without rendering if the target canvas is not within the browser's viewport. Ignored if `target` is *null*.
+    - **nearPlane** (number = *1*): Vertices closer to the camera will be clipped.
+    - **farPlane** (number = *1000*): Vertices further from the camera will be clipped.
+    - **usePerspectiveInterpolation** (boolean = *true*): Whether to apply perspective correction to property interpolation (e.g. texture coordinates) during rasterization.
     - **cameraPosition** (vector = *vector(0, 0, 0)*): The position from which the scene is rendered.
     - **cameraDirection** (vector = *vector(0, 0, 0)*): The direction in which the scene is viewed for rendering.
-    - **useFragmentBuffer** (boolean = *false*): Whether the renderer should generate a fragment buffer to provide per-pixel metadata (e.g. depth value and world XYZ coordinates). Will be set to *true* automatically if the `options.pixelShader` function accepts a "fragmentBuffer" parameter. If enabled, the fragment buffer is also accessible via `Rngon.state.active.fragmentBuffer` after the call.
+    - **useFragmentBuffer** (boolean = *false*): Whether to generate a fragment buffer to store per-pixel metadata (e.g. world XYZ coordinates). Automatically enabled if the `options.pixelShader` function accepts a "fragmentBuffer" parameter. The fragment buffer, if generated, is accessible via `Rngon.state.active.fragmentBuffer` after the call.
     - **lights** (array = *[]*): The scene's light sources, as *`light`* objects. N-gons will be lit according to their `material.vertexShading` property.
 - **pipeline** (object): Customize the render pipeline:
     - **transformClipLighter** (function | undefined | null = *undefined*): A function to be called by the renderer to transform, clip, and light the input n-gons; or [the built-in function](./js/retro-ngon/default-pipeline/transform-clip-lighter.js) (`Rngon.defaultPipeline.transform_clip_lighter`) if *undefined*; or disabled entirely if *null*.
@@ -348,28 +336,6 @@ Rngon.render({
         cameraPosition: Rngon.vector(0, 0, -5),
     },
 });
-```
-
-```javascript
-//  Render into an off-screen pixel buffer using a custom render state.
-const point = Rngon.ngon([Rngon.vertex(0, 0, 0)]);
-
-Rngon.render({
-    target: null,
-    scene: [Rngon.mesh(point)],
-    options: {
-        state: "custom-state",
-        width: 100,
-        height: 100,
-    },
-});
-
-// Until render() is invoked with a different render state, the custom
-// state's pixel buffer is available via:
-Rngon.state.active.pixelBuffer;
-
-// The custom state's pixel buffer can also be accessed permanently via:
-Rngon.state["custom-state"].pixelBuffer;
 ```
 
 ### Rasterization paths
@@ -491,7 +457,7 @@ A polygon made up of *n* vertices, also known as an n-gon. Single-vertex n-gons 
         - Possible values:
             - "ortho": The texture is mapped using vertex UV coordinates that are generated automatically at render-time in 2D screen space. This method only works for planar n-gons; rotating the n-gon will produce a skewed mapping.
             - "affine": Affine texture-mapping using the UV coordinates provided by the *`vertex`* objects in the `vertices` parameter.
-        - For "affine" to perform perspective-correct UV mapping, enable the `options.perspectiveCorrectInterpolation` property to *`render()`*.
+        - For "affine" to perform perspective-correct UV mapping, enable the `options.usePerspectiveInterpolation` property to *`render()`*.
     - **textureFiltering** (string = *"none"*): The filtering effect to be applied when rasterizing `material.texture`.
         - Possible values:
             - "none": No filtering. The texture will appear pixelated when viewed up close.
