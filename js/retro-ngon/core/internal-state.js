@@ -103,10 +103,6 @@ function default_state() {
         useContextShader: false,
         context_shader: undefined,
 
-        // A list of end-user-provided raster shader functions to be called during rasterization.
-        rasterShaders: [],
-        raster_shader: undefined,
-
         // The render resolution when using off-screen rendering. Has no effect on the
         // resolution of on-screen, into-canvas rendering.
         offscreenRenderWidth: 1,

@@ -88,12 +88,6 @@ export const renderShared = {
                     : null /// TODO: Default vertex shader here.
         );
 
-        state.modules.raster_shader = (
-            (typeof pipeline.rasterShader === "function")
-                ? pipeline.rasterShader
-                : null
-        );
-
         state.useContextShader = Boolean(pipeline.contextShader);
         state.modules.context_shader = (
             (typeof pipeline.contextShader === "function")
@@ -276,7 +270,6 @@ export const renderShared = {
             pixelShader: null,
             vertexShader: null,
             contextShader: null,
-            rasterShader: undefined,
         };
     },
 
