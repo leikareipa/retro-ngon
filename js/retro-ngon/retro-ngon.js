@@ -9,9 +9,9 @@ import "../paletted-canvas/paletted-canvas.js";
 
 import {render} from "./api/render.js";
 import {render_async} from "./api/render-async.js";
-import {rasterize} from "./base-modules/rasterize.js";
-import {surface_wipe} from "./base-modules/surface-wipe.js";
-import {transform_clip_light} from "./base-modules/transform-clip-light.js";
+import {rasterize} from "./pipeline/rasterize.js";
+import {surface_wipe} from "./pipeline/surface-wipe.js";
+import {transform_clip_light} from "./pipeline/transform-clip-light.js";
 import {
     color,
     color_index,
