@@ -260,6 +260,8 @@ Renders meshes into a 32-bit RGBA pixel buffer, and optionally displays the imag
 
 This function blocks until the rendering is completed. For non-blocking rendering, see [render_async()](#render_asyncmeshes-options-rngonurl).
 
+Implemented in [./js/retro-ngon/api/render.js](./js/retro-ngon/api/render.js).
+
 ### Parameters
 
 - **target** (HTMLCanvasElement | string | null = *null*): Destination for the rendered image. Canvas element; `id` attribute of canvas element; or *null* for none. The raw pixel buffer is accessible via `Rngon.state.active.pixelBuffer` after the call.
@@ -342,6 +344,8 @@ Rngon.render({
 
 An non-blocking version of *`render()`* that executes in a Web Worker.
 
+Implemented in [./js/retro-ngon/api/render-async.js](./js/retro-ngon/api/render-async.js).
+
 ### Parameters
 
 Accepts the same parameters as *`render()`*, with the following differences:
@@ -385,6 +389,8 @@ else
 
 A selection of n-gons related to each other in some way, rendered as a unit with shared transformations.
 
+Implemented in [./js/retro-ngon/api/mesh.js](./js/retro-ngon/api/mesh.js).
+
 ### Parameters
 
 - **ngons** (array = *[ngon()]*): The n-gons that make up the mesh.
@@ -420,6 +426,8 @@ mesh.scaling.x = 100;
 ## ngon([vertices[, material[, normal]]])
 
 A polygon made up of *n* vertices, also known as an n-gon. Single-vertex n-gons are treated as points, and two-vertex n-gons as lines.
+
+Implemented in [./js/retro-ngon/api/ngon.js](./js/retro-ngon/api/ngon.js).
 
 ### Parameters
 
@@ -487,6 +495,8 @@ A point in space representing a corner of an n-gon.
 
 Note: In the renderer's coordinate space, X is horizontal (positive = right), and Y is vertical (positive = up); positive Z is forward.
 
+Implemented in [./js/retro-ngon/api/vertex.js](./js/retro-ngon/api/vertex.js).
+
 ### Parameters
 
 - **x** (number = *0*): The X coordinate.
@@ -527,6 +537,8 @@ An object with the following properties:
 
 A 32-bit, four-channel, RGBA color value, where each color channel is 8 bits.
 
+Implemented in [./js/retro-ngon/api/color.js](./js/retro-ngon/api/color.js).
+
 ### Parameters
 
 - **red** (number = *0*): The red channel.
@@ -548,6 +560,8 @@ A frozen object with the following properties:
 A 2D RGBA image for texturing n-gons. Supports 16 and 32-bit input data and generates mipmaps automatically.
 
 Note: Textures with a power-of-two resolution may render faster and support more features than textures that are not a power of two.
+
+Implemented in [./js/retro-ngon/api/texture.js](./js/retro-ngon/api/texture.js).
 
 ### Parameters
 
