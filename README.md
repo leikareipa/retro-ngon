@@ -262,15 +262,15 @@ After the call, the rendered pixel buffer is accessible via *Rngon.state.active.
 ### Parameters
 
 - **target** (HTMLCanvasElement | string | null = *null*): The target recepticle for the rendered image.
-    - Possible values:
+    - Possible types:
         - HTMLCanvasElement: The image will be displayed on this canvas element.
         - string: The image will be displayed on the canvas element found in `document.body` whose `id` property matches this string.
         - null: The image won't be displayed. It can be accessed as a raw pixel buffer via `Rngon.state.active.pixelBuffer`.
-- **scene** (array = *[mesh()]*): The `mesh` objects to be rendered.
+- **scene** (array = *[mesh()]*): The *`mesh`* objects to be rendered.
 - **options** (object): Additional rendering options:
-    - **state** (string = *"default"*): The name of the state object to be used for storing internal state during rendering. Subsequent calls to `render()` with this name will re-use the corresponding state object, so that e.g. render buffers won't be re-allocated if there are intervening calls to `render()` with different parameters using a different state name. You can access the state object via `Rngon.state[name]` after the call.
+    - **state** (string = *"default"*): The name of the state object to be used for storing internal state during rendering. Subsequent calls to *`render()`* with this name will re-use the corresponding state object, so that e.g. render buffers won't be re-allocated if there are intervening calls to *`render()`* with different parameters using a different state name. You can access the state object via `Rngon.state[name]` after the call.
         - The value "active" is reserved and should not be used.
-    - **scale** (number = *1*): The size of the rendered image, as a multiplier of the size of the target canvas. Ignored if the `target` parameter is *null*, i.e. when there is no target canvas, in which case the `width` and `height` options will be used.
+    - **scale** (number = *1*): The size of the rendered image, as a multiplier of the size of the target canvas. Ignored if the `target` parameter is *null*, i.e. when there is no target canvas, in which case the values of `options.width` and `options.height` will be used.
     - **width** (number = *640*): The width of the image to be rendered. Ignored if the `target` parameter is not *null*.
     - **height** (number = *480*): The height of the image to be rendered. Ignored if the `target` parameter is not *null*.
     - **fov** (number = *43*): Field-of-view size.
@@ -286,35 +286,36 @@ After the call, the rendered pixel buffer is accessible via *Rngon.state.active.
     - **perspectiveCorrectInterpolation** (number = *false*): Whether properties that are linearly interpolated between vertices during rasterization (e.g. texture coordinates) are perspective-corrected, eliminating view-dependent distortion.
     - **cameraPosition** (vector = *vector(0, 0, 0)*): The position from which the scene is rendered.
     - **cameraDirection** (vector = *vector(0, 0, 0)*): The direction in which the scene is viewed for rendering.
-    - **useFragmentBuffer** (boolean = *false*): Whether the renderer should generate a fragment buffer to provide per-pixel metadata (e.g. depth value and world XYZ coordinates). Will be set to *true* automatically if the `pixelShader` function accepts a "fragmentBuffer" parameter. If enabled, the fragment buffer is also accessible via `Rngon.state.active.fragmentBuffer` after the call.
-    - **lights** (array = *[]*): The scene's light sources, as *`light`* objects. N-gons will be lit according to their `vertexShading` material property, or by the *vertexShader* function if provided.
+    - **useFragmentBuffer** (boolean = *false*): Whether the renderer should generate a fragment buffer to provide per-pixel metadata (e.g. depth value and world XYZ coordinates). Will be set to *true* automatically if the `options.pixelShader` function accepts a "fragmentBuffer" parameter. If enabled, the fragment buffer is also accessible via `Rngon.state.active.fragmentBuffer` after the call.
+    - **lights** (array = *[]*): The scene's light sources, as *`light`* objects. N-gons will be lit according to their `material.vertexShading` property.
 - **pipeline** (object): Customize the render pipeline:
-    - **transformClipLighter** (function | undefined | null = *undefined*): A function to be called by the renderer to transform, clip, and light the input n-gons; or [the built-in function](./js/retro-ngon/base-modules/transform-clip-light.js) if *undefined*; or disabled entirely if *null*.
-    - **rasterizer** (function | undefined | null = *undefined*): A function to be called by the renderer to rasterize the input n-gons; or [the built-in function](./js/retro-ngon/base-modules/rasterize.js) if *undefined*; or disabled entirely if *null*.
-    - **surfaceWiper** (function | undefined | null = *undefined*): A function tp be called by the renderer to clear the render surface of previous renderings (pixel colors, depth values, etc.); or [the built-in function](./js/retro-ngon/base-modules/surface-wipe.js) if *undefined*; or disabled entirely if *null*.
-    - **pixelShader** (function | null = *null*): A function to be called by the renderer at the completion of rasterization to apply pixel-shading effects to the rendered image ('pixelBuffer'). See the [pixel shaders sample](./samples/pixel-shaders/pixel-shaders.js) for examples of usage.
-        - Function signature: pixelShader({renderWidth, renderHeight, pixelBuffer, fragmentBuffer, ngonCache, cameraPosition}) {..}.
+    - **transformClipLighter** (function | undefined | null = *undefined*): A function to be called by the renderer to transform, clip, and light the input n-gons; or [the built-in function](./js/retro-ngon/default-pipeline/transform-clip-lighter.js) (`Rngon.defaultPipeline.transform_clip_lighter`) if *undefined*; or disabled entirely if *null*.
+    - **rasterizer** (function | undefined | null = *undefined*): A function to be called by the renderer to rasterize the input n-gons; or [the built-in function](./js/retro-ngon/default-pipeline/rasterizer.js) (`Rngon.defaultPipeline.rasterizer`) if *undefined*; or disabled entirely if *null*.
+    - **surfaceWiper** (function | undefined | null = *undefined*): A function tp be called by the renderer to clear the render surface of previous renderings (pixel colors, depth values, etc.); or [the built-in function](./js/retro-ngon/default-pipeline/surface-wiper.js) (`Rngon.defaultPipeline.surface_wiper`) if *undefined*; or disabled entirely if *null*.
+    - **pixelShader** (function | null = *null*): A function to be called by the renderer at the completion of rasterization to apply pixel-shading effects to the rendered image; or disabled if *null*. See the [pixel shader samples](./samples/pixel-shaders/pixel-shaders.js) for examples of usage.
+        - Function signature: pixelShader({renderWidth, renderHeight, pixelBuffer, fragmentBuffer, ngonCache, cameraPosition}) {..}. The function returns nothing.
             - **renderWidth** (number): The width of the rendered image.
             - **renderHeight** (number): The height of the rendered image.
             - **pixelBuffer** (Uint8ClampedArray): The pixels of the rendered image (32-bit RGBA).
+            - **ngonCache** (object): The screen-space n-gons that were rasterized:
+                - **count** (number): The number of n-gons.
+                - **ngons** (array): The n-gons, as an array of *`ngon`* objects. The length of this array may be larger than `count` due to caching, but only the first `count` elements are valid for this rendering.
             - **fragmentBuffer** (array): For each pixel in `pixelBuffer`, an object containing metadata about the pixel:
                 - **ngonIdx** (number): Index in the `ngonCache` array identifying the pixel's n-gon.
                 - **textureUScaled** (number): The U texel coordinate that was used to fetch this pixel. In the range from 0 to the width of the texture.
                 - **textureVScaled** (number): The V texel coordinate that was used to fetch this pixel. In the range from 0 to the height of the texture.
                 - **textureMipLevelIdx** (number): The texture mip level that was used. A value in the range [0,*n*-1], where *n* is the count of mip levels in the texture.
-                - **worldX** (number): World X coordinate.
-                - **worldY** (number): World Y coordinate.
-                - **worldZ** (number): World Z coordinate.
+                - **worldX** (number): World-space X coordinate.
+                - **worldY** (number): World-space Y coordinate.
+                - **worldZ** (number): World-space Z coordinate.
                 - **depth** (number): The depth value written into the depth buffer by this fragment.
                 - **shade** (number): The lightness level, in the range [0,1]. 
-            - **ngonCache** (object): The screen-space n-gons that were rasterized:
-                - **count** (number): The number of n-gons.
-                - **ngons** (array): The n-gons, as an array of *`ngon`* objects. The length of this array may be larger than `count` due to caching, but only the first `count` elements are valid for this rendering.
-            - **cameraPosition** (vector): The position of the camera.
-        - Note: The `useFragmentBuffer` option must be set to *true* if the pixel shader accesses the fragment buffer. The renderer will in most cases automatically detect this and set the property accordingly, but in some cases you may need to manually assign it.
-    - **vertexShader** (function | null = *null*): A function to be called by the renderer for each of the scene's n-gons to apply vertex-shading effects to the n-gon. The function will be called when the n-gon has been transformed into world-space coordinates but prior to clipping and rasterization. See the [vertex shaders sample](./samples/vertex-shaders/vertex-shaders.js) for examples of usage.
-        - Function signature: vertexShader({ngon, cameraPosition}) {..}.
-    - **rasterShader** (function | null = *null*): A function to be called by the renderer to implement custom rasterization of the transformed screen-space n-gons. If this function returns a falsy value, the renderer will call the appropriate [built-in raster shader](./js/retro-ngon/base-modules/rasterize/).
+            - **cameraPosition** (vector): The world-space coordinates from which the scene is being rendered.
+        - Note: `options.useFragmentBuffer` must be set to *true* if the pixel shader accesses the fragment buffer. The renderer will in most cases automatically detect this and set the property accordingly, but in some cases you may need to manually assign it.
+    - **vertexShader** (function | null = *null*): A function to be called by `pipeline.transformClipLighter` for each of the scene's n-gons, to apply vertex-shading effects; or disabled if *null*. The function will be called when the n-gon has been transformed into world-space coordinates but prior to clipping and rasterization. See the [vertex shader samples](./samples/vertex-shaders/vertex-shaders.js) for examples of usage.
+        - Function signature: vertexShader({ngon, cameraPosition}) {..}. The function returns nothing.
+            - **ngon** (*ngon*): The target n-gon, in world-space coordinates and prior to clipping.
+            - **cameraPosition** (vector): The world-space coordinates from which the scene is being rendered.
 
 ### Returns
 
@@ -371,7 +372,7 @@ Rngon.state["custom-state"].pixelBuffer;
 
 ### Rasterization paths
 
-Based on the material properties of the input n-gons and certain rendering options, the renderer will pass each n-gon through one of three possible rasterization paths: Textured, Solid, or Generic. (You can also implement your own custom rasterization paths. See the [the built-in paths](./js/retro-ngon/base-modules/rasterize/), [the additional sample paths](./samples/raster-shaders/), and the 'rasterShaders' render option for more details.)
+Based on the material properties of the input n-gons and certain rendering options, the renderer will pass each n-gon through one of three possible rasterization paths: Textured, Solid, or Generic.
 
 The paths are listed below, with the conditions required for that path to activate for a given n-gon:
 
@@ -397,16 +398,16 @@ The Generic path is best-equipped to render all types of n-gons, but it can also
 
 ## render_async([meshes[, options[, rngonUrl]]])
 
-An non-blocking version of **render()** that executes in a Web Worker.
+An non-blocking version of *`render()`* that executes in a Web Worker.
 
 ### Parameters
 
-Accepts the same parameters as **render()**, with the following differences:
+Accepts the same parameters as *`render()`*, with the following differences:
 
 - **options** (object):
-    - **pixelShader** (string | undefined = *undefined*): Same as for **render()**, but the function must now be provided as a string.
-    - **vertexShader** (string | undefined = *undefined*): Same as for **render()**, but the function must now be provided as a string.
-    - **scale**: Ignored. Use the `width` and `height` options instead.
+    - **pixelShader** (string | undefined = *undefined*): Same as for *`render()`*, but the function must now be provided as a string.
+    - **vertexShader** (string | undefined = *undefined*): Same as for *`render()`*, but the function must now be provided as a string.
+    - **scale**: Ignored. Use the `options.width` and `options.height` properties instead.
     - **modules**: Ignored (default values will be used for all properties).
 - **rngonUrl** (string | null = *null*): The absolute URL to the renderer's script file; e.g. `"http://localhost:8000/distributable/rngon.js"`. If *null*, the URL will be determined automatically by inspecting the Document's \<script\> tags' `src` attributes and selecting the first one that ends in `"rngon.js"`.
 
@@ -480,16 +481,16 @@ A polygon made up of *n* vertices, also known as an n-gon. Single-vertex n-gons 
 
 ### Parameters
 
-- **vertices** (array = *[vertex()]*): The `vertex` objects that define the corners of the n-gon. The length of the array must be in the range [1,500].
+- **vertices** (array = *[vertex()]*): The *`vertex`* objects that define the corners of the n-gon. The length of the array must be in the range [1,500].
 - **material** (object): The material properties that define the n-gon's appearance:
-    - **color** (color = *color(255, 255, 255, 255)*): Base color. If the `texture` property is *null*, the n-gon will be rendered in this color. Otherwise, the renderer will multiply texel colors by (C / 255), where C is the corresponding channel of the base color.
+    - **color** (color = *color(255, 255, 255, 255)*): Base color. If the `material.texture` property is *null*, the n-gon will be rendered in this color. Otherwise, the renderer will multiply texel colors by (C / 255), where C is the corresponding channel of the base color.
     - **texture** (texture | null = *null*): The image to be rendered onto the n-gon's face. If *null*, or if there are fewer than 3 vertices, the n-gon will be rendered without a texture.
-    - **textureMapping** (string = *"ortho"*): The method by which `texture` should be mapped onto the n-gon's face.
+    - **textureMapping** (string = *"ortho"*): The method by which `material.texture` should be mapped onto the n-gon's face.
         - Possible values:
             - "ortho": The texture is mapped using vertex UV coordinates that are generated automatically at render-time in 2D screen space. This method only works for planar n-gons; rotating the n-gon will produce a skewed mapping.
-            - "affine": Affine texture-mapping using the UV coordinates provided by the `vertex` objects in the `vertices` parameter.
-        - For "affine" to perform perspective-correct UV mapping, enable the `perspectiveCorrectInterpolation` option in `render()`.
-    - **textureFiltering** (string = *"none"*): The filtering effect to be applied when rasterizing *texture*.
+            - "affine": Affine texture-mapping using the UV coordinates provided by the *`vertex`* objects in the `vertices` parameter.
+        - For "affine" to perform perspective-correct UV mapping, enable the `options.perspectiveCorrectInterpolation` property to *`render()`*.
+    - **textureFiltering** (string = *"none"*): The filtering effect to be applied when rasterizing `material.texture`.
         - Possible values:
             - "none": No filtering. The texture will appear pixelated when viewed up close.
             - "dither": Faux bilinear filtering by jittering texel coordinates.
@@ -501,10 +502,10 @@ A polygon made up of *n* vertices, also known as an n-gon. Single-vertex n-gons 
         - The "repeat" option is available only for power-of-two textures. Others will fall back to "clamp".
     - **hasWireframe** (boolean = *false*): Whether the n-gon should be rendered with a wireframe outline.
         - Also see the `wireframeColor` property.
-    - **wireframeColor** (color = *color(0, 0, 0)*): If the `hasWireframe` property is *true*, this value sets the wireframe's color.
-    - **hasFill** (boolean = *true*): Whether the face of the n-gon should be rendered. If *false* and `hasWireframe` is *true*, the n-gon's wireframe outline will be rendered.
+    - **wireframeColor** (color = *color(0, 0, 0)*): If the `material.hasWireframe` property is *true*, this value sets the wireframe's color.
+    - **hasFill** (boolean = *true*): Whether the face of the n-gon should be rendered. If *false* and `material.hasWireframe` is *true*, the n-gon's wireframe outline will be rendered.
     - **isTwoSided** (boolean = *true*): Whether the n-gon should be visible from behind, as determined by the direction of its face normal.
-        - Should be set to *true* for n-gons that are part of a **mesh** to which you apply rotation, as rotation doesn't apply to normals.
+        - Should be set to *true* for n-gons that are part of a *`mesh`* object to which you apply rotation, as rotation doesn't apply to normals.
     - **allowTransform** (boolean = *true*): Whether the n-gon's vertices should be transformed into screen space prior to rasterization. If *false*, the vertices are assumed to already be in screen space.
         - If *false*, you must ensure that all vertex XY coordinates are within the dimensions of the rendered image.
     - **vertexShading** (string = *"none"*): The type of shading to be used when applying the scene's light sources to the n-gon.
@@ -513,10 +514,10 @@ A polygon made up of *n* vertices, also known as an n-gon. Single-vertex n-gons 
             - "flat": The n-gon's face receives a solid shade based on the angle between the incident light and the n-gon's face normal.
             - "gouraud": Same as "flat" but computed per vertex, resulting in smooth shading across the n-gon's face.
         - For "gouraud" to work, n-gons must have pre-computed smooth vertex normals.
-    - **renderVertexShade** (boolean = *true*): Whether the shading values calculated as per the `vertexShading` property should be used during rendering. If *false*, this shading information won't directly affect the rendered image, but is accessible to pixel shaders.
-    - **allowAlphaBlend** (boolean = *false*): Whether the alpha channel of the `color` property can modify the appearance of the n-gon. If *true*, the n-gon's pixels will be blended with their background according to the alpha value (0 = fully transparent, 255 = fully opaque).
-    - **allowAlphaReject** (boolean = *false*): Whether the alpha channel of the `color` property can modify the appearance of the n-gon. If *true*, the pixel will be drawn only if the alpha value is 255.
-- **normal** (array | vector = *vector(0, 1, 0)*): A vector determining the orientation of the n-gon's face. If given as a `vector` object, represents the face normal. If given as an array, each element must be a `vector` object that represents the normal of the corresponding vertex in the `vertices` parameter, and in this case the n-gon's face normal will be automatically calculated as the normalized average of these vertex normals.
+    - **renderVertexShade** (boolean = *true*): Whether the shading values calculated as per the `material.vertexShading` property should be used during rendering. If *false*, this shading information won't directly affect the rendered image, but is accessible to pixel shaders.
+    - **allowAlphaBlend** (boolean = *false*): Whether the alpha channel of the `*color` property can modify the appearance of the n-gon. If *true*, the n-gon's pixels will be blended with their background according to the alpha value (0 = fully transparent, 255 = fully opaque).
+    - **allowAlphaReject** (boolean = *false*): Whether the alpha channel of the `*color` property can modify the appearance of the n-gon. If *true*, the pixel will be drawn only if the alpha value is 255.
+- **normal** (array | vector = *vector(0, 1, 0)*): A vector determining the orientation of the n-gon's face. If given as a *`vector`* object, represents the face normal. If given as an array, each element must be a *`vector`* object that represents the normal of the corresponding vertex in the `vertices` parameter, and in this case the n-gon's face normal will be automatically calculated as the normalized average of these vertex normals.
 
 ### Returns
 
@@ -524,7 +525,7 @@ An object with the following properties:
 
 - **vertices** (array): The `vertices` parameter.
 - **material** (object): The `material` parameter.
-- **vertexNormals** (array): For each element in the `vertices` parameter, a corresponding `vector` object determining the normal of the vertex.
+- **vertexNormals** (array): For each element in the `vertices` parameter, a corresponding *`vector`* object determining the normal of the vertex.
 - **normal** (vector): The face normal.
 - **mipLevel** (number): The mip level to be used when rendering the n-gon's texture. The value is in the range [0,1], with 0 corresponding to the maximum resolution and 1 the minimum resolution.
 
@@ -547,12 +548,12 @@ Note: In the renderer's coordinate space, X is horizontal (positive = right), an
 
 ### Parameters
 
-- **x** (number = *0*): X coordinate. 
-- **y** (number = *0*): Y coordinate. 
-- **z** (number = *0*): Z coordinate. 
-- **u** (number = *0*): U texel coordinate. 
-- **v** (number = *0*): V texel coordinate. 
-- **w** (number = *1*): W coordinate.
+- **x** (number = *0*): The X coordinate. 
+- **y** (number = *0*): The Y coordinate. 
+- **z** (number = *0*): The Z coordinate. 
+- **u** (number = *0*): The U texel coordinate. 
+- **v** (number = *0*): The V texel coordinate. 
+- **w** (number = *1*): The W coordinate.
 
 ### Returns
 
@@ -572,9 +573,9 @@ A three-component vector.
 
 ### Parameters
 
-- **x** (number = *0*): X coordinate.
-- **y** (number = *0*): Y coordinate.
-- **z** (number = *0*): Z coordinate.
+- **x** (number = *0*): The X coordinate.
+- **y** (number = *0*): The Y coordinate.
+- **z** (number = *0*): The Z coordinate.
 
 ### Returns
 
@@ -616,15 +617,15 @@ Note: Textures with a power-of-two resolution may render faster and support more
 - **data** (object): The texture's data:
     - **width** (number = *0*): The width of the image. Must be in the range [0, 32768].
     - **height** (number = *0*): The height of the image. Must be in the range [0, 32768].
-    - **pixels** (array | string = *[]*): The texture's pixels. The layout of the data is determimned by the `channels` property, and the encoding of the data is determined by the `encoding` property.
+    - **pixels** (array | string = *[]*): The texture's pixels. The layout of the data is determimned by the `data.channels` property, and the encoding of the data is determined by the `data.encoding` property.
     - **channels** (string = *"rgba:8+8+8+8*): Specifies the layout of the pixel data.
         - Possible values:
             - "rgba:5+5+5+1": Each pixel is a 16-bit integer with 5 bits each for red, green, and blue; and 1 bit for alpha.
             - "rgba:8+8+8+8": Each pixel consists of four consecutive 8-bit values for red, green, blue, and alpha.
     - **encoding** (string = *"none"*): Specifies the encoding of the pixel data.
         - Possible values:
-            - "none": The value of the `pixels` property is an array, and its elements are numbers according to the `channels` property.
-            - "base64": The value of the `pixels` property is a string representing a Base64-encoded array whose elements are numbers according to the `channels` property.
+            - "none": The value of the `data.pixels` property is an array, and its elements are numbers according to the `data.channels` property.
+            - "base64": The value of the `data.pixels` property is a string representing a Base64-encoded array whose elements are numbers according to the `data.channels` property.
     - **needsFlip** (boolean = *true*): Whether the input image data should be flipped vertically.
 
 ### Returns
