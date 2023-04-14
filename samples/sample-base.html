@@ -120,22 +120,22 @@
             }
         </script>
         <script>
-            var renderSettings = {
-                scale: 0.25,
+            var baseRenderOptions = {
+                resolution: 0.25,
                 cameraDirection: {x:0, y:0, z:0},
                 cameraPosition: {x:0, y:0, z:-170},
             };
 
-            // Force the scale to initialize to the value set in renderSettings.scale.
+            // Force the scale to initialize to the value set in baseRenderOptions.scale.
             change_scale(0);
 
             function change_scale(dir)
             {
                 const scales = [0.05, 0.10, 0.15, 0.20, 0.25, 0.5, 0.75, 1];
-                const newScaleIdx = Math.max(0, Math.min((scales.length - 1), (scales.indexOf(renderSettings.scale) + Math.sign(dir))));
+                const newScaleIdx = Math.max(0, Math.min((scales.length - 1), (scales.indexOf(baseRenderOptions.resolution) + Math.sign(dir))));
 
-                renderSettings.scale = (scales[newScaleIdx] || scales[0]);
-                document.querySelector(".infobox.scale .value").innerHTML = renderSettings.scale.toFixed(2);
+                baseRenderOptions.resolution = (scales[newScaleIdx] || scales[0]);
+                document.querySelector(".infobox.scale .value").innerHTML = baseRenderOptions.resolution.toFixed(2);
             }
         </script>
         <script>
@@ -177,9 +177,9 @@
                         depthSort: "painter-reverse",
                         useDepthBuffer: true,
                         perspectiveCorrectInterpolation: true,
-                        cameraDirection: renderSettings.cameraDirection,
-                        cameraPosition: renderSettings.cameraPosition,
-                        scale: renderSettings.scale,
+                        cameraDirection: baseRenderOptions.cameraDirection,
+                        cameraPosition: baseRenderOptions.cameraPosition,
+                        resolution: baseRenderOptions.resolution,
                         ...(scene.renderOptions || {}),
                     };
 

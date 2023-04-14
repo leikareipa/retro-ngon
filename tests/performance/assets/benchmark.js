@@ -28,7 +28,7 @@ export async function benchmark(sceneFileName = "",
             window.location.search = urlParams.toString();
         }
 
-        extraRenderOptions.scale = urlParams.get("scale");
+        extraRenderOptions.resolution = Number(urlParams.get("scale"));
     }
     
     const sceneMesh = await load_scene_mesh(sceneFileName, extraModelOptions);

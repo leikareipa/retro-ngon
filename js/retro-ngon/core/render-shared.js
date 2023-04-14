@@ -16,7 +16,11 @@ export const renderShared = {
         state.showGlobalWireframe = Boolean(options.globalWireframe);
         state.lights = options.lights;
 
-        state.renderScale = options.scale;
+        state.renderScale = (
+            (typeof options.resolution === "number")
+                ? options.resolution
+                : 1 // Will use options.width and options.height instead.
+        );
         state.offscreenRenderWidth = options.width;
         state.offscreenRenderHeight = options.height;
 
@@ -243,7 +247,7 @@ export const renderShared = {
             cameraPosition: Rngon.vector(0, 0, 0),
             cameraDirection: Rngon.vector(0, 0, 0),
             state: undefined,
-            scale: 1,
+            resolution: 0.5,
             fov: 43,
             nearPlane: 1,
             farPlane: 1000,
