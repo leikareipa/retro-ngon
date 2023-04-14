@@ -274,7 +274,6 @@ function run_bencmark(sceneMeshes = [],
                 scene: sceneMeshes,
                 options: {
                     useDepthBuffer: true,
-                    perspectiveCorrectInterpolation: true,
                     cameraDirection: Rngon.vector(cameraDirection.x, cameraDirection.y, cameraDirection.z),
                     cameraPosition: cameraPosition,
                     ...extraRenderOptions,

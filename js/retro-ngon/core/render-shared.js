@@ -33,10 +33,7 @@ export const renderShared = {
         state.cameraDirection = options.cameraDirection;
         state.cameraPosition = options.cameraPosition;
 
-        state.usePerspectiveCorrectInterpolation = Boolean(
-            options.perspectiveCorrectTexturing || // <- Name in pre-beta.2.
-            options.perspectiveCorrectInterpolation
-        );
+        state.usePerspectiveInterpolation = Boolean(options.usePerspectiveInterpolation);
 
         state.useFragmentBuffer = Boolean(
             options.useFragmentBuffer ||
@@ -202,9 +199,9 @@ export const renderShared = {
             farPlane: 1000,
             useDepthBuffer: true,
             useFragmentBuffer: false,
+            usePerspectiveInterpolation: true,
             globalWireframe: false,
             hibernateWhenNotOnScreen: true,
-            perspectiveCorrectInterpolation: false,
             auxiliaryBuffers: [],
             lights: [],
             width: 640,

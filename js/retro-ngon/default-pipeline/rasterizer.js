@@ -84,7 +84,7 @@ rasterizer.polygon = function(
         "Overflowing the vertex buffer"
     );
 
-    const interpolatePerspective = Rngon.state.active.usePerspectiveCorrectInterpolation;
+    const interpolatePerspective = Rngon.state.active.usePerspectiveInterpolation;
     const useFragmentBuffer = Rngon.state.active.useFragmentBuffer;
     const useAuxiliaryBuffers = auxiliaryBuffers.length;
     const depthBuffer = (Rngon.state.active.useDepthBuffer? Rngon.state.active.depthBuffer.data : null);
@@ -290,7 +290,7 @@ rasterizer.line = function(
         return;
     }
     
-    const interpolatePerspective = Rngon.state.active.usePerspectiveCorrectInterpolation;
+    const interpolatePerspective = Rngon.state.active.usePerspectiveInterpolation;
     const farPlane = Rngon.state.active.farPlaneDistance;
     const useFragmentBuffer = Rngon.state.active.useFragmentBuffer;
     const depthBuffer = (Rngon.state.active.useDepthBuffer? Rngon.state.active.depthBuffer.data : null);
