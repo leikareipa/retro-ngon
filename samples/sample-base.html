@@ -76,20 +76,6 @@
             document.body.appendChild(rngonScriptElement);
         </script>
         <script>
-            // Transform the given render options to be backwards compatible with older
-            // versions of the renderer (while maintaining support for the current version,
-            // as well).
-            function make_render_options_backwards_compatible(renderOptions = {})
-            {
-                // Pre-alpha.8 didn't implement a default case for the depth-sorting
-                // mode and will throw if an unrecognized mode is used.
-                if ((Rngon.version.family == "alpha") &&
-                    (Rngon.version.major < 8))
-                {
-                    renderOptions.depthSort = "painter";
-                }
-            }
-
             function polyfill_api()
             {
                 // Post-beta.5 API renaming.
@@ -174,7 +160,6 @@
                     const scene = sample.tick();
 
                     const renderOptions = {
-                        depthSort: "painter-reverse",
                         useDepthBuffer: true,
                         perspectiveCorrectInterpolation: true,
                         cameraDirection: baseRenderOptions.cameraDirection,
@@ -190,8 +175,6 @@
                         queue_new_frame(frameTimeDeltaMs);
                         return;
                     }
-
-                    make_render_options_backwards_compatible(renderOptions);
 
                     // We have two <canvas> elements available, one for normal rendering and the
                     // other for paletted rendering. Based on which the user has requested, we

@@ -38,9 +38,6 @@ function default_state() {
             clearValue: Infinity,
         },
 
-        // A string identifying the kind of depth sorting to be done prior to rasterization.
-        depthSortingMode: undefined,
-
         auxiliaryBuffers: [],
 
         // Whether to render into an indexed-color (paletted) pixel buffer.

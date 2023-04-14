@@ -97,7 +97,6 @@ export function surface(canvasElement)
                 }
 
                 Rngon.renderShared.mark_npot_textures_in_ngon_cache();
-                Rngon.renderShared.depth_sort_ngon_cache(state.depthSortingMode);
             }
 
             // Render the n-gons from the n-gon cache. The rendering will go into the

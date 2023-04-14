@@ -24,8 +24,6 @@ export const renderShared = {
         state.offscreenRenderWidth = options.width;
         state.offscreenRenderHeight = options.height;
 
-        state.depthSortingMode = options.depthSort;
-
         state.auxiliaryBuffers = options.auxiliaryBuffers;
 
         state.nearPlaneDistance = options.nearPlane;
@@ -164,55 +162,6 @@ export const renderShared = {
         return;
     },
 
-    // Sorts all vertices in the n-gon cache by their Z coordinate.
-    depth_sort_ngon_cache: function(depthSortinMode = "")
-    {
-        const ngons = Rngon.state.active.ngonCache.ngons;
-
-        switch (depthSortinMode)
-        {
-            case "none": break;
-
-            // Painter's algorithm. Sort back-to-front; i.e. so that n-gons furthest from the camera
-            // will be first in the list.
-            case "painter":
-            {
-                ngons.sort((ngonA, ngonB)=>
-                {
-                    // Separate inactive n-gons (which are to be ignored when rendering the current
-                    // frame) from the n-gons we're intended to render.
-                    const a = (ngonA.isActive? (ngonA.vertices.reduce((acc, v)=>(acc + v.z), 0) / ngonA.vertices.length) : -Number.MAX_VALUE);
-                    const b = (ngonB.isActive? (ngonB.vertices.reduce((acc, v)=>(acc + v.z), 0) / ngonB.vertices.length) : -Number.MAX_VALUE);
-
-                    return ((a === b)? 0 : ((a < b)? 1 : -1));
-                });
-
-                break;
-            }
-            
-            // Sort front-to-back; i.e. so that n-gons closest to the camera will be first in the
-            // list. When used together with depth buffering, allows for early rejection of occluded
-            // pixels during rasterization.
-            case "painter-reverse":
-            default:
-            {
-                ngons.sort((ngonA, ngonB)=>
-                {
-                    // Separate inactive n-gons (which are to be ignored when rendering the current
-                    // frame) from the n-gons we're intended to render.
-                    const a = (ngonA.isActive? (ngonA.vertices.reduce((acc, v)=>(acc + v.z), 0) / ngonA.vertices.length) : Number.MAX_VALUE);
-                    const b = (ngonB.isActive? (ngonB.vertices.reduce((acc, v)=>(acc + v.z), 0) / ngonB.vertices.length) : Number.MAX_VALUE);
-
-                    return ((a === b)? 0 : ((a > b)? 1 : -1));
-                });
-
-                break;
-            }
-        }
-
-        return;
-    },
-
     // Marks any non-power-of-two affine-mapped faces in the n-gon cache as using the
     // non-power-of-two affine texture mapper. This needs to be done since the default
     // affine mapper expects textures to be power-of-two.
@@ -251,7 +200,6 @@ export const renderShared = {
             fov: 43,
             nearPlane: 1,
             farPlane: 1000,
-            depthSort: "painter-reverse",
             useDepthBuffer: true,
             useFragmentBuffer: false,
             globalWireframe: false,

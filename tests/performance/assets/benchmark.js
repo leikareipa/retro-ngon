@@ -273,7 +273,6 @@ function run_bencmark(sceneMeshes = [],
                 target: canvasId,
                 scene: sceneMeshes,
                 options: {
-                    depthSort: "painter-reverse",
                     useDepthBuffer: true,
                     perspectiveCorrectInterpolation: true,
                     cameraDirection: Rngon.vector(cameraDirection.x, cameraDirection.y, cameraDirection.z),

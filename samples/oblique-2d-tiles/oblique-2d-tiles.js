@@ -179,7 +179,6 @@ export const sample = {
     
         return {
             renderOptions: {
-                depthSort: "none",
                 useDepthBuffer: false,
                 get lights()
                 {
@@ -193,8 +192,7 @@ export const sample = {
                         }),
 
                         // A light that follows the mouse cursor.
-                        Rngon.light(Rngon.vector((mousePos.x * renderSettings.scale),
-                                                             (mousePos.y * renderSettings.scale)),{
+                        Rngon.light(Rngon.vector((mousePos.x * baseRenderOptions .resolution), (mousePos.y * baseRenderOptions.resolution)), {
                             intensity: 20,
                         }),
                     ];
