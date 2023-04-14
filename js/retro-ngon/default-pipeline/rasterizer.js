@@ -5,9 +5,9 @@
  * 
  */
 
-import {generic_fill} from "./rasterize/raster-shader-generic-fill.js";
-import {plain_solid_fill} from "./rasterize/raster-shader-plain-solid-fill.js";
-import {plain_textured_fill} from "./rasterize/raster-shader-plain-textured-fill.js";
+import {generic_fill} from "./raster-shaders/raster-shader-generic-fill.js";
+import {plain_solid_fill} from "./raster-shaders/raster-shader-plain-solid-fill.js";
+import {plain_textured_fill} from "./raster-shaders/raster-shader-plain-textured-fill.js";
 
 const maxNumVertsPerPolygon = 500;
 
@@ -35,7 +35,7 @@ const vertexSorters = {
 // code, please benchmark its effects on performance first - maintaining or
 // improving performance would be great, losing performance would be bad.
 //
-export function rasterize(auxiliaryBuffers = [])
+export function rasterizer(auxiliaryBuffers = [])
 {
     for (let n = 0; n < Rngon.state.active.ngonCache.count; n++)
     {
@@ -49,17 +49,17 @@ export function rasterize(auxiliaryBuffers = [])
         }
         else if (ngon.vertices.length == 1)
         {
-            Rngon.baseModules.rasterize.point(ngon.vertices[0], ngon.material, n);
+            Rngon.defaultPipeline.rasterizer.point(ngon.vertices[0], ngon.material, n);
             continue;
         }
         else if (ngon.vertices.length == 2)
         {
-            Rngon.baseModules.rasterize.line(ngon.vertices[0], ngon.vertices[1], ngon.material.color, n, false);
+            Rngon.defaultPipeline.rasterizer.line(ngon.vertices[0], ngon.vertices[1], ngon.material.color, n, false);
             continue;
         }
         else
         {
-            Rngon.baseModules.rasterize.polygon(ngon, n, auxiliaryBuffers);
+            Rngon.defaultPipeline.rasterizer.polygon(ngon, n, auxiliaryBuffers);
             continue;
         }
     }
@@ -68,7 +68,7 @@ export function rasterize(auxiliaryBuffers = [])
 }
 
 // Rasterizes a polygon with 3+ vertices into the render's pixel buffer.
-rasterize.polygon = function(
+rasterizer.polygon = function(
     ngon = Rngon.ngon(),
     ngonIdx = 0,
     auxiliaryBuffers = []
@@ -157,12 +157,12 @@ rasterize.polygon = function(
     {
         for (let l = 1; l < numLeftVerts; l++)
         {
-            Rngon.baseModules.rasterize.line(leftVerts[l-1], leftVerts[l], material.wireframeColor, ngonIdx, true);
+            Rngon.defaultPipeline.rasterizer.line(leftVerts[l-1], leftVerts[l], material.wireframeColor, ngonIdx, true);
         }
 
         for (let r = 1; r < numRightVerts; r++)
         {
-            Rngon.baseModules.rasterize.line(rightVerts[r-1], rightVerts[r], material.wireframeColor, ngonIdx, true);
+            Rngon.defaultPipeline.rasterizer.line(rightVerts[r-1], rightVerts[r], material.wireframeColor, ngonIdx, true);
         }
     }
 
@@ -277,7 +277,7 @@ rasterize.polygon = function(
 }
 
 // Rasterizes a line between the two given vertices into the render's pixel buffer.
-rasterize.line = function(
+rasterizer.line = function(
     vert1 = Rngon.vertex(),
     vert2 = Rngon.vertex(),
     color = Rngon.color(),
@@ -422,7 +422,7 @@ rasterize.line = function(
     }
 };
 
-rasterize.point = function(
+rasterizer.point = function(
     vertex = Rngon.vertex(),
     material = Rngon.material(),
     ngonIdx = 0
@@ -510,7 +510,7 @@ rasterize.point = function(
 }
 
 // For emulating pixel transparency with stipple patterns.
-rasterize.stipple = (function()
+rasterizer.stipple = (function()
 {
     const patterns = [
         // ~99% transparent.

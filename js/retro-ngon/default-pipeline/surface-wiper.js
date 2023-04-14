@@ -6,7 +6,7 @@
  */
 
 // Resets the render surface's buffers to their initial contents.
-export function surface_wipe()
+export function surface_wiper()
 {
     Rngon.state.active.pixelBuffer.data.fill(0);
 

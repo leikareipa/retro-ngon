@@ -115,7 +115,7 @@ function rs_wireframe({
     for (let i = 0; i < numLeftEdges; i++)
     {
         const e = leftEdges[i];
-        this.Rngon.baseModules.rasterize.line(
+        this.Rngon.defaultPipeline.rasterizer.line(
             this.Rngon.vertex(e.start.x, e.top),
             this.Rngon.vertex((e.start.x + (e.delta.x * (e.bottom - e.top))), e.bottom),
         );
@@ -124,7 +124,7 @@ function rs_wireframe({
     for (let i = 0; i < numRightEdges; i++)
     {
         const e = rightEdges[i];
-        this.Rngon.baseModules.rasterize.line(
+        this.Rngon.defaultPipeline.rasterizer.line(
             this.Rngon.vertex(e.start.x, e.top),
             this.Rngon.vertex((e.start.x + (e.delta.x * (e.bottom - e.top))), e.bottom),
         );
@@ -135,7 +135,7 @@ function rs_wireframe({
     {
         const e1 = leftEdges[0];
         const e2 = rightEdges[0];
-        this.Rngon.baseModules.rasterize.line(
+        this.Rngon.defaultPipeline.rasterizer.line(
             this.Rngon.vertex(e1.start.x, e1.top),
             this.Rngon.vertex(e2.start.x, e2.top),
         );
@@ -145,7 +145,7 @@ function rs_wireframe({
     {
         const e1 = leftEdges[numLeftEdges-1];
         const e2 = rightEdges[numRightEdges-1];
-        this.Rngon.baseModules.rasterize.line(
+        this.Rngon.defaultPipeline.rasterizer.line(
             this.Rngon.vertex((e1.start.x + (e1.delta.x * (e1.bottom - e1.top))), e1.bottom),
             this.Rngon.vertex((e2.start.x + (e2.delta.x * (e2.bottom - e2.top))), e2.bottom),
         );
@@ -162,7 +162,7 @@ function rs_scanlines({
     numRightEdges,
 })
 {
-    const ngon = Rngon.state.active.ngonCache.ngons[ngonIdx];
+    const ngon = this.Rngon.state.active.ngonCache.ngons[ngonIdx];
     const pixelBufferClamped8 = this.Rngon.state.active.pixelBuffer.data;
     const pixelBufferWidth = this.Rngon.state.active.pixelBuffer.width;
     const depthBuffer = (this.Rngon.state.active.useDepthBuffer

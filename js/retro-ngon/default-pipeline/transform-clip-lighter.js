@@ -7,7 +7,7 @@
 
 // Applies lighting to the given n-gons, and transforms them into screen space
 // for rendering. The processed n-gons are stored in the internal n-gon cache.
-export function transform_clip_light(
+export function transform_clip_lighter(
     ngons = [],
     objectMatrix = [],
     cameraMatrix = [],

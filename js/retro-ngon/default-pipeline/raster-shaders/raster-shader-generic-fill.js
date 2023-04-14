@@ -154,7 +154,7 @@ export function generic_fill({
                     // material.allowAlphaReject.
 
                     if (material.allowAlphaBlend &&
-                        Rngon.baseModules.rasterize.stipple(material.color.alpha, x, y))
+                        Rngon.defaultPipeline.rasterizer.stipple(material.color.alpha, x, y))
                     {
                         continue;
                     }
@@ -289,7 +289,7 @@ export function generic_fill({
                     }
 
                     if (material.allowAlphaBlend &&
-                        Rngon.baseModules.rasterize.stipple(material.color.alpha, x, y))
+                        Rngon.defaultPipeline.rasterizer.stipple(material.color.alpha, x, y))
                     {
                         continue;
                     }

@@ -51,7 +51,7 @@ export const renderShared = {
                 ? pipeline.rasterizer
                 : (pipeline.rasterizer === null)
                     ? null
-                    : Rngon.baseModules.rasterize
+                    : Rngon.defaultPipeline.rasterizer
         );
 
         state.modules.transform_clip_light = (
@@ -59,7 +59,7 @@ export const renderShared = {
                 ? pipeline.transformClipLighter
                 : (pipeline.transformClipLighter === null)
                     ? null
-                    : Rngon.baseModules.transform_clip_light
+                    : Rngon.defaultPipeline.transform_clip_lighter
         );
 
         state.modules.surface_wipe = (
@@ -67,7 +67,7 @@ export const renderShared = {
                 ? pipeline.surfaceWiper
                 : (pipeline.surfaceWiper === null)
                     ? null
-                    : Rngon.baseModules.surface_wipe
+                    : Rngon.defaultPipeline.surface_wiper
         );
 
         state.usePixelShader = Boolean(pipeline.pixelShader);
