@@ -289,9 +289,7 @@ Implemented in [./js/retro-ngon/api/render.js](./js/retro-ngon/api/render.js).
             - **renderWidth** (number): The width of the rendered image.
             - **renderHeight** (number): The height of the rendered image.
             - **pixelBuffer** (Uint8ClampedArray): The pixels of the rendered image (32-bit RGBA).
-            - **ngonCache** (object): The screen-space n-gons that were rasterized:
-                - **count** (number): The number of n-gons.
-                - **ngons** (array): The n-gons, as an array of *`ngon`* objects. The length of this array may be larger than `count` due to caching, but only the first `count` elements are valid for this rendering.
+            - **ngonCache** (array): The screen-space n-gons that were rasterized.
             - **fragmentBuffer** (array): For each pixel in `pixelBuffer`, an object containing metadata about the pixel:
                 - **ngonIdx** (number): Index in the `ngonCache` array identifying the pixel's n-gon.
                 - **textureUScaled** (number): The U texel coordinate that was used to fetch this pixel. In the range from 0 to the width of the texture.
@@ -514,6 +512,7 @@ An object with the following properties:
 - **z** (number): The `z` parameter.
 - **u** (number): The `u` parameter.
 - **v** (number): The `v` parameter.
+- **shade** (number): A positive number defining the vertex's degree of shade, with 0 being fully unlit, 0.5 half lit, and 1 fully lit. The value is computed at render-time. 
 
 ## vector([x[, y[, z]]])
 
