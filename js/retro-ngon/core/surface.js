@@ -96,6 +96,21 @@ export function surface(canvasElement)
                     };
                 }
 
+                // When using a depth buffer, we can get better performance by pre-sorting
+                // the n-gons in reverse painter order, where the closest n-gons are rendered
+                // first, as it allows for early discarding of occluded pixels.
+                if (state.useDepthBuffer)
+                {
+                    state.ngonCache.ngons.sort((ngonA, ngonB)=>
+                    {
+                        // Separate inactive n-gons (which are to be ignored when rendering the current
+                        // frame) from the n-gons we're intended to render.
+                        const a = (ngonA.isActive? (ngonA.vertices.reduce((acc, v)=>(acc + v.z), 0) / ngonA.vertices.length) : Number.MAX_VALUE);
+                        const b = (ngonB.isActive? (ngonB.vertices.reduce((acc, v)=>(acc + v.z), 0) / ngonB.vertices.length) : Number.MAX_VALUE);
+                        return ((a === b)? 0 : ((a > b)? 1 : -1));
+                    });
+                }
+
                 Rngon.renderShared.mark_npot_textures_in_ngon_cache();
             }
 
