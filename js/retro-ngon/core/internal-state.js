@@ -38,8 +38,6 @@ function default_state() {
             clearValue: Infinity,
         },
 
-        auxiliaryBuffers: [],
-
         // Whether to render into an indexed-color (paletted) pixel buffer.
         usePalette: false,
         palette: undefined,

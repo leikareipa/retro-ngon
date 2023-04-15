@@ -35,7 +35,7 @@ const vertexSorters = {
 // code, please benchmark its effects on performance first - maintaining or
 // improving performance would be great, losing performance would be bad.
 //
-export function rasterizer(auxiliaryBuffers = [])
+export function rasterizer()
 {
     for (let n = 0; n < Rngon.state.active.ngonCache.count; n++)
     {
@@ -59,7 +59,7 @@ export function rasterizer(auxiliaryBuffers = [])
         }
         else
         {
-            Rngon.defaultPipeline.rasterizer.polygon(ngon, n, auxiliaryBuffers);
+            Rngon.defaultPipeline.rasterizer.polygon(ngon, n);
             continue;
         }
     }
@@ -71,7 +71,6 @@ export function rasterizer(auxiliaryBuffers = [])
 rasterizer.polygon = function(
     ngon = Rngon.ngon(),
     ngonIdx = 0,
-    auxiliaryBuffers = []
 )
 {
     Rngon.assert?.(
@@ -86,7 +85,6 @@ rasterizer.polygon = function(
 
     const interpolatePerspective = Rngon.state.active.usePerspectiveInterpolation;
     const useFragmentBuffer = Rngon.state.active.useFragmentBuffer;
-    const useAuxiliaryBuffers = auxiliaryBuffers.length;
     const depthBuffer = (Rngon.state.active.useDepthBuffer? Rngon.state.active.depthBuffer.data : null);
     const renderWidth = Rngon.state.active.pixelBuffer.width;
     const renderHeight = Rngon.state.active.pixelBuffer.height;
@@ -128,7 +126,6 @@ rasterizer.polygon = function(
             !material.texture &&
             depthBuffer &&
             !useFragmentBuffer &&
-            !useAuxiliaryBuffers &&
             !Rngon.state.active.usePalette &&
             !material.allowAlphaReject &&
             !material.allowAlphaBlend
@@ -147,7 +144,6 @@ rasterizer.polygon = function(
             numLeftEdges,
             numRightEdges,
             pixelBuffer32,
-            auxiliaryBuffers
         });
     }
 

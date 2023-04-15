@@ -9,7 +9,6 @@
 // - No texture
 // - No pixel shader
 // - No alpha operations
-// - No auxiliary buffers
 // - Depth buffering enabled
 export function plain_solid_fill({
     ngonIdx,

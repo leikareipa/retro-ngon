@@ -26,7 +26,6 @@ export function material(properties = {})
             allowTransform: true,
             allowAlphaReject: false,
             allowAlphaBlend: false,
-            auxiliary: {},
         }
     );
 

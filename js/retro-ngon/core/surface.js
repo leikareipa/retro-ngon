@@ -103,7 +103,7 @@ export function surface(canvasElement)
             // renderer's internal pixel buffer, Rngon.state.active.pixelBuffer.
             if (state.modules.rasterize)
             {
-                state.modules.rasterize(state.auxiliaryBuffers);
+                state.modules.rasterize();
 
                 if (state.usePixelShader)
                 {

@@ -27,7 +27,6 @@ export function generic_fill({
     numLeftEdges,
     numRightEdges,
     pixelBuffer32,
-    auxiliaryBuffers
 })
 {
     if (!numLeftEdges || !numRightEdges) return true;
@@ -382,15 +381,6 @@ export function generic_fill({
                         fragment.worldY = (iplWorldY / iplInvW);
                         fragment.worldZ = (iplWorldZ / iplInvW);
                         fragment.w = (1 / iplInvW);
-                    }
-
-                    for (let b = 0; b < auxiliaryBuffers.length; b++)
-                    {
-                        if (material.auxiliary[auxiliaryBuffers[b].property] !== null)
-                        {
-                            // Buffers are expected to consist of one element per pixel.
-                            auxiliaryBuffers[b].buffer[pixelBufferIdx] = material.auxiliary[auxiliaryBuffers[b].property];
-                        }
                     }
                 }
             }

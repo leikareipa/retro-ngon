@@ -24,8 +24,6 @@ export const renderShared = {
         state.offscreenRenderWidth = options.width;
         state.offscreenRenderHeight = options.height;
 
-        state.auxiliaryBuffers = options.auxiliaryBuffers;
-
         state.nearPlaneDistance = options.nearPlane;
         state.farPlaneDistance = options.farPlane;
 
@@ -202,7 +200,6 @@ export const renderShared = {
             usePerspectiveInterpolation: true,
             globalWireframe: false,
             hibernateWhenTargetNotVisible: true,
-            auxiliaryBuffers: [],
             lights: [],
             width: 640,
             height: 480,
