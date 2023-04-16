@@ -23,7 +23,7 @@ export function material(properties = {})
             hasWireframe: false,
             hasFill: true,
             isTwoSided: true,
-            allowTransform: true,
+            isInScreenSpace: false,
             allowAlphaReject: false,
             allowAlphaBlend: false,
         }

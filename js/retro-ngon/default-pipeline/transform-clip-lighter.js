@@ -85,7 +85,7 @@ export function transform_clip_lighter(
         // Transform vertices into screen space and apply clipping. We'll do the transforming
         // in steps: first into world space, then into clip space, and finally into screen
         // space.
-        if (cachedNgon.material.allowTransform)
+        if (!cachedNgon.material.isInScreenSpace)
         {
             // World space. Any built-in lighting is applied, if requested by the n-gon's
             // material.

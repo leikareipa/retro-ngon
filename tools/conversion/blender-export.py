@@ -83,7 +83,7 @@ with open(outFilename, 'w') as f:
             "ambientLightLevel",
             "hasWireframe",
             "isTwoSided",
-            "allowTransform",
+            "isInScreenSpace",
         ]
         for customProperty in availableCustomProperties:
             if customProperty in material:

@@ -444,35 +444,28 @@ A polygon made up of *n* vertices, also known as an n-gon. Single-vertex n-gons 
 - **material** (object): The material properties that define the n-gon's appearance:
     - **color** (color = *color(255, 255, 255, 255)*): Base color. If the `material.texture` property is *null*, the n-gon will be rendered in this color. Otherwise, the renderer will multiply texel colors by (C / 255), where C is the corresponding channel of the base color.
     - **texture** (texture | null = *null*): The image to be rendered onto the n-gon's face. If *null*, or if there are fewer than 3 vertices, the n-gon will be rendered without a texture.
-    - **textureMapping** (string = *"ortho"*): The method by which `material.texture` should be mapped onto the n-gon's face.
-        - Possible values:
-            - "ortho": The texture is mapped using vertex UV coordinates that are generated automatically at render-time in 2D screen space. This method only works for planar n-gons; rotating the n-gon will produce a skewed mapping.
-            - "affine": Affine texture-mapping using the UV coordinates provided by the *`vertex`* objects in the `vertices` parameter.
-        - For "affine" to perform perspective-correct UV mapping, enable the `options.usePerspectiveInterpolation` property to *`render()`*.
-    - **textureFiltering** (string = *"none"*): The filtering effect to be applied when rasterizing `material.texture`.
-        - Possible values:
-            - "none": No filtering. The texture will appear pixelated when viewed up close.
-            - "dither": Faux bilinear filtering by jittering texel coordinates.
-            - "bilinear": Bilinear filtering.
-    - **uvWrapping** (string = *"repeat"*): How the renderer should scale UV coordinates.
-        - Possible values:
-            - "clamp": UV coordinates are clamped to [0,1].
-            - "repeat": UV coordinates' integer part is discarded. 
-        - The "repeat" option is available only for power-of-two textures. Others will fall back to "clamp".
+    - **textureMapping** (string = *"ortho"*): The method by which `material.texture` should be mapped onto the n-gon's face:
+        - "ortho": Map by automatically-generated UV coordinates in 2D screen space. Disregards perspective and rotation. UV coordinates provided by the n-gon's *`vertex`* objects are ignored.
+        - "affine": Affine texture-mapping using the UV coordinates provided by the n-gon's *`vertex`* objects. For perspective-correct affine mapping, also enable the `options.usePerspectiveInterpolation` property to *`render()`*.
+    - **textureFiltering** (string = *"none"*): The filtering effect to be applied when rasterizing `material.texture`:
+        - "none": No filtering. The texture will appear pixelated when viewed up close.
+        - "dither": Faux bilinear filtering by jittering texel coordinates.
+        - "bilinear": Bilinear filtering.
+    - **uvWrapping** (string = *"repeat"*): How the renderer should scale UV coordinates:
+        - "clamp": Clamp UV coordinates to [0,1].
+        - "repeat": Discard UV coordinates' integer part. This option is available only for power-of-two textures; others will fall back to "clamp".
     - **hasWireframe** (boolean = *false*): Whether the n-gon should be rendered with a wireframe outline.
         - Also see the `wireframeColor` property.
     - **wireframeColor** (color = *color(0, 0, 0)*): If the `material.hasWireframe` property is *true*, this value sets the wireframe's color.
     - **hasFill** (boolean = *true*): Whether the face of the n-gon should be rendered. If *false* and `material.hasWireframe` is *true*, the n-gon's wireframe outline will be rendered.
     - **isTwoSided** (boolean = *true*): Whether the n-gon should be visible from behind, as determined by the direction of its face normal.
         - Should be set to *true* for n-gons that are part of a *`mesh`* object to which you apply rotation, as rotation doesn't apply to normals.
-    - **allowTransform** (boolean = *true*): Whether the n-gon's vertices should be transformed into screen space prior to rasterization. If *false*, the vertices are assumed to already be in screen space.
-        - If *false*, you must ensure that all vertex XY coordinates are within the dimensions of the rendered image.
-    - **vertexShading** (string = *"none"*): The type of shading to be used when applying the scene's light sources to the n-gon.
-        - Possible values:
-            - "none": Light sources do not affect the appearance of the n-gon.
-            - "flat": The n-gon's face receives a solid shade based on the angle between the incident light and the n-gon's face normal.
-            - "gouraud": Same as "flat" but computed per vertex, resulting in smooth shading across the n-gon's face.
-        - For "gouraud" to work, n-gons must have pre-computed smooth vertex normals.
+    - **isInScreenSpace** (boolean = *false*): Whether the XY coordinates of the n-gon's vertices are in screen space. If they are, the renderer won't transform them further (e.g. according to camera position or mesh transformations) before rasterization.
+        - If *true*, you must ensure that all vertex XY coordinates are within the boundaries of the rendered image.
+    - **vertexShading** (string = *"none"*): The type of shading to be used when applying the scene's light sources to the n-gon:
+        - "none": Light sources do not affect the appearance of the n-gon.
+        - "flat": The n-gon's face receives a solid shade based on the angle between the incident light and the n-gon's face normal.
+        - "gouraud": Same as "flat" but computed per vertex, resulting in smooth shading across the n-gon's face. For this to work, n-gons must have pre-computed smooth vertex normals.
     - **renderVertexShade** (boolean = *true*): Whether the shading values calculated as per the `material.vertexShading` property should be used during rendering. If *false*, this shading information won't directly affect the rendered image, but is accessible to pixel shaders.
     - **allowAlphaBlend** (boolean = *false*): Whether the alpha channel of the `*color` property can modify the appearance of the n-gon. If *true*, the n-gon's pixels will be blended with their background according to the alpha value (0 = fully transparent, 255 = fully opaque).
     - **allowAlphaReject** (boolean = *false*): Whether the alpha channel of the `*color` property can modify the appearance of the n-gon. If *true*, the pixel will be drawn only if the alpha value is 255.
@@ -576,17 +569,15 @@ Note: Textures with a power-of-two resolution may render faster and support more
 ### Parameters
 
 - **data** (object): The texture's data:
-    - **width** (number = *0*): The width of the image. Must be in the range [0, 32768].
-    - **height** (number = *0*): The height of the image. Must be in the range [0, 32768].
+    - **width** (number = *0*): The width of the image. Must be a positive value.
+    - **height** (number = *0*): The height of the image. Must be a positive value.
     - **pixels** (array | string = *[]*): The texture's pixels. The layout of the data is determimned by the `data.channels` property, and the encoding of the data is determined by the `data.encoding` property.
-    - **channels** (string = *"rgba:8+8+8+8*): Specifies the layout of the pixel data.
-        - Possible values:
-            - "rgba:5+5+5+1": Each pixel is a 16-bit integer with 5 bits each for red, green, and blue; and 1 bit for alpha.
-            - "rgba:8+8+8+8": Each pixel consists of four consecutive 8-bit values for red, green, blue, and alpha.
-    - **encoding** (string = *"none"*): Specifies the encoding of the pixel data.
-        - Possible values:
-            - "none": The value of the `data.pixels` property is an array, and its elements are numbers according to the `data.channels` property.
-            - "base64": The value of the `data.pixels` property is a string representing a Base64-encoded array whose elements are numbers according to the `data.channels` property.
+    - **channels** (string = *"rgba:8+8+8+8"*): Specifies the layout of the pixel data:
+        - "rgba:5+5+5+1": Each pixel is a 16-bit integer with 5 bits each for red, green, and blue; and 1 bit for alpha.
+        - "rgba:8+8+8+8": Each pixel consists of four consecutive 8-bit values for red, green, blue, and alpha.
+    - **encoding** (string = *"none"*): Specifies the encoding of the pixel data:
+        - "none": The value of the `data.pixels` property is an array, and its elements are numbers according to the `data.channels` property.
+        - "base64": The value of the `data.pixels` property is a string representing a Base64-encoded array whose elements are numbers according to the `data.channels` property.
     - **needsFlip** (boolean = *true*): Whether the input image data should be flipped vertically.
 
 ### Returns

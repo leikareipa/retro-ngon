@@ -114,7 +114,6 @@ export const renderShared = {
             (ngonCache.ngons.length < totalNgonCount))
         {
             const lengthDelta = (totalNgonCount - ngonCache.ngons.length);
-
             ngonCache.ngons.push(...new Array(lengthDelta).fill().map(e=>Rngon.ngon()));
         }
 
@@ -148,7 +147,6 @@ export const renderShared = {
             (vertexCache.vertices.length < totalVertexCount))
         {
             const lengthDelta = (totalVertexCount - vertexCache.vertices.length);
-
             vertexCache.vertices.push(...new Array(lengthDelta).fill().map(e=>Rngon.vertex()));
         }
 

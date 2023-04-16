@@ -150,7 +150,7 @@ export const sample = {
                                            Rngon.vertex((posX + groundTileWidth), (startY + groundTileHeight)),
                                            Rngon.vertex((posX + groundTileWidth),  startY)], {
                         texture: (((Math.floor(this.camera.pos.x - posX) % 2) == 0)? grass1 : grass2),
-                        allowTransform: false,
+                        isInScreenSpace: true,
                         vertexShading: ((parent.TIME_TYPE == "Night")? "gouraud" : "none"),
                     }));
                 }
@@ -171,7 +171,7 @@ export const sample = {
                                    Rngon.vertex((offsX + groundTileWidth),  offsY),
                                    Rngon.vertex((offsX + groundTileWidth), (offsY - decor.object.height))], {
                 texture: decor.object,
-                allowTransform: false,
+                isInScreenSpace: true,
                 vertexShading: (((parent.TIME_TYPE == "Night") && !decor.lightEmitting)? "gouraud" : "none"),
                 color: Rngon.color(255, 255, 255, (decor.transparent? 125 : 255)),
             }));
