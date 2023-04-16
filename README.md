@@ -1,6 +1,6 @@
 # The retro n-gon renderer
 
-A well-featured retro-themed 3D software renderer for the HTML5 \<canvas\> (also supports off-screen rendering).
+A low-level retro-themed 3D software renderer for the HTML5 \<canvas\> (also supports off-screen rendering).
 
 You can view various interactive render samples [here](https://www.tarpeeksihyvaesoft.com/experimental/retro-ngon/samples/).
 
@@ -15,7 +15,6 @@ You can view various interactive render samples [here](https://www.tarpeeksihyva
 
 ## Main features
 
-- Straightforward API
 - Genuine retro aesthetics
 - Customizable render pipeline
 - Reasonable performance (for retro uses)
@@ -25,8 +24,6 @@ You can view various interactive render samples [here](https://www.tarpeeksihyva
 Being a retro-oriented software renderer written in JavaScript, the retro n-gon renderer thrives in low resolutions and low polycounts, its performance generally lacking for modern-style rendering.
 
 I'd generally expect the renderer to find a home powering nostalgia projects reminiscent of the 90s and early 2000. Retro-themed games, model visualization, etc.
-
-With its relatively simple API, this renderer may also be a good choice for prototyping.
 
 ## Documentation
 
@@ -71,6 +68,7 @@ Rngon.render({
     target: "canvas",
     scene: [quadMesh],
     options: {
+        resolution: 1,
         cameraPosition: Rngon.vector(0, 0, -5),
     },
 });
@@ -254,13 +252,22 @@ The renderer's public API consists of the following functions:
 
 All but *`render()`* and *`render_async()`* are factory functions, i.e. their purpose is to construct and return an object based on the input arguments.
 
+The API functions are accessible via the global `Rngon` namespace after you've imported the renderer's script in your application:
+
+```html
+<script src="distributable/rngon.js"></script>
+<script>
+    console.log(Rngon.texture) // ƒ texture(data = {}) ...
+</script>
+```
+
 ## render({target, scene, options, pipeline})
 
 Renders meshes into a 32-bit RGBA pixel buffer, and optionally displays the image on a \<canvas\> element.
 
 This function blocks until the rendering is completed. For non-blocking rendering, see [render_async()](#render_asyncmeshes-options-rngonurl).
 
-Implemented in [./js/retro-ngon/api/render.js](./js/retro-ngon/api/render.js).
+(Implemented in [./js/retro-ngon/api/render.js](./js/retro-ngon/api/render.js).)
 
 ### Parameters
 
@@ -302,8 +309,8 @@ Implemented in [./js/retro-ngon/api/render.js](./js/retro-ngon/api/render.js).
                 - **shade** (number): The lightness level, in the range [0,1]. 
             - **cameraPosition** (vector): The world-space coordinates from which the scene is being rendered.
         - Note: `options.useFragmentBuffer` must be set to *true* if the pixel shader accesses the fragment buffer. The renderer will in most cases automatically detect this and set the property accordingly, but in some cases you may need to manually assign it.
-    - **vertexShader** (function | null = *null*): A function to be called by `pipeline.transformClipLighter` for each of the scene's n-gons, to apply vertex-shading effects; or disabled if *null*. The function will be called when the n-gon has been transformed into world-space coordinates but prior to clipping and rasterization. See the [vertex shader samples](./samples/vertex-shaders/vertex-shaders.js) for examples of usage.
-        - Function signature: vertexShader({ngon, cameraPosition}) {..}. The function returns nothing.
+    - **vertexShader** (function | null = *null*): A function to be called by `pipeline.transformClipLighter` for each of the scene's n-gons, to apply effects to the properties of the n-gon prior to rasterization; or disabled if *null*. The function will be called when the n-gon has been transformed into world-space coordinates. See the [vertex shader samples](./samples/vertex-shaders/vertex-shaders.js) for examples of usage.
+        - Function signature: vertexShader(ngon, cameraPosition) {..}. The function returns nothing.
             - **ngon** (*ngon*): The target n-gon, in world-space coordinates and prior to clipping.
             - **cameraPosition** (vector): The world-space coordinates from which the scene is being rendered.
 
@@ -319,13 +326,17 @@ An object with the following properties:
 ### Sample usage
 
 ```javascript
-// Create a mesh out of a single-vertex n-gon, and render it onto a canvas.
-const ngon = Rngon.ngon(
-    [Rngon.vertex(0, 0, 0)], {
+// Create a mesh out of a quad and render it onto a canvas.
+
+const quad = Rngon.ngon([
+    Rngon.vertex(-1, -1, 0),
+    Rngon.vertex(1, -1, 0),
+    Rngon.vertex(1, 1, 0),
+    Rngon.vertex(-1, 1, 0)], {
         color: Rngon.color(255, 255, 0),
 });
 
-const mesh = Rngon.mesh([ngon], {
+const mesh = Rngon.mesh([quad], {
     rotation: Rngon.vector(0, 0, 45)
 });
 
@@ -342,7 +353,7 @@ Rngon.render({
 
 An non-blocking version of *`render()`* that executes in a Web Worker.
 
-Implemented in [./js/retro-ngon/api/render-async.js](./js/retro-ngon/api/render-async.js).
+(Implemented in [./js/retro-ngon/api/render-async.js](./js/retro-ngon/api/render-async.js).)
 
 ### Parameters
 
@@ -387,7 +398,7 @@ else
 
 A selection of n-gons related to each other in some way, rendered as a unit with shared transformations.
 
-Implemented in [./js/retro-ngon/api/mesh.js](./js/retro-ngon/api/mesh.js).
+(Implemented in [./js/retro-ngon/api/mesh.js](./js/retro-ngon/api/mesh.js).)
 
 ### Parameters
 
@@ -425,7 +436,7 @@ mesh.scaling.x = 100;
 
 A polygon made up of *n* vertices, also known as an n-gon. Single-vertex n-gons are treated as points, and two-vertex n-gons as lines.
 
-Implemented in [./js/retro-ngon/api/ngon.js](./js/retro-ngon/api/ngon.js).
+(Implemented in [./js/retro-ngon/api/ngon.js](./js/retro-ngon/api/ngon.js).)
 
 ### Parameters
 
@@ -493,7 +504,7 @@ A point in space representing a corner of an n-gon.
 
 Note: In the renderer's coordinate space, X is horizontal (positive = right), and Y is vertical (positive = up); positive Z is forward.
 
-Implemented in [./js/retro-ngon/api/vertex.js](./js/retro-ngon/api/vertex.js).
+(Implemented in [./js/retro-ngon/api/vertex.js](./js/retro-ngon/api/vertex.js).)
 
 ### Parameters
 
@@ -512,7 +523,7 @@ An object with the following properties:
 - **z** (number): The `z` parameter.
 - **u** (number): The `u` parameter.
 - **v** (number): The `v` parameter.
-- **shade** (number): A positive number defining the vertex's degree of shade, with 0 being fully unlit, 0.5 half lit, and 1 fully lit. The value is computed at render-time. 
+- **shade** (number): A positive number defining the vertex's degree of shade, with 0 being fully unlit, 0.5 half lit, and 1 fully lit. The value is computed at render-time.
 
 ## vector([x[, y[, z]]])
 
@@ -536,7 +547,7 @@ An object with the following properties:
 
 A 32-bit, four-channel, RGBA color value, where each color channel is 8 bits.
 
-Implemented in [./js/retro-ngon/api/color.js](./js/retro-ngon/api/color.js).
+(Implemented in [./js/retro-ngon/api/color.js](./js/retro-ngon/api/color.js).)
 
 ### Parameters
 
@@ -560,7 +571,7 @@ A 2D RGBA image for texturing n-gons. Supports 16 and 32-bit input data and gene
 
 Note: Textures with a power-of-two resolution may render faster and support more features than textures that are not a power of two.
 
-Implemented in [./js/retro-ngon/api/texture.js](./js/retro-ngon/api/texture.js).
+(Implemented in [./js/retro-ngon/api/texture.js](./js/retro-ngon/api/texture.js).)
 
 ### Parameters
 
