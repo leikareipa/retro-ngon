@@ -274,7 +274,7 @@ This function blocks until the rendering is completed. For non-blocking renderin
 - **target** (HTMLCanvasElement | string | null = *null*): Destination for the rendered image. Canvas element; `id` attribute of canvas element; or *null* for none. The raw pixel buffer is accessible via `Rngon.state.active.pixelBuffer` after the call.
 - **scene** (array = *[mesh()]*): The *`mesh`* objects to be rendered. The array is iterated in back-to-front order.
 - **options** (object): Additional rendering options:
-    - **resolution** (number | object = *0.5*): Resolution of the output image. If `target` is HTMLCanvasElement or string, the value is a multiplier for the canvas's size according to its style sheet. Otherwise, the value is an object with these properties:
+    - **resolution** (number | object = *0.5*): Resolution of the output image. If `target` is HTMLCanvasElement or string, the value is a multiplier for the canvas's size according to `window.getComputedStyle()`. Otherwise, the value is an object with these properties:
         - **width** (number = *640*): Width in pixels.
         - **height** (number = *480*): Height in pixels.
     - **fov** (number = *43*): Field-of-view size.
@@ -483,7 +483,7 @@ An object with the following properties:
 ### Sample usage
 
 ```javascript
-// Construct a 2-sided red n-gon.
+// Construct a red line.
 const line = Rngon.ngon([
     Rngon.vertex(-1, -1, 0),
     Rngon.vertex( 1, -1, 0)], {
@@ -569,8 +569,8 @@ Note: Textures with a power-of-two resolution may render faster and support more
 ### Parameters
 
 - **data** (object): The texture's data:
-    - **width** (number = *0*): The width of the image. Must be a positive value.
-    - **height** (number = *0*): The height of the image. Must be a positive value.
+    - **width** (number = *0*): The width of the image.
+    - **height** (number = *0*): The height of the image.
     - **pixels** (array | string = *[]*): The texture's pixels. The layout of the data is determimned by the `data.channels` property, and the encoding of the data is determined by the `data.encoding` property.
     - **channels** (string = *"rgba:8+8+8+8"*): Specifies the layout of the pixel data:
         - "rgba:5+5+5+1": Each pixel is a 16-bit integer with 5 bits each for red, green, and blue; and 1 bit for alpha.
