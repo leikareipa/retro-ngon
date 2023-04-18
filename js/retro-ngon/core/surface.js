@@ -32,7 +32,7 @@ export function surface(canvasElement)
     }
     catch (error)
     {
-        Rngon.log(`Failed to create a render surface. ${error}`);
+        console.error(error);
         return null;
     }
 
@@ -238,16 +238,11 @@ export function surface(canvasElement)
     // Initializes the target DOM <canvas> element for rendering into. Throws on errors.
     function setup_onscreen()
     {
-        Rngon.assert?.(
-            (canvasElement instanceof Element),
-            "Can't find the given canvas element."
-        );
-
-        const renderContext = canvasElement.getContext("2d");
+        const renderContext = canvasElement?.getContext("2d");
 
         Rngon.assert?.(
-            (renderContext !== null),
-            "Couldn't establish a canvas render context."
+            ((canvasElement instanceof Element) && renderContext),
+            "Invalid canvas element."
         );
 
         if (state.usePalette)
@@ -260,7 +255,7 @@ export function surface(canvasElement)
         const surfaceHeight = Rngon.renderable_height_of(canvasElement, state.renderScale);
         Rngon.assert?.(
             ((surfaceWidth > 0) && (surfaceHeight > 0)),
-            "Couldn't retrieve the canvas's dimensions."
+            "Failed to query the dimensions of the canvas."
         );
         canvasElement.setAttribute("width", surfaceWidth);
         canvasElement.setAttribute("height", surfaceHeight);
