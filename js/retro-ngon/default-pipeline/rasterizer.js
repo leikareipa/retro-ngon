@@ -5,10 +5,10 @@
  * 
  */
 
-import {generic_fill} from "./raster-shaders/raster-shader-generic-fill.js";
-import {plain_solid_fill} from "./raster-shaders/raster-shader-plain-solid-fill.js";
-import {plain_textured_fill} from "./raster-shaders/raster-shader-plain-textured-fill.js";
-import {plain_textured_fill_with_color} from "./raster-shaders/raster-shader-plain-textured-fill-with-color.js";
+import {generic_fill} from "./raster-paths/generic-fill.js";
+import {plain_solid_fill} from "./raster-paths/plain-solid-fill.js";
+import {plain_textured_fill} from "./raster-paths/plain-textured-fill.js";
+import {plain_textured_fill_with_color} from "./raster-paths/plain-textured-fill-with-color.js";
 
 const maxNumVertsPerPolygon = 500;
 
