@@ -21,8 +21,8 @@ export const renderShared = {
                 ? options.resolution
                 : 1 // Will use options.width and options.height instead.
         );
-        state.offscreenRenderWidth = options.width;
-        state.offscreenRenderHeight = options.height;
+        state.offscreenRenderWidth = options.resolution.width;
+        state.offscreenRenderHeight = options.resolution.height;
 
         state.nearPlaneDistance = options.nearPlane;
         state.farPlaneDistance = options.farPlane;
@@ -199,8 +199,6 @@ export const renderShared = {
             globalWireframe: false,
             hibernateWhenTargetNotVisible: true,
             lights: [],
-            width: 640,
-            height: 480,
             palette: null,
         };
     },
