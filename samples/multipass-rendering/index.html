@@ -56,7 +56,6 @@
             const effects = [
                 {name: "Portal",        function: portal},
                 {name: "Motion blur",   function: motion_blur},
-                {name: "Bloom",         function: bloom},
             ];
 
             window.change_effect = function(direction = 1)
@@ -214,116 +213,6 @@
                         },
                     },
                 });
-            }
-
-            function bloom(scene, camera, numTicks = 0)
-            {
-                camera.update();
-
-                // Bloom pass.
-                Rngon.render({
-                    target: "canvas",
-                    scene: scene,
-                    options: {
-                        state: "blur",
-                        resolution: 0.25,
-                        cameraDirection: camera.direction,
-                        cameraPosition: camera.position,
-                    },
-                    pipeline: {
-                        pixelShader({renderWidth, renderHeight, pixelBuffer})
-                        {
-                            const brightnessThreshold = 0.8;
-
-                            for (let i = 0; i < pixelBuffer.length; i += 4) {
-                                const r = pixelBuffer[i];
-                                const g = pixelBuffer[i + 1];
-                                const b = pixelBuffer[i + 2];
-                                const brightness = (r + g + b) / (3 * 255);
-
-                                if (brightness < brightnessThreshold) {
-                                    pixelBuffer[i] = pixelBuffer[i + 1] = pixelBuffer[i + 2] = 0;
-                                }
-                            }
-
-                            stackBlur(Rngon.state["blur"].pixelBuffer);
-                        },
-                    },
-                });
-
-                // Main pass.
-                Rngon.render({
-                    target: "canvas",
-                    scene: scene,
-                    options: {
-                        resolution: 0.25,
-                        cameraDirection: camera.direction,
-                        cameraPosition: camera.position,
-                    },
-                    pipeline: {
-                        // Blend the bloom pass with the main pass.
-                        pixelShader({renderWidth, renderHeight, pixelBuffer})
-                        {
-                            const bloomBuffer = Rngon.state["blur"].pixelBuffer.data
-
-                            for (let i = 0; i < pixelBuffer.length; i += 4) {
-                                pixelBuffer[i] += bloomBuffer[i];
-                                pixelBuffer[i + 1] += bloomBuffer[i+1];
-                                pixelBuffer[i + 2] += bloomBuffer[i+2];
-                            }
-                        },
-                    },
-                });
-
-                function stackBlur(pixelBufferImage, radius = 10) {
-                    const width = pixelBufferImage.width;
-                    const height = pixelBufferImage.height;
-                    const pixelBuffer = pixelBufferImage.data;
-
-                    // Horizontal.
-                    for (let y = 0; y < height; y++) {
-                        for (let x = 0; x < width; x++) {
-                            let sumR = 0;
-                            let count = 0;
-
-                            for (let i = -radius; i <= radius; i++) {
-                                const newX = x + i;
-                                if (newX >= 0 && newX < width) {
-                                    const index = (y * width + newX) * 4;
-                                    sumR += pixelBuffer[index];
-                                    count++;
-                                }
-                            }
-
-                            const index = (y * width + x) * 4;
-                            pixelBuffer[index] = sumR / count;
-                            pixelBuffer[index + 1] = sumR / count;
-                            pixelBuffer[index + 2] = sumR / count;
-                        }
-                    }
-
-                    // Vertical.
-                    for (let x = 0; x < width; x++) {
-                        for (let y = 0; y < height; y++) {
-                            let sumR = 0;
-                            let count = 0;
-
-                            for (let i = -radius; i <= radius; i++) {
-                                const newY = y + i;
-                                if (newY >= 0 && newY < height) {
-                                    const index = (newY * width + x) * 4;
-                                    sumR += pixelBuffer[index];
-                                    count++;
-                                }
-                            }
-
-                            const index = (y * width + x) * 4;
-                            pixelBuffer[index] = sumR / count;
-                            pixelBuffer[index + 1] = sumR / count;
-                            pixelBuffer[index + 2] = sumR / count;
-                        }
-                    }
-                }
             }
 
             window.addEventListener("load", (async()=>

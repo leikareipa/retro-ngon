@@ -90,6 +90,7 @@ export const sample = {
     shaders: [
         {title:"Dithering",              function:ps_dithering},
         {title:"Edge anti-aliasing",     function:ps_fxaa},
+        {title:"Bloom",                  function:ps_bloom},
         {title:"Vignette",               function:ps_vignette},
         {title:"Depth desaturation",     function:ps_depth_desaturate},
         {title:"Distance fog",           function:ps_distance_fog},
@@ -115,6 +116,78 @@ export const sample = {
     Rngon: undefined,
     numTicks: 0,
 };
+
+function ps_bloom({renderWidth, renderHeight, pixelBuffer})
+{
+    const brightnessThreshold = 0.3;
+
+    // Create a bloom layer by high-passing and blurring a copy of the rendered image.
+    const bloomLayer = new Uint8ClampedArray(pixelBuffer);
+    for (let i = 0; i < bloomLayer.length; i += 4) {
+        const r = bloomLayer[i];
+        const g = bloomLayer[i + 1];
+        const b = bloomLayer[i + 2];
+        const brightness = (r + g + b) / (3 * 255);
+
+        if (brightness < brightnessThreshold) {
+            bloomLayer[i] = bloomLayer[i + 1] = bloomLayer[i + 2] = 0;
+        }
+    }
+    stackBlur(bloomLayer, renderWidth, renderHeight);
+
+    // Blend the blurred bloom image with the rendering.
+    for (let i = 0; i < pixelBuffer.length; i += 4) {
+        pixelBuffer[i] += bloomLayer[i];
+        pixelBuffer[i + 1] += bloomLayer[i+1];
+        pixelBuffer[i + 2] += bloomLayer[i+2];
+    }
+
+    function stackBlur(pixels, width, height, radius = 8) {
+        // Horizontal.
+        for (let y = 0; y < height; y++) {
+            for (let x = 0; x < width; x++) {
+                let sumR = 0;
+                let count = 0;
+
+                for (let i = -radius; i <= radius; i++) {
+                    const newX = x + i;
+                    if (newX >= 0 && newX < width) {
+                        const index = (y * width + newX) * 4;
+                        sumR += pixels[index];
+                        count++;
+                    }
+                }
+
+                const index = (y * width + x) * 4;
+                pixels[index] = sumR / count;
+                pixels[index + 1] = sumR / count;
+                pixels[index + 2] = sumR / count;
+            }
+        }
+
+        // Vertical.
+        for (let x = 0; x < width; x++) {
+            for (let y = 0; y < height; y++) {
+                let sumR = 0;
+                let count = 0;
+
+                for (let i = -radius; i <= radius; i++) {
+                    const newY = y + i;
+                    if (newY >= 0 && newY < height) {
+                        const index = (newY * width + x) * 4;
+                        sumR += pixels[index];
+                        count++;
+                    }
+                }
+
+                const index = (y * width + x) * 4;
+                pixels[index] = sumR / count;
+                pixels[index + 1] = sumR / count;
+                pixels[index + 2] = sumR / count;
+            }
+        }
+    }
+}
 
 function ps_crt_effect({renderWidth, renderHeight, pixelBuffer})
 {
