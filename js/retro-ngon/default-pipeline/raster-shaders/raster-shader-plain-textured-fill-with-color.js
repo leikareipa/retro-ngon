@@ -10,11 +10,9 @@
 // - No pixel shader
 // - No alpha operations
 // - Textured, the texture resolution being power of two
-// - White material color
 // - Affine texture-mapping
 // - No texture filtering
-// - No paletted rendering
-export function plain_textured_fill({
+export function plain_textured_fill_with_color({
     ngonIdx,
     leftEdges,
     rightEdges,
@@ -26,6 +24,7 @@ export function plain_textured_fill({
     if (!numLeftEdges || !numRightEdges) return true;
 
     const ngon = Rngon.state.active.ngonCache.ngons[ngonIdx];
+    const usePalette = Rngon.state.active.usePalette;
     const pixelBufferImage = Rngon.state.active.pixelBuffer;
     const pixelBufferClamped8 = pixelBufferImage.data;
     const pixelBufferWidth = pixelBufferImage.width;
@@ -130,29 +129,36 @@ export function plain_textured_fill({
                 
                 // Draw the pixel.
                 {
-                    const shade = (material.renderVertexShade? iplShade : 1);
-                    const red   = (texel.red   * shade);
-                    const green = (texel.green * shade);
-                    const blue  = (texel.blue  * shade);
-
-                    // If shade is > 1, the color values may exceed 255, in which case we write into
-                    // the clamped 8-bit view to get 'free' clamping.
-                    if (shade > 1)
+                    if (usePalette)
                     {
-                        const idx = (pixelBufferIdx * 4);
-                        pixelBufferClamped8[idx+0] = red;
-                        pixelBufferClamped8[idx+1] = green;
-                        pixelBufferClamped8[idx+2] = blue;
-                        pixelBufferClamped8[idx+3] = 255;
+                        pixelBufferClamped8[pixelBufferIdx] = texel.color.index;
                     }
                     else
                     {
-                        pixelBuffer32[pixelBufferIdx] = (
-                            (255 << 24) +
-                            (blue << 16) +
-                            (green << 8) +
-                            ~~red
-                        );
+                        const shade = (material.renderVertexShade? iplShade : 1);
+                        const red   = (texel.red   * shade * material.color.unitRange.red);
+                        const green = (texel.green * shade * material.color.unitRange.green);
+                        const blue  = (texel.blue  * shade * material.color.unitRange.blue);
+
+                        // If shade is > 1, the color values may exceed 255, in which case we write into
+                        // the clamped 8-bit view to get 'free' clamping.
+                        if (shade > 1)
+                        {
+                            const idx = (pixelBufferIdx * 4);
+                            pixelBufferClamped8[idx+0] = red;
+                            pixelBufferClamped8[idx+1] = green;
+                            pixelBufferClamped8[idx+2] = blue;
+                            pixelBufferClamped8[idx+3] = 255;
+                        }
+                        else
+                        {
+                            pixelBuffer32[pixelBufferIdx] = (
+                                (255 << 24) +
+                                (blue << 16) +
+                                (green << 8) +
+                                ~~red
+                            );
+                        }
                     }
 
                     depthBuffer[pixelBufferIdx] = depth;

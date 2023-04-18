@@ -8,6 +8,7 @@
 import {generic_fill} from "./raster-shaders/raster-shader-generic-fill.js";
 import {plain_solid_fill} from "./raster-shaders/raster-shader-plain-solid-fill.js";
 import {plain_textured_fill} from "./raster-shaders/raster-shader-plain-textured-fill.js";
+import {plain_textured_fill_with_color} from "./raster-shaders/raster-shader-plain-textured-fill-with-color.js";
 
 const maxNumVertsPerPolygon = 500;
 
@@ -115,12 +116,20 @@ rasterizer.polygon = function(
             !material.allowAlphaReject &&
             !material.allowAlphaBlend &&
             (material.textureMapping === "affine") &&
-            (material.textureFiltering === "none") &&
-            (material.color.red === 255) &&
-            (material.color.green === 255) &&
-            (material.color.blue === 255)
+            (material.textureFiltering === "none")
         ){
-            raster_fn = plain_textured_fill;
+            if (
+                !Rngon.state.active.usePalette &&
+                (material.color.red === 255) &&
+                (material.color.green === 255) &&
+                (material.color.blue === 255)
+            ){
+                raster_fn = plain_textured_fill;
+            }
+            else
+            {
+                raster_fn = plain_textured_fill_with_color;
+            }
         }
         else if (
             !material.texture &&
