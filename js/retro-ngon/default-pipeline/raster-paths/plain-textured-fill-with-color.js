@@ -5,13 +5,6 @@
  * 
  */
 
-// The n-gon and render state must fulfill the following criteria:
-// - Depth buffering enabled
-// - No pixel shader
-// - No alpha operations
-// - Textured, the texture resolution being power of two
-// - Affine texture-mapping
-// - No texture filtering
 export function plain_textured_fill_with_color({
     ngonIdx,
     leftEdges,
@@ -31,6 +24,7 @@ export function plain_textured_fill_with_color({
     const depthBuffer = (Rngon.state.active.useDepthBuffer? Rngon.state.active.depthBuffer.data : null);
     const material = ngon.material;
     const texture = (material.texture || null);
+    const useBilinearTextureFiltering = (texture && material.textureFiltering === "bilinear");
     
     let textureMipLevel = null;
     let textureMipLevelIdx = 0;
@@ -136,9 +130,44 @@ export function plain_textured_fill_with_color({
                     else
                     {
                         const shade = (material.renderVertexShade? iplShade : 1);
-                        const red   = (texel.red   * shade * material.color.unitRange.red);
-                        const green = (texel.green * shade * material.color.unitRange.green);
-                        const blue  = (texel.blue  * shade * material.color.unitRange.blue);
+                        let red   = texel.red;
+                        let green = texel.green;
+                        let blue  = texel.blue;
+
+                        if (useBilinearTextureFiltering)
+                        {
+                            const tx = (u - (u = ~~u));
+                            const ty = (v - (v = ~~v));
+                            let c10 = (textureMipLevel.pixels[(u + 1) + v * textureMipLevel.width] || texel);
+                            let c01 = (textureMipLevel.pixels[u + (v + 1) * textureMipLevel.width] || texel);
+                            let c11 = (textureMipLevel.pixels[(u + 1) + (v + 1) * textureMipLevel.width] || texel);
+
+                            if (c10.alpha !== 255) c10 = texel;
+                            if (c01.alpha !== 255) c01 = texel;
+                            if (c11.alpha !== 255) c11 = texel;
+        
+                            const cx0 = {
+                                red: Rngon.lerp(red, c10.red, tx),
+                                green: Rngon.lerp(green, c10.green, tx),
+                                blue: Rngon.lerp( blue, c10.blue, tx),
+                            };
+        
+                            const cx1 = {
+                                red: Rngon.lerp(c01.red, c11.red, tx),
+                                green: Rngon.lerp(c01.green, c11.green, tx),
+                                blue: Rngon.lerp(c01.blue, c11.blue, tx),
+                            };
+        
+                            red = (shade * material.color.unitRange.red * Rngon.lerp(cx0.red, cx1.red, ty));
+                            green = (shade * material.color.unitRange.green * Rngon.lerp(cx0.green, cx1.green, ty));
+                            blue = (shade * material.color.unitRange.blue * Rngon.lerp(cx0.blue, cx1.blue, ty));
+                        }
+                        else
+                        {
+                            red   *= (shade * material.color.unitRange.red);
+                            green *= (shade * material.color.unitRange.green);
+                            blue  *= (shade * material.color.unitRange.blue);
+                        }
 
                         // If shade is > 1, the color values may exceed 255, in which case we write into
                         // the clamped 8-bit view to get 'free' clamping.

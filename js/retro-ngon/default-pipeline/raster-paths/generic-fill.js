@@ -18,8 +18,6 @@ const textureDitherFilterKernel = {
     ],
 };
 
-// No performance-enhancing assumptions are made, so this is the most compatible filler,
-// but also potentially the slowest.
 export function generic_fill({
     ngonIdx,
     leftEdges,

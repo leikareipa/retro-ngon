@@ -5,11 +5,6 @@
  * 
  */
 
-// The n-gon and render state must fulfill the following criteria:
-// - No texture
-// - No pixel shader
-// - No alpha operations
-// - Depth buffering enabled
 export function plain_solid_fill({
     ngonIdx,
     leftEdges,

@@ -5,15 +5,6 @@
  * 
  */
 
-// The n-gon and render state must fulfill the following criteria:
-// - Depth buffering enabled
-// - No pixel shader
-// - No alpha operations
-// - Textured, the texture resolution being power of two
-// - White material color
-// - Affine texture-mapping
-// - No texture filtering
-// - No paletted rendering
 export function plain_textured_fill({
     ngonIdx,
     leftEdges,

@@ -116,13 +116,14 @@ rasterizer.polygon = function(
             !material.allowAlphaReject &&
             !material.allowAlphaBlend &&
             (material.textureMapping === "affine") &&
-            (material.textureFiltering === "none")
+            (material.textureFiltering !== "dither")
         ){
             if (
                 !Rngon.state.active.usePalette &&
                 (material.color.red === 255) &&
                 (material.color.green === 255) &&
-                (material.color.blue === 255)
+                (material.color.blue === 255) &&
+                (material.textureFiltering === "none")
             ){
                 raster_fn = plain_textured_fill;
             }
