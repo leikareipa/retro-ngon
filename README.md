@@ -274,7 +274,7 @@ This function blocks until the rendering is completed. For non-blocking renderin
 - **target** (HTMLCanvasElement | string | null = *null*): Destination for the rendered image. Canvas element; `id` attribute of canvas element; or *null* for none. The raw pixel buffer is accessible via `Rngon.state.active.pixelBuffer` after the call.
 - **scene** (array = *[mesh()]*): The *`mesh`* objects to be rendered. The array is iterated in back-to-front order.
 - **options** (object): Additional rendering options:
-    - **resolution** (number | object = *0.5*): Resolution of the output image. If `target` is HTMLCanvasElement or string, the value is a multiplier for the canvas's size according to `window.getComputedStyle()`. Otherwise, the value is an object with these properties:
+    - **resolution** (number | object = *1*): Resolution of the output image. If `target` is HTMLCanvasElement or string, the output resolution is the size of the canvas (according to `window.getComputedStyle`) multiplied by this number, whose range is (0,1]. Otherwise, the value is an object with these properties:
         - **width** (number = *640*): Width in pixels.
         - **height** (number = *480*): Height in pixels.
     - **fov** (number = *43*): Field-of-view size.

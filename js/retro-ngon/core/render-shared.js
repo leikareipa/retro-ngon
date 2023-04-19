@@ -189,7 +189,7 @@ export const renderShared = {
             cameraPosition: Rngon.vector(0, 0, 0),
             cameraDirection: Rngon.vector(0, 0, 0),
             state: undefined,
-            resolution: 0.5,
+            resolution: 1,
             fov: 43,
             nearPlane: 1,
             farPlane: 1000,
