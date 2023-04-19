@@ -43,8 +43,8 @@ import {matrix44} from "./core/matrix44.js";
 export const Rngon = {
     version: {
         family: "beta",
-        major: "5",
-        minor: "0",
+        major: 6,
+        minor: 0,
         dev: true,
     },
     defaultPipeline: {
