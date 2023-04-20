@@ -84,16 +84,17 @@ rasterizer.polygon = function(
         "Overflowing the vertex buffer"
     );
 
-    const interpolatePerspective = Rngon.state.active.usePerspectiveInterpolation;
-    const useFragmentBuffer = Rngon.state.active.useFragmentBuffer;
-    const depthBuffer = (Rngon.state.active.useDepthBuffer? Rngon.state.active.depthBuffer.data : null);
-    const renderWidth = Rngon.state.active.pixelBuffer.width;
-    const renderHeight = Rngon.state.active.pixelBuffer.height;
-    const usePalette = Rngon.state.active.usePalette;
+    const state = Rngon.state.active;
+    const interpolatePerspective = state.usePerspectiveInterpolation;
+    const useFragmentBuffer = state.useFragmentBuffer;
+    const depthBuffer = (state.useDepthBuffer? state.depthBuffer.data : null);
+    const renderWidth = state.pixelBuffer.width;
+    const renderHeight = state.pixelBuffer.height;
+    const usePalette = state.usePalette;
     const material = ngon.material;
     const pixelBuffer32 = usePalette
         ? undefined
-        : new Uint32Array(Rngon.state.active.pixelBuffer.data.buffer);
+        : new Uint32Array(state.pixelBuffer.data.buffer);
 
     let numLeftVerts = 0;
     let numRightVerts = 0;
@@ -106,59 +107,68 @@ rasterizer.polygon = function(
     // Rasterize the polygon using the most appropriate raster shader.
     if (material.hasFill)
     {
-        let raster_fn = undefined;
-
-        if (
-            material.texture &&
-            depthBuffer &&
-            !useFragmentBuffer &&
-            !Rngon.state.active.usePalette &&
-            !material.allowAlphaReject &&
-            !material.allowAlphaBlend &&
-            (material.textureMapping === "affine") &&
-            (material.textureFiltering !== "dither")
-        ){
-            if (
-                !Rngon.state.active.usePalette &&
-                (material.color.red === 255) &&
-                (material.color.green === 255) &&
-                (material.color.blue === 255) &&
-                (material.textureFiltering === "none")
-            ){
-                raster_fn = plain_textured_fill;
-            }
-            else
-            {
-                raster_fn = plain_textured_fill_with_color;
-            }
-        }
-        else if (
-            !material.texture &&
-            depthBuffer &&
-            !useFragmentBuffer &&
-            !Rngon.state.active.usePalette &&
-            !material.allowAlphaReject &&
-            !material.allowAlphaBlend
-        ){
-            raster_fn = plain_solid_fill;
-        }
-        else
-        {
-            raster_fn = generic_fill;
-        }
-
-        raster_fn({
+        const rasterShaderArgs = {
             ngonIdx,
             leftEdges,
             rightEdges,
             numLeftEdges,
             numRightEdges,
             pixelBuffer32,
-        });
+        };
+
+        if (!state.raster_shader?.())
+        {
+            let raster_fn = undefined;
+
+            if (state.raster_shader)
+            {
+                raster_fn = state.raster_shader
+            }
+            if (
+                material.texture &&
+                depthBuffer &&
+                !useFragmentBuffer &&
+                !state.usePalette &&
+                !material.allowAlphaReject &&
+                !material.allowAlphaBlend &&
+                (material.textureMapping === "affine") &&
+                (material.textureFiltering !== "dither")
+            ){
+                if (
+                    !state.usePalette &&
+                    (material.color.red === 255) &&
+                    (material.color.green === 255) &&
+                    (material.color.blue === 255) &&
+                    (material.textureFiltering === "none")
+                ){
+                    raster_fn = plain_textured_fill;
+                }
+                else
+                {
+                    raster_fn = plain_textured_fill_with_color;
+                }
+            }
+            else if (
+                !material.texture &&
+                depthBuffer &&
+                !useFragmentBuffer &&
+                !state.usePalette &&
+                !material.allowAlphaReject &&
+                !material.allowAlphaBlend
+            ){
+                raster_fn = plain_solid_fill;
+            }
+            else
+            {
+                raster_fn = generic_fill;
+            }
+
+            raster_fn(rasterShaderArgs);
+        }
     }
 
     // Draw a wireframe around any n-gons that wish for one.
-    if (Rngon.state.active.showGlobalWireframe ||
+    if (state.showGlobalWireframe ||
         material.hasWireframe)
     {
         for (let l = 1; l < numLeftVerts; l++)

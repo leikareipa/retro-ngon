@@ -23,10 +23,20 @@ function default_state() {
             // Transforms the given n-gons into screen space, placing the transformed
             // n-gons into the internal n-gon cache. Also applies lighting and viewport
             // clipping.
-            transform_clip_light: undefined,
+            transform_clip_lighter: undefined,
             
             // Removes all rendered pixels from the render surface.
-            surface_wipe: undefined,
+            surface_wiper: undefined,
+
+            rasterizer: undefined,
+
+            vertex_shader: undefined,
+
+            pixel_shader: undefined,
+
+            context_shader: undefined,
+
+            raster_shader: undefined,
         },
 
         // Whether to require pixels to pass a depth test before being allowed on screen.
