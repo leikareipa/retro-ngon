@@ -50,34 +50,46 @@ export function texture(data = {})
         // 1 bit.
         if (data.encoding === "base64")
         {
-            Rngon.assert?.(
-                (data.channels === "rgba:5+5+5+1"),
-                "Expected Base64-encoded data to be in RGBA 5551 format."
-            );
+            const decoded = atob(data.pixels);
+            data.pixels = [];
 
-            data.pixels = (()=>
+            switch (data.channels)
             {
-                const rgba = [];
-                const decoded = atob(data.pixels);
-
-                // We should have an array where each pixel is a 2-byte value.
-                Rngon.assert?.(
-                    (decoded.length === (data.width * data.height * 2)),
-                    "Unexpected data length for a Base64-encoded texture."
-                );
-
-                for (let i = 0; i < (data.width * data.height * 2); i += 2)
+                case "rgba:8+8+8+8":
                 {
-                    const p = (decoded.charCodeAt(i) | (decoded.charCodeAt(i+1)<<8));
+                    Rngon.assert?.(
+                        (decoded.length === (data.width * data.height * 4)),
+                        "Unexpected data length for a Base64-encoded texture; expected 4 bytes per pixel."
+                    );
 
-                    rgba.push((p         & 0x1f) * 8);  // Red.
-                    rgba.push(((p >> 5)  & 0x1f) * 8);  // Green.
-                    rgba.push(((p >> 10) & 0x1f) * 8);  // Blue.
-                    rgba.push(((p >> 15) & 1) * 255);   // Alpha.
+                    for (let i = 0; i < (data.width * data.height * 4); i++)
+                    {
+                        data.pixels.push(decoded.charCodeAt(i));
+                    }
+
+                    break;
                 }
+                case "rgba:5+5+5+1":
+                {
+                    Rngon.assert?.(
+                        (decoded.length === (data.width * data.height * 2)),
+                        "Unexpected data length for a Base64-encoded texture; expected 2 bytes per pixel."
+                    );
 
-                return rgba;
-            })();
+                    for (let i = 0; i < (data.width * data.height * 2); i += 2)
+                    {
+                        const p = (decoded.charCodeAt(i) | (decoded.charCodeAt(i+1)<<8));
+
+                        data.pixels.push((p         & 0x1f) * 8);  // Red.
+                        data.pixels.push(((p >> 5)  & 0x1f) * 8);  // Green.
+                        data.pixels.push(((p >> 10) & 0x1f) * 8);  // Blue.
+                        data.pixels.push(((p >> 15) & 1) * 255);   // Alpha.
+                    }
+
+                    break;
+                }
+                default: Rngon.$throw("Unrecognized value for texture 'channels' attribute."); break;
+            }
         }
         else if (data.encoding !== "none")
         {
