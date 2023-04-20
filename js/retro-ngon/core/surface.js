@@ -152,20 +152,20 @@ export function surface(canvasElement)
                         }
                     }
                 }
+            }
 
-                if (!renderOffscreen)
+            if (!renderOffscreen)
+            {
+                if (state.useContextShader)
                 {
-                    if (state.useContextShader)
-                    {
-                        state.modules.context_shader({
-                            context: renderContext,
-                            image: state.pixelBuffer,
-                        });
-                    }
-                    else
-                    {
-                        renderContext.putImageData(state.pixelBuffer, 0, 0);
-                    }
+                    state.modules.context_shader({
+                        context: renderContext,
+                        image: state.pixelBuffer,
+                    });
+                }
+                else
+                {
+                    renderContext.putImageData(state.pixelBuffer, 0, 0);
                 }
             }
         },
@@ -199,11 +199,6 @@ export function surface(canvasElement)
     // Initializes the internal render buffers if they're not already in a suitable state.
     function initialize_internal_surface_state()
     {
-        if (!state.modules.rasterize)
-        {
-            return;
-        }
-
         if (
             (state.pixelBuffer.width != surfaceWidth) ||
             (state.pixelBuffer.height != surfaceHeight)
