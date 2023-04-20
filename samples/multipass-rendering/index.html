@@ -56,6 +56,7 @@
             const effects = [
                 {name: "Portal",        function: portal},
                 {name: "Motion blur",   function: motion_blur},
+                {name: "MSAA",          function: msaa},
             ];
 
             window.change_effect = function(direction = 1)
@@ -177,6 +178,80 @@
                         },
                     },
                 });
+            }
+
+            function msaa(scene, camera, numTicks = 0)
+            {
+                Rngon.render({
+                    target: "canvas",
+                    scene: scene,
+                    options: {
+                        state: "big",
+                        resolution: 0.5,
+                        cameraDirection: camera.direction,
+                        cameraPosition: camera.position,
+                    },
+                });
+
+                Rngon.render({
+                    target: "canvas",
+                    scene: scene,
+                    options: {
+                        resolution: 0.25,
+                        cameraDirection: camera.direction,
+                        cameraPosition: camera.position,
+                    },
+                    pipeline: {
+                        surfaceWiper() {
+                            const dstBuf = Rngon.state.active.pixelBuffer;
+                            const srcBuf = Rngon.state.big.pixelBuffer;
+                            bilinear_scale(dstBuf, srcBuf);
+                        },
+                        transformClipLighter: null,
+                        rasterizer: null,
+                    }
+                });
+
+                function bilinear_scale(dst, src)
+                {
+                    const xRatio = (src.width - 1) / (dst.width - 1);
+                    const yRatio = (src.height - 1) / (dst.height - 1);
+
+                    for (let y = 0; y < dst.height; y++) {
+                        for (let x = 0; x < dst.width; x++) {
+                            const xSrc = x * xRatio;
+                            const ySrc = y * yRatio;
+
+                            const xSrcFloor = Math.floor(xSrc);
+                            const ySrcFloor = Math.floor(ySrc);
+                            const xSrcCeil = Math.min(xSrcFloor + 1, src.width - 1);
+                            const ySrcCeil = Math.min(ySrcFloor + 1, src.height - 1);
+
+                            const xInterp = xSrc - xSrcFloor;
+                            const yInterp = ySrc - ySrcFloor;
+
+                            const indexTopLeft = (ySrcFloor * src.width + xSrcFloor) * 4;
+                            const indexTopRight = (ySrcFloor * src.width + xSrcCeil) * 4;
+                            const indexBottomLeft = (ySrcCeil * src.width + xSrcFloor) * 4;
+                            const indexBottomRight = (ySrcCeil * src.width + xSrcCeil) * 4;
+
+                            const outputIndex = (y * dst.width + x) * 4;
+
+                            for (let channel = 0; channel < 4; channel++) {
+                                const topLeft = src.data[indexTopLeft + channel];
+                                const topRight = src.data[indexTopRight + channel];
+                                const bottomLeft = src.data[indexBottomLeft + channel];
+                                const bottomRight = src.data[indexBottomRight + channel];
+
+                                const topInterpolation = topLeft + (topRight - topLeft) * xInterp;
+                                const bottomInterpolation = bottomLeft + (bottomRight - bottomLeft) * xInterp;
+
+                                const finalValue = topInterpolation + (bottomInterpolation - topInterpolation) * yInterp;
+                                dst.data[outputIndex + channel] = finalValue;
+                            }
+                        }
+                    }
+                }
             }
 
             function motion_blur(scene, camera, numTicks = 0)
