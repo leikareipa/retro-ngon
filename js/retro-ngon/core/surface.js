@@ -114,42 +114,40 @@ export function surface(canvasElement)
                 Rngon.renderShared.mark_npot_textures_in_ngon_cache();
             }
 
-            // Render the n-gons from the n-gon cache. The rendering will go into the
-            // renderer's internal pixel buffer, Rngon.state.active.pixelBuffer.
-            if (state.modules.rasterize)
+            // Render the n-gons from the n-gon cache into the pixel buffer, Rngon.state.active.pixelBuffer.
+            state.modules.rasterize?.();
+
+            // Apply a custom pixel shader effect on the renderer's pixel buffer in
+            // Rngon.state.active.pixelBuffer.
+            if (state.usePixelShader)
             {
-                state.modules.rasterize();
+                const args = {
+                    renderWidth: surfaceWidth,
+                    renderHeight: surfaceHeight,
+                    fragmentBuffer: state.fragmentBuffer.data,
+                    pixelBuffer: state.pixelBuffer.data,
+                    ngonCache: state.ngonCache.ngons,
+                    cameraPosition: state.cameraPosition,
+                };
 
-                if (state.usePixelShader)
+                const paramNamesString = `{${Object.keys(args).join(",")}}`;
+
+                switch (typeof state.modules.pixel_shader)
                 {
-                    const args = {
-                        renderWidth: surfaceWidth,
-                        renderHeight: surfaceHeight,
-                        fragmentBuffer: state.fragmentBuffer.data,
-                        pixelBuffer: state.pixelBuffer.data,
-                        ngonCache: state.ngonCache.ngons,
-                        cameraPosition: state.cameraPosition,
-                    };
-
-                    const paramNamesString = `{${Object.keys(args).join(",")}}`;
-
-                    switch (typeof state.modules.pixel_shader)
-                    {
-                        case "function": {
-                            state.modules.pixel_shader(args);
-                            break;
-                        }
-                        // Shader functions as strings are supported to allow shaders to be
-                        // used in Web Workers. These strings are expected to be of - or
-                        // equivalent to - the form "(a)=>{console.log(a)}".
-                        case "string": {
-                            Function(paramNamesString, `(${state.modules.pixel_shader})(${paramNamesString})`)(args);
-                            break;
-                        }
-                        default: {
-                            Rngon.$throw("Unrecognized type of pixel shader function.");
-                            break;
-                        }
+                    case "function": {
+                        state.modules.pixel_shader(args);
+                        break;
+                    }
+                    // Shader functions as strings are supported to allow shaders to be
+                    // used in Web Workers. These strings are expected to be of - or
+                    // equivalent to - the form "(a)=>{console.log(a)}".
+                    case "string": {
+                        Function(paramNamesString, `(${state.modules.pixel_shader})(${paramNamesString})`)(args);
+                        break;
+                    }
+                    default: {
+                        Rngon.$throw("Unrecognized type of pixel shader function.");
+                        break;
                     }
                 }
             }
