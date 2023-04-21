@@ -38,6 +38,7 @@ export const scene =
 			"Floor":{color:c(60,41,20),texture:t["ground"],textureMapping:"affine",},
 			"Object":{
 				color: c(230,230,230),
+				texture: t["bark"],
 				textureMapping: "affine",
 				isPortal: true,
 			},

@@ -1,0 +1,17 @@
+Bark:
+    Source: https://opengameart.org/node/10052
+    Author: bart (https://opengameart.org/users/bart; opengameart.org)
+    License: CC-BY 3.0 (The authors of this content agree to license it under later versions of the license)
+
+Shrub:
+    Source: https://opengameart.org/node/10055
+    Author: bart (https://opengameart.org/users/bart; opengameart.org)
+    License: CC-BY 3.0 (The authors of this content agree to license it under later versions of the license)
+
+Ground:
+    Source: https://opengameart.org/node/7404
+    Author: Crack.com (Submitted by bart)
+    License: CC0 (The authors of this content agree to license it under later versions of the license they selected)
+
+Notes:
+- The textures have been downconverted in resolution and color depth
