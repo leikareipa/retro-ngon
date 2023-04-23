@@ -5,6 +5,8 @@
  *
  */
 
+import {assert as Assert} from "../core/util.js";
+
 export function vertex(
     x = 0,
     y = 0,
@@ -18,7 +20,7 @@ export function vertex(
     worldZ = z,
 )
 {
-    Rngon.assert?.(
+    Assert?.(
         ((typeof x === "number") &&
          (typeof y === "number") &&
          (typeof z === "number") &&
@@ -55,7 +57,7 @@ export function vertex(
 // Transforms the vertex by the given 4x4 matrix.
 vertex.transform = function(v, m = [])
 {
-    Rngon.assert?.(
+    Assert?.(
         (m.length === 16),
         "Expected a 4 x 4 matrix to transform the vertex by."
     );

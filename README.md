@@ -232,7 +232,7 @@ Once the scene has been exported into the JSON file, you may need to make a few 
 
 You can find various render samples under the [samples/](./samples/) directory.
 
-You should also have a look at the [API reference](#api-reference), as it contains much more detail than is found in this quick-start guide. For example, you'll find out about vertex shaders, custom rasterizer functions, asynchronous rendering, raw render buffer access, and many other things.
+You should also have a look at the [API reference](#api-reference), as it contains much more detail than is found in this quick-start guide. For example, you'll find out about vertex shaders, custom rasterizer functions, raw render buffer access, and many other things.
 
 # API reference
 
@@ -240,8 +240,7 @@ The renderer's public API consists of the following functions:
 
 | Function                                        | Brief description                          |
 | ----------------------------------------------- | ------------------------------------------ |
-| [render()](#rendertarget-scene-options-pipeline)  | Renders meshes.                          |
-| [render_async()](#render_asyncmeshes-options-rngonurl) | Renders meshes asynchronously.      |
+| [render()](#rendertarget-scene-options-pipeline)| Renders meshes.                            |
 | [ngon](#ngonvertices-material-normal)           | A polygon with *n* vertices (*n*-gon).     |
 | [mesh](#meshngons-transform)                    | A collection of related n-gons.            |
 | [vertex](#vertexx-y-z-u-v-w)                    | A corner of an n-gon.                      |
@@ -250,7 +249,7 @@ The renderer's public API consists of the following functions:
 | [texture](#texturedata)                         | A 2D RGBA image for texturing n-gons.      |
 | light                                           | (A description is coming.)                 |
 
-All but *`render()`* and *`render_async()`* are factory functions, i.e. their purpose is to construct and return an object based on the input arguments.
+All but *`render()`* are factory functions, i.e. their purpose is to construct and return an object based on the input arguments.
 
 The API functions are accessible via the global `Rngon` namespace after you've imported the renderer's script in your application:
 
@@ -265,27 +264,25 @@ The API functions are accessible via the global `Rngon` namespace after you've i
 
 Renders meshes into a 32-bit RGBA pixel buffer, and optionally displays the image on a \<canvas\> element.
 
-This function blocks until the rendering is completed. For non-blocking rendering, see [render_async()](#render_asyncmeshes-options-rngonurl).
-
 (Implemented in [./js/retro-ngon/api/render.js](./js/retro-ngon/api/render.js).)
 
 ### Parameters
 
-- **target** (HTMLCanvasElement | string | null = *null*): Destination for the rendered image. Canvas element; `id` attribute of canvas element; or *null* for none. The raw pixel buffer is accessible via `Rngon.state.active.pixelBuffer` after the call.
+- **target** (HTMLCanvasElement | string | null = *null*): Destination for the rendered image. Canvas element; `id` attribute of canvas element; or *null* for none. The raw pixel buffer is accessible via `Rngon.state.default.pixelBuffer` after the call.
 - **scene** (array = *[mesh()]*): The *`mesh`* objects to be rendered. The array is iterated in back-to-front order.
 - **options** (object): Additional rendering options:
     - **resolution** (number | object = *1*): Resolution of the output image. If `target` is HTMLCanvasElement or string, the output resolution is the size of the canvas (according to `window.getComputedStyle`) multiplied by this number, whose range is (0,1]. Otherwise, the value is an object with these properties:
         - **width** (number = *640*): Width in pixels.
         - **height** (number = *480*): Height in pixels.
     - **fov** (number = *43*): Field-of-view size.
-    - **useDepthBuffer** (boolean = *true*): Whether to generate a depth buffer to discard occluded pixels. The depth buffer, if generated, is accessible via `Rngon.state.active.depthBuffer` after the call.
+    - **useDepthBuffer** (boolean = *true*): Whether to generate a depth buffer to discard occluded pixels. The depth buffer, if generated, is accessible via `Rngon.state.default.depthBuffer` after the call.
     - **hibernateWhenTargetNotVisible** (boolean = *true*): Return without rendering if the target canvas is not within the browser's viewport. Ignored if `target` is *null*.
     - **nearPlane** (number = *1*): Vertices closer to the camera will be clipped.
     - **farPlane** (number = *1000*): Vertices further from the camera will be clipped.
     - **usePerspectiveInterpolation** (boolean = *true*): Whether to apply perspective correction to property interpolation (e.g. texture coordinates) during rasterization.
     - **cameraPosition** (vector = *vector(0, 0, 0)*): The position from which the scene is rendered.
     - **cameraDirection** (vector = *vector(0, 0, 0)*): The direction in which the scene is viewed for rendering.
-    - **useFragmentBuffer** (boolean = *false*): Whether to generate a fragment buffer to store per-pixel metadata (e.g. world XYZ coordinates). Automatically enabled if the `options.pixelShader` function accepts a "fragmentBuffer" parameter. The fragment buffer, if generated, is accessible via `Rngon.state.active.fragmentBuffer` after the call.
+    - **useFragmentBuffer** (boolean = *false*): Whether to generate a fragment buffer to store per-pixel metadata (e.g. world XYZ coordinates). Automatically enabled if the `options.pixelShader` function accepts a "fragmentBuffer" parameter. The fragment buffer, if generated, is accessible via `Rngon.state.default.fragmentBuffer` after the call.
     - **lights** (array = *[]*): The scene's light sources, as *`light`* objects. N-gons will be lit according to their `material.vertexShading` property.
 - **pipeline** (object): Customize the render pipeline:
     - **transformClipLighter** (function | undefined | null = *undefined*): A function to be called by the renderer to transform, clip, and light the input n-gons; or [the built-in function](./js/retro-ngon/default-pipeline/transform-clip-lighter.js) (`Rngon.defaultPipeline.transform_clip_lighter`) if *undefined*; or disabled entirely if *null*.
@@ -347,51 +344,6 @@ Rngon.render({
         cameraPosition: Rngon.vector(0, 0, -5),
     },
 });
-```
-
-## render_async([meshes[, options[, rngonUrl]]])
-
-An non-blocking version of *`render()`* that executes in a Web Worker.
-
-(Implemented in [./js/retro-ngon/api/render-async.js](./js/retro-ngon/api/render-async.js).)
-
-### Parameters
-
-Accepts the same parameters as *`render()`*, with the following differences:
-
-- **options** (object):
-    - **pixelShader** (string | undefined = *undefined*): Same as for *`render()`*, but the function must now be provided as a string.
-    - **vertexShader** (string | undefined = *undefined*): Same as for *`render()`*, but the function must now be provided as a string.
-    - **scale**: Ignored. Use the `options.width` and `options.height` properties instead.
-    - **modules**: Ignored (default values will be used for all properties).
-- **rngonUrl** (string | null = *null*): The absolute URL to the renderer's script file; e.g. `"http://localhost:8000/distributable/rngon.js"`. If *null*, the URL will be determined automatically by inspecting the Document's \<script\> tags' `src` attributes and selecting the first one that ends in `"rngon.js"`.
-
-### Returns
-
-A Promise that resolves to an object with the following properties:
-
-- **image** (ImageData): The rendered image.
-- **renderWidth** (number): The width of the output image.
-- **renderHeight** (number): The height of the output image.
-- **numNgonsRendered** (number): The total count of n-gons rendered. May be smaller than the number of n-gons originally submitted for rendering, due to visibility culling etc.
-- **totalRenderTimeMs** (number): The total time it took to complete the render call, in milliseconds.
-
-### Sample usage
-
-```javascript
-const {image} = await Rngon.render_async([mesh], {width: 640, height: 480});
-
-if (image instanceof ImageData)
-{
-    const canvas = document.getElementById("target-canvas");
-    canvas.width = image.width;
-    canvas.height = image.height;
-    canvas.getContext("2d").putImageData(image, 0, 0);
-}
-else
-{
-    throw `Rendering failed. ${result}`;
-} 
 ```
 
 ## mesh([ngons[, transform]])

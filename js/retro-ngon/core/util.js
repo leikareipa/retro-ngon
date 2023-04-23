@@ -13,7 +13,7 @@ export function assert(condition, errorMessage)
 {
     if (!condition)
     {
-        Rngon.$throw(errorMessage);
+        $throw(errorMessage);
     }
 }
 
@@ -30,18 +30,13 @@ export function lerp (x, y, interval)
 // the sampler function's body).
 export function bilinear_sample(sampler, biasX = 0.5, biasY = biasX)
 {
-    const px1 = Rngon.lerp(sampler(0, 0), sampler(0, 1), biasY);
-    const px2 = Rngon.lerp(sampler(1, 0), sampler(1, 1), biasY);
-    return Rngon.lerp(px1, px2, biasX);
+    const px1 = lerp(sampler(0, 0), sampler(0, 1), biasY);
+    const px2 = lerp(sampler(1, 0), sampler(1, 1), biasY);
+    return lerp(px1, px2, biasX);
 };
 
 export function $throw(errMessage = "")
 {
-    if (Rngon.state.active.allowWindowAlert)
-    {
-        window.alert("Retro n-gon error: " + errMessage);
-    }
-
     throw Error(errMessage);
 }
 
@@ -51,14 +46,12 @@ export function log(string = "Hello there.")
 }
 
 // Returns the resulting width of an image if it were rendered onto the given canvas element.
-// The 'scale' parameter corresponds to the 'scale' option of Rngon.render().
 export function renderable_width_of(canvasElement, scale)
 {
     return Math.floor(parseInt(window.getComputedStyle(canvasElement).getPropertyValue("width")) * scale);
 }
 
 // Returns the resulting height of an image if it were rendered onto the given canvas element.
-// The 'scale' parameter corresponds to the 'scale' option of Rngon.render().
 export function renderable_height_of(canvasElement, scale)
 {
     return Math.floor(parseInt(window.getComputedStyle(canvasElement).getPropertyValue("height")) * scale);

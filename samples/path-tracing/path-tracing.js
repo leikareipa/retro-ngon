@@ -65,11 +65,11 @@ export const sample = {
 
         // The accumulation buffer needs to be reset if the size of the rendering changes,
         // since otherwise the pixels in the buffer won't match the raster buffer's pixels.
-        if ((Rngon.state.active.pixelBuffer.width != this.latestRenderResolution.width) ||
-            (Rngon.state.active.pixelBuffer.height != this.latestRenderResolution.height))
+        if ((Rngon.state.default.pixelBuffer.width != this.latestRenderResolution.width) ||
+            (Rngon.state.default.pixelBuffer.height != this.latestRenderResolution.height))
         {
-            this.latestRenderResolution.width = Rngon.state.active.pixelBuffer.width;
-            this.latestRenderResolution.height = Rngon.state.active.pixelBuffer.height;
+            this.latestRenderResolution.width = Rngon.state.default.pixelBuffer.width;
+            this.latestRenderResolution.height = Rngon.state.default.pixelBuffer.height;
             this.reset_accumulation_buffer();
         }
 

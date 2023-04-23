@@ -18,9 +18,11 @@ import {combined_shade_maps_sets,
 // An interface for lightmap baking. Returns a promise that resolves when the baking
 // has completed. See the bake_lightmap.defaultOptions object for information about
 // the options you can pass in.
-export function bake_lightmap(ngons = [Rngon.ngon()],
-                              lights = [Rngon.light()],
-                              options = {})
+export function bake_lightmap(
+    ngons = [Rngon.ngon()],
+    lights = [Rngon.light()],
+    options = {}
+)
 {
     options = {
         ...bake_lightmap.defaultOptions,
@@ -212,10 +214,12 @@ async function process_shade_maps(ngons = [Rngon.ngon()],
         if (options.inputFile)
         {
             console.log("Integrating previous shading data...");
-            shadeMaps.push(await load_shade_maps_from_file(options.inputFile,
-                                                           ngons,
-                                                           options.maxShadeMapWidth,
-                                                           options.maxShadeMapHeight));
+            shadeMaps.push(await load_shade_maps_from_file(
+                options.inputFile,
+                ngons,
+                options.maxShadeMapWidth,
+                options.maxShadeMapHeight)
+            );
         }
 
         shadeMaps = combined_shade_maps_sets(shadeMaps, ngons);

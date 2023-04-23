@@ -5,14 +5,21 @@
  *
  */
 
+import {assert as Assert} from "../core/util.js";
+import {$throw as Throw} from "../core/util.js";
+import {renderable_width_of} from "../core/util.js";
+import {renderable_height_of} from "../core/util.js";
+import {matrix44 as Matrix44} from "./matrix44.js";
+import {ngon as Ngon} from "../api/ngon.js";
+import {vertex as Vertex} from "../api/vertex.js";
+
 // A surface for rendering onto. Will also paint the rendered image onto a HTML5 <canvas>
 // element unless the 'canvasElement' parameter is null, in which case rendering will be
 // to an off-screen buffer only.
 //
 // Returns null if the surface could not be created.
-export function surface(canvasElement)
+export function surface(canvasElement, renderState)
 {
-    const state = Rngon.state.active;
     const renderOffscreen = (canvasElement === null);
 
     let surfaceWidth = undefined,
@@ -26,9 +33,9 @@ export function surface(canvasElement)
             surfaceHeight,
             canvasElement,
             renderContext
-        } = (renderOffscreen? setup_offscreen : setup_onscreen)());
+        } = (renderOffscreen? setup_offscreen(renderState) : setup_onscreen(renderState, canvasElement)));
 
-        initialize_internal_surface_state();
+        massage_state(renderState, renderContext, surfaceWidth, surfaceHeight);
     }
     catch (error)
     {
@@ -36,27 +43,27 @@ export function surface(canvasElement)
         return null;
     }
 
-    const cameraMatrix = Rngon.matrix44.multiply(
-        Rngon.matrix44.rotation(
-            state.cameraDirection.x,
-            state.cameraDirection.y,
-            state.cameraDirection.z
+    const cameraMatrix = Matrix44.multiply(
+        Matrix44.rotation(
+            renderState.cameraDirection.x,
+            renderState.cameraDirection.y,
+            renderState.cameraDirection.z
         ),
-        Rngon.matrix44.translation(
-            -state.cameraPosition.x,
-            -state.cameraPosition.y,
-            -state.cameraPosition.z
+        Matrix44.translation(
+            -renderState.cameraPosition.x,
+            -renderState.cameraPosition.y,
+            -renderState.cameraPosition.z
         )
     );
 
-    const perspectiveMatrix = Rngon.matrix44.perspective(
-        (state.fov * (Math.PI / 180)),
+    const perspectiveMatrix = Matrix44.perspective(
+        (renderState.fov * (Math.PI / 180)),
         (surfaceWidth / surfaceHeight),
-        state.nearPlaneDistance,
-        state.farPlaneDistance
+        renderState.nearPlaneDistance,
+        renderState.farPlaneDistance
     );
 
-    const screenSpaceMatrix = Rngon.matrix44.ortho(
+    const screenSpaceMatrix = Matrix44.ortho(
         (surfaceWidth + 1),
         (surfaceHeight + 1)
     );
@@ -67,41 +74,40 @@ export function surface(canvasElement)
         height: surfaceHeight,
 
         // Rasterizes the given meshes' n-gons onto this surface. Following this call,
-        // the rasterized pixels will be in Rngon.state.active.pixelBuffer, and the
-        // meshes' n-gons - with their vertices transformed to screen space - in
-        // Rngon.state.active.ngonCache. If a <canvas> element id was specified for
-        // this surface, the rasterized pixels will also be painted onto that canvas.
+        // the rasterized pixels will be in renderState.pixelBuffer, and the meshes'
+        // n-gons - with their vertices transformed to screen space - in renderState.ngonCache.
+        // If a <canvas> element id was specified for this surface, the rasterized
+        // pixels will also be painted onto that canvas.
         display_meshes: function(meshes = [])
         {
-            state.modules.surface_wipe?.();
+            renderState.modules.surface_wipe?.(renderState);
 
             // Prepare the meshes' n-gons for rendering. This will place the transformed
-            // n-gons into the internal n-gon cache, Rngon.state.active.ngonCache.
+            // n-gons in renderState.ngonCache.
             {
-                Rngon.renderShared.prepare_vertex_cache(meshes);
-                Rngon.renderShared.prepare_ngon_cache(meshes);
+                prepare_vertex_cache(renderState, meshes);
+                prepare_ngon_cache(renderState, meshes);
 
-                if (state.modules.transform_clip_light)
+                if (renderState.modules.transform_clip_light)
                 {
                     for (const mesh of meshes)
                     {
-                        state.modules.transform_clip_light(
-                            mesh.ngons,
-                            Rngon.mesh.object_space_matrix(mesh),
+                        renderState.modules.transform_clip_light({
+                            renderState,
+                            mesh,
                             cameraMatrix,
                             perspectiveMatrix,
                             screenSpaceMatrix,
-                            state.cameraPosition
-                        );
+                        });
                     };
                 }
 
                 // When using a depth buffer, we can get better performance by pre-sorting
                 // the n-gons in reverse painter order, where the closest n-gons are rendered
                 // first, as it allows for early discarding of occluded pixels.
-                if (state.useDepthBuffer)
+                if (renderState.useDepthBuffer)
                 {
-                    state.ngonCache.ngons.sort((ngonA, ngonB)=>
+                    renderState.ngonCache.ngons.sort((ngonA, ngonB)=>
                     {
                         // Separate inactive n-gons (which are to be ignored when rendering the current
                         // frame) from the n-gons we're intended to render.
@@ -111,42 +117,42 @@ export function surface(canvasElement)
                     });
                 }
 
-                Rngon.renderShared.mark_npot_textures_in_ngon_cache();
+                mark_npot_textures(renderState);
             }
 
-            // Render the n-gons from the n-gon cache into the pixel buffer, Rngon.state.active.pixelBuffer.
-            state.modules.rasterize?.();
+            // Render the n-gons from the n-gon cache into renderState.pixelBuffer.
+            renderState.modules.rasterize?.(renderState);
 
-            // Apply a custom pixel shader effect on the renderer's pixel buffer in
-            // Rngon.state.active.pixelBuffer.
-            if (state.usePixelShader)
+            // Apply a custom pixel shader effect on renderState.pixelBuffer.
+            if (renderState.usePixelShader)
             {
                 const args = {
+                    renderState,
                     renderWidth: surfaceWidth,
                     renderHeight: surfaceHeight,
-                    fragmentBuffer: state.fragmentBuffer.data,
-                    pixelBuffer: state.pixelBuffer.data,
-                    ngonCache: state.ngonCache.ngons,
-                    cameraPosition: state.cameraPosition,
+                    fragmentBuffer: renderState.fragmentBuffer.data,
+                    pixelBuffer: renderState.pixelBuffer.data,
+                    ngonCache: renderState.ngonCache.ngons,
+                    cameraPosition: renderState.cameraPosition,
                 };
 
                 const paramNamesString = `{${Object.keys(args).join(",")}}`;
 
-                switch (typeof state.modules.pixel_shader)
+                switch (typeof renderState.modules.pixel_shader)
                 {
                     case "function": {
-                        state.modules.pixel_shader(args);
+                        renderState.modules.pixel_shader(args);
                         break;
                     }
                     // Shader functions as strings are supported to allow shaders to be
                     // used in Web Workers. These strings are expected to be of - or
                     // equivalent to - the form "(a)=>{console.log(a)}".
                     case "string": {
-                        Function(paramNamesString, `(${state.modules.pixel_shader})(${paramNamesString})`)(args);
+                        Function(paramNamesString, `(${renderState.modules.pixel_shader})(${paramNamesString})`)(args);
                         break;
                     }
                     default: {
-                        Rngon.$throw("Unrecognized type of pixel shader function.");
+                        Throw("Unrecognized type of pixel shader function.");
                         break;
                     }
                 }
@@ -154,16 +160,16 @@ export function surface(canvasElement)
 
             if (!renderOffscreen)
             {
-                if (state.useContextShader)
+                if (renderState.useContextShader)
                 {
-                    state.modules.context_shader({
+                    renderState.modules.context_shader({
                         context: renderContext,
-                        image: state.pixelBuffer,
+                        image: renderState.pixelBuffer,
                     });
                 }
                 else
                 {
-                    renderContext.putImageData(state.pixelBuffer, 0, 0);
+                    renderContext.putImageData(renderState.pixelBuffer, 0, 0);
                 }
             }
         },
@@ -193,91 +199,177 @@ export function surface(canvasElement)
     });
 
     return publicInterface;
+}
 
-    // Initializes the internal render buffers if they're not already in a suitable state.
-    function initialize_internal_surface_state()
+// Initializes the target DOM <canvas> element for rendering into. Throws on errors.
+function setup_onscreen(renderState, canvasElement)
+{
+    const renderContext = canvasElement?.getContext("2d");
+
+    Assert?.(
+        ((canvasElement instanceof Element) && renderContext),
+        "Invalid canvas element."
+    );
+
+    if (renderState.usePalette)
     {
-        if (
-            (state.pixelBuffer.width != surfaceWidth) ||
-            (state.pixelBuffer.height != surfaceHeight)
-        ){
-            state.pixelBuffer = renderContext.createImageData(surfaceWidth, surfaceHeight);
-        }
-
-        if (
-            state.useFragmentBuffer &&
-            ((state.fragmentBuffer.width != surfaceWidth) ||
-             (state.fragmentBuffer.height != surfaceHeight))
-        ){
-            state.fragmentBuffer.width = surfaceWidth;
-            state.fragmentBuffer.height = surfaceHeight;
-            state.fragmentBuffer.data = new Array(surfaceWidth * surfaceHeight).fill().map(e=>({}));
-        }
-
-        if (
-            state.useDepthBuffer &&
-            ((state.depthBuffer.width != surfaceWidth) ||
-             (state.depthBuffer.height != surfaceHeight) ||
-             !state.depthBuffer.data.length)
-        ){
-            state.depthBuffer.width = surfaceWidth;
-            state.depthBuffer.height = surfaceHeight;
-            state.depthBuffer.data = new Array(state.depthBuffer.width * state.depthBuffer.height); 
-        }
-
-        return;
+        renderState.pixelBuffer.palette = renderState.palette;
     }
 
-    // Initializes the target DOM <canvas> element for rendering into. Throws on errors.
-    function setup_onscreen()
-    {
-        const renderContext = canvasElement?.getContext("2d");
+    // Size the canvas as per the requested render scale.
+    const surfaceWidth = renderable_width_of(canvasElement, renderState.renderScale);
+    const surfaceHeight = renderable_height_of(canvasElement, renderState.renderScale);
+    Assert?.(
+        ((surfaceWidth > 0) && (surfaceHeight > 0)),
+        "Failed to query the dimensions of the canvas."
+    );
+    canvasElement.setAttribute("width", surfaceWidth);
+    canvasElement.setAttribute("height", surfaceHeight);
 
-        Rngon.assert?.(
-            ((canvasElement instanceof Element) && renderContext),
-            "Invalid canvas element."
-        );
+    return {
+        surfaceWidth,
+        surfaceHeight,
+        canvasElement,
+        renderContext
+    };
+}
 
-        if (state.usePalette)
-        {
-            state.pixelBuffer.palette = state.palette;
-        }
-
-        // Size the canvas as per the requested render scale.
-        const surfaceWidth = Rngon.renderable_width_of(canvasElement, state.renderScale);
-        const surfaceHeight = Rngon.renderable_height_of(canvasElement, state.renderScale);
-        Rngon.assert?.(
-            ((surfaceWidth > 0) && (surfaceHeight > 0)),
-            "Failed to query the dimensions of the canvas."
-        );
-        canvasElement.setAttribute("width", surfaceWidth);
-        canvasElement.setAttribute("height", surfaceHeight);
-
-        return {
-            surfaceWidth,
-            surfaceHeight,
-            canvasElement,
-            renderContext
-        };
-    }
-
-    // Sets up rendering into an off-screen buffer, i.e. without using a DOM <canvas>
-    // element. Right now, since the renderer by default renders into an off-screen
-    // buffer first and then transfers the pixels onto a <canvas>, this function
-    // is more about just skipping initialization of the <canvas> element.
-    //
-    // Note: This function should throw on errors.
-    function setup_offscreen()
-    {
-        return {
-            surfaceWidth: state.offscreenRenderWidth,
-            surfaceHeight: state.offscreenRenderHeight,
-            renderContext: {
-                createImageData: function(width, height)
-                {
-                    return new ImageData(width, height);
-                },
+// Sets up rendering into an off-screen buffer, i.e. without using a DOM <canvas>
+// element. Right now, since the renderer by default renders into an off-screen
+// buffer first and then transfers the pixels onto a <canvas>, this function
+// is more about just skipping initialization of the <canvas> element.
+//
+// Throws on errors.
+function setup_offscreen(renderState)
+{
+    return {
+        surfaceWidth: renderState.offscreenRenderWidth,
+        surfaceHeight: renderState.offscreenRenderHeight,
+        renderContext: {
+            createImageData: function(width, height)
+            {
+                return new ImageData(width, height);
             },
-        };
+        },
+    };
+}
+
+// Initializes the internal render buffers if they're not already in a suitable renderState.
+function massage_state(renderState, renderContext, surfaceWidth, surfaceHeight)
+{
+    if (
+        (renderState.pixelBuffer.width != surfaceWidth) ||
+        (renderState.pixelBuffer.height != surfaceHeight)
+    ){
+        renderState.pixelBuffer = renderContext.createImageData(surfaceWidth, surfaceHeight);
     }
+
+    if (
+        renderState.useFragmentBuffer &&
+        ((renderState.fragmentBuffer.width != surfaceWidth) ||
+         (renderState.fragmentBuffer.height != surfaceHeight))
+    ){
+        renderState.fragmentBuffer.width = surfaceWidth;
+        renderState.fragmentBuffer.height = surfaceHeight;
+        renderState.fragmentBuffer.data = new Array(surfaceWidth * surfaceHeight).fill().map(e=>({}));
+    }
+
+    if (
+        renderState.useDepthBuffer &&
+        ((renderState.depthBuffer.width != surfaceWidth) ||
+         (renderState.depthBuffer.height != surfaceHeight) ||
+         !renderState.depthBuffer.data.length)
+    ){
+        renderState.depthBuffer.width = surfaceWidth;
+        renderState.depthBuffer.height = surfaceHeight;
+        renderState.depthBuffer.data = new Array(renderState.depthBuffer.width * renderState.depthBuffer.height); 
+    }
+
+    return;
+}
+
+// Creates or resizes the vertex cache to fit at least the number of vertices contained
+// in the given array of meshes.
+function prepare_vertex_cache(renderState, meshes = [Ngon()])
+{
+    Assert?.(
+        (meshes instanceof Array),
+        "Invalid arguments to n-gon cache initialization."
+    );
+
+    const vertexCache = renderState.vertexCache;
+    let totalVertexCount = 0;
+
+    for (const mesh of meshes)
+    {
+        for (const ngon of mesh.ngons)
+        {
+            totalVertexCount += ngon.vertices.length;
+        }
+    }
+
+    if (!vertexCache ||
+        !vertexCache.vertices.length ||
+        (vertexCache.vertices.length < totalVertexCount))
+    {
+        const lengthDelta = (totalVertexCount - vertexCache.vertices.length);
+        vertexCache.vertices.push(...new Array(lengthDelta).fill().map(e=>Vertex()));
+    }
+
+    vertexCache.count = 0;
+
+    return;
+}
+
+// Creates or resizes the n-gon cache to fit at least the number of n-gons contained
+// in the given array of meshes.
+function prepare_ngon_cache(renderState, meshes = [Ngon()])
+{
+    Assert?.(
+        (meshes instanceof Array),
+        "Invalid arguments to n-gon cache initialization."
+    );
+
+    const ngonCache = renderState.ngonCache;
+    const totalNgonCount = meshes.reduce((totalCount, mesh)=>(totalCount + mesh.ngons.length), 0);
+
+    if (!ngonCache ||
+        !ngonCache.ngons.length ||
+        (ngonCache.ngons.length < totalNgonCount))
+    {
+        const lengthDelta = (totalNgonCount - ngonCache.ngons.length);
+        ngonCache.ngons.push(...new Array(lengthDelta).fill().map(e=>Ngon()));
+    }
+
+    ngonCache.count = 0;
+
+    return;
+}
+
+// Marks any non-power-of-two affine-mapped faces in the n-gon cache as using the
+// non-power-of-two affine texture mapper. This needs to be done since the default
+// affine mapper expects textures to be power-of-two.
+function mark_npot_textures(renderState)
+{
+    for (let i = 0; i < renderState.ngonCache.count; i++)
+    {
+        const ngon = renderState.ngonCache.ngons[i];
+
+        if (ngon.material.texture &&
+            ngon.material.textureMapping === "affine")
+        {
+            let widthIsPOT = ((ngon.material.texture.width & (ngon.material.texture.width - 1)) === 0);
+            let heightIsPOT = ((ngon.material.texture.height & (ngon.material.texture.height - 1)) === 0);
+
+            if (ngon.material.texture.width === 0) widthIsPOT = false;
+            if (ngon.material.texture.height === 0) heightIsPOT = false;
+
+            if (!widthIsPOT || !heightIsPOT)
+            {
+                ngon.material.textureMapping = "affine-npot";
+            }
+        }
+    }
+
+    return;
 }

@@ -11,17 +11,17 @@
 "use strict";
 
 // Note: Only supports square polygons.
-export function tile_filler()
+export function tile_filler(renderState)
 {
-    const pixelBuffer = Rngon.state.active.pixelBuffer.data;
-    const renderWidth = Rngon.state.active.pixelBuffer.width;
-    const renderHeight = Rngon.state.active.pixelBuffer.height;
+    const pixelBuffer = renderState.pixelBuffer.data;
+    const renderWidth = renderState.pixelBuffer.width;
+    const renderHeight = renderState.pixelBuffer.height;
     const leftEdge = {};
     const rightEdge = {};
 
-    for (let n = 0; n < Rngon.state.active.ngonCache.count; n++)
+    for (let n = 0; n < renderState.ngonCache.count; n++)
     {
-        const ngon = Rngon.state.active.ngonCache.ngons[n];
+        const ngon = renderState.ngonCache.ngons[n];
         const material = ngon.material;
         const texture = material.texture;
 

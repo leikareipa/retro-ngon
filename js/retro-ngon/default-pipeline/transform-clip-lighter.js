@@ -5,23 +5,29 @@
  * 
  */
 
+import {mesh as Mesh} from "../api/mesh.js";
+import {vector as Vector} from "../api/vector.js";
+import {ngon as Ngon} from "../api/ngon.js";
+import {$throw as Throw} from "../core/util.js";
+import {matrix44 as Matrix44} from "../core/matrix44.js";
+
 // Applies lighting to the given n-gons, and transforms them into screen space
 // for rendering. The processed n-gons are stored in the internal n-gon cache.
-export function transform_clip_lighter(
-    ngons = [],
-    objectMatrix = [],
-    cameraMatrix = [],
-    projectionMatrix = [],
-    screenSpaceMatrix = [],
-    cameraPos
-)
+export function transform_clip_lighter({
+    renderState,
+    mesh,
+    cameraMatrix,
+    perspectiveMatrix,
+    screenSpaceMatrix,
+} = {})
 {
     const viewVector = {x:0.0, y:0.0, z:0.0};
-    const ngonCache = Rngon.state.active.ngonCache;
-    const vertexCache = Rngon.state.active.vertexCache;
-    const clipSpaceMatrix = Rngon.matrix44.multiply(projectionMatrix, cameraMatrix);
+    const ngonCache = renderState.ngonCache;
+    const vertexCache = renderState.vertexCache;
+    const clipSpaceMatrix = Matrix44.multiply(perspectiveMatrix, cameraMatrix);
+    const objectSpaceMatrix = Mesh.object_space_matrix(mesh);
 
-    for (const ngon of ngons)
+    for (const ngon of mesh.ngons)
     {
         // Ignore fully transparent polygons.
         if (!ngon.material.hasWireframe &&
@@ -34,11 +40,11 @@ export function transform_clip_lighter(
         // Backface culling.
         if (!ngon.material.isTwoSided)
         {
-            viewVector.x = (ngon.vertices[0].x - cameraPos.x);
-            viewVector.y = (ngon.vertices[0].y - cameraPos.y);
-            viewVector.z = (ngon.vertices[0].z - cameraPos.z);
+            viewVector.x = (ngon.vertices[0].x - renderState.cameraPosition.x);
+            viewVector.y = (ngon.vertices[0].y - renderState.cameraPosition.y);
+            viewVector.z = (ngon.vertices[0].z - renderState.cameraPosition.z);
 
-            if (Rngon.vector.dot(ngon.normal, viewVector) >= 0)
+            if (Vector.dot(ngon.normal, viewVector) >= 0)
             {
                 continue;
             }
@@ -63,10 +69,10 @@ export function transform_clip_lighter(
                 dstVertex.w = srcVertex.w;
                 dstVertex.shade = srcVertex.shade;
 
-                if (Rngon.state.active.useVertexShader ||
+                if (renderState.useVertexShader ||
                     (ngon.material.vertexShading === "gouraud"))
                 {
-                    cachedNgon.vertexNormals[v] = Rngon.vector(
+                    cachedNgon.vertexNormals[v] = Vector(
                         ngon.vertexNormals[v].x,
                         ngon.vertexNormals[v].y,
                         ngon.vertexNormals[v].z
@@ -90,11 +96,11 @@ export function transform_clip_lighter(
             // World space. Any built-in lighting is applied, if requested by the n-gon's
             // material.
             {
-                Rngon.ngon.transform(cachedNgon, objectMatrix);
+                Ngon.transform(cachedNgon, objectSpaceMatrix);
 
                 // Interpolated world XYZ coordinates will be made available via the fragment
                 // buffer, but aren't needed if shaders are disabled.
-                if (Rngon.state.active.useFragmentBuffer)
+                if (renderState.useFragmentBuffer)
                 {
                     for (let v = 0; v < cachedNgon.vertices.length; v++)
                     {
@@ -106,43 +112,43 @@ export function transform_clip_lighter(
 
                 // If using Gouraud shading, we need to transform all vertex normals; but
                 // the face normal won't be used and so can be ignored.
-                if (Rngon.state.active.useVertexShader ||
+                if (renderState.useVertexShader ||
                     (cachedNgon.material.vertexShading === "gouraud"))
                 {
                     for (let v = 0; v < cachedNgon.vertices.length; v++)
                     {
-                        Rngon.vector.transform(cachedNgon.vertexNormals[v], objectMatrix);
-                        Rngon.vector.normalize(cachedNgon.vertexNormals[v]);
+                        Vector.transform(cachedNgon.vertexNormals[v], objectSpaceMatrix);
+                        Vector.normalize(cachedNgon.vertexNormals[v]);
                     }
                 }
                 // With shading other than Gouraud, only the face normal will be used, and
                 // we can ignore the vertex normals.
                 else
                 {
-                    Rngon.vector.transform(cachedNgon.normal, objectMatrix);
-                    Rngon.vector.normalize(cachedNgon.normal);
+                    Vector.transform(cachedNgon.normal, objectSpaceMatrix);
+                    Vector.normalize(cachedNgon.normal);
                 }
 
                 if (cachedNgon.material.vertexShading !== "none")
                 {
-                    apply_lighting(cachedNgon);
+                    apply_lighting(cachedNgon, renderState);
                 }
 
                 // Apply an optional, user-defined vertex shader.
-                if (Rngon.state.active.useVertexShader)
+                if (renderState.useVertexShader)
                 {
                     const args = [
                         cachedNgon,
-                        cameraPos,
+                        renderState.cameraPosition,
                     ];
 
                     const paramNamesString = "ngon, cameraPos";
 
-                    switch (typeof Rngon.state.active.modules.vertex_shader)
+                    switch (typeof renderState.modules.vertex_shader)
                     {
                         case "function":
                         {
-                            Rngon.state.active.modules.vertex_shader(...args);
+                            renderState.modules.vertex_shader(...args);
                             break;
                         }
                         // Shader functions as strings are supported to allow shaders to be
@@ -150,12 +156,12 @@ export function transform_clip_lighter(
                         // equivalent to - the form "(a)=>{console.log(a)}".
                         case "string":
                         {
-                            Function(paramNamesString, `(${Rngon.state.active.modules.vertex_shader})(${paramNamesString})`)(...args);
+                            Function(paramNamesString, `(${renderState.modules.vertex_shader})(${paramNamesString})`)(...args);
                             break;
                         }
                         default:
                         {
-                            Rngon.$throw("Unrecognized type of vertex shader function.");
+                            Throw("Unrecognized type of vertex shader function.");
                             break;
                         }
                     }
@@ -164,8 +170,8 @@ export function transform_clip_lighter(
 
             // Clip space. Vertices that fall outside of the view frustum will be removed.
             {
-                Rngon.ngon.transform(cachedNgon, clipSpaceMatrix);
-                Rngon.ngon.clip_to_viewport(cachedNgon);
+                Ngon.transform(cachedNgon, clipSpaceMatrix);
+                Ngon.clip_to_viewport(cachedNgon);
 
                 // If there are no vertices left after clipping, it means this n-gon is
                 // not visible on the screen at all, and so we don't need to consider it
@@ -181,8 +187,8 @@ export function transform_clip_lighter(
             // map directly into XY pixel coordinates in the rendered image (although
             // the values may still be in floating-point).
             {
-                Rngon.ngon.transform(cachedNgon, screenSpaceMatrix);
-                Rngon.ngon.perspective_divide(cachedNgon);
+                Ngon.transform(cachedNgon, screenSpaceMatrix);
+                Ngon.perspective_divide(cachedNgon);
             }
         }
     };
@@ -197,10 +203,10 @@ export function transform_clip_lighter(
     return;
 }
 
-function apply_lighting(ngon)
+function apply_lighting(ngon, renderState)
 {
     // Pre-allocate a vector object to operate on, so we don't need to create one repeatedly.
-    const lightDirection = Rngon.vector();
+    const lightDirection = Vector();
 
     let faceShade = ngon.material.ambientLightLevel;
     for (let v = 0; v < ngon.vertices.length; v++)
@@ -225,7 +231,7 @@ function apply_lighting(ngon)
     }
 
     // Find the brightest shade falling on this n-gon.
-    for (const light of Rngon.state.active.lights)
+    for (const light of renderState.lights)
     {
         // If we've already found the maximum brightness, we don't need to continue.
         //if (shade >= 255) break;
@@ -236,40 +242,44 @@ function apply_lighting(ngon)
             {
                 const vertex = ngon.vertices[v];
 
-                const distance = Math.sqrt(((vertex.x - light.position.x) * (vertex.x - light.position.x)) +
-                                           ((vertex.y - light.position.y) * (vertex.y - light.position.y)) +
-                                           ((vertex.z - light.position.z) * (vertex.z - light.position.z)));
+                const distance = Math.sqrt(
+                    ((vertex.x - light.position.x) * (vertex.x - light.position.x)) +
+                    ((vertex.y - light.position.y) * (vertex.y - light.position.y)) +
+                    ((vertex.z - light.position.z) * (vertex.z - light.position.z))
+                );
 
                 const distanceMul = (1 / (1 + (light.attenuation * distance)));
 
                 lightDirection.x = (light.position.x - vertex.x);
                 lightDirection.y = (light.position.y - vertex.y);
                 lightDirection.z = (light.position.z - vertex.z);
-                Rngon.vector.normalize(lightDirection);
+                Vector.normalize(lightDirection);
 
-                const shadeFromThisLight = Math.max(0, Math.min(1, Rngon.vector.dot(ngon.vertexNormals[v], lightDirection)));
+                const shadeFromThisLight = Math.max(0, Math.min(1, Vector.dot(ngon.vertexNormals[v], lightDirection)));
                 vertex.shade = Math.max(vertex.shade, Math.min(light.clip, (shadeFromThisLight * distanceMul * light.intensity)));
             }
         }
         else if (ngon.material.vertexShading === "flat")
         {
-            const distance = Math.sqrt(((faceX - light.position.x) * (faceX - light.position.x)) +
-                                       ((faceY - light.position.y) * (faceY - light.position.y)) +
-                                       ((faceZ - light.position.z) * (faceZ - light.position.z)));
+            const distance = Math.sqrt(
+                ((faceX - light.position.x) * (faceX - light.position.x)) +
+                ((faceY - light.position.y) * (faceY - light.position.y)) +
+                ((faceZ - light.position.z) * (faceZ - light.position.z))
+            );
 
             const distanceMul = (1 / (1 + (light.attenuation * distance)));
 
             lightDirection.x = (light.position.x - faceX);
             lightDirection.y = (light.position.y - faceY);
             lightDirection.z = (light.position.z - faceZ);
-            Rngon.vector.normalize(lightDirection);
+            Vector.normalize(lightDirection);
 
-            const shadeFromThisLight = Math.max(0, Math.min(1, Rngon.vector.dot(ngon.normal, lightDirection)));
+            const shadeFromThisLight = Math.max(0, Math.min(1, Vector.dot(ngon.normal, lightDirection)));
             faceShade = Math.max(faceShade, Math.min(light.clip, (shadeFromThisLight * distanceMul * light.intensity)));
         }
         else
         {
-            Rngon.$throw("Unknown shading mode.");
+            Throw("Unknown shading mode.");
         }
     }
 

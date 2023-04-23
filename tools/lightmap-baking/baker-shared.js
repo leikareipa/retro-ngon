@@ -41,9 +41,11 @@ function triangulate_ngons(ngons = [Rngon.ngon()])
 
 // Creates the shade maps that will be used in baking. This function should be
 // called on the original n-gons, before their triangulation.
-function initialize_shade_maps(ngons = [Rngon.ngon()],
-                               maxShadeMapWidth = 2,
-                               maxShadeMapHeight = 2)
+function initialize_shade_maps(
+    ngons = [Rngon.ngon()],
+    maxShadeMapWidth = 2,
+    maxShadeMapHeight = 2
+)
 {
     for (const ngon of ngons)
     {

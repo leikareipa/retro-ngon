@@ -609,9 +609,9 @@ function ps_wireframe({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
 }
 
 // Pixel shader.
-function ps_per_pixel_light({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
+function ps_per_pixel_light({renderState, renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
 {
-    const light = this.Rngon.state.active.lights[0];
+    const light = renderState.lights[0];
     const lightReach = (100 * 100);
     const lightIntensity = 2.5;
     const lightDirection = this.Rngon.vector();

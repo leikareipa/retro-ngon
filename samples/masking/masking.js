@@ -50,10 +50,10 @@ export const sample = {
                 // We'll modify the depth buffer prior to rendering to achieve masking - pixels we want
                 // masked have their depth values set to a small number, so they don't pass the depth
                 // test during rasterization.
-                surfaceWiper: ()=>{
-                    Rngon.defaultPipeline.surface_wiper();
+                surfaceWiper: (renderState)=>{
+                    Rngon.defaultPipeline.surface_wiper(renderState);
 
-                    const depthBuf = Rngon.state.active.depthBuffer;
+                    const depthBuf = renderState.depthBuffer;
                     const maxDistance = Math.abs((depthBuf.width ** 2) / (Math.cos(this.numTicks / 100) * 50));
                     const midx = depthBuf.width / 2;
                     const midy = depthBuf.height / 2;

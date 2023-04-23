@@ -203,9 +203,9 @@
                         cameraPosition: camera.position,
                     },
                     pipeline: {
-                        surfaceWiper() {
-                            const dstBuf = Rngon.state.active.pixelBuffer;
-                            const srcBuf = Rngon.state.big.pixelBuffer;
+                        surfaceWiper(renderState) {
+                            const dstBuf = renderState.pixelBuffer;
+                            const srcBuf = Rngon.state["big"].pixelBuffer;
                             bilinear_scale(dstBuf, srcBuf);
                         },
                         transformClipLighter: null,

@@ -12,7 +12,6 @@ import {surface_wiper} from "./default-pipeline/surface-wiper.js";
 import {transform_clip_lighter} from "./default-pipeline/transform-clip-lighter.js";
 
 import {render} from "./api/render.js";
-import {render_async} from "./api/render-async.js";
 import {
     color,
     color_index,
@@ -34,7 +33,6 @@ import {
     renderable_width_of,
     renderable_height_of,
 } from "./core/util.js";
-import {renderShared} from "./core/render-shared.js";
 import {surface} from "./core/surface.js";
 import {state} from "./core/internal-state.js";
 import {trig} from "./core/trig.js";
@@ -53,7 +51,6 @@ export const Rngon = {
         transform_clip_lighter,
     },
     render,
-    render_async,
     assert,
     $throw,
     lerp,
@@ -69,7 +66,6 @@ export const Rngon = {
     matrix44,
     mesh,
     ngon,
-    renderShared,
     surface,
     texture,
     trig,

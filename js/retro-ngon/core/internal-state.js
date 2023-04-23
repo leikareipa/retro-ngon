@@ -9,7 +9,7 @@ export function state(id = "default") {
     return (state[id] || (state[id] = default_state()));
 };
 
-state.active = default_state();
+state.default = default_state();
 
 // Global app state, for internal use by the renderer. Unless otherwise noted, these
 // parameters should not be modified directly; they're instead set by the renderer

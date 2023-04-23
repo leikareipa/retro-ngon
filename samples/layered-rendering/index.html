@@ -256,9 +256,9 @@
 
                 // A surface wiper that leaves the depth buffer untouched, allowing
                 // the rendering to use the existing depth buffer.
-                function pixel_only_wiper()
+                function pixel_only_wiper(renderState)
                 {
-                    Rngon.state.active.pixelBuffer.data.fill(0);
+                    renderState.pixelBuffer.data.fill(0);
                 }
             })();
         </script>

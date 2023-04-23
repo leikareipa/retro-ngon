@@ -29,7 +29,7 @@
                 }
             );
 
-            function perpixel_light_shader({renderWidth, renderHeight, pixelBuffer, fragmentBuffer, ngonCache})
+            function perpixel_light_shader({renderState, renderWidth, renderHeight, pixelBuffer, fragmentBuffer, ngonCache})
             {
                 const lightDirection = Rngon.vector();
 
@@ -40,9 +40,9 @@
 
                     let strongestShade = 0;
 
-                    for (let l = 0; l < Rngon.state.active.lights.length; l++)
+                    for (let l = 0; l < renderState.lights.length; l++)
                     {
-                        const light = Rngon.state.active.lights[l];
+                        const light = renderState.lights[l];
 
                         const distance = (((thisFragment.worldX - light.position.x) * (thisFragment.worldX - light.position.x)) +
                                           ((thisFragment.worldY - light.position.y) * (thisFragment.worldY - light.position.y)) +

@@ -5,7 +5,10 @@
  * 
  */
 
+import {$throw as Throw} from "../../core/util.js";
+
 export function plain_textured_fill({
+    renderState,
     ngonIdx,
     leftEdges,
     rightEdges,
@@ -16,11 +19,11 @@ export function plain_textured_fill({
 {
     if (!numLeftEdges || !numRightEdges) return true;
 
-    const ngon = Rngon.state.active.ngonCache.ngons[ngonIdx];
-    const pixelBufferImage = Rngon.state.active.pixelBuffer;
+    const ngon = renderState.ngonCache.ngons[ngonIdx];
+    const pixelBufferImage = renderState.pixelBuffer;
     const pixelBufferClamped8 = pixelBufferImage.data;
     const pixelBufferWidth = pixelBufferImage.width;
-    const depthBuffer = (Rngon.state.active.useDepthBuffer? Rngon.state.active.depthBuffer.data : null);
+    const depthBuffer = (renderState.useDepthBuffer? renderState.depthBuffer.data : null);
     const material = ngon.material;
     const texture = (material.texture || null);
     
@@ -114,7 +117,7 @@ export function plain_textured_fill({
 
                         break;
                     }
-                    default: Rngon.$throw("Unrecognized UV wrapping mode."); break;
+                    default: Throw("Unrecognized UV wrapping mode."); break;
                 }
 
                 const texel = textureMipLevel.pixels[(~~u) + (~~v) * textureMipLevel.width];

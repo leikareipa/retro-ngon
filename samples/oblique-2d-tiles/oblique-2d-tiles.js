@@ -132,8 +132,8 @@ export const sample = {
 
         // Construct the ground tile mesh.
         {
-            const numTilesX = 1 + Math.ceil(Rngon.state.active.pixelBuffer.width / groundTileWidth);
-            const numTilesY = 1 + Math.ceil(Rngon.state.active.pixelBuffer.height / (groundTileHeight / 2));
+            const numTilesX = 1 + Math.ceil(Rngon.state.default.pixelBuffer.width / groundTileWidth);
+            const numTilesY = 1 + Math.ceil(Rngon.state.default.pixelBuffer.height / (groundTileHeight / 2));
             
             let startX = Math.floor(this.camera.pos.x + -(groundTileWidth / 2));
             let startY = Math.floor(this.camera.pos.y + -(groundTileHeight / 2));
@@ -208,14 +208,14 @@ export const sample = {
             },
             renderPipeline: {
                 rasterizer: tile_filler,
-                transformClipLighter: (ngons)=>
+                transformClipLighter: ({renderState, mesh})=>
                 {
-                    ngons.forEach(n=>apply_lighting_to_tile(n));
+                    mesh.ngons.forEach(n=>apply_lighting_to_tile(renderState, n));
 
                     // The n-gons don't need transforming, so we can just assign them directly
                     // to the renderer's n-gon cache; from which they'll be picked up for rasterization.
-                    Rngon.state.active.ngonCache.ngons = ngons;
-                    Rngon.state.active.ngonCache.count = ngons.length;
+                    renderState.ngonCache.ngons = mesh.ngons;
+                    renderState.ngonCache.count = mesh.ngons.length;
                 },
             },
             mesh: Rngon.mesh(ngons),

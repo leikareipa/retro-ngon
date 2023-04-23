@@ -5,6 +5,9 @@
  *
  */
 
+import {assert as Assert} from "../core/util.js";
+import {$throw as Throw} from "../core/util.js";
+
 // A 32-bit texture.
 export function texture(data = {})
 {
@@ -27,17 +30,17 @@ export function texture(data = {})
 
     const numColorChannels = 4;
 
-    Rngon.assert?.(
+    Assert?.(
         (Number.isInteger(data.width) && Number.isInteger(data.height)),
         "Expected texture width and height to be integer values."
     );
     
-    Rngon.assert?.(
+    Assert?.(
         ((data.width >= 0) && (data.height >= 0)),
         "Expected texture width and height to be no less than zero."
     );
 
-    Rngon.assert?.(
+    Assert?.(
         ((data.width <= maxWidth) && (data.height <= maxHeight)),
         `Expected texture width/height to be no more than ${maxWidth}/${maxHeight}.`
     );
@@ -57,7 +60,7 @@ export function texture(data = {})
             {
                 case "rgba:8+8+8+8":
                 {
-                    Rngon.assert?.(
+                    Assert?.(
                         (decoded.length === (data.width * data.height * 4)),
                         "Unexpected data length for a Base64-encoded texture; expected 4 bytes per pixel."
                     );
@@ -71,7 +74,7 @@ export function texture(data = {})
                 }
                 case "rgba:5+5+5+1":
                 {
-                    Rngon.assert?.(
+                    Assert?.(
                         (decoded.length === (data.width * data.height * 2)),
                         "Unexpected data length for a Base64-encoded texture; expected 2 bytes per pixel."
                     );
@@ -88,16 +91,16 @@ export function texture(data = {})
 
                     break;
                 }
-                default: Rngon.$throw("Unrecognized value for texture 'channels' attribute."); break;
+                default: Throw("Unrecognized value for texture 'channels' attribute."); break;
             }
         }
         else if (data.encoding !== "none")
         {
-            Rngon.$throw("Unknown texture data encoding '" + data.encoding + "'.");
+            Throw("Unknown texture data encoding '" + data.encoding + "'.");
         }
     }
 
-    Rngon.assert?.(
+    Assert?.(
         (data.pixels.length === (data.width * data.height * numColorChannels)),
         "The texture's pixel array size doesn't match its width and height."
     );
@@ -158,7 +161,7 @@ export function texture(data = {})
         // We're finished generating mip levels once we've done them down to 1 x 1.
         if ((mipWidth === 1) && (mipHeight === 1))
         {
-            Rngon.assert?.(
+            Assert?.(
                 (mipmaps.length > 0),
                 "Failed to generate mip levels for a texture."
             );
@@ -178,20 +181,20 @@ export function texture(data = {})
 
 
 // Returns a new texture whose pixel data are a deep copy of the given texture.
-texture.deep_copy = function(texture)
+texture.deep_copy = function(srcTexture)
 {
-    const copiedPixels = new Array(texture.width * texture.height * 4);
+    const copiedPixels = new Array(srcTexture.width * srcTexture.height * 4);
 
-    for (let i = 0; i< (texture.width * texture.height); i++)
+    for (let i = 0; i< (srcTexture.width * srcTexture.height); i++)
     {
-        copiedPixels[i*4+0] = texture.pixels[i].red;
-        copiedPixels[i*4+1] = texture.pixels[i].green;
-        copiedPixels[i*4+2] = texture.pixels[i].blue;
-        copiedPixels[i*4+3] = texture.pixels[i].alpha;
+        copiedPixels[i*4+0] = srcTexture.pixels[i].red;
+        copiedPixels[i*4+1] = srcTexture.pixels[i].green;
+        copiedPixels[i*4+2] = srcTexture.pixels[i].blue;
+        copiedPixels[i*4+3] = srcTexture.pixels[i].alpha;
     }
 
-    return Rngon.texture({
-        ...texture,
+    return texture({
+        ...srcTexture,
         pixels: copiedPixels,
     });
 }
@@ -209,10 +212,10 @@ texture.load = function(filename)
         .then((response)=>response.json())
         .then((data)=>
         {
-            resolve(Rngon.texture(data));
+            resolve(texture(data));
         })
         .catch((error)=>{
-            Rngon.$throw(`Failed to create a texture with data from file '${filename}'. Error: '${error}'.`)
+            Throw(`Failed to create a texture with data from file '${filename}'. Error: '${error}'.`)
         });
     });
 }

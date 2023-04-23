@@ -5,6 +5,13 @@
  * 
  */
 
+import {ngon as Ngon} from "../api/ngon.js";
+import {vertex as Vertex} from "../api/vertex.js";
+import {color as Color} from "../api/color.js";
+import {material as Material} from "../api/material.js";
+import {assert as Assert} from "../core/util.js";
+import {lerp as Lerp} from "../core/util.js";
+
 import {generic_fill} from "./raster-paths/generic-fill.js";
 import {plain_solid_fill} from "./raster-paths/plain-solid-fill.js";
 import {plain_textured_fill} from "./raster-paths/plain-textured-fill.js";
@@ -28,73 +35,53 @@ const vertexSorters = {
     verticalDescending: (vertA, vertB)=>((vertA.y === vertB.y)? 0 : ((vertA.y > vertB.y)? -1 : 1))
 }
 
-// Rasterizes into the internal pixel buffer all n-gons currently stored in the
-// internal n-gon cache.
-//
-// Note: Consider this the inner render loop; it may contain ugly things like
-// code repetition for the benefit of performance. If you'd like to refactor the
-// code, please benchmark its effects on performance first - maintaining or
-// improving performance would be great, losing performance would be bad.
-//
-export function rasterizer()
+// Rasterizes into the render state's pixel buffer all n-gons currently stored in the
+// state's n-gon cache.
+export function rasterizer(renderState)
 {
-    for (let n = 0; n < Rngon.state.active.ngonCache.count; n++)
+    for (let n = 0; n < renderState.ngonCache.count; n++)
     {
-        const ngon = Rngon.state.active.ngonCache.ngons[n];
+        const ngon = renderState.ngonCache.ngons[n];
 
-        // In theory, we should never receive n-gons that have no vertices, but let's check
-        // to make sure.
-        if (ngon.vertices.length <= 0)
+        switch (ngon.vertices.length)
         {
-            continue;
-        }
-        else if (ngon.vertices.length == 1)
-        {
-            Rngon.defaultPipeline.rasterizer.point(ngon.vertices[0], ngon.material, n);
-            continue;
-        }
-        else if (ngon.vertices.length == 2)
-        {
-            Rngon.defaultPipeline.rasterizer.line(ngon.vertices[0], ngon.vertices[1], ngon.material.color, n, false);
-            continue;
-        }
-        else
-        {
-            Rngon.defaultPipeline.rasterizer.polygon(ngon, n);
-            continue;
+            case 0: continue;
+            case 1: rasterizer.point(renderState, ngon.vertices[0], ngon.material, n); break;
+            case 2: rasterizer.line(renderState, ngon.vertices[0], ngon.vertices[1], ngon.material.color, n, false); break;
+            default: rasterizer.polygon(renderState, ngon, n); break;
         }
     }
 
     return;
 }
 
-// Rasterizes a polygon with 3+ vertices into the render's pixel buffer.
+// Rasterizes a polygon with 3+ vertices into the render state's pixel buffer.
 rasterizer.polygon = function(
-    ngon = Rngon.ngon(),
+    renderState,
+    ngon = Ngon(),
     ngonIdx = 0,
 )
 {
-    Rngon.assert?.(
+    Assert?.(
         (ngon.vertices.length >= 3),
         "Polygons must have 3 or more vertices"
     );
 
-    Rngon.assert?.(
+    Assert?.(
         (ngon.vertices.length < maxNumVertsPerPolygon),
         "Overflowing the vertex buffer"
     );
 
-    const state = Rngon.state.active;
-    const interpolatePerspective = state.usePerspectiveInterpolation;
-    const useFragmentBuffer = state.useFragmentBuffer;
-    const depthBuffer = (state.useDepthBuffer? state.depthBuffer.data : null);
-    const renderWidth = state.pixelBuffer.width;
-    const renderHeight = state.pixelBuffer.height;
-    const usePalette = state.usePalette;
+    const interpolatePerspective = renderState.usePerspectiveInterpolation;
+    const useFragmentBuffer = renderState.useFragmentBuffer;
+    const depthBuffer = (renderState.useDepthBuffer? renderState.depthBuffer.data : null);
+    const renderWidth = renderState.pixelBuffer.width;
+    const renderHeight = renderState.pixelBuffer.height;
+    const usePalette = renderState.usePalette;
     const material = ngon.material;
     const pixelBuffer32 = usePalette
         ? undefined
-        : new Uint32Array(state.pixelBuffer.data.buffer);
+        : new Uint32Array(renderState.pixelBuffer.data.buffer);
 
     let numLeftVerts = 0;
     let numRightVerts = 0;
@@ -108,6 +95,7 @@ rasterizer.polygon = function(
     if (material.hasFill)
     {
         const rasterShaderArgs = {
+            renderState,
             ngonIdx,
             leftEdges,
             rightEdges,
@@ -116,7 +104,7 @@ rasterizer.polygon = function(
             pixelBuffer32,
         };
 
-        if (!state.modules.raster_shader?.(rasterShaderArgs))
+        if (!renderState.modules.raster_shader?.(rasterShaderArgs))
         {
             let raster_fn = undefined;
 
@@ -124,14 +112,14 @@ rasterizer.polygon = function(
                 material.texture &&
                 depthBuffer &&
                 !useFragmentBuffer &&
-                !state.usePalette &&
+                !renderState.usePalette &&
                 !material.allowAlphaReject &&
                 !material.allowAlphaBlend &&
                 (material.textureMapping === "affine") &&
                 (material.textureFiltering !== "dither")
             ){
                 if (
-                    !state.usePalette &&
+                    !renderState.usePalette &&
                     (material.color.red === 255) &&
                     (material.color.green === 255) &&
                     (material.color.blue === 255) &&
@@ -148,7 +136,7 @@ rasterizer.polygon = function(
                 !material.texture &&
                 depthBuffer &&
                 !useFragmentBuffer &&
-                !state.usePalette &&
+                !renderState.usePalette &&
                 !material.allowAlphaReject &&
                 !material.allowAlphaBlend
             ){
@@ -164,17 +152,16 @@ rasterizer.polygon = function(
     }
 
     // Draw a wireframe around any n-gons that wish for one.
-    if (state.showGlobalWireframe ||
-        material.hasWireframe)
+    if (renderState.showGlobalWireframe || material.hasWireframe)
     {
         for (let l = 1; l < numLeftVerts; l++)
         {
-            Rngon.defaultPipeline.rasterizer.line(leftVerts[l-1], leftVerts[l], material.wireframeColor, ngonIdx, true);
+            rasterizer.line(renderState, leftVerts[l-1], leftVerts[l], material.wireframeColor, ngonIdx, true);
         }
 
         for (let r = 1; r < numRightVerts; r++)
         {
-            Rngon.defaultPipeline.rasterizer.line(rightVerts[r-1], rightVerts[r], material.wireframeColor, ngonIdx, true);
+            rasterizer.line(renderState, rightVerts[r-1], rightVerts[r], material.wireframeColor, ngonIdx, true);
         }
     }
 
@@ -203,8 +190,8 @@ rasterizer.polygon = function(
             const endX = Math.min(renderWidth, Math.max(0, Math.floor(vert2.x)));
             const deltaX = ((endX - startX) / edgeHeight);
 
-            const depth1 = (vert1.z / Rngon.state.active.farPlaneDistance);
-            const depth2 = (vert2.z / Rngon.state.active.farPlaneDistance);
+            const depth1 = (vert1.z / renderState.farPlaneDistance);
+            const depth2 = (vert2.z / renderState.farPlaneDistance);
             const startDepth = depth1/w1;
             const deltaDepth = ((depth2/w2 - depth1/w1) / edgeHeight);
 
@@ -271,7 +258,7 @@ rasterizer.polygon = function(
         // otherwise it's on the right side.
         for (let i = 1; i < (ngon.vertices.length - 1); i++)
         {
-            const lr = Rngon.lerp(topVert.x, bottomVert.x, ((ngon.vertices[i].y - topVert.y) / (bottomVert.y - topVert.y)));
+            const lr = Lerp(topVert.x, bottomVert.x, ((ngon.vertices[i].y - topVert.y) / (bottomVert.y - topVert.y)));
 
             if (ngon.vertices[i].x >= lr)
             {
@@ -288,11 +275,12 @@ rasterizer.polygon = function(
     }
 }
 
-// Rasterizes a line between the two given vertices into the render's pixel buffer.
+// Rasterizes a line between the two given vertices into the render state's pixel buffer.
 rasterizer.line = function(
-    vert1 = Rngon.vertex(),
-    vert2 = Rngon.vertex(),
-    color = Rngon.color(),
+    renderState,
+    vert1 = Vertex(),
+    vert2 = Vertex(),
+    color = Color(),
     ngonIdx = 0,
     ignoreDepthBuffer = false
 )
@@ -302,14 +290,14 @@ rasterizer.line = function(
         return;
     }
     
-    const interpolatePerspective = Rngon.state.active.usePerspectiveInterpolation;
-    const farPlane = Rngon.state.active.farPlaneDistance;
-    const useFragmentBuffer = Rngon.state.active.useFragmentBuffer;
-    const depthBuffer = (Rngon.state.active.useDepthBuffer? Rngon.state.active.depthBuffer.data : null);
-    const pixelBufferClamped8 = Rngon.state.active.pixelBuffer.data;
+    const interpolatePerspective = renderState.usePerspectiveInterpolation;
+    const farPlane = renderState.farPlaneDistance;
+    const useFragmentBuffer = renderState.useFragmentBuffer;
+    const depthBuffer = (renderState.useDepthBuffer? renderState.depthBuffer.data : null);
+    const pixelBufferClamped8 = renderState.pixelBuffer.data;
     const pixelBuffer = new Uint32Array(pixelBufferClamped8.buffer);
-    const renderWidth = Rngon.state.active.pixelBuffer.width;
-    const renderHeight = Rngon.state.active.pixelBuffer.height;
+    const renderWidth = renderState.pixelBuffer.width;
+    const renderHeight = renderState.pixelBuffer.height;
  
     const startX = Math.floor(vert1.x);
     const startY = Math.floor(vert1.y);
@@ -417,7 +405,7 @@ rasterizer.line = function(
 
             if (useFragmentBuffer)
             {
-                const fragment = Rngon.state.active.fragmentBuffer.data[pixelBufferIdx];
+                const fragment = renderState.fragmentBuffer.data[pixelBufferIdx];
                 fragment.ngonIdx = ngonIdx;
                 fragment.textureUScaled = undefined; // We don't support textures on lines.
                 fragment.textureVScaled = undefined;
@@ -435,8 +423,9 @@ rasterizer.line = function(
 };
 
 rasterizer.point = function(
-    vertex = Rngon.vertex(),
-    material = Rngon.material(),
+    renderState,
+    vertex = Vertex(),
+    material = Material(),
     ngonIdx = 0
 )
 {
@@ -445,12 +434,12 @@ rasterizer.point = function(
         return;
     }
 
-    const useFragmentBuffer = Rngon.state.active.useFragmentBuffer;
-    const depthBuffer = (Rngon.state.active.useDepthBuffer? Rngon.state.active.depthBuffer.data : null);
-    const pixelBufferClamped8 = Rngon.state.active.pixelBuffer.data;
+    const useFragmentBuffer = renderState.useFragmentBuffer;
+    const depthBuffer = (renderState.useDepthBuffer? renderState.depthBuffer.data : null);
+    const pixelBufferClamped8 = renderState.pixelBuffer.data;
     const pixelBuffer = new Uint32Array(pixelBufferClamped8.buffer);
-    const renderWidth = Rngon.state.active.pixelBuffer.width;
-    const renderHeight = Rngon.state.active.pixelBuffer.height;
+    const renderWidth = renderState.pixelBuffer.width;
+    const renderHeight = renderState.pixelBuffer.height;
 
     const x = Math.floor(vertex.x);
     const y = Math.floor(vertex.y);
@@ -464,7 +453,7 @@ rasterizer.point = function(
         return;
     }
 
-    const depth = (vertex.z / Rngon.state.active.farPlaneDistance);
+    const depth = (vertex.z / renderState.farPlaneDistance);
     const shade = (material.renderVertexShade? vertex.shade : 1);
     const color = (material.texture? material.texture.pixels[0] : material.color);
     const red = (color.red * shade);
@@ -505,7 +494,7 @@ rasterizer.point = function(
 
         if (useFragmentBuffer)
         {
-            const fragment = Rngon.state.active.fragmentBuffer.data[pixelBufferIdx];
+            const fragment = renderState.fragmentBuffer.data[pixelBufferIdx];
             fragment.ngonIdx = ngonIdx;
             fragment.textureUScaled = 0;
             fragment.textureVScaled = 0;

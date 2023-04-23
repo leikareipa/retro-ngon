@@ -5,9 +5,11 @@
  *
  */
 
+import {assert as Assert} from "../core/util.js";
+
 export function vector(x = 0, y = 0, z = 0)
 {
-    Rngon.assert?.(
+    Assert?.(
         ((typeof x === "number") &&
          (typeof y === "number") &&
          (typeof z === "number")),
@@ -26,7 +28,7 @@ export function vector(x = 0, y = 0, z = 0)
 // Transforms the vector by the given 4x4 matrix.
 vector.transform = function(v, m = [])
 {
-    Rngon.assert?.(
+    Assert?.(
         (m.length === 16),
         "Expected a 4 x 4 matrix to transform the vector by."
     );
@@ -60,7 +62,7 @@ vector.dot = function(v, other)
 
 vector.cross = function(v, other)
 {
-    const c = Rngon.vector();
+    const c = vector();
 
     c.x = ((v.y * other.z) - (v.z * other.y));
     c.y = ((v.z * other.x) - (v.x * other.z));

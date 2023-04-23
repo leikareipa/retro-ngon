@@ -154,7 +154,7 @@ function vs_copy_ngons(ngon)
 
 // A pixel shader that shades each pixel based on whether and how the light source is
 // visible to it.
-function ps_raytraced_lighting({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
+function ps_raytraced_lighting({renderState, renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
 {
     // Defer shading until the scene's BVH has been built.
     if (!this.sceneBVH)
@@ -162,7 +162,7 @@ function ps_raytraced_lighting({renderWidth, renderHeight, fragmentBuffer, pixel
         return;
     }
 
-    const light = this.Rngon.state.active.lights[0];
+    const light = renderState.lights[0];
 
     // Pre-create storage objects, so we don't need to keep re-creating them in the
     // render loop.

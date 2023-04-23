@@ -5,7 +5,11 @@
  * 
  */
 
+import {lerp as Lerp} from "../../core/util.js";
+import {$throw as Throw} from "../../core/util.js";
+
 export function plain_textured_fill_with_color({
+    renderState,
     ngonIdx,
     leftEdges,
     rightEdges,
@@ -16,12 +20,12 @@ export function plain_textured_fill_with_color({
 {
     if (!numLeftEdges || !numRightEdges) return true;
 
-    const ngon = Rngon.state.active.ngonCache.ngons[ngonIdx];
-    const usePalette = Rngon.state.active.usePalette;
-    const pixelBufferImage = Rngon.state.active.pixelBuffer;
+    const ngon = renderState.ngonCache.ngons[ngonIdx];
+    const usePalette = renderState.usePalette;
+    const pixelBufferImage = renderState.pixelBuffer;
     const pixelBufferClamped8 = pixelBufferImage.data;
     const pixelBufferWidth = pixelBufferImage.width;
-    const depthBuffer = (Rngon.state.active.useDepthBuffer? Rngon.state.active.depthBuffer.data : null);
+    const depthBuffer = (renderState.useDepthBuffer? renderState.depthBuffer.data : null);
     const material = ngon.material;
     const texture = (material.texture || null);
     const useBilinearTextureFiltering = (texture && material.textureFiltering === "bilinear");
@@ -122,7 +126,7 @@ export function plain_textured_fill_with_color({
 
                         break;
                     }
-                    default: Rngon.$throw("Unrecognized UV wrapping mode."); break;
+                    default: Throw("Unrecognized UV wrapping mode."); break;
                 }
 
                 const texel = textureMipLevel.pixels[(~~u) + (~~v) * textureMipLevel.width];
@@ -153,20 +157,20 @@ export function plain_textured_fill_with_color({
                             if (c11.alpha !== 255) c11 = texel;
         
                             const cx0 = {
-                                red: Rngon.lerp(red, c10.red, tx),
-                                green: Rngon.lerp(green, c10.green, tx),
-                                blue: Rngon.lerp( blue, c10.blue, tx),
+                                red: Lerp(red, c10.red, tx),
+                                green: Lerp(green, c10.green, tx),
+                                blue: Lerp( blue, c10.blue, tx),
                             };
         
                             const cx1 = {
-                                red: Rngon.lerp(c01.red, c11.red, tx),
-                                green: Rngon.lerp(c01.green, c11.green, tx),
-                                blue: Rngon.lerp(c01.blue, c11.blue, tx),
+                                red: Lerp(c01.red, c11.red, tx),
+                                green: Lerp(c01.green, c11.green, tx),
+                                blue: Lerp(c01.blue, c11.blue, tx),
                             };
         
-                            red = (shade * material.color.unitRange.red * Rngon.lerp(cx0.red, cx1.red, ty));
-                            green = (shade * material.color.unitRange.green * Rngon.lerp(cx0.green, cx1.green, ty));
-                            blue = (shade * material.color.unitRange.blue * Rngon.lerp(cx0.blue, cx1.blue, ty));
+                            red = (shade * material.color.unitRange.red * Lerp(cx0.red, cx1.red, ty));
+                            green = (shade * material.color.unitRange.green * Lerp(cx0.green, cx1.green, ty));
+                            blue = (shade * material.color.unitRange.blue * Lerp(cx0.blue, cx1.blue, ty));
                         }
                         else
                         {

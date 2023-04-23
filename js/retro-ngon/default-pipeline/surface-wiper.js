@@ -6,15 +6,15 @@
  */
 
 // Resets the render surface's buffers to their initial contents.
-export function surface_wiper()
+export function surface_wiper(renderState)
 {
-    Rngon.state.active.pixelBuffer.data.fill(0);
+    renderState.pixelBuffer.data.fill(0);
 
     /// TODO: Wipe the fragment buffer.
 
-    if (Rngon.state.active.useDepthBuffer)
+    if (renderState.useDepthBuffer)
     {
-        Rngon.state.active.depthBuffer.data.fill(Rngon.state.active.depthBuffer.clearValue);
+        renderState.depthBuffer.data.fill(renderState.depthBuffer.clearValue);
     }
 
     return;

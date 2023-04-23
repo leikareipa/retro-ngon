@@ -32,6 +32,9 @@
  *
  */
 
+import {assert as Assert} from "../core/util.js";
+import {trig as Trig} from "../core/trig.js";
+
 // Provides manipulation of 4-by-4 matrices.
 export const matrix44 = {
     scaling: function(x = 0, y = 0, z = 0)
@@ -56,11 +59,11 @@ export const matrix44 = {
 
     rotation: function(x = 0, y = 0, z = 0)
     {
-        x = Rngon.trig.deg(x);
-        y = Rngon.trig.deg(y);
-        z = Rngon.trig.deg(z);
-        const cos = Rngon.trig.cos;
-        const sin = Rngon.trig.sin;
+        x = Trig.deg(x);
+        y = Trig.deg(y);
+        z = Trig.deg(z);
+        const cos = Trig.cos;
+        const sin = Trig.sin;
 
         const mx = [
             1,       0,       0,       0,
@@ -83,10 +86,10 @@ export const matrix44 = {
             0,       0,       0,       1,
         ];
 
-        const temp = Rngon.matrix44.multiply(my, mz);
-        const mResult = Rngon.matrix44.multiply(mx, temp);
+        const temp = matrix44.multiply(my, mz);
+        const mResult = matrix44.multiply(mx, temp);
 
-        Rngon.assert?.(
+        Assert?.(
             (mResult.length === 16),
             "Expected a 4 x 4 matrix."
         );
@@ -119,7 +122,7 @@ export const matrix44 = {
     
     multiply: function(m1 = [], m2 = [])
     {
-        Rngon.assert?.(
+        Assert?.(
             ((m1.length === 16) && (m2.length === 16)),
             "Expected 4 x 4 matrices."
         );

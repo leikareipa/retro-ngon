@@ -5,31 +5,37 @@
  *
  */
 
+import {assert as Assert} from "../core/util.js";
+import {lerp as Lerp} from "../core/util.js";
+import {vector as Vector} from "./vector.js";
+import {material as Material} from "./material.js";
+import {vertex as Vertex} from "./vertex";
+
 // A single n-sided ngon.
 export function ngon(
-    vertices = [Rngon.vertex()],
-    material = Rngon.material(),
-    vertexNormals = Rngon.vector(0, 1, 0)
+    vertices = [Vertex()],
+    material = Material(),
+    vertexNormals = Vector(0, 1, 0)
 )
 {
-    Rngon.assert?.(
+    Assert?.(
         (vertices instanceof Array),
         "Expected an array of vertices to make an ngon."
     );
 
-    Rngon.assert?.(
+    Assert?.(
         (material instanceof Object),
         "Expected an object containing user-supplied options."
     );
 
     // Combine default material options with the user-supplied ones.
-    material = Rngon.material(material);
+    material = Material(material);
 
     // Assuming that only a single normal vector was provided, in which case, let's
     // duplicate that normal for all vertices.
     if (!Array.isArray(vertexNormals))
     {
-        vertexNormals = new Array(vertices.length).fill().map(n=>Rngon.vector(vertexNormals.x, vertexNormals.y, vertexNormals.z));
+        vertexNormals = new Array(vertices.length).fill().map(n=>Vector(vertexNormals.x, vertexNormals.y, vertexNormals.z));
     }
 
     const faceNormal = vertexNormals.reduce((faceNormal, vertexNormal)=>{
@@ -37,9 +43,9 @@ export function ngon(
         faceNormal.y += vertexNormal.y;
         faceNormal.z += vertexNormal.z;
         return faceNormal;
-    }, Rngon.vector(0, 0, 0));
+    }, Vector(0, 0, 0));
 
-    Rngon.vector.normalize(faceNormal);
+    Vector.normalize(faceNormal);
 
     // If we get vertex U or V coordinates in the range [0,-x], we want to change 0 to
     // -eps to avoid incorrect rounding during texture-mapping.
@@ -77,7 +83,7 @@ ngon.perspective_divide = function(ngon)
 {
     for (const vert of ngon.vertices)
     {
-        Rngon.vertex.perspective_divide(vert);
+        Vertex.perspective_divide(vert);
     }
 }
 
@@ -85,7 +91,7 @@ ngon.transform = function(ngon, matrix44)
 {
     for (const vert of ngon.vertices)
     {
-        Rngon.vertex.transform(vert, matrix44);
+        Vertex.transform(vert, matrix44);
     }
 }
 
@@ -144,17 +150,17 @@ ngon.clip_to_viewport = function(ngon)
                     const lerpStep = (prevVertex.w - prevComponent) /
                                     ((prevVertex.w - prevComponent) - (ngon.vertices[i].w - curComponent));
 
-                    ngon.vertices[numOriginalVertices + k++] = Rngon.vertex(
-                        Rngon.lerp(prevVertex.x, ngon.vertices[i].x, lerpStep),
-                        Rngon.lerp(prevVertex.y, ngon.vertices[i].y, lerpStep),
-                        Rngon.lerp(prevVertex.z, ngon.vertices[i].z, lerpStep),
-                        Rngon.lerp(prevVertex.u, ngon.vertices[i].u, lerpStep),
-                        Rngon.lerp(prevVertex.v, ngon.vertices[i].v, lerpStep),
-                        Rngon.lerp(prevVertex.w, ngon.vertices[i].w, lerpStep),
-                        Rngon.lerp(prevVertex.shade, ngon.vertices[i].shade, lerpStep),
-                        Rngon.lerp(prevVertex.worldX, ngon.vertices[i].worldX, lerpStep),
-                        Rngon.lerp(prevVertex.worldY, ngon.vertices[i].worldY, lerpStep),
-                        Rngon.lerp(prevVertex.worldZ, ngon.vertices[i].worldZ, lerpStep),
+                    ngon.vertices[numOriginalVertices + k++] = Vertex(
+                        Lerp(prevVertex.x, ngon.vertices[i].x, lerpStep),
+                        Lerp(prevVertex.y, ngon.vertices[i].y, lerpStep),
+                        Lerp(prevVertex.z, ngon.vertices[i].z, lerpStep),
+                        Lerp(prevVertex.u, ngon.vertices[i].u, lerpStep),
+                        Lerp(prevVertex.v, ngon.vertices[i].v, lerpStep),
+                        Lerp(prevVertex.w, ngon.vertices[i].w, lerpStep),
+                        Lerp(prevVertex.shade, ngon.vertices[i].shade, lerpStep),
+                        Lerp(prevVertex.worldX, ngon.vertices[i].worldX, lerpStep),
+                        Lerp(prevVertex.worldY, ngon.vertices[i].worldY, lerpStep),
+                        Lerp(prevVertex.worldZ, ngon.vertices[i].worldZ, lerpStep),
                     );
                 }
                 

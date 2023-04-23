@@ -24,7 +24,6 @@
                         <option value='tomb-raider-home'>Tomb Raider &ndash; Lara's Home</option>
 
                         <optgroup label="Feature samples"></optgroup>
-                        <option value="async-rendering">Async rendering</option>
                         <option value="textured-cube-model">Barebones textured model</option>
                         <option value="rotating-triangle">Barebones triangle</option>
                         <option value="mipmapping">Mipmapping</option>
@@ -88,7 +87,7 @@
         const rendererSelector = document.getElementById("renderer-selector");
 
         // These samples provide no way to set the renderer version.
-        if (["async-rendering", "layered-rendering", "multipass-rendering"].includes(sample))
+        if (["layered-rendering", "multipass-rendering"].includes(sample))
         {
             rendererSelectorContainer.style.display = "none";
             sampleSelectorContainer.style.width = "100%";

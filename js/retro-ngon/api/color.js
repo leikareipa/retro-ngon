@@ -5,6 +5,8 @@
  *
  */
 
+import {assert as Assert} from "../core/util.js";
+
 // Red, green, blue, alpha; in the range [0,255].
 export function color(
     red = 0,
@@ -13,7 +15,7 @@ export function color(
     alpha = 255
 )
 {
-    Rngon.assert?.(
+    Assert?.(
         (((red   >= 0) && (red   <= 255)) &&
          ((green >= 0) && (green <= 255)) &&
          ((blue  >= 0) && (blue  <= 255)) &&
@@ -40,7 +42,7 @@ export function color(
 // Indexed color. Represents an entry in a palette.
 export function color_index(index = 0)
 {
-    Rngon.assert?.((index >= 0), "The given color index is out of range.");
+    Assert?.((index >= 0), "The given color index is out of range.");
 
     const publicInterface = Object.freeze({
         index,

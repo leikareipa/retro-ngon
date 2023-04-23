@@ -6,6 +6,7 @@
  */
 
 export function plain_solid_fill({
+    renderState,
     ngonIdx,
     leftEdges,
     rightEdges,
@@ -14,12 +15,12 @@ export function plain_solid_fill({
     pixelBuffer32,
 })
 {
-    const ngon = Rngon.state.active.ngonCache.ngons[ngonIdx];
-    const usePalette = Rngon.state.active.usePalette;
-    const pixelBufferImage = Rngon.state.active.pixelBuffer;
+    const ngon = renderState.ngonCache.ngons[ngonIdx];
+    const usePalette = renderState.usePalette;
+    const pixelBufferImage = renderState.pixelBuffer;
     const pixelBufferClamped8 = pixelBufferImage.data;
     const pixelBufferWidth = pixelBufferImage.width;
-    const depthBuffer = (Rngon.state.active.useDepthBuffer? Rngon.state.active.depthBuffer.data : null);
+    const depthBuffer = (renderState.useDepthBuffer? renderState.depthBuffer.data : null);
     const material = ngon.material;
 
     let curLeftEdgeIdx = 0;
