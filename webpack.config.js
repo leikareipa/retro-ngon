@@ -7,7 +7,7 @@ module.exports = {
     },
     output: {
         library: {
-            type: "umd",
+            type: "global",
         },
         path: path.resolve(__dirname, "distributable"),
         filename: "[name].js",
