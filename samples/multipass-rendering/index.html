@@ -124,7 +124,8 @@
                     }
                 });
 
-                // Main pass.
+                // Render the scene from the viewpoint of the camera, pasting the previous
+                // pass's image over portal polygons.
                 Rngon.render({
                     target: "canvas",
                     scene: scene,
@@ -150,7 +151,7 @@
                                 }
                             }
                         },
-                        // Insert the portal pass's image into the main pass pixel buffer.
+                        // Insert the portal pass's image over portal polygons.
                         pixelShader({renderWidth, renderHeight, pixelBuffer, fragmentBuffer, ngonCache})
                         {
                             const reflectionPixelBuffer = Rngon.state["portal"].pixelBuffer.data;
