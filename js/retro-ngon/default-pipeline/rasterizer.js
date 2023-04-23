@@ -116,14 +116,10 @@ rasterizer.polygon = function(
             pixelBuffer32,
         };
 
-        if (!state.raster_shader?.())
+        if (!state.modules.raster_shader?.(rasterShaderArgs))
         {
             let raster_fn = undefined;
 
-            if (state.raster_shader)
-            {
-                raster_fn = state.raster_shader
-            }
             if (
                 material.texture &&
                 depthBuffer &&
