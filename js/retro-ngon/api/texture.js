@@ -5,6 +5,8 @@
  *
  */
 
+import {validate_object} from "../core/schema.js";
+import {color as Color} from "./color.js";
 import {assert as Assert} from "../core/util.js";
 import {$throw as Throw} from "../core/util.js";
 
@@ -23,6 +25,8 @@ export function texture(data = {})
         },
         ...data,
     }
+
+    validate_object?.(data, texture.schema.arguments);
 
     // The maximum dimensions of a texture.
     const maxWidth = 32768;
@@ -115,12 +119,14 @@ export function texture(data = {})
         {
             const idx = ((x + (data.needsFlip? (data.height - y - 1) : y) * data.width) * numColorChannels);
 
-            pixelArray.push({
-                red: data.pixels[idx + 0],
-                green: data.pixels[idx + 1],
-                blue: data.pixels[idx + 2],
-                alpha: data.pixels[idx + 3]
-            });
+            pixelArray.push(
+                Color(
+                    data.pixels[idx + 0],
+                    data.pixels[idx + 1],
+                    data.pixels[idx + 2],
+                    data.pixels[idx + 3]
+                )
+            );
         }
     }
 
@@ -171,14 +177,47 @@ export function texture(data = {})
     }
 
     const publicInterface = {
+        $constructor: "Texture",
         ...data,
         pixels: pixelArray,
         mipLevels: mipmaps,
     };
+
+    validate_object?.(publicInterface, texture.schema.interface);
     
     return publicInterface;
 }
 
+texture.schema = {
+    arguments: {
+        where: "in arguments passed to texture()",
+        allowAdditionalProperties: true,
+        properties: {
+            "width": ["number"],
+            "height": ["number"],
+            "pixels": [["number"], "string"],
+            "encoding": ["string"],
+            "channels": ["string"],
+            "needsFlip": ["boolean"],
+        },
+    },
+    interface: {
+        where: "in the return value of texture()",
+        allowAdditionalProperties: true,
+        properties: {
+            "$constructor": {
+                value: "Texture",
+            },
+            "width": ["number"],
+            "height": ["number"],
+            "encoding": ["string"],
+            "channels": ["string"],
+            "needsFlip": ["boolean"],
+            "pixels": [["Color"]],
+            "mipLevels": [["object"]],
+        },
+    },
+};
 
 // Returns a new texture whose pixel data are a deep copy of the given texture.
 texture.deep_copy = function(srcTexture)

@@ -5,7 +5,7 @@
  *
  */
 
-import {assert as Assert} from "../core/util.js";
+import {validate_object} from "../core/schema.js";
 import {matrix44 as Matrix44} from "../core/matrix44";
 import {vector as Vector} from "./vector.js";
 import {mesh as Mesh} from "./mesh.js";
@@ -17,22 +17,7 @@ export function mesh(
     transform = {}
 )
 {
-    Assert?.(
-        (ngons instanceof Array),
-        "Expected a list of ngons for creating an ngon mesh."
-    );
-
-    Assert?.(
-        (transform instanceof Object),
-        "Expected an object with transformation properties."
-    );
-
-    Assert?.(
-        (typeof Mesh.defaultTransform?.rotation !== "undefined" &&
-         typeof Mesh.defaultTransform?.translation !== "undefined" &&
-         typeof Mesh.defaultTransform?.scaling !== "undefined"),
-        "The default transforms object for mesh() is missing required properties."
-    );
+    validate_object?.({ngons, transform}, mesh.schema.arguments);
 
     transform = {
         ...Mesh.defaultTransform,
@@ -40,11 +25,14 @@ export function mesh(
     };
 
     const publicInterface = {
+        $constructor: "Mesh",
         ngons,
         rotation: transform.rotation,
         translation: transform.translation,
         scale: transform.scaling,
     };
+
+    validate_object?.(publicInterface, mesh.schema.interface);
     
     return publicInterface;
 }
@@ -53,6 +41,29 @@ mesh.defaultTransform = {
     translation: Vector(0, 0, 0),
     rotation: Vector(0, 0, 0),
     scaling: Vector(1, 1, 1),
+};
+
+mesh.schema = {
+    interface: {
+        where: "in the return value of mesh()",
+        allowAdditionalProperties: true,
+        properties: {
+            "$constructor": {
+                value: "Mesh",
+            },
+            "ngons": [["Ngon"]],
+            "rotation": ["Vector"],
+            "translation": ["Vector"],
+            "scale": ["Vector"],
+        },
+    },
+    arguments: {
+        where: "in arguments passed to mesh()",
+        properties: {
+            "ngons": [["Ngon"]],
+            "transform": ["object"],
+        },
+    },
 };
 
 mesh.object_space_matrix = function(mesh)

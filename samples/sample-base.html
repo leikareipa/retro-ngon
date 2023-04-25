@@ -108,8 +108,6 @@
         <script>
             var baseRenderOptions = {
                 resolution: 0.25,
-                cameraDirection: {x:0, y:0, z:0},
-                cameraPosition: {x:0, y:0, z:-170},
             };
 
             // Force the scale to initialize to the value set in baseRenderOptions.scale.
@@ -161,15 +159,15 @@
 
                     const renderOptions = {
                         useDepthBuffer: true,
-                        cameraDirection: baseRenderOptions.cameraDirection,
-                        cameraPosition: baseRenderOptions.cameraPosition,
+                        cameraDirection: Rngon.vector(0, 0, 0),
+                        cameraPosition: Rngon.vector(0, 0, -170),
                         resolution: baseRenderOptions.resolution,
                         ...(scene.renderOptions || {}),
                     };
 
                     // Attempt to limit the renderer's refresh rate, if so requested by the user.
-                    if (renderOptions.targetRefreshRate &&
-                        (frameTimeDeltaMs < Math.floor(1000 / renderOptions.targetRefreshRate)))
+                    if (scene.targetRefreshRate &&
+                        (frameTimeDeltaMs < Math.floor(1000 / scene.targetRefreshRate)))
                     {
                         queue_new_frame(frameTimeDeltaMs);
                         return;

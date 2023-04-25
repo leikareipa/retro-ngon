@@ -5,6 +5,7 @@
  *
  */
 
+import {validate_object} from "../core/schema.js";
 import {rasterizer} from "../default-pipeline/rasterizer.js"
 import {transform_clip_lighter} from "../default-pipeline/transform-clip-lighter.js"
 import {surface_wiper} from "../default-pipeline/surface-wiper.js"
@@ -21,6 +22,8 @@ export function render({
     pipeline = {},
 } = {})
 {
+    validate_object?.({target, scene, options, pipeline}, render.schema.arguments);
+
     const renderCallInfo = {
         renderWidth: 0,
         renderHeight: 0,
@@ -37,6 +40,9 @@ export function render({
         ...render.defaultPipeline,
         ...pipeline
     });
+
+    validate_object?.(options, render.schema.options);
+    validate_object?.(pipeline, render.schema.pipeline);
 
     const state = setup_render_state(options, pipeline);
 
@@ -99,14 +105,92 @@ render.defaultOptions = {
 };
 
 render.defaultPipeline = {
-    surfaceWipe: undefined,
-    rasterize: undefined,
+    surfaceWiper: undefined,
+    rasterizer: undefined,
     transformClipLighter: undefined,
     pixelShader: null,
     vertexShader: null,
     contextShader: null,
     rasterShader: undefined,
 }
+
+render.schema = {
+    arguments: {
+        where: "in arguments passed to render()",
+        properties: {
+            target: [
+                "HTMLCanvasElement",
+                "string",
+                "null",
+            ],
+            scene: [["Mesh"]],
+            options: ["object"],
+            pipeline: ["object"],
+        },
+    },
+    options: {
+        where: "in render({options})",
+        properties: { 
+            cameraPosition: ["Vector"],
+            cameraDirection: ["Vector"],
+            state: ["string", "number"],
+            resolution: ["number"],
+            fov: ["number"],
+            nearPlane: ["number"],
+            farPlane: ["number"],
+            useDepthBuffer: ["boolean"],
+            useFragmentBuffer: ["boolean"],
+            usePerspectiveInterpolation: ["boolean"],
+            globalWireframe: ["boolean"],
+            hibernateWhenTargetNotVisible: ["boolean"],
+            lights: [["Light"]],
+            palette: [
+                "null",
+                ["number"]
+            ],
+        },
+    },
+    pipeline: {
+        where: "in render({pipeline})",
+        properties: { 
+            surfaceWiper: [
+                "undefined",
+                "null",
+                "function"
+            ],
+            rasterizer: [
+                "undefined",
+                "null",
+                "function"
+            ],
+            transformClipLighter: [
+                "undefined",
+                "null",
+                "function"
+            ],
+            pixelShader: [
+                "undefined",
+                "null",
+                "function"
+            ],
+            vertexShader: [
+                "undefined",
+                "null",
+                "function"
+            ],
+            contextShader: [
+                "undefined",
+                "null",
+                "function"
+            ],
+            rasterShader: [
+                "undefined",
+                "null",
+                "function"
+            ],
+        },
+    },
+};
 
 function setup_render_state(options = {}, pipeline = {})
 {

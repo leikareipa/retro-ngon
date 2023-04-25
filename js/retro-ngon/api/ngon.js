@@ -5,7 +5,7 @@
  *
  */
 
-import {assert as Assert} from "../core/util.js";
+import {validate_object} from "../core/schema.js";
 import {lerp as Lerp} from "../core/util.js";
 import {vector as Vector} from "./vector.js";
 import {material as Material} from "./material.js";
@@ -18,15 +18,7 @@ export function ngon(
     vertexNormals = Vector(0, 1, 0)
 )
 {
-    Assert?.(
-        (vertices instanceof Array),
-        "Expected an array of vertices to make an ngon."
-    );
-
-    Assert?.(
-        (material instanceof Object),
-        "Expected an object containing user-supplied options."
-    );
+    validate_object?.({vertices, material, vertexNormals}, ngon.schema.arguments);
 
     // Combine default material options with the user-supplied ones.
     material = Material(material);
@@ -64,6 +56,7 @@ export function ngon(
     }
 
     const publicInterface = {
+        $constructor: "Ngon",
         vertices,
         vertexNormals,
         normal: faceNormal,
@@ -76,8 +69,34 @@ export function ngon(
         mipLevel: 0,
     };
 
+    validate_object?.(publicInterface, ngon.schema.interface);
+
     return publicInterface;
 }
+
+ngon.schema = {
+    arguments: {
+        where: "in arguments passed to ngon()",
+        properties: {
+            "vertices": [["Vertex"]],
+            "material": ["Material", "object"],
+            "vertexNormals": [["Vector"], "Vector"],
+        },
+    },
+    interface: {
+        where: "in the return value of ngon()",
+        properties: {
+            "$constructor": {
+                value: "Ngon",
+            },
+            "vertices": [["Vertex"]],
+            "vertexNormals": [["Vector"]],
+            "normal": ["Vector"],
+            "material": ["Material"],
+            "mipLevel": ["number"],
+        },
+    },
+};
 
 ngon.perspective_divide = function(ngon)
 {

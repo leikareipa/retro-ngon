@@ -27,10 +27,10 @@ export const sample = {
         this.camera.update();
     
         return {
+            get targetRefreshRate() {
+                return parent.REFRESH_RATE;
+            },
             renderOptions: {
-                get targetRefreshRate() {
-                    return parent.REFRESH_RATE;
-                },
                 cameraDirection: this.camera.direction,
                 cameraPosition: this.camera.position,
             },

@@ -5,25 +5,46 @@
  *
  */
 
+import {validate_object} from "../core/schema.js";
 import {assert as Assert} from "../core/util.js";
 
 export function vector(x = 0, y = 0, z = 0)
 {
-    Assert?.(
-        ((typeof x === "number") &&
-         (typeof y === "number") &&
-         (typeof z === "number")),
-        "Expected numbers as parameters to the vector factory."
-    );
+    validate_object?.({x, y, z}, vector.schema.arguments);
 
     const publicInterface = {
+        $constructor: "Vector",
         x,
         y,
         z,
     };
 
+    validate_object?.(publicInterface, vector.schema.interface);
+
     return publicInterface;
 }
+
+vector.schema = {
+    interface: {
+        where: "in the return value of vector()",
+        properties: {
+            "$constructor": {
+                value: "Vector",
+            },
+            "x": ["number"],
+            "y": ["number"],
+            "z": ["number"],
+        },
+    },
+    arguments: {
+        where: "in arguments passed to vector()",
+        properties: {
+            "x": ["number"],
+            "y": ["number"],
+            "z": ["number"],
+        },
+    },
+};
 
 // Transforms the vector by the given 4x4 matrix.
 vector.transform = function(v, m = [])

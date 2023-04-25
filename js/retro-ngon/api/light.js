@@ -14,6 +14,7 @@ export function light(
 )
 {
     const publicInterface = {
+        $constructor: "Light",
         position,
         ...light.defaultSettings,
         ...settings,

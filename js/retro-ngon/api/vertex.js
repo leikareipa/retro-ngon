@@ -5,6 +5,7 @@
  *
  */
 
+import {validate_object} from "../core/schema.js";
 import {assert as Assert} from "../core/util.js";
 
 export function vertex(
@@ -20,20 +21,11 @@ export function vertex(
     worldZ = z,
 )
 {
-    Assert?.(
-        ((typeof x === "number") &&
-         (typeof y === "number") &&
-         (typeof z === "number") &&
-         (typeof w === "number") &&
-         (typeof u === "number") &&
-         (typeof v === "number") &&
-         (typeof worldX === "number") &&
-         (typeof worldY === "number") &&
-         (typeof worldZ === "number")),
-        "Expected numbers as parameters to the vertex factory."
-    );
+    validate_object?.({x, y, z, u, v, w, shade, worldX, worldY, worldZ}, vertex.schema.arguments);
 
     const publicInterface = {
+        $constructor: "Vertex",
+        
         x,
         y,
         z,
@@ -51,8 +43,46 @@ export function vertex(
         worldZ,
     };
 
+    validate_object?.(publicInterface, vertex.schema.interface);
+
     return publicInterface;
 }
+
+vertex.schema = {
+    arguments: {
+        where: "in arguments passed to vertex()",
+        properties: {
+            "x": ["number"],
+            "y": ["number"],
+            "z": ["number"],
+            "u": ["number"],
+            "v": ["number"],
+            "w": ["number"],
+            "shade": ["number"],
+            "worldX": ["number"],
+            "worldY": ["number"],
+            "worldZ": ["number"],
+        },
+    },
+    interface: {
+        where: "in the return value of vertex()",
+        properties: {
+            "$constructor": {
+                value: "Vertex",
+            },
+            "x": ["number"],
+            "y": ["number"],
+            "z": ["number"],
+            "u": ["number"],
+            "v": ["number"],
+            "w": ["number"],
+            "shade": ["number"],
+            "worldX": ["number"],
+            "worldY": ["number"],
+            "worldZ": ["number"],
+        },
+    },
+};
 
 // Transforms the vertex by the given 4x4 matrix.
 vertex.transform = function(v, m = [])

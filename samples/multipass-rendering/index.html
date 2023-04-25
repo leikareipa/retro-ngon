@@ -84,18 +84,6 @@
 
             function portal(scene, camera, numTicks = 0)
             {
-                const mirrorPosition = {
-                    x: -105.77,
-                    y: 69.72,
-                    z: -66.2,
-                };
-                
-                const mirrorDirection = {
-                    x: 19.6,
-                    y: 59.6,
-                    z: 0,
-                };
-
                 // Render the scene from the viewpoint of the portal.
                 Rngon.render({
                     target: "canvas",
@@ -104,7 +92,7 @@
                         state: "portal",
                         resolution: 0.125,
                         cameraDirection: camera.direction,
-                        cameraPosition: mirrorPosition,
+                        cameraPosition: Rngon.vector(-105.77, 69.72, -66.2),
                     },
                     pipeline: {
                         vertexShader(ngon)

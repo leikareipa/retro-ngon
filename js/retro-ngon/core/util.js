@@ -1,5 +1,5 @@
 /*
- * 2019 Tarpeeksi Hyvae Soft
+ * 2019-2023 Tarpeeksi Hyvae Soft
  * 
  * Software: Retro n-gon renderer
  * 
@@ -7,12 +7,13 @@
  *
  */
 
-// Call this function using optional chaining: "Rsed.assert?.()".
-// To disable assertions, comment out this function definition.
-export function assert(condition, errorMessage)
+// Call this function using optional chaining - "assert?.()" - so it doesn't get
+// invoked in production builds.
+export const assert = IS_PRODUCTION_BUILD? undefined
+: function(condition, errorMessage)
 {
     if (!condition)
-    {
+    { 
         $throw(errorMessage);
     }
 }
