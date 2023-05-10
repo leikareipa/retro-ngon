@@ -401,8 +401,7 @@ A polygon made up of *n* vertices, also known as an n-gon. Single-vertex n-gons 
         - "affine": Affine texture-mapping using the UV coordinates provided by the n-gon's *`vertex`* objects. For perspective-correct affine mapping, also enable the `options.usePerspectiveInterpolation` property to *`render()`*.
     - **textureFiltering** (string = *"none"*): The filtering effect to be applied when rasterizing `material.texture`:
         - "none": No filtering. The texture will appear pixelated when viewed up close.
-        - "dither": Faux bilinear filtering by jittering texel coordinates.
-        - "bilinear": Bilinear filtering.
+        - "dither": Jittering of texel coordinates to approximate bilinear filtering.
     - **uvWrapping** (string = *"repeat"*): How the renderer should scale UV coordinates:
         - "clamp": Clamp UV coordinates to [0,1].
         - "repeat": Discard UV coordinates' integer part. This option is available only for power-of-two textures; others will fall back to "clamp".

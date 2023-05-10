@@ -44,7 +44,6 @@ export function generic_fill({
     const pixelBufferWidth = pixelBufferImage.width;
     const material = ngon.material;
     const texture = (material.texture || null);
-    const useBilinearTextureFiltering = (texture && material.textureFiltering === "bilinear");
     const uvDitherKernel = (
         (texture && (material.textureFiltering === "dither"))
             ? textureDitherFilterKernel.enabled
@@ -303,40 +302,9 @@ export function generic_fill({
                     }
                     else
                     {
-                        if (useBilinearTextureFiltering)
-                        {
-                            const tx = (u - (u = ~~u));
-                            const ty = (v - (v = ~~v));
-                            let c10 = (textureMipLevel.pixels[(u + 1) + v * textureMipLevel.width] || texel);
-                            let c01 = (textureMipLevel.pixels[u + (v + 1) * textureMipLevel.width] || texel);
-                            let c11 = (textureMipLevel.pixels[(u + 1) + (v + 1) * textureMipLevel.width] || texel);
-
-                            if (c10.alpha !== 255) c10 = texel;
-                            if (c01.alpha !== 255) c01 = texel;
-                            if (c11.alpha !== 255) c11 = texel;
-        
-                            const cx0 = {
-                                red: Lerp(red, c10.red, tx),
-                                green: Lerp(green, c10.green, tx),
-                                blue: Lerp( blue, c10.blue, tx),
-                            };
-        
-                            const cx1 = {
-                                red: Lerp(c01.red, c11.red, tx),
-                                green: Lerp(c01.green, c11.green, tx),
-                                blue: Lerp(c01.blue, c11.blue, tx),
-                            };
-        
-                            red = (shade * material.color.unitRange.red * Lerp(cx0.red, cx1.red, ty));
-                            green = (shade * material.color.unitRange.green * Lerp(cx0.green, cx1.green, ty));
-                            blue = (shade * material.color.unitRange.blue * Lerp(cx0.blue, cx1.blue, ty));
-                        }
-                        else
-                        {
-                            red *= (shade * material.color.unitRange.red);
-                            green *= (shade * material.color.unitRange.green);
-                            blue *= (shade * material.color.unitRange.blue);
-                        }
+                        red *= (shade * material.color.unitRange.red);
+                        green *= (shade * material.color.unitRange.green);
+                        blue *= (shade * material.color.unitRange.blue);
 
                         // If shade is > 1, the color values may exceed 255, in which case we write into
                         // the clamped 8-bit view to get 'free' clamping.
