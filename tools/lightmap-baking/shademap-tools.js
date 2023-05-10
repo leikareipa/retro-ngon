@@ -260,7 +260,6 @@ export function duplicate_ngon_textures(ngons = [Rngon.ngon()])
             width: texture.width,
             height: texture.height,
             pixels: copiedPixels,
-            needsFlip: false,
         });
         
         ngon.material.texture = newTexture;

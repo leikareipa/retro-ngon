@@ -6,7 +6,6 @@
  */
 
 import {validate_object} from "../core/schema.js";
-import {color as Color} from "./color.js";
 import {assert as Assert} from "../core/util.js";
 import {$throw as Throw} from "../core/util.js";
 
@@ -21,7 +20,6 @@ export function texture(data = {})
             pixels: [],
             encoding: "none",
             channels: "rgba:8+8+8+8",
-            needsFlip: true,
         },
         ...data,
     }
@@ -50,7 +48,14 @@ export function texture(data = {})
     );
 
     // If necessary, decode the pixel data into raw RGBA/8888.
-    if (data.encoding !== "none")
+    if (data.encoding === "none")
+    {
+        if (!(data.pixels instanceof Uint8ClampedArray))
+        {
+            data.pixels = new Uint8ClampedArray(data.pixels);
+        }
+    }
+    else
     {
         // In Base64-encoded data, each pixel's RGBA is expected to be given as a 16-bit
         // value, where each of the RGB channels takes up 5 bits and the alpha channel
@@ -58,20 +63,20 @@ export function texture(data = {})
         if (data.encoding === "base64")
         {
             const decoded = atob(data.pixels);
-            data.pixels = [];
+            data.pixels = new Uint8ClampedArray(data.width * data.height * numColorChannels);
 
             switch (data.channels)
             {
                 case "rgba:8+8+8+8":
                 {
                     Assert?.(
-                        (decoded.length === (data.width * data.height * 4)),
+                        (decoded.length === (data.width * data.height * numColorChannels)),
                         "Unexpected data length for a Base64-encoded texture; expected 4 bytes per pixel."
                     );
 
                     for (let i = 0; i < (data.width * data.height * 4); i++)
                     {
-                        data.pixels.push(decoded.charCodeAt(i));
+                        data.pixels[i] = decoded.charCodeAt(i);
                     }
 
                     break;
@@ -83,14 +88,14 @@ export function texture(data = {})
                         "Unexpected data length for a Base64-encoded texture; expected 2 bytes per pixel."
                     );
 
+                    let i2 = 0;
                     for (let i = 0; i < (data.width * data.height * 2); i += 2)
                     {
-                        const p = (decoded.charCodeAt(i) | (decoded.charCodeAt(i+1)<<8));
-
-                        data.pixels.push((p         & 0x1f) * 8);  // Red.
-                        data.pixels.push(((p >> 5)  & 0x1f) * 8);  // Green.
-                        data.pixels.push(((p >> 10) & 0x1f) * 8);  // Blue.
-                        data.pixels.push(((p >> 15) & 1) * 255);   // Alpha.
+                        const p = (decoded.charCodeAt(i) + (decoded.charCodeAt(i + 1) << 8));
+                        data.pixels[i2++] = (( p        & 0x1f) * 8);  // Red.
+                        data.pixels[i2++] = (((p >> 5)  & 0x1f) * 8);  // Green.
+                        data.pixels[i2++] = (((p >> 10) & 0x1f) * 8);  // Blue.
+                        data.pixels[i2++] = (((p >> 15) & 1) * 255);   // Alpha.
                     }
 
                     break;
@@ -108,27 +113,6 @@ export function texture(data = {})
         (data.pixels.length === (data.width * data.height * numColorChannels)),
         "The texture's pixel array size doesn't match its width and height."
     );
-
-    // Convert the raw pixel data into objects of the form {red, green, blue, alpha}.
-    // Note: We also flip the texture on the Y axis, to counter the fact that textures
-    // become flipped on Y during rendering (i.e. we pre-emptively un-flip it, here).
-    const pixelArray = [];
-    for (let y = 0; y < data.height; y++)
-    {
-        for (let x = 0; x < data.width; x++)
-        {
-            const idx = ((x + (data.needsFlip? (data.height - y - 1) : y) * data.width) * numColorChannels);
-
-            pixelArray.push(
-                Color(
-                    data.pixels[idx + 0],
-                    data.pixels[idx + 1],
-                    data.pixels[idx + 2],
-                    data.pixels[idx + 3]
-                )
-            );
-        }
-    }
 
     // Generate mipmaps. Each successive mipmap is one half of the previous
     // mipmap's width and height, starting from the full resolution and working
@@ -150,10 +134,13 @@ export function texture(data = {})
             {
                 for (let x = 0; x < mipWidth; x++)
                 {
-                    const dstIdx = (x + y * mipWidth);
-                    const srcIdx = (Math.floor(x * deltaW) + Math.floor(y * deltaH) * data.width);
+                    const dstIdx = ((x + y * mipWidth) * numColorChannels);
+                    const srcIdx = ((Math.floor(x * deltaW) + Math.floor(y * deltaH) * data.width) * numColorChannels);
 
-                    mipPixelData[dstIdx] = pixelArray[srcIdx];
+                    for (let c = 0; c < numColorChannels; c++)
+                    {
+                        mipPixelData[dstIdx + c] = data.pixels[srcIdx + c];
+                    }
                 }
             }
         }
@@ -179,7 +166,6 @@ export function texture(data = {})
     const publicInterface = {
         $constructor: "Texture",
         ...data,
-        pixels: pixelArray,
         mipLevels: mipmaps,
     };
 
@@ -198,7 +184,6 @@ texture.schema = {
             "pixels": [["number"], "string"],
             "encoding": ["string"],
             "channels": ["string"],
-            "needsFlip": ["boolean"],
         },
     },
     interface: {
@@ -212,8 +197,7 @@ texture.schema = {
             "height": ["number"],
             "encoding": ["string"],
             "channels": ["string"],
-            "needsFlip": ["boolean"],
-            "pixels": [["Color"]],
+            "pixels": ["Uint8ClampedArray"],
             "mipLevels": [["object"]],
         },
     },
@@ -224,12 +208,9 @@ texture.deep_copy = function(srcTexture)
 {
     const copiedPixels = new Array(srcTexture.width * srcTexture.height * 4);
 
-    for (let i = 0; i< (srcTexture.width * srcTexture.height); i++)
+    for (let i = 0; i< (srcTexture.width * srcTexture.height * 4); i++)
     {
-        copiedPixels[i*4+0] = srcTexture.pixels[i].red;
-        copiedPixels[i*4+1] = srcTexture.pixels[i].green;
-        copiedPixels[i*4+2] = srcTexture.pixels[i].blue;
-        copiedPixels[i*4+3] = srcTexture.pixels[i].alpha;
+        copiedPixels[i] = srcTexture.pixels[i];
     }
 
     return texture({

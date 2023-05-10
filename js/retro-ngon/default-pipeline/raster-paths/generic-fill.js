@@ -275,16 +275,10 @@ export function generic_fill({
                         default: Throw("Unknown texture-mapping mode."); break;
                     }
 
-                    texel = textureMipLevel.pixels[(~~u) + (~~v) * textureMipLevel.width];
-
-                    // Gracefully handle attempts to access the texture out of bounds.
-                    if (!texel)
-                    {
-                        continue;
-                    }
+                    const texelIdx = (((~~u) + (~~v) * textureMipLevel.width) * 4);
 
                     if (material.allowAlphaReject &&
-                        (texel.alpha !== 255))
+                        (textureMipLevel.pixels[texelIdx + 3] !== 255))
                     {
                         continue;
                     }
@@ -294,10 +288,10 @@ export function generic_fill({
                         continue;
                     }
 
-                    index = texel.index;
-                    red   = texel.red;
-                    green = texel.green;
-                    blue  = texel.blue;
+                    index = textureMipLevel.pixels[texelIdx + 0];
+                    red   = textureMipLevel.pixels[texelIdx + 0];
+                    green = textureMipLevel.pixels[texelIdx + 1];
+                    blue  = textureMipLevel.pixels[texelIdx + 2];
                 }
 
                 // The pixel passed its alpha test, depth test, etc., and should be drawn

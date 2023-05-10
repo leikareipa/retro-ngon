@@ -530,7 +530,6 @@ Note: Textures with a power-of-two resolution may render faster and support more
     - **encoding** (string = *"none"*): Specifies the encoding of the pixel data:
         - "none": The value of the `data.pixels` property is an array, and its elements are numbers according to the `data.channels` property.
         - "base64": The value of the `data.pixels` property is a string representing a Base64-encoded array whose elements are numbers according to the `data.channels` property.
-    - **needsFlip** (boolean = *true*): Whether the input image data should be flipped vertically.
 
 ### Returns
 
@@ -538,8 +537,8 @@ An object with the following properties:
 
 - **width** (number): The `data.width` property.
 - **height** (number): The `data.height` property.
-- **pixels** (array): The decoded, processed pixel data from `data.pixels`. Each element in the array is an object of the form "{red, green, blue, alpha}".
-- **mipLevels** (array): Downscaled versions of the original image. Each element in the array is an object of the form "{width, height, pixels: [{red, green, blue, alpha, red, green, ...}]}". The first element is the full-sized image, the second element is half the size of the first, the third half the size of the second, etc., down to an image the size of 1 &times; 1.
+- **pixels** (Uint8ClampedArray): The decoded pixel data from `data.pixels`, as consecutive RGBA values ([red, green, blue, alpha, red, green, blue, ...]).
+- **mipLevels** (array): Downscaled versions of the original image. Each element in the array is an object of the form "{width, height, pixels: [red, green, blue, alpha, red, green, blue, ...]}". The first element is the full-sized image, the second element is half the size of the first, the third half the size of the second, etc., down to an image the size of 1 &times; 1.
 
 ### Sample usage
 

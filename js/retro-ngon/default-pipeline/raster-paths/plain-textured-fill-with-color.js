@@ -129,20 +129,20 @@ export function plain_textured_fill_with_color({
                     default: Throw("Unrecognized UV wrapping mode."); break;
                 }
 
-                const texel = textureMipLevel.pixels[(~~u) + (~~v) * textureMipLevel.width];
+                const texelIdx = (((~~u) + (~~v) * textureMipLevel.width) * 4);
                 
                 // Draw the pixel.
                 {
                     if (usePalette)
                     {
-                        pixelBufferClamped8[pixelBufferIdx] = texel.color.index;
+                        pixelBufferClamped8[pixelBufferIdx] = textureMipLevel.pixels[texelIdx];
                     }
                     else
                     {
                         const shade = (material.renderVertexShade? iplShade : 1);
-                        let red   = texel.red;
-                        let green = texel.green;
-                        let blue  = texel.blue;
+                        let red   = textureMipLevel.pixels[texelIdx + 0];
+                        let green = textureMipLevel.pixels[texelIdx + 1];
+                        let blue  = textureMipLevel.pixels[texelIdx + 2];
 
                         if (useBilinearTextureFiltering)
                         {

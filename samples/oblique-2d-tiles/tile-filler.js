@@ -95,12 +95,13 @@ export function tile_filler(renderState)
                     if (x < 0) continue;
                     if (x >= renderWidth) break;
 
-                    const texel = texture.pixels[texelIdx];
-                    if (texel.alpha !== 255) continue;
+                    const ti = (texelIdx * 4);
 
-                    let red = (texel.red * shade);
-                    let green = (texel.green * shade);
-                    let blue = (texel.blue * shade);
+                    if (texture.pixels[ti + 3] !== 255) continue;
+
+                    let red = (texture.pixels[ti + 0] * shade);
+                    let green = (texture.pixels[ti + 1] * shade);
+                    let blue = (texture.pixels[ti + 2] * shade);
 
                     if (material.color.alpha < 255)
                     {

@@ -120,14 +120,14 @@ export function plain_textured_fill({
                     default: Throw("Unrecognized UV wrapping mode."); break;
                 }
 
-                const texel = textureMipLevel.pixels[(~~u) + (~~v) * textureMipLevel.width];
+                const texelIdx = (((~~u) + (~~v) * textureMipLevel.width) * 4);
                 
                 // Draw the pixel.
                 {
                     const shade = (material.renderVertexShade? iplShade : 1);
-                    const red   = (texel.red   * shade);
-                    const green = (texel.green * shade);
-                    const blue  = (texel.blue  * shade);
+                    const red   = (textureMipLevel.pixels[texelIdx + 0] * shade);
+                    const green = (textureMipLevel.pixels[texelIdx + 1] * shade);
+                    const blue  = (textureMipLevel.pixels[texelIdx + 2] * shade);
 
                     // If shade is > 1, the color values may exceed 255, in which case we write into
                     // the clamped 8-bit view to get 'free' clamping.

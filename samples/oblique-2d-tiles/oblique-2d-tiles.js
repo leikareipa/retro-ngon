@@ -14,7 +14,6 @@ const groundTileWidth = 22;
 const groundTileHeight = 22;
 
 const grass1 = Rngon.texture({
-    "needsFlip": false,
 	"width":22,
 	"height":21,
 	"channels":"rgba:5+5+5+1",
@@ -23,7 +22,6 @@ const grass1 = Rngon.texture({
 });
 
 const grass2 = Rngon.texture({
-	"needsFlip": false,
 	"width":22,
 	"height":21,
 	"channels":"rgba:5+5+5+1",
@@ -32,7 +30,6 @@ const grass2 = Rngon.texture({
 });
 
 const wall1 = Rngon.texture({
-    "needsFlip": false,
 	"width":22,
 	"height":63,
 	"channels":"rgba:5+5+5+1",
@@ -41,7 +38,6 @@ const wall1 = Rngon.texture({
 });
 
 const lamp1 = Rngon.texture({
-	"needsFlip": false,
 	"width":22,
 	"height":50,
 	"channels":"rgba:5+5+5+1",
@@ -50,7 +46,6 @@ const lamp1 = Rngon.texture({
 });
 
 const gateway1 = Rngon.texture({
-    "needsFlip": false,
 	"width":22,
 	"height":63,
 	"channels":"rgba:5+5+5+1",
@@ -243,7 +238,7 @@ function precompute_texture_parameters()
 
             for (let x = 0; x < texture.width; x++)
             {
-                if (texture.pixels[x + y * texture.width].alpha == 255)
+                if (texture.pixels[((x + y * texture.width) * 4) + 3] == 255)
                 {
                     texture.firstSolidPixelIdx[y] = x;
                     break;
@@ -252,7 +247,7 @@ function precompute_texture_parameters()
 
             for (let x = (texture.width - 1); x >= 0; x--)
             {
-                if (texture.pixels[x + y * texture.width].alpha == 255)
+                if (texture.pixels[((x + y * texture.width) * 4) + 3] == 255)
                 {
                     texture.lastSolidPixelIdx[y] = x;
                     break;
