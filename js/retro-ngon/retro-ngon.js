@@ -5,6 +5,13 @@
  *
  */
 
+if (!IS_PRODUCTION_BUILD) {
+    console.log(
+        "This is a %cnon-production build %cof the retro n-gon renderer. It performs additional runtime data validation and error reporting. For best render throughput, switch to a production build.",
+        "font-weight: bold;",
+        "font-weight: normal;");
+}
+
 import "../paletted-canvas/paletted-canvas.js";
 
 import {rasterizer} from "./default-pipeline/rasterizer.js";
