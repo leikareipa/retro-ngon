@@ -1,5 +1,5 @@
 /*
- * 2019 Tarpeeksi Hyvae Soft
+ * 2019-2023 Tarpeeksi Hyvae Soft
  * 
  * Software: Retro n-gon renderer
  *
@@ -9,45 +9,142 @@ import {validate_object} from "../core/schema.js";
 import {assert as Assert} from "../core/util.js";
 import {$throw as Throw} from "../core/util.js";
 
-// A 32-bit texture.
+const maxTextureWidth = 32768;
+const maxTextureHeight = 32768;
+const numColorChannels = 4;
+
+// Texture with 32-bit color.
 export function texture(data = {})
 {
-    // Append default parameter arguments.
+    // Append default arguments.
     data = {
-        ...{
-            width: 0,
-            height: 0,
-            pixels: [],
-            encoding: "none",
-            channels: "rgba:8+8+8+8",
-        },
+        width: 0,
+        height: 0,
+        pixels: [],
+        encoding: "none",
+        channels: "rgba:8+8+8+8",
         ...data,
-    }
+    };
 
     validate_object?.(data, texture.schema.arguments);
 
-    // The maximum dimensions of a texture.
-    const maxWidth = 32768;
-    const maxHeight = 32768;
+    decode_pixel_data(data);
 
-    const numColorChannels = 4;
+    const publicInterface = {
+        $constructor: "Texture",
+        mipLevels: generate_mipmaps(data),
+        ...data,
+    };
 
-    Assert?.(
-        (Number.isInteger(data.width) && Number.isInteger(data.height)),
-        "Expected texture width and height to be integer values."
-    );
+    validate_object?.(publicInterface, texture.schema.interface);
     
-    Assert?.(
-        ((data.width >= 0) && (data.height >= 0)),
-        "Expected texture width and height to be no less than zero."
-    );
+    return publicInterface;
+}
 
-    Assert?.(
-        ((data.width <= maxWidth) && (data.height <= maxHeight)),
-        `Expected texture width/height to be no more than ${maxWidth}/${maxHeight}.`
-    );
+texture.schema = {
+    arguments: {
+        where: "in arguments passed to texture()",
+        allowAdditionalProperties: true,
+        properties: {
+            "pixels": [["number"], "string"],
+            "width": {
+                type: ["number"],
+                value(width) {
+                    if ((width < 1) || (width >= maxTextureWidth)) {
+                        return `Texture width must be in the range [1, ${maxTextureWidth - 1}]`
+                    }
+                },
+            },
+            "height": {
+                type: ["number"],
+                value(height) {
+                    if ((height < 1) || (height >= maxTextureHeight)) {
+                        return `Texture height must be in the range [1, ${maxTextureHeight - 1}]`
+                    }
+                },
+            },
+            "encoding": {
+                type: ["string"],
+                value(encoding) {
+                    const supported = [
+                        "none",
+                        "base64",
+                    ];
+                    if (!supported.includes(encoding)) {
+                        return `Texture encoding must be one of ${supported.join(", ")}`;
+                    }
+                },
+            },
+            "channels": {
+                type: ["string"],
+                value(channels) {
+                    const supported = [
+                        "rgba:5+5+5+1",
+                        "rgba:8+8+8+8",
+                    ];
+                    if (!supported.includes(channels)) {
+                        return `Texture pixel layout must be one of ${supported.join(", ")}`;
+                    }
+                },
+            }
+        },
+    },
+    interface: {
+        where: "in the return value of texture()",
+        allowAdditionalProperties: true,
+        properties: {
+            "$constructor": {
+                value: "Texture",
+            },
+            "width": ["number"],
+            "height": ["number"],
+            "pixels": ["Uint8ClampedArray"],
+            "mipLevels": [["object"]],
+        },
+    },
+};
 
-    // If necessary, decode the pixel data into raw RGBA/8888.
+// Returns a new texture whose pixel data are a deep copy of the given texture.
+texture.deep_copy = function(srcTexture)
+{
+    const copiedPixels = new Array(srcTexture.width * srcTexture.height * 4);
+
+    for (let i = 0; i< (srcTexture.width * srcTexture.height * 4); i++)
+    {
+        copiedPixels[i] = srcTexture.pixels[i];
+    }
+
+    return texture({
+        ...srcTexture,
+        pixels: copiedPixels,
+    });
+}
+
+// Returns a Promise of a texture whose data is loaded from the given file. The actual
+// texture is returned once the data has been loaded.
+//
+// NOTE: Only supports JSON files at the moment, expecting them to contain a valid
+// object to be passed as-is into texture().
+texture.load = function(filename)
+{
+    return new Promise((resolve, reject)=>
+    {
+        fetch(filename)
+        .then((response)=>response.json())
+        .then((data)=>
+        {
+            resolve(texture(data));
+        })
+        .catch((error)=>{
+            Throw(`Failed to create a texture with data from file '${filename}'. Error: '${error}'.`)
+        });
+    });
+}
+
+// Decodes the pixel data passed to Rngon.texture() into a Uint8ClampedArray that stores
+// consecutive RGBA pixel color values.
+function decode_pixel_data(data)
+{
     if (data.encoding === "none")
     {
         if (!(data.pixels instanceof Uint8ClampedArray))
@@ -113,12 +210,17 @@ export function texture(data = {})
         (data.pixels.length === (data.width * data.height * numColorChannels)),
         "The texture's pixel array size doesn't match its width and height."
     );
+}
 
-    // Generate mipmaps. Each successive mipmap is one half of the previous
-    // mipmap's width and height, starting from the full resolution and working
-    // down to 1 x 1. So mipmaps[0] is the original, full-resolution texture,
-    // and mipmaps[mipmaps.length-1] is the smallest, 1 x 1 texture.
+// Generates mipmaps from the pixel data passed to Rngon.texture().
+// 
+// Each successive mipmap is one half of the previous mipmap's width and height, starting
+// from the full resolution and working down to 1 x 1. So mipmaps[0] is the original
+// full-resolution texture, and mipmaps[mipmaps.length-1] is the smallest, 1 x 1 texture.
+function generate_mipmaps(data)
+{
     const mipmaps = [];
+
     for (let m = 0; ; m++)
     {
         const mipWidth = Math.max(1, Math.floor(data.width / Math.pow(2, m)));
@@ -163,79 +265,5 @@ export function texture(data = {})
         }
     }
 
-    const publicInterface = {
-        $constructor: "Texture",
-        ...data,
-        mipLevels: mipmaps,
-    };
-
-    validate_object?.(publicInterface, texture.schema.interface);
-    
-    return publicInterface;
-}
-
-texture.schema = {
-    arguments: {
-        where: "in arguments passed to texture()",
-        allowAdditionalProperties: true,
-        properties: {
-            "width": ["number"],
-            "height": ["number"],
-            "pixels": [["number"], "string"],
-            "encoding": ["string"],
-            "channels": ["string"],
-        },
-    },
-    interface: {
-        where: "in the return value of texture()",
-        allowAdditionalProperties: true,
-        properties: {
-            "$constructor": {
-                value: "Texture",
-            },
-            "width": ["number"],
-            "height": ["number"],
-            "encoding": ["string"],
-            "channels": ["string"],
-            "pixels": ["Uint8ClampedArray"],
-            "mipLevels": [["object"]],
-        },
-    },
-};
-
-// Returns a new texture whose pixel data are a deep copy of the given texture.
-texture.deep_copy = function(srcTexture)
-{
-    const copiedPixels = new Array(srcTexture.width * srcTexture.height * 4);
-
-    for (let i = 0; i< (srcTexture.width * srcTexture.height * 4); i++)
-    {
-        copiedPixels[i] = srcTexture.pixels[i];
-    }
-
-    return texture({
-        ...srcTexture,
-        pixels: copiedPixels,
-    });
-}
-
-// Returns a Promise of a texture whose data is loaded from the given file. The actual
-// texture is returned once the data has been loaded.
-//
-// NOTE: Only supports JSON files at the moment, expecting them to contain a valid
-// object to be passed as-is into texture().
-texture.load = function(filename)
-{
-    return new Promise((resolve, reject)=>
-    {
-        fetch(filename)
-        .then((response)=>response.json())
-        .then((data)=>
-        {
-            resolve(texture(data));
-        })
-        .catch((error)=>{
-            Throw(`Failed to create a texture with data from file '${filename}'. Error: '${error}'.`)
-        });
-    });
+    return mipmaps;
 }
