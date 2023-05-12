@@ -11,7 +11,7 @@
  *       "red": ["number"],             // red is required to be of type number.
  *       "green": {
  *         optional: true,              // green is allowed to not exist.
- *         types: ["number", "string"]  // green, if it exists, is required to be of type number or string.
+ *         type: ["number", "string"]   // green, if it exists, is required to be of type number or string.
  *       },
  *       "blue": {
  *         subschema: {                 // blue is an object.
@@ -78,15 +78,36 @@ export const validate_object = IS_PRODUCTION_BUILD? undefined
             }
         }
 
-        const schemaAcceptedTypes = (schemaProperties[objectKey]?.types || schemaProperties[objectKey]);
+        const schemaAcceptedTypes = (schemaProperties[objectKey]?.type || schemaProperties[objectKey]);
         const objectValueType = type_of_value(objectValue);
 
-        // The schema requires a specific value.
+        // The schema either requires a specific value or comes with a function that evaluates the value.
         if (schemaProperties[objectKey].hasOwnProperty?.("value"))
         {
-            if (objectValue !== schemaProperties[objectKey].value)
+            const valueEvaluator = schemaProperties[objectKey].value;
+
+            switch (typeof valueEvaluator)
             {
-                throw new Error(`The property '${propertyChain + objectKey}' ${schema.where} doesn't evaluate to "${schemaProperties[objectKey].value}"`);
+                case "function":
+                {
+                    const ret = valueEvaluator(objectValue);
+
+                    if (typeof ret === "string")
+                    {
+                        throw new Error(ret);
+                    }
+
+                    break;
+                }
+                default:
+                {
+                    if (objectValue !== valueEvaluator)
+                    {
+                        throw new Error(`The property '${propertyChain + objectKey}' ${schema.where} doesn't evaluate to "${schemaProperties[objectKey].value}"`);
+                    }
+
+                    break;
+                }
             }
         }
         // The schema is recursive to evaluate a sub-object.
