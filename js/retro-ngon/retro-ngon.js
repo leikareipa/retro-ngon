@@ -12,17 +12,12 @@ if (!IS_PRODUCTION_BUILD) {
         "font-weight: normal;");
 }
 
-import "../paletted-canvas/paletted-canvas.js";
-
 import {rasterizer} from "./default-pipeline/rasterizer.js";
 import {surface_wiper} from "./default-pipeline/surface-wiper.js";
 import {transform_clip_lighter} from "./default-pipeline/transform-clip-lighter.js";
 
 import {render} from "./api/render.js";
-import {
-    color,
-    color_index,
-} from "./api/color.js";
+import {color} from "./api/color.js";
 import {light} from "./api/light.js";
 import {material} from "./api/material.js";
 import {mesh} from "./api/mesh.js";
@@ -66,7 +61,6 @@ export const Rngon = {
     renderable_width_of,
     renderable_height_of,
     color,
-    color_index,
     state,
     light,
     material,

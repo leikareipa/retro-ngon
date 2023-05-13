@@ -211,11 +211,6 @@ function setup_onscreen(renderState, canvasElement)
         "Invalid canvas element."
     );
 
-    if (renderState.usePalette)
-    {
-        renderState.pixelBuffer.palette = renderState.palette;
-    }
-
     // Size the canvas as per the requested render scale.
     const surfaceWidth = renderable_width_of(canvasElement, renderState.renderScale);
     const surfaceHeight = renderable_height_of(canvasElement, renderState.renderScale);

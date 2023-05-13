@@ -35,7 +35,6 @@ export function generic_fill({
     if (!numLeftEdges || !numRightEdges) return true;
 
     const ngon = renderState.ngonCache.ngons[ngonIdx];
-    const usePalette = renderState.usePalette;
     const useFragmentBuffer = renderState.useFragmentBuffer;
     const fragmentBuffer = renderState.fragmentBuffer.data;
     const depthBuffer = (renderState.useDepthBuffer? renderState.depthBuffer.data : null);
@@ -144,8 +143,6 @@ export function generic_fill({
                 let red = 0;
                 let green = 0;
                 let blue = 0;
-                let index = 0;
-                let texel = undefined;
 
                 // Solid fill.
                 if (!texture)
@@ -159,7 +156,6 @@ export function generic_fill({
                         continue;
                     }
                     
-                    index = material.color.index;
                     red   = (material.color.red   * shade);
                     green = (material.color.green * shade);
                     blue  = (material.color.blue  * shade);
@@ -287,7 +283,6 @@ export function generic_fill({
                         continue;
                     }
 
-                    index = textureMipLevel.pixels[texelIdx + 0];
                     red   = textureMipLevel.pixels[texelIdx + 0];
                     green = textureMipLevel.pixels[texelIdx + 1];
                     blue  = textureMipLevel.pixels[texelIdx + 2];
@@ -296,35 +291,28 @@ export function generic_fill({
                 // The pixel passed its alpha test, depth test, etc., and should be drawn
                 // on screen.
                 {
-                    if (usePalette)
+                    red *= (shade * material.color.unitRange.red);
+                    green *= (shade * material.color.unitRange.green);
+                    blue *= (shade * material.color.unitRange.blue);
+
+                    // If shade is > 1, the color values may exceed 255, in which case we write into
+                    // the clamped 8-bit view to get 'free' clamping.
+                    if (shade > 1)
                     {
-                        pixelBufferClamped8[pixelBufferIdx] = index;
+                        const idx = (pixelBufferIdx * 4);
+                        pixelBufferClamped8[idx+0] = red;
+                        pixelBufferClamped8[idx+1] = green;
+                        pixelBufferClamped8[idx+2] = blue;
+                        pixelBufferClamped8[idx+3] = 255;
                     }
                     else
                     {
-                        red *= (shade * material.color.unitRange.red);
-                        green *= (shade * material.color.unitRange.green);
-                        blue *= (shade * material.color.unitRange.blue);
-
-                        // If shade is > 1, the color values may exceed 255, in which case we write into
-                        // the clamped 8-bit view to get 'free' clamping.
-                        if (shade > 1)
-                        {
-                            const idx = (pixelBufferIdx * 4);
-                            pixelBufferClamped8[idx+0] = red;
-                            pixelBufferClamped8[idx+1] = green;
-                            pixelBufferClamped8[idx+2] = blue;
-                            pixelBufferClamped8[idx+3] = 255;
-                        }
-                        else
-                        {
-                            pixelBuffer32[pixelBufferIdx] = (
-                                (255 << 24) +
-                                (blue << 16) +
-                                (green << 8) +
-                                ~~red
-                            );
-                        }
+                        pixelBuffer32[pixelBufferIdx] = (
+                            (255 << 24) +
+                            (blue << 16) +
+                            (green << 8) +
+                            ~~red
+                        );
                     }
 
                     if (depthBuffer)

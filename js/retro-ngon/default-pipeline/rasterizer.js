@@ -77,11 +77,8 @@ rasterizer.polygon = function(
     const depthBuffer = (renderState.useDepthBuffer? renderState.depthBuffer.data : null);
     const renderWidth = renderState.pixelBuffer.width;
     const renderHeight = renderState.pixelBuffer.height;
-    const usePalette = renderState.usePalette;
     const material = ngon.material;
-    const pixelBuffer32 = usePalette
-        ? undefined
-        : new Uint32Array(renderState.pixelBuffer.data.buffer);
+    const pixelBuffer32 = new Uint32Array(renderState.pixelBuffer.data.buffer);
 
     let numLeftVerts = 0;
     let numRightVerts = 0;
@@ -112,14 +109,12 @@ rasterizer.polygon = function(
                 material.texture &&
                 depthBuffer &&
                 !useFragmentBuffer &&
-                !renderState.usePalette &&
                 !material.allowAlphaReject &&
                 !material.allowAlphaBlend &&
                 (material.textureMapping === "affine") &&
                 (material.textureFiltering !== "dither")
             ){
                 if (
-                    !renderState.usePalette &&
                     (material.color.red === 255) &&
                     (material.color.green === 255) &&
                     (material.color.blue === 255) &&
@@ -136,7 +131,6 @@ rasterizer.polygon = function(
                 !material.texture &&
                 depthBuffer &&
                 !useFragmentBuffer &&
-                !renderState.usePalette &&
                 !material.allowAlphaReject &&
                 !material.allowAlphaBlend
             ){

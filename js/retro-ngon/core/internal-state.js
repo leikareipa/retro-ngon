@@ -48,10 +48,6 @@ function default_state() {
             clearValue: Infinity,
         },
 
-        // Whether to render into an indexed-color (paletted) pixel buffer.
-        usePalette: false,
-        palette: undefined,
-
         // Pixel buffer for rasterization. This will be scaled to match the requested
         // render resolution; and the renderer's rasterization pass will populate it
         // with the rendered frame's pixel values.

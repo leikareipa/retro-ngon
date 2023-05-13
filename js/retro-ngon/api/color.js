@@ -45,18 +45,6 @@ export function color(
     return publicInterface;
 }
 
-// Indexed color. Represents an entry in a palette.
-export function color_index(index = 0)
-{
-    Assert?.((index >= 0), "The given color index is out of range.");
-
-    const publicInterface = Object.freeze({
-        index,
-    });
-
-    return publicInterface;
-}
-
 color.schema = {
     arguments: {
         where: "in arguments passed to color()",

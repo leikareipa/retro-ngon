@@ -61,11 +61,6 @@ export function render({
         "Invalid canvas element for rendering into."
     );
 
-    Assert?.(
-        (!state.usePalette || (target instanceof HTMLPalettedCanvasElement)),
-        "For paletted rendering, the attribute is='paletted-canvas' must be present on the target <canvas>."
-    );
-    
     // Render a single frame.
     {
         const surface = Surface(target, state);
@@ -101,7 +96,6 @@ render.defaultOptions = {
     globalWireframe: false,
     hibernateWhenTargetNotVisible: true,
     lights: [],
-    palette: null,
 };
 
 render.defaultPipeline = {
@@ -144,10 +138,6 @@ render.schema = {
             globalWireframe: ["boolean"],
             hibernateWhenTargetNotVisible: ["boolean"],
             lights: [["Light"]],
-            palette: [
-                "null",
-                ["number"]
-            ],
         },
     },
     pipeline: {
@@ -223,9 +213,6 @@ function setup_render_state(options = {}, pipeline = {})
         // Note that this doesn't always work, e.g. when the function has been .bind()ed.
         (state.usePixelShader && state.pixel_shader?.toString().match(/{(.+)?}/)[1].includes("fragmentBuffer"))
     );
-
-    state.usePalette = Array.isArray(options.palette);
-    state.palette = options.palette;
 
     state.modules.rasterize = (
         (typeof pipeline.rasterizer === "function")
