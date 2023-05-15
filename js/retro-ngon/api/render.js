@@ -128,7 +128,7 @@ render.schema = {
             cameraPosition: ["Vector"],
             cameraDirection: ["Vector"],
             state: ["string", "number"],
-            resolution: ["number"],
+            resolution: ["number", "object"],
             fov: ["number"],
             nearPlane: ["number"],
             farPlane: ["number"],
