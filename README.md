@@ -64,7 +64,7 @@ The developer mode includes additional run-time error checks and data validation
 <canvas id="canvas" style="width: 300px; height: 300px;"></canvas>
 ```
 
-2. Import the retro n-gon renderer's JavaScript distributable:
+2. Import the renderer's distributable (which you'll have built by now):
 
 ```html
 <script src="distributable/rngon.js"></script>
