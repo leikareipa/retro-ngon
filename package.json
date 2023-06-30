@@ -1,4 +1,8 @@
 {
+  "scripts": {
+    "build": "npx webpack",
+    "build-dev": "npx webpack --mode=development"
+  },
   "dependencies": {},
   "devDependencies": {
     "webpack": "^5.73.0",
