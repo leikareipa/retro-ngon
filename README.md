@@ -32,6 +32,30 @@ I'd generally expect the renderer to find a home powering nostalgia projects rem
 
 # Quick-start guide
 
+## Prepare the distributable
+
+1. Install the required developer dependencies:
+
+```bash
+$ yarn install
+```
+
+These dependencies are needed only to build the distributable. They don't need to be bundled with your application.
+
+2. Build the distributable:
+
+```bash
+$ yarn run build
+```
+
+3. Optionally, if you know what you're doing, you can build the distributable in developer mode:
+
+```bash
+$ yarn run build-dev
+```
+
+The developer mode includes additional run-time error checks and data validation, which helps you find bugs at the cost of run-time performance. Keep an eye on your browser's developer console.
+
 ## Render a simple quad
 
 1. In your HTML document, create a canvas element:
