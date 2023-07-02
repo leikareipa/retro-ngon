@@ -25,7 +25,7 @@ export function material(properties = {})
 material.default = {
     color: Color(255, 255, 255, 255),
     wireframeColor: Color(0, 0, 0, 255),
-    texture: null,
+    texture: undefined,
     textureMapping: "ortho",
     textureFiltering: "none",
     uvWrapping: "repeat",
@@ -50,7 +50,7 @@ material.schema = {
             },
             "color": ["Color"],
             "wireframeColor": ["Color"],
-            "texture": ["null", "Texture"],
+            "texture": ["undefined", "null", "Texture"],
             "textureMapping": ["string"],
             "textureFiltering": ["string"],
             "uvWrapping": ["string"],

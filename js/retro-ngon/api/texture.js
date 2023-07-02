@@ -18,9 +18,9 @@ export function texture(data = {})
 {
     // Append default arguments.
     data = {
-        width: 0,
-        height: 0,
-        pixels: [],
+        width: 1,
+        height: 1,
+        pixels: [255, 255, 255, 255],
         encoding: "none",
         channels: "rgba:8+8+8+8",
         ...data,
@@ -50,16 +50,16 @@ texture.schema = {
             "width": {
                 type: ["number"],
                 value(width) {
-                    if ((width < 1) || (width >= maxTextureWidth)) {
-                        return `Texture width must be in the range [1, ${maxTextureWidth - 1}]`
+                    if ((width < 1) || (width > maxTextureWidth)) {
+                        return `Texture width must be in the range [1, ${maxTextureWidth}]`
                     }
                 },
             },
             "height": {
                 type: ["number"],
                 value(height) {
-                    if ((height < 1) || (height >= maxTextureHeight)) {
-                        return `Texture height must be in the range [1, ${maxTextureHeight - 1}]`
+                    if ((height < 1) || (height > maxTextureHeight)) {
+                        return `Texture height must be in the range [1, ${maxTextureHeight}]`
                     }
                 },
             },

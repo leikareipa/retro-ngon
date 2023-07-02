@@ -80,7 +80,7 @@ export function surface(canvasElement, renderState)
         // pixels will also be painted onto that canvas.
         display_meshes: function(meshes = [])
         {
-            renderState.modules.surface_wipe?.(renderState);
+            renderState.modules.surface_wiper?.(renderState);
 
             // Prepare the meshes' n-gons for rendering. This will place the transformed
             // n-gons in renderState.ngonCache.
@@ -88,11 +88,11 @@ export function surface(canvasElement, renderState)
                 prepare_vertex_cache(renderState, meshes);
                 prepare_ngon_cache(renderState, meshes);
 
-                if (renderState.modules.transform_clip_light)
+                if (renderState.modules.transform_clip_lighter)
                 {
                     for (const mesh of meshes)
                     {
-                        renderState.modules.transform_clip_light({
+                        renderState.modules.transform_clip_lighter({
                             renderState,
                             mesh,
                             cameraMatrix,
@@ -121,7 +121,7 @@ export function surface(canvasElement, renderState)
             }
 
             // Render the n-gons from the n-gon cache into renderState.pixelBuffer.
-            renderState.modules.rasterize?.(renderState);
+            renderState.modules.rasterizer?.(renderState);
 
             // Apply a custom pixel shader effect on renderState.pixelBuffer.
             if (renderState.usePixelShader)

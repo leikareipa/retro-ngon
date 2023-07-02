@@ -214,7 +214,7 @@ function setup_render_state(options = {}, pipeline = {})
         (state.usePixelShader && state.pixel_shader?.toString().match(/{(.+)?}/)[1].includes("fragmentBuffer"))
     );
 
-    state.modules.rasterize = (
+    state.modules.rasterizer = (
         (typeof pipeline.rasterizer === "function")
             ? pipeline.rasterizer
             : (pipeline.rasterizer === null)
@@ -222,7 +222,7 @@ function setup_render_state(options = {}, pipeline = {})
                 : rasterizer
     );
 
-    state.modules.transform_clip_light = (
+    state.modules.transform_clip_lighter = (
         (typeof pipeline.transformClipLighter === "function")
             ? pipeline.transformClipLighter
             : (pipeline.transformClipLighter === null)
@@ -230,7 +230,7 @@ function setup_render_state(options = {}, pipeline = {})
                 : transform_clip_lighter
     );
 
-    state.modules.surface_wipe = (
+    state.modules.surface_wiper = (
         (typeof pipeline.surfaceWiper === "function")
             ? pipeline.surfaceWiper
             : (pipeline.surfaceWiper === null)

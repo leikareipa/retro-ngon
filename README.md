@@ -419,7 +419,7 @@ A polygon made up of *n* vertices, also known as an n-gon. Single-vertex n-gons 
 - **vertices** (array = *[vertex()]*): The *`vertex`* objects that define the corners of the n-gon. The length of the array must be in the range [1,500].
 - **material** (object): The material properties that define the n-gon's appearance:
     - **color** (color = *color(255, 255, 255, 255)*): Base color. If the `material.texture` property is *null*, the n-gon will be rendered in this color. Otherwise, the renderer will multiply texel colors by (C / 255), where C is the corresponding channel of the base color.
-    - **texture** (texture | null = *null*): The image to be rendered onto the n-gon's face. If *null*, or if there are fewer than 3 vertices, the n-gon will be rendered without a texture.
+    - **texture** (texture | undefined = *undefined*): The image to be rendered onto the n-gon's face. If *undefined*, or if there are fewer than 3 vertices, the n-gon will be rendered without a texture.
     - **textureMapping** (string = *"ortho"*): The method by which `material.texture` should be mapped onto the n-gon's face:
         - "ortho": Map by automatically-generated UV coordinates in 2D screen space. Disregards perspective and rotation. UV coordinates provided by the n-gon's *`vertex`* objects are ignored.
         - "affine": Affine texture-mapping using the UV coordinates provided by the n-gon's *`vertex`* objects. For perspective-correct affine mapping, also enable the `options.usePerspectiveInterpolation` property to *`render()`*.
