@@ -51,7 +51,7 @@ $ yarn run build
 3. Optionally, if you know what you're doing, you can build the distributable in developer mode:
 
 ```bash
-$ yarn run build-dev
+$ yarn run build:dev
 ```
 
 The developer mode includes additional run-time error checks and data validation, which helps you find bugs at the cost of run-time performance. Keep an eye on your browser's developer console.

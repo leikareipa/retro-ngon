@@ -11,7 +11,7 @@ function unit_tests(title = "", tests_f = ()=>{/*Tests*/})
 {
     // A list of objects giving the test result of each unit tested.
     // Something along the lines of [{unitName: "", passed: Boolean, error: "Set if !passes."}].
-    const testResults = [title];
+    const testResults = [];
 
     // Run the tests.
     verify_tester_functionality();
@@ -26,7 +26,7 @@ function unit_tests(title = "", tests_f = ()=>{/*Tests*/})
     // Calling this will cause the current unit to be marked as having failed its tests.
     function trip(message)
     {
-        throw Error(message);
+        throw message;
     }
 
     // Takes in an array of values; each of which is expected to evaluate to true.
@@ -101,7 +101,7 @@ function unit_tests(title = "", tests_f = ()=>{/*Tests*/})
         assert((individual_tests_f instanceof Function), "Expected a function.");
         assert((unitName.length > 0), "No name string provided.");
 
-        const result = {unitName, passed:true};
+        const result = {unit: unitName, passed:true};
 
         try
         {

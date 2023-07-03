@@ -1,18 +1,13 @@
 "use strict";
 
-if (!Rngon.version.dev)
+let unitTestResults = undefined;
+
+if (!Rngon.version.dev || !Rngon.assert)
 {
-    window.alert("Unit tests must be run on a developer build, which this is not.")
+    throw (unitTestResults = "Unit tests require a developer build.");
 }
 
-// The unit tester expects assertion failures to throw and only throw
-// (not also pop up window.alert()s or the like).
-Rngon.$throw = function(explanation = "(no reason given)")
-{
-    throw new Error(explanation);
-} 
-
-const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
+unitTestResults = unit_tests("Retro n-gon renderer", ()=>
 {
     unit("matrix", ()=>
     {
@@ -255,36 +250,31 @@ const unitTestResults = unit_tests("Retro n-gon renderer", ()=>
 {
     const resultsTableElement = document.createElement("table");
 
-    unitTestResults.forEach((r, idx)=>
+    const header = document.createElement("th");
+    header.setAttribute("colspan", "2");
+    header.appendChild(document.createTextNode("Retro n-gon renderer"));
+    resultsTableElement.appendChild(header);
+
+    unitTestResults.forEach(r=>
     {
-        if (idx === 0)
+        const newRow = document.createElement("tr");
+        newRow.className = (r.passed? "pass" : "fail");
+        if (!r.passed)
         {
-            const header = document.createElement("th");
-            header.setAttribute("colspan", "2");
-            header.appendChild(document.createTextNode(r));
-            resultsTableElement.appendChild(header);
+            newRow.title = r.error;
         }
-        else
-        {
-            const newRow = document.createElement("tr");
-            newRow.className = (r.passed? "pass" : "fail");
-            if (!r.passed)
-            {
-                newRow.title = r.error;
-            }
-            
-            const unitName = document.createElement("td");
-            unitName.appendChild(document.createTextNode(r.unitName));
+        
+        const unitName = document.createElement("td");
+        unitName.appendChild(document.createTextNode(r.unit));
 
-            const testResult = document.createElement("td");
-            testResult.appendChild(document.createTextNode(r.passed? "Passed" : "Failed!"));
+        const testResult = document.createElement("td");
+        testResult.appendChild(document.createTextNode(r.passed? "Passed" : "Failed!"));
 
-            newRow.appendChild(unitName);
-            newRow.appendChild(testResult)
-            resultsTableElement.appendChild(newRow);
+        newRow.appendChild(unitName);
+        newRow.appendChild(testResult)
+        resultsTableElement.appendChild(newRow);
 
-            if (!r.passed) console.log(r.unitName, "fail:", r.error)
-        }
+        if (!r.passed) console.log(r.unit, "fail:", r.error)
     });
 
     document.body.appendChild(resultsTableElement);
