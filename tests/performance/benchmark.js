@@ -10,33 +10,51 @@
 // The id value of the DOM canvas we'll render the benchmark into.
 const canvasId = "benchmark-canvas";
 
-export async function benchmark(sceneFileName = "",
-                                initialCameraPos = {x:0, y:0, z:0},
-                                initialCameraDir = {x:0, y:0, z:0},
-                                extraRenderOptions = {},
-                                extraModelOptions = {})
+window.benchResults = [];
+
+let isHeadless = false;
+
+export async function benchmark(
+    sceneFileName = "",
+    options = {
+        renderOptions = {},
+        renderPipeline = {},
+        modelOptions = {},
+    } = {},
+)
 {
     {
         const urlParams = new URLSearchParams(window.location.search);
 
-        if (!urlParams.has("scale") ||
-            isNaN(Number(urlParams.get("scale"))) ||
-            (urlParams.get("scale") > 1) ||
-            (urlParams.get("scale") < 0))
+        if (urlParams.has("headless"))
         {
-            urlParams.set("scale", 0.25);
-            window.location.search = urlParams.toString();
+            isHeadless = true;
+            options.renderOptions.resolution = {
+                width: 640,
+                height: 360,
+            };
+        }
+        else
+        {
+            if (
+                !urlParams.has("scale") ||
+                isNaN(Number(urlParams.get("scale"))) ||
+                (urlParams.get("scale") > 1) ||
+                (urlParams.get("scale") < 0)
+            )
+            {
+                urlParams.set("scale", 0.25);
+                window.location.search = urlParams.toString();
+            }
+    
+            options.renderOptions.resolution = Number(urlParams.get("scale"));
         }
 
-        extraRenderOptions.resolution = Number(urlParams.get("scale"));
     }
     
-    const sceneMesh = await load_scene_mesh(sceneFileName, extraModelOptions);
-
     create_dom_elements();
-
-    const results = await run_bencmark([sceneMesh], initialCameraPos, initialCameraDir, extraRenderOptions);
-
+    const sceneMesh = await load_scene_mesh(sceneFileName, options.modelOptions);
+    const results = await run_bencmark([sceneMesh], options.renderOptions, options.renderPipeline);
     print_results(results);
 
     return;
@@ -219,16 +237,12 @@ function print_results(results)
 // render(); while 'screenFPS' gives the overall page refresh performance (which is
 // limited to the screen's refresh rate).
 //
-function run_bencmark(sceneMeshes = [],
-                      initialCameraPos = {x:0, y:0, z:0},
-                      initialCameraDir = {x:0, y:0, z:0},
-                      extraRenderOptions = {})
+function run_bencmark(sceneMeshes = [], renderOptions = {}, renderPipeline = {})
 {
     return new Promise(resolve=>
     {
-        const fpsReadings = [];
-        const cameraDirection = Rngon.vector(initialCameraDir.x, initialCameraDir.y, initialCameraDir.z);
-        const cameraPosition = Rngon.vector(initialCameraPos.x, initialCameraPos.y, initialCameraPos.z);
+        const cameraDirection = structuredClone(renderOptions.cameraDirection);
+        const cameraPosition = structuredClone(renderOptions.cameraPosition);
 
         // 'timeDeltaMs' is the number of milliseconds elapsed since the previous call
         // to this render function.
@@ -245,12 +259,12 @@ function run_bencmark(sceneMeshes = [],
             };
 
             // Update the UI.
-            let percentDone = (((cameraDirection.y - initialCameraDir.y) / 360) * 100);
+            let percentDone = (((cameraDirection.y - renderOptions.cameraDirection.y) / 360) * 100);
             document.getElementById("benchmark-progress-bar").style.width = `${percentDone}%`;
 
             // Attempt to limit the renderer's refresh rate, if so requested by the user.
-            if (extraRenderOptions.targetRefreshRate &&
-                (timeDeltaMs < Math.floor(1000 / extraRenderOptions.targetRefreshRate)))
+            if (renderOptions.targetRefreshRate &&
+                (timeDeltaMs < Math.floor(1000 / renderOptions.targetRefreshRate)))
             {
                 queue_new_frame(timeDeltaMs);
                 return;
@@ -258,39 +272,40 @@ function run_bencmark(sceneMeshes = [],
 
             // Rotate the camera 360 degrees in small increments per frame, then exit
             // the benchmark when done.
-            if ((cameraDirection.y - initialCameraDir.y) < 360)
+            if ((cameraDirection.y - renderOptions.cameraDirection.y) < 360)
             {
                 cameraDirection.y += (0.03 * timeDeltaMs);
             }
             else
             {
                 document.getElementById("benchmark-progress-bar").style.display = "none";
-                resolve(fpsReadings);
+                resolve(window.benchResults);
                 return;
             }
 
             const renderInfo = Rngon.render({
-                target: canvasId,
+                target: (isHeadless? undefined : canvasId),
                 scene: sceneMeshes,
                 options: {
+                    ...renderOptions,
                     useDepthBuffer: true,
                     cameraDirection: Rngon.vector(cameraDirection.x, cameraDirection.y, cameraDirection.z),
                     cameraPosition: cameraPosition,
-                    ...extraRenderOptions,
-                }
+                },
+                pipeline: renderPipeline,
             });
 
             if (frameCount)
             {
-                fpsReadings.push({
+                window.benchResults.push({
                     timestamp,
                     renderFPS: (1000 / renderInfo.totalRenderTimeMs),
                     screenFPS: (1000 / (timeDeltaMs || Infinity)),
                     renderInfo
                 });
 
-                fpsReadings.at(-1).averageRenderFPS = (fpsReadings.reduce((sum, f)=>(sum + f.renderFPS), 0) / (fpsReadings.length || 1));
-                fpsReadings.at(-1).averageScreenFPS = (fpsReadings.reduce((sum, f)=>(sum + f.screenFPS), 0) / (fpsReadings.length || 1));
+                window.benchResults.at(-1).averageRenderFPS = (window.benchResults.reduce((sum, f)=>(sum + f.renderFPS), 0) / (window.benchResults.length || 1));
+                window.benchResults.at(-1).averageScreenFPS = (window.benchResults.reduce((sum, f)=>(sum + f.screenFPS), 0) / (window.benchResults.length || 1));
             }
 
             queue_new_frame();

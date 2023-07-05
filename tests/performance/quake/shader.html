@@ -4,32 +4,35 @@
         <meta name="viewport" content="width=device-width">
         <meta http-equiv="content-type" content="text/html; charset=UTF-8">
         <link rel="stylesheet" type="text/css" href="../benchmark.css">
-        <title>Benchmark - Quake (E1M1) with pixel shading - Retro n-gon renderer</title>
+        <title>Benchmark - Quake (E1M1) with per-pixel shading - Retro n-gon renderer</title>
     </head>
     <body>
         <script src="../../../distributable/rngon.js"></script>
         <script type="module">
             import {benchmark} from "../benchmark.js";
 
-            benchmark("./quake/assets/e1m1.rngon-model.js",
-                {x:500, y:30, z:400},
-                {x:-20, y:197, z:0},
-                {
+            benchmark("./quake/assets/e1m1.rngon-model.js", {
+                renderOptions: {
+                    cameraPosition: Rngon.vector(500, 30, 400),
+                    cameraDirection: Rngon.vector(-20, 197, 0),
                     fov: 60,
                     nearPlane: 2,
                     farPlane: 5000,
+                    useFragmentBuffer: true,
                     lights: [
                         Rngon.light(Rngon.vector(409, 115, 758), {reach: 350, intensity: 1.5}),
                         Rngon.light(Rngon.vector(481, 182, 113), {reach: 450, intensity: 2}),
                     ],
-                    pixelShader: perpixel_light_shader,
                 },
-                {
+                renderPipeline: {
+                    pixelShader: perpixel_lighter,
+                },
+                modelOptions: {
                     vertexShading: "none",
-                }
-            );
+                },
+            });
 
-            function perpixel_light_shader({renderState, renderWidth, renderHeight, pixelBuffer, fragmentBuffer, ngonCache})
+            function perpixel_lighter({renderState, renderWidth, renderHeight, pixelBuffer, fragmentBuffer, ngonCache})
             {
                 const lightDirection = Rngon.vector();
 

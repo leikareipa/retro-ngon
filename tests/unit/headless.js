@@ -5,14 +5,13 @@ const path = require("path");
     const browser = await puppeteer.launch({headless: "new"});
     const page = await browser.newPage();
     await page.setCacheEnabled(false);
-    await page.goto(`file://${path.resolve("./tests/unit/index.html")}`);
 
+    await page.goto(`file://${path.resolve("./tests/unit/index.html")}`);
     const testResults = await page.evaluate(()=>unitTestResults);
 
     // String means something went wrong while initializing the system.
     if (typeof testResults === "string") {
-        process.stdout.write(`\x1b[37m\x1b[41m FAIL: ${testResults} \x1b[0m\n`);
-        process.exit(1);
+        terminate(testResults);
     }
 
     for (const test of testResults)
@@ -31,3 +30,8 @@ const path = require("path");
     
     process.exit(testResults.some(r=>!r.passed));
 })();
+
+function terminate(errorMessage) {
+    process.stdout.write(`\x1b[37m\x1b[41m Error: ${errorMessage} \x1b[0m\n`);
+    process.exit(1);
+}

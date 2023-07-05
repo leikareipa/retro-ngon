@@ -11,15 +11,15 @@
         <script type="module">
             import {benchmark} from "../benchmark.js";
 
-            benchmark("./quake/assets/e1m1-wireframe.rngon-model.js",
-                {x:500, y:30, z:400},
-                {x:-20, y:197, z:0},
-                {
+            benchmark("./quake/assets/e1m1-wireframe.rngon-model.js", {
+                renderOptions: {
+                    cameraPosition: Rngon.vector(500, 30, 400),
+                    cameraDirection: Rngon.vector(-20, 197, 0),
                     fov: 60,
                     nearPlane: 2,
                     farPlane: 5000,
-                }
-            );
+                },
+            });
         </script>
     </body>
 </html>
