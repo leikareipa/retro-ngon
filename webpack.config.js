@@ -6,7 +6,7 @@ module.exports = (env, argv)=>{
     return {
         mode,
         entry: {
-            "rngon": "./js/retro-ngon/retro-ngon.js",
+            "rngon": "./src/retro-ngon.js",
         },
         output: {
             library: {
