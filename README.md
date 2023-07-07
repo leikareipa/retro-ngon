@@ -13,7 +13,7 @@ You can view various interactive render samples [here](https://www.tarpeeksihyva
 ![A view from Grand Prix Legends](./images/screenshots/beta/quake-bilinear.webp)\
 *A corridor in Quake, with bilinear texture filtering and per-pixel lighting. (Based on textures and 3D models created by id Software for Quake. id Software is not associated with this renderer.)*
 
-## Main features
+## Key features
 
 - Genuine retro aesthetics
 - Customizable render pipeline
@@ -583,9 +583,3 @@ const texture = Rngon.texture({
 // Create a texture with the 'data' object loaded from a JSON file.
 const texture = await Rngon.texture.load("texture.json");
 ```
-
-# Authors and credits
-
-The main author of the retro n-gon renderer is the one-man Tarpeeksi Hyvae Soft (see on [GitHub](https://github.com/leikareipa) and the [Web](https://www.tarpeeksihyvaesoft.com)).
-
-On 3D software rendering in general, the aforementioned main author has benefited a good bit from tutorials by Benny Bobaganoosh. You can check out his [YouTube](https://www.youtube.com/playlist?list=PLEETnX-uPtBUbVOok816vTl1K9vV1GgH5) and [GitHub](https://github.com/BennyQBD/3DSoftwareRenderer). The retro n-gon renderer's matrix code ([src/core/matrix44.js](./src/core/matrix44.js)) is adapted, with superficial changes, from [Benny's code](https://github.com/BennyQBD/3DSoftwareRenderer/blob/master/src/Matrix4f.java).
