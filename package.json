@@ -3,7 +3,7 @@
     "build": "npx webpack",
     "build:dev": "npx webpack --mode=development",
     "test:unit": "node ./tests/unit/headless.js",
-    "test:perf": "node ./tests/performance/quake/headless.js regular",
+    "test:perf:textured": "node ./tests/performance/quake/headless.js textured",
     "test:perf:shader": "node ./tests/performance/quake/headless.js shader",
     "test:perf:untextured": "node ./tests/performance/quake/headless.js untextured",
     "test:perf:wireframe": "node ./tests/performance/quake/headless.js wireframe"
