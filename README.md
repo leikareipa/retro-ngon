@@ -280,7 +280,7 @@ The API functions are accessible via the global `Rngon` namespace after you've i
 ```html
 <script src="distributable/rngon.js"></script>
 <script>
-    console.log(Rngon.texture) // ƒ texture(data = {}) ...
+    console.log(Rngon.texture) // ƒ texture(...) ...
 </script>
 ```
 
@@ -293,7 +293,7 @@ Renders meshes into a 32-bit RGBA pixel buffer, and optionally displays the imag
 ### Parameters
 
 - **target** (HTMLCanvasElement | string | null = *null*): Destination for the rendered image. Canvas element; `id` attribute of canvas element; or *null* for none. The raw pixel buffer is accessible via `Rngon.state.default.pixelBuffer` after the call.
-- **scene** (array = *[mesh()]*): The *`mesh`* objects to be rendered. The array is iterated in back-to-front order.
+- **scene** (array): The *`mesh`* objects to be rendered.
 - **options** (object): Additional rendering options:
     - **resolution** (number | object = *1*): Resolution of the output image. If `target` is HTMLCanvasElement or string, the output resolution is the size of the canvas (according to `window.getComputedStyle`) multiplied by this number, whose range is (0,1]. Otherwise, the value is an object with these properties:
         - **width** (number = *640*): Width in pixels.

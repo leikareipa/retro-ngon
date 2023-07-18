@@ -11,13 +11,12 @@ import {transform_clip_lighter} from "../default-pipeline/transform-clip-lighter
 import {surface_wiper} from "../default-pipeline/surface-wiper.js"
 import {surface as Surface} from "../core/surface.js";
 import {assert as Assert} from "../core/util.js";
-import {mesh as Mesh} from "./mesh.js";
 import {vector as Vector} from "./vector.js";
 import {state as State} from "../core/internal-state.js";
 
 export function render({
     target = null,
-    scene = [Mesh()],
+    scene,
     options = {},
     pipeline = {},
 } = {})
