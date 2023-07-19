@@ -68,7 +68,7 @@ Below are benchmark results (frames per second) running in Google Chrome on an A
 
 Pixel shaders have a large impact on the frame rate, but otherwise this 800-polygon scene is renderable at a high rate with texturing and per-vertex Gouraud shading.*
 
-\*Note that the renderer performs no visibility culling other than back-face removal and frustum culling. It's at the discretion of the host application to apply more sophisticated culling techniques to maximize performance.
+\*Note that the renderer performs no pre-rasterization visibility culling other than back-face removal and frustum clipping. It's at the discretion of the host application to apply more sophisticated culling techniques to maximize performance.
 
 # Quick-start guide
 
