@@ -9,8 +9,8 @@
     "test:perf:wireframe": "node ./tests/performance/quake/headless.js wireframe"
   },
   "devDependencies": {
-    "puppeteer": "^20.7.4",
+    "puppeteer": "^20.8.3",
     "webpack": "^5.73.0",
-    "webpack-cli": "^4.10.0"
+    "webpack-cli": "^5.1.4"
   }
 }
