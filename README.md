@@ -19,16 +19,56 @@ You can view various interactive render samples [here](https://www.tarpeeksihyva
 - Customizable render pipeline
 - Reasonable performance (for retro uses)
 
+## Documentation
+
+- [Quick-start guide](#quick-start-guide)
+- [API reference](#api-reference)
+
 ## Suggested use cases
 
 Being a retro-oriented software renderer written in JavaScript, the retro n-gon renderer thrives in low resolutions and low polycounts, its performance generally lacking for modern-style rendering.
 
 I'd generally expect the renderer to find a home powering nostalgia projects reminiscent of the 90s and early 2000. Retro-themed games, model visualization, etc.
 
-## Documentation
+## Performance
 
-- [Quick-start guide](#quick-start-guide)
-- [API reference](#api-reference)
+The repository provides [performance benchmarks](./tests/performance/) to gauge the renderer's performance on your system.
+
+Below are benchmark results (frames per second) running in Google Chrome on an AMD Ryzen 5000 series desktop CPU.
+
+<table>
+    <tr>
+        <th>Resolution</th>
+        <th colspan="4">Rendering mode</th>
+    </tr>
+    <tr>
+        <th></th>
+        <th>Wireframe</th>
+        <th>Untextured</th>
+        <th>Textured</th>
+        <th>Shader</th>
+    </tr>
+    <tr>
+        <td>1280 &times; 720</td>
+        <td>164</td>
+        <td>89</td>
+        <td>65</td>
+        <td>11</td>
+    </tr>
+    <tr>
+        <td>640 &times; 360</td>
+        <td>265</td>
+        <td>200</td>
+        <td>145</td>
+        <td>40</td>
+    </tr>
+</table>
+
+![A view from Grand Prix Legends](./images/screenshots/beta/bench-quake.jpg)
+
+Pixel shaders have a large impact on the frame rate, but otherwise this 800-polygon scene is renderable at a high rate with texturing and per-vertex Gouraud shading.*
+
+\*Note that the renderer performs no visibility culling other than back-face removal and frustum culling. It's at the discretion of the host application to apply more sophisticated culling techniques to maximize performance.
 
 # Quick-start guide
 
