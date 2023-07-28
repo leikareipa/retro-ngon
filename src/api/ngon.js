@@ -21,7 +21,7 @@ export function ngon(
     validate_object?.({vertices, material, vertexNormals}, ngon.schema.arguments);
 
     // Combine default material options with the user-supplied ones.
-    material = Material(material);
+    Object.assign(material, Material(material));
 
     // Assuming that only a single normal vector was provided, in which case, let's
     // duplicate that normal for all vertices.
