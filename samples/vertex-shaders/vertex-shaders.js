@@ -52,7 +52,6 @@ export const sample = {
         {title:"Wave",          function:vs_wavy},
         {title:"UV shift",      function:vs_uv_shift},
         {title:"Fade in/out",   function:vs_fade_in_out},
-        {title:"Vertex points", function:vs_vertex_points},
     ],
     camera: undefined,
     numTicks: 0,
@@ -95,31 +94,6 @@ function vs_wavy(ngon)
     for (let v = 0; v < ngon.vertices.length; v++)
     {
         ngon.vertices[v].z += Math.sin(((ngon.vertices[v].y * 2) + this.numTicks) / 8);
-    }
-}
-
-// Vertex shader. Reduces each n-gon to one vertex, located in the middle of the n-gon's
-// original vertices.
-function vs_vertex_points(ngon)
-{
-    if (ngon.material.isPointCloud)
-    {
-        let [midX, midY, midZ] = ngon.vertices.reduce((values, vertex)=>
-        {
-            values[0] += vertex.x;
-            values[1] += vertex.y;
-            values[2] += vertex.z;
-            return values;
-        }, [0, 0, 0]);
-
-        midX /= ngon.vertices.length;
-        midY /= ngon.vertices.length;
-        midZ /= ngon.vertices.length;
-
-        ngon.vertices.length = 1;
-        ngon.vertices[0].x = midX;
-        ngon.vertices[0].y = midY;
-        ngon.vertices[0].z = midZ;
     }
 }
 
