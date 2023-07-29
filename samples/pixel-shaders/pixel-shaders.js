@@ -90,26 +90,13 @@ export const sample = {
     shaders: [
         {title:"Dithering",              function:ps_dithering},
         {title:"Edge anti-aliasing",     function:ps_fxaa},
-        {title:"Bloom",                  function:ps_bloom},
         {title:"Vignette",               function:ps_vignette},
         {title:"Depth desaturation",     function:ps_depth_desaturate},
         {title:"Distance fog",           function:ps_distance_fog},
-        {title:"Waviness",               function:ps_waviness},
-        {title:"Fisheye",                function:ps_fisheye_projection},
-        {title:"Aberration",             function:ps_aberration},
-        {title:"CRT",                    function:ps_crt_effect},
+        {title:"CRT",                    function:ps_crt},
         {title:"Selective outline",      function:ps_selective_outline},
-        {title:"Selective grayscale",    function:ps_selective_grayscale},
         {title:"Per-pixel lighting",     function:ps_per_pixel_light},
         {title:"Wireframe",              function:ps_wireframe},
-        {title:"Texture blend",          function:ps_texture_blend},
-        {title:"Vertex positions",       function:ps_vertex_positions_map},
-        {title:"Normal map",             function:ps_normal_map},
-        {title:"UV map",                 function:ps_uv_map},
-        {title:"Coordinate map",         function:ps_world_position_map},
-        {title:"Depth map",              function:ps_depth_map},
-        {title:"Shade map",              function:ps_shade_map},
-        {title:"Mip level map",          function:ps_mip_level_map},
     ],
     lights: undefined,
     camera: undefined,
@@ -117,88 +104,16 @@ export const sample = {
     numTicks: 0,
 };
 
-function ps_bloom({renderWidth, renderHeight, pixelBuffer})
-{
-    const brightnessThreshold = 0.3;
-
-    // Create a bloom layer by high-passing and blurring a copy of the rendered image.
-    const bloomLayer = new Uint8ClampedArray(pixelBuffer);
-    for (let i = 0; i < bloomLayer.length; i += 4) {
-        const r = bloomLayer[i];
-        const g = bloomLayer[i + 1];
-        const b = bloomLayer[i + 2];
-        const brightness = (r + g + b) / (3 * 255);
-
-        if (brightness < brightnessThreshold) {
-            bloomLayer[i] = bloomLayer[i + 1] = bloomLayer[i + 2] = 0;
-        }
-    }
-    stackBlur(bloomLayer, renderWidth, renderHeight);
-
-    // Blend the blurred bloom image with the rendering.
-    for (let i = 0; i < pixelBuffer.length; i += 4) {
-        pixelBuffer[i] += bloomLayer[i];
-        pixelBuffer[i + 1] += bloomLayer[i+1];
-        pixelBuffer[i + 2] += bloomLayer[i+2];
-    }
-
-    function stackBlur(pixels, width, height, radius = 8) {
-        // Horizontal.
-        for (let y = 0; y < height; y++) {
-            for (let x = 0; x < width; x++) {
-                let sumR = 0;
-                let count = 0;
-
-                for (let i = -radius; i <= radius; i++) {
-                    const newX = x + i;
-                    if (newX >= 0 && newX < width) {
-                        const index = (y * width + newX) * 4;
-                        sumR += pixels[index];
-                        count++;
-                    }
-                }
-
-                const index = (y * width + x) * 4;
-                pixels[index] = sumR / count;
-                pixels[index + 1] = sumR / count;
-                pixels[index + 2] = sumR / count;
-            }
-        }
-
-        // Vertical.
-        for (let x = 0; x < width; x++) {
-            for (let y = 0; y < height; y++) {
-                let sumR = 0;
-                let count = 0;
-
-                for (let i = -radius; i <= radius; i++) {
-                    const newY = y + i;
-                    if (newY >= 0 && newY < height) {
-                        const index = (newY * width + x) * 4;
-                        sumR += pixels[index];
-                        count++;
-                    }
-                }
-
-                const index = (y * width + x) * 4;
-                pixels[index] = sumR / count;
-                pixels[index + 1] = sumR / count;
-                pixels[index + 2] = sumR / count;
-            }
-        }
-    }
-}
-
-function ps_crt_effect({renderWidth, renderHeight, pixelBuffer})
+function ps_crt({renderWidth, renderHeight, pixelBuffer})
 {
     const sourceBuffer = new Uint8Array(pixelBuffer.length);
     sourceBuffer.set(pixelBuffer);
     
-    const curvature = 0.05;
+    const curvature = 0.1;
     const scaleX = 1;
     const scaleY = 1;
-    const colorSoftening = 2;
-    const scanlineIntensity = 0.1;
+    const colorSoftening = 1.5;
+    const scanlineIntensity = 0.01;
     
     const centerX = (renderWidth / 2);
     const centerY = (renderHeight / 2);
@@ -600,9 +515,9 @@ function ps_wireframe({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
                 (rightFragment  && (rightFragment.ngonIdx  != thisFragment.ngonIdx)) ||
                 (bottomFragment && (bottomFragment.ngonIdx != thisFragment.ngonIdx)))
             {
-                pixelBuffer[(bufferIdx * 4) + 0] = 212;
-                pixelBuffer[(bufferIdx * 4) + 1] = 212;
-                pixelBuffer[(bufferIdx * 4) + 2] = 148;
+                pixelBuffer[(bufferIdx * 4) + 0] = 0;
+                pixelBuffer[(bufferIdx * 4) + 1] = 0;
+                pixelBuffer[(bufferIdx * 4) + 2] = 0;
             }
         }
     }
@@ -695,45 +610,6 @@ function ps_depth_desaturate({renderWidth, renderHeight, fragmentBuffer, pixelBu
     }
 }
 
-// Pixel shader.
-function ps_aberration({renderWidth, renderHeight, pixelBuffer})
-{
-    const redOffset = 2;
-    const greenOffset = 0;
-    const blueOffset = -2;
-    
-    const redScale = 1;
-    const greenScale = 1;
-    const blueScale = 1;
-
-    const outputPixels = new Uint8Array(pixelBuffer.length);
-
-    for (let y = 0; y < renderHeight; y++) {
-        for (let x = 0; x < renderWidth; x++) {
-            const pixelIndex = (y * renderWidth + x) * 4;
-
-            const redX = Math.floor(x + redOffset * Math.cos(y / renderHeight * Math.PI * 2));
-            const redY = Math.floor(y + redOffset * Math.sin(x / renderWidth * Math.PI * 2));
-            const redPixelIndex = (redY * renderWidth + redX) * 4;
-
-            const greenX = Math.floor(x + greenOffset * Math.cos(y / renderHeight * Math.PI * 2));
-            const greenY = Math.floor(y + greenOffset * Math.sin(x / renderWidth * Math.PI * 2));
-            const greenPixelIndex = (greenY * renderWidth + greenX) * 4;
-
-            const blueX = Math.floor(x + blueOffset * Math.cos(y / renderHeight * Math.PI * 2));
-            const blueY = Math.floor(y + blueOffset * Math.sin(x / renderWidth * Math.PI * 2));
-            const bluePixelIndex = (blueY * renderWidth + blueX) * 4;
-
-            outputPixels[pixelIndex] = pixelBuffer[redPixelIndex] * redScale;
-            outputPixels[pixelIndex + 1] = pixelBuffer[greenPixelIndex + 1] * greenScale;
-            outputPixels[pixelIndex + 2] = pixelBuffer[bluePixelIndex + 2] * blueScale;
-            outputPixels[pixelIndex + 3] = pixelBuffer[pixelIndex + 3];
-        }
-    }
-
-    pixelBuffer.set(outputPixels);
-}
-
 // Pixel shader. Lightens every xth pixel to create a perspective-correct grid pattern.
 function ps_grid_pattern({renderWidth, renderHeight, pixelBuffer, fragmentBuffer})
 {
@@ -762,72 +638,6 @@ function ps_grid_pattern({renderWidth, renderHeight, pixelBuffer, fragmentBuffer
         pixelBuffer[(i * 4) + 0] = pixelColor;
         pixelBuffer[(i * 4) + 1] = pixelColor;
         pixelBuffer[(i * 4) + 2] = pixelColor;
-    }
-}
-
-// Pixel shader. Draws a marker over each visible vertex.
-function ps_vertex_positions_map({renderWidth, renderHeight, pixelBuffer, fragmentBuffer, ngonCache})
-{
-    for (let y = 0; y < renderHeight; y++)
-    {
-        for (let x = 0; x < renderWidth; x++)
-        {
-            const thisFragment = fragmentBuffer[x + y * renderWidth];
-            const thisNgon = (thisFragment? ngonCache[thisFragment.ngonIdx] : null);
-
-            if (!thisNgon)
-            {
-                continue;
-            }
-
-            for (let v = 0; v < thisNgon.vertices.length; v++)
-            {
-                const vx = Math.round(thisNgon.vertices[v].x);
-                const vy = Math.round(thisNgon.vertices[v].y);
-
-                if ((Math.abs(x - vx) < 2) &&
-                    (Math.abs(y - vy) < 2))
-                {
-                    for (let p = -1; p <= 1; p++)
-                    {
-                        pixelBuffer[(((vx + p) + (vy + p) * renderWidth) * 4) + 0] = 255;
-                        pixelBuffer[(((vx + p) + (vy + p) * renderWidth) * 4) + 1] = 255;
-                        pixelBuffer[(((vx + p) + (vy + p) * renderWidth) * 4) + 2] = 0;
-
-                        pixelBuffer[(((vx + p) + (vy - p) * renderWidth) * 4) + 0] = 255;
-                        pixelBuffer[(((vx + p) + (vy - p) * renderWidth) * 4) + 1] = 255;
-                        pixelBuffer[(((vx + p) + (vy - p) * renderWidth) * 4) + 2] = 0;
-                    }
-                }
-            }
-        }
-    }
-}
-
-// Pixel shader. Applies a wavy distortion to the pixel buffer.
-function ps_waviness({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
-{
-    const timer = (new Date().getTime() / 150);
-    const startDepth = 20;
-    const maxDepth = 200;
-
-    for (let y = 0; y < renderHeight; y++)
-    {
-        for (let x = 0; x < renderWidth; x++)
-        {
-            const thisIdx = ((x + y * renderWidth) * 4);
-            const thisFragment = fragmentBuffer[thisIdx / 4];
-
-            const depth = Math.max(0, Math.min(1, ((thisFragment.w - startDepth) / (maxDepth - startDepth))));
-            const horizontalMagnitude = (1 + depth);
-            const verticalMagnitude = ((y / renderWidth) * 190);
-            const cos = Math.cos(timer + verticalMagnitude);
-
-            const shiftIdx = ((Math.min((renderWidth - 1), (x + 1 + ~~(cos * horizontalMagnitude))) + y * renderWidth) * 4);
-            pixelBuffer[thisIdx + 0] = pixelBuffer[shiftIdx + 0];
-            pixelBuffer[thisIdx + 1] = pixelBuffer[shiftIdx + 1];
-            pixelBuffer[thisIdx + 2] = pixelBuffer[shiftIdx + 2];
-        }
     }
 }
 
@@ -864,32 +674,6 @@ function ps_distance_fog({renderWidth, renderHeight, fragmentBuffer, pixelBuffer
         pixelBuffer[(i * 4) + 0] = this.Rngon.lerp(pixelBuffer[(i * 4) + 0], 127, depth);
         pixelBuffer[(i * 4) + 1] = this.Rngon.lerp(pixelBuffer[(i * 4) + 1], 127, depth);
         pixelBuffer[(i * 4) + 2] = this.Rngon.lerp(pixelBuffer[(i * 4) + 2], 127, depth);
-    }
-}
-
-// Pixel shader. Blends with a second texture the base texture of any n-gon whose material
-// specifies such a second texture via the 'blendTexture' material property.
-function ps_texture_blend({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
-{
-    for (let i = 0; i < (renderWidth * renderHeight); i++)
-    {
-        const thisFragment = fragmentBuffer[i];
-        const thisNgon = (thisFragment? ngonCache[thisFragment.ngonIdx] : null);
-
-        if (!thisNgon || !thisNgon.material.blendTexture)
-        {
-            continue;
-        }
-
-        const texture = thisNgon.material.blendTexture;
-        const texelIdx = (thisFragment.textureUScaled + thisFragment.textureVScaled * texture.width);
-        const texel = texture.pixels[texelIdx];
-
-        // Linearly interpolate a time-animated blending between the two textures.
-        const lerpAmt = ((Math.sin(this.numTicks / 50) / 2) + 0.5);
-        pixelBuffer[(i * 4) + 0] = this.Rngon.lerp(pixelBuffer[(i * 4) + 0], (texel.red   * thisNgon.material.color.unitRange.red),   lerpAmt);
-        pixelBuffer[(i * 4) + 1] = this.Rngon.lerp(pixelBuffer[(i * 4) + 1], (texel.green * thisNgon.material.color.unitRange.green), lerpAmt);
-        pixelBuffer[(i * 4) + 2] = this.Rngon.lerp(pixelBuffer[(i * 4) + 2], (texel.blue  * thisNgon.material.color.unitRange.blue),  lerpAmt);
     }
 }
 
@@ -1091,8 +875,8 @@ function ps_vignette({renderWidth, renderHeight, pixelBuffer})
 {
     const centerX = (renderWidth / 2);
     const centerY = (renderHeight / 2);
-    const radius = Math.min(centerX, centerY);
-    const intensity = 0.6;
+    const radius = Math.max(centerX, centerY);
+    const intensity = 1.0;
 
     for (let y = 0; y < renderHeight; y++)
     {
@@ -1108,42 +892,5 @@ function ps_vignette({renderWidth, renderHeight, pixelBuffer})
             pixelBuffer[i + 1] *= (1 - intensity + (vignette * intensity));
             pixelBuffer[i + 2] *= (1 - intensity + (vignette * intensity));
         }
-    }
-}
-
-// Pixel shader. Applies fisheye projection to the image.
-function ps_fisheye_projection({renderWidth, renderHeight, pixelBuffer})
-{
-    const widthHalf = (renderWidth / 2);
-    const heightHalf = (renderHeight / 2);
-    const maxRadius = Math.sqrt(widthHalf * widthHalf + heightHalf * heightHalf);
-    const outputBuffer = new Uint8ClampedArray(pixelBuffer.length);
-    
-    for (let y = 0; y < renderHeight; y++)
-    {
-        for (let x = 0; x < renderWidth; x++)
-        {
-            const dx = x - widthHalf;
-            const dy = y - heightHalf;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            const theta = Math.atan2(dy, dx);
-            const radius = (distance / maxRadius);
-            const fisheyeRadius = ((radius * radius) / Math.max(radius, 1));
-            const fisheyeX = widthHalf + fisheyeRadius * maxRadius * Math.cos(theta);
-            const fisheyeY = heightHalf + fisheyeRadius * maxRadius * Math.sin(theta);
-
-            const srcIdx = ((Math.floor(fisheyeY) * renderWidth + Math.floor(fisheyeX)) * 4);
-            const destIdx = ((y * renderWidth + x) * 4);
-
-            outputBuffer[destIdx + 0] = pixelBuffer[srcIdx + 0];
-            outputBuffer[destIdx + 1] = pixelBuffer[srcIdx + 1];
-            outputBuffer[destIdx + 2] = pixelBuffer[srcIdx + 2];
-            outputBuffer[destIdx + 3] = pixelBuffer[srcIdx + 3];
-        }
-    }
-
-    for (let i = 0; i < pixelBuffer.length; i++)
-    {
-        pixelBuffer[i] = outputBuffer[i];
     }
 }
