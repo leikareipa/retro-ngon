@@ -7,20 +7,8 @@
 
 "use strict";
 
-import {scene} from "./assets/scene.rngon-model.js";
+import {scene} from "./scene.js";
 import {first_person_camera} from "../first-person-camera/camera.js";
-
-const pattern = [
-    [0,0,0,0,1,0,0,0,0],
-    [0,0,0,1,1,1,0,0,0],
-    [0,0,1,1,0,1,1,0,0],
-    [0,1,1,0,1,0,1,1,0],
-    [1,1,0,1,0,1,0,1,1],
-    [0,1,1,0,1,0,1,1,0],
-    [0,0,1,1,0,1,1,0,0],
-    [0,0,0,1,1,1,0,0,0],
-    [0,0,0,0,1,0,0,0,0],
-];
 
 export const sample = {
     initialize: function()
@@ -57,22 +45,12 @@ export const sample = {
                     const maxDistance = Math.abs((depthBuf.width ** 2) / (Math.cos(this.numTicks / 100) * 50));
                     const midx = depthBuf.width / 2;
                     const midy = depthBuf.height / 2;
-                    const which = (performance.now() & 2048);
                     
                     for (let y = 0; y < depthBuf.height; y++) {
                         for (let x = 0; x < depthBuf.width; x++) {
                             const idx = (x + y * depthBuf.width);
-
-                            if (which)
-                            {
-                                const patternPixel = pattern[y % pattern.length][x % pattern[0].length];
-                                depthBuf.data[idx] = (Infinity * (patternPixel? -1 : 1));
-                            }
-                            else
-                            {
-                                const distance = (((x - midx) ** 2) + ((y - midy) ** 2));
-                                depthBuf.data[idx] = (Infinity * (distance > maxDistance)? -1 : 1);
-                            }
+                            const distance = (((x - midx) ** 2) + ((y - midy) ** 2));
+                            depthBuf.data[idx] = (Infinity * (distance > maxDistance)? -1 : 1);
                         }
                     }
                 }

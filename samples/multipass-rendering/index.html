@@ -43,11 +43,6 @@
         </div>
 
         <script>
-            parent.COPYRIGHT = `
-                <a href="./multipass-rendering/assets/copying.txt">
-                    various sources
-                </a>
-            `;
             parent.USAGE = `
                 Click to capture mouse, ESDF & QA to move.
             `;
@@ -158,9 +153,9 @@
                                     const srcIdx = ((~~(x/2) + ~~(y/2) * ~~(renderWidth/2)) * 4);
 
                                     if (ngon.material.isPortal) {
-                                        pixelBuffer[dstIdx] = reflectionPixelBuffer[srcIdx]*2;
-                                        pixelBuffer[dstIdx + 1] = reflectionPixelBuffer[srcIdx + 1]*2;
-                                        pixelBuffer[dstIdx + 2] = reflectionPixelBuffer[srcIdx + 2]*2;
+                                        pixelBuffer[dstIdx] = reflectionPixelBuffer[srcIdx] * 1.8;
+                                        pixelBuffer[dstIdx + 1] = reflectionPixelBuffer[srcIdx + 1] * 1.8;
+                                        pixelBuffer[dstIdx + 2] = reflectionPixelBuffer[srcIdx + 2] * 1.8;
                                     }
                                 }
                             }
@@ -281,7 +276,7 @@
 
             window.addEventListener("load", (async()=>
             {
-                const {scene} = await import("./assets/scene.rngon-model.js");
+                const {scene} = await import("./scene.js");
                 scene.initialize();
                 
                 const sceneMesh = Rngon.mesh(scene.ngons, {

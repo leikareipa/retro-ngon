@@ -7,7 +7,7 @@
 
 "use strict";
 
-import {scene} from "./assets/scene.rngon-model.js";
+import {scene} from "./scene.js";
 import {first_person_camera} from "../first-person-camera/camera.js";
 
 export const sample = {
