@@ -7,12 +7,12 @@
 
 "use strict";
 
-import {texturedCubeModel} from "./assets/textured-cube.rngon-model.js";
+import {scene} from "./scene.js";
 
 export const sample = {
     initialize: function()
     {
-        texturedCubeModel.initialize();
+        scene.initialize();
     },
     tick: function()
     {
@@ -21,7 +21,7 @@ export const sample = {
         const rotationSpeed = 0.3;
     
         return {
-            mesh: Rngon.mesh(texturedCubeModel.ngons, {
+            mesh: Rngon.mesh(scene.ngons, {
                 scaling: Rngon.vector(30, 25, 25),
                 rotation: Rngon.vector(
                     (-60 + rotationSpeed * this.numTicks),
