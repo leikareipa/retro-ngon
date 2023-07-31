@@ -131,9 +131,9 @@ export function plain_textured_fill_with_color({
                 // Draw the pixel.
                 {
                     const shade = (material.renderVertexShade? iplShade : 1);
-                    const red   = (textureMipLevel.pixels[texelIdx + 0] * material.color.unitRange.red);
-                    const green = (textureMipLevel.pixels[texelIdx + 1] * material.color.unitRange.green);
-                    const blue  = (textureMipLevel.pixels[texelIdx + 2] * material.color.unitRange.blue);
+                    const red   = (textureMipLevel.pixels[texelIdx + 0] * shade * material.color.unitRange.red);
+                    const green = (textureMipLevel.pixels[texelIdx + 1] * shade * material.color.unitRange.green);
+                    const blue  = (textureMipLevel.pixels[texelIdx + 2] * shade * material.color.unitRange.blue);
 
                     // If shade is > 1, the color values may exceed 255, in which case we write into
                     // the clamped 8-bit view to get 'free' clamping.

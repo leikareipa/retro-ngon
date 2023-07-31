@@ -6,7 +6,6 @@
  */
 
 import {rasterizer} from "../rasterizer";
-import {lerp as Lerp} from "../../core/util.js";
 import {$throw as Throw} from "../../core/util.js";
 
 // UV offsets for applying Unreal-style dithered texture filtering.
