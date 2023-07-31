@@ -2,7 +2,7 @@ export const scene = {
 	ngons: [],
 	initialize: async function()
 	{
-		const texture = await Rngon.texture.load("../samples/.shared/assets/flowers.rngon-texture.json");
+		const texture = await Rngon.texture.load("../samples/.shared/textures/flowers.rngon-texture.json");
 		const material = {
 			color: Rngon.color(255,255,255),
 			texture,
