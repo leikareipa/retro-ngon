@@ -7,7 +7,7 @@
 
 "use strict";
 
-import {scene} from "./assets/mipmapping.rngon-model.js";
+import {scene} from "./scene.js";
 
 export const sample = {
     initialize: function()
@@ -42,13 +42,13 @@ function vs_set_mipmap_level(ngon, cameraPosition)
     if (ngon.material.hasMipmapping)
     {
         const minLevel = ((parent.MIPMAP_LEVEL === "Auto")? 0.0 : parent.MIPMAP_LEVEL);
-        const maxLevel = ((parent.MIPMAP_LEVEL === "Auto")? 0.3 : parent.MIPMAP_LEVEL);
-
-        const maxDistance = (700 * 700)
-
-        const distance = (((ngon.vertices[0].x - cameraPosition.x) * (ngon.vertices[0].x  - cameraPosition.x)) +
-                          ((ngon.vertices[0].y - cameraPosition.y) * (ngon.vertices[0].y  - cameraPosition.y)) +
-                          ((ngon.vertices[0].z - cameraPosition.z) * (ngon.vertices[0].z  - cameraPosition.z)));    
+        const maxLevel = ((parent.MIPMAP_LEVEL === "Auto")? 0.5 : parent.MIPMAP_LEVEL);
+        const maxDistance = (700**2);
+        const distance = (
+            ((ngon.vertices[0].x - cameraPosition.x) * (ngon.vertices[0].x  - cameraPosition.x)) +
+            ((ngon.vertices[0].y - cameraPosition.y) * (ngon.vertices[0].y  - cameraPosition.y)) +
+            ((ngon.vertices[0].z - cameraPosition.z) * (ngon.vertices[0].z  - cameraPosition.z))
+        );    
 
         ngon.mipLevel = Math.max(minLevel, Math.min(maxLevel, (distance / maxDistance)));
     }
