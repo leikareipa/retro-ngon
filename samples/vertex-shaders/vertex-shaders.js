@@ -46,7 +46,6 @@ export const sample = {
     shaders: [
         {title:"Bend",          function:vs_bendy},
         {title:"Glitch",        function:vs_glitchy},
-        {title:"Shear",         function:vs_shear},
         {title:"Distance fog",  function:vs_depth_fog},
         {title:"Grow",          function:vs_grow},
         {title:"Wave",          function:vs_wavy},
@@ -57,7 +56,7 @@ export const sample = {
     numTicks: 0,
 };
 
-// Vertex shader. Darkens the shade of vertices based on their distance from the camera.
+// Vertex shader: Darkens the shade of vertices based on their distance from the camera.
 function vs_depth_fog(ngon, cameraPosition)
 {
     const maxDistance = (200 * 200);
@@ -72,7 +71,7 @@ function vs_depth_fog(ngon, cameraPosition)
     }
 }
 
-// Vertex shader. Moves each vertex in the direction of its normal, causing the mesh to grow.
+// Vertex shader: Moves each vertex in the direction of its normal, causing the mesh to grow.
 function vs_grow(ngon)
 {
     if (ngon.material.isGrowing)
@@ -88,7 +87,7 @@ function vs_grow(ngon)
     }
 }
 
-// Vertex shader. Moves vertices back and forth in a wave pattern.
+// Vertex shader: Moves vertices back and forth in a wave pattern.
 function vs_wavy(ngon)
 {
     for (let v = 0; v < ngon.vertices.length; v++)
@@ -97,7 +96,7 @@ function vs_wavy(ngon)
     }
 }
 
-// Vertex shader. Makes the n-gon pulsate between light and dark. When applied to all
+// Vertex shader: Makes the n-gon pulsate between light and dark. When applied to all
 // n-gons in the scene, will fade the screen in and out.
 function vs_fade_in_out(ngon)
 {
@@ -107,7 +106,7 @@ function vs_fade_in_out(ngon)
     }
 }
 
-// Vertex shader. Shifts UV coordinates to cause a 'swimming' effect.
+// Vertex shader: Shifts UV coordinates to cause a 'swimming' effect.
 function vs_uv_shift(ngon)
 {
     for (let v = 0; v < ngon.vertices.length; v++)
@@ -116,7 +115,7 @@ function vs_uv_shift(ngon)
     }
 }
 
-// Vertex shader. Scales vertices based on their height (Y value), creating a tapered, bendy effect.
+// Vertex shader: Scales vertices based on their height (Y value), creating a tapered, bendy effect.
 function vs_bendy(ngon)
 {
     const taperFactor = ((Math.sin(this.numTicks / 75)) * 0.004);
@@ -129,7 +128,7 @@ function vs_bendy(ngon)
     }
 }
 
-// Vertex shader. Randomly jitter vertices, simulating noise.
+// Vertex shader: Randomly jitter vertices, simulating noise.
 function vs_glitchy(ngon)
 {
     if (this.numTicks % 15 !== 0)
@@ -144,17 +143,5 @@ function vs_glitchy(ngon)
         ngon.vertices[v].x += ((Math.random() * 2 - 1) * noiseFactor);
         ngon.vertices[v].y += ((Math.random() * 2 - 1) * noiseFactor);
         ngon.vertices[v].z += ((Math.random() * 2 - 1) * noiseFactor);
-    }
-}
-
-// Vertex shader. Shear the mesh along the X axis based on Y position.
-function vs_shear(ngon)
-{
-    const shearFactor = 0.5;
-
-    for (let v = 0; v < ngon.vertices.length; v++)
-    {
-        const yOffset = (ngon.vertices[v].y - 0.5) * 2;
-        ngon.vertices[v].x += yOffset * shearFactor;
     }
 }
