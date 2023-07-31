@@ -7,12 +7,12 @@
 
 "use strict";
 
-import {torusModel} from "./assets/models/torus.rngon-model.js";
+import {scene} from "./scene.js";
 
 export const sample = {
     initialize: function()
     {
-        torusModel.initialize();
+        scene.initialize();
     },
     tick: function()
     {
@@ -36,15 +36,12 @@ export const sample = {
             intensity: 150,
         });
 
-        for (const ngon of torusModel.ngons)
-        {
-            ngon.material.vertexShading = parent.MODEL_SHADING.toLowerCase();
-            ngon.material.ambientLightLevel = parent.MODEL_AMBIENT;
-        }
+        scene.material.vertexShading = parent.MODEL_SHADING.toLowerCase();
+        scene.material.ambientLightLevel = parent.MODEL_AMBIENT;
 
         return {
             renderOptions: {lights: [lightSource]},
-            mesh: Rngon.mesh(torusModel.ngons, meshSettings)
+            mesh: Rngon.mesh(scene.ngons, meshSettings)
         };
     },
     shadingTypes: ["None", "Flat", "Gouraud"],
