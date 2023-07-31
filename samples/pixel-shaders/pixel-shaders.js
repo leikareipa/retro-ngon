@@ -172,7 +172,7 @@ function ps_crt({renderWidth, renderHeight, pixelBuffer})
     }
 }
 
-// Pixel shader. Applies a dithering effect to the rendered image.
+// Pixel shader: Applies a dithering effect to the rendered image.
 function ps_dithering({renderWidth, renderHeight, pixelBuffer})
 {
     const ditherMatrix = [
@@ -209,85 +209,7 @@ function ps_dithering({renderWidth, renderHeight, pixelBuffer})
     }
 }
 
-// Pixel shader. Blurs every pixel whose n-gon doesn't have the material property 'isInFocus'
-// set to true.
-function ps_selective_blur({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
-{
-    // We'll loop a couple of times to increase the level of blurring.
-    for (let loop = 0; loop < 3; loop++)
-    {
-        for (let y = 0; y < renderHeight; y++)
-        {
-            for (let x = 0; x < renderWidth; x++)
-            {
-                const thisIdx = (x + y * renderWidth);
-                const thisFragment = fragmentBuffer[thisIdx];
-                const thisNgon = (thisFragment? ngonCache[thisFragment.ngonIdx] : null);
-
-                if (!thisNgon || thisNgon.material.isInFocus)
-                {
-                    continue;
-                }
-
-                const leftIdx   = ((x - 1) + (y - 1) * renderWidth);
-                const topIdx    = ((x + 1) + (y - 1) * renderWidth);
-                const rightIdx  = ((x + 1) + (y + 1) * renderWidth);
-                const bottomIdx = ((x - 1) + (y + 1) * renderWidth);
-
-                const leftFragment   = (fragmentBuffer[leftIdx]   || null);
-                const topFragment    = (fragmentBuffer[topIdx]    || null);
-                const rightFragment  = (fragmentBuffer[rightIdx]  || null);
-                const bottomFragment = (fragmentBuffer[bottomIdx] || null);
-
-                const leftNgon   = (leftFragment?   ngonCache[leftFragment.ngonIdx]   : null);
-                const topNgon    = (topFragment?    ngonCache[topFragment.ngonIdx]    : null);
-                const rightNgon  = (rightFragment?  ngonCache[rightFragment.ngonIdx]  : null);
-                const bottomNgon = (bottomFragment? ngonCache[bottomFragment.ngonIdx] : null);
-
-                let sumR = pixelBuffer[(thisIdx * 4) + 0];
-                let sumG = pixelBuffer[(thisIdx * 4) + 1];
-                let sumB = pixelBuffer[(thisIdx * 4) + 2];
-                let numSamples = 1;
-
-                if (leftNgon && !leftNgon.material.isInFocus)
-                {
-                    sumR += pixelBuffer[(leftIdx * 4) + 0];
-                    sumG += pixelBuffer[(leftIdx * 4) + 1];
-                    sumB += pixelBuffer[(leftIdx * 4) + 2];
-                    numSamples++;
-                }
-                if (topNgon && !topNgon.material.isInFocus)
-                {
-                    sumR += pixelBuffer[(topIdx * 4) + 0];
-                    sumG += pixelBuffer[(topIdx * 4) + 1];
-                    sumB += pixelBuffer[(topIdx * 4) + 2];
-                    numSamples++;
-                }
-                if (rightNgon && !rightNgon.material.isInFocus)
-                {
-                    sumR += pixelBuffer[(rightIdx * 4) + 0];
-                    sumG += pixelBuffer[(rightIdx * 4) + 1];
-                    sumB += pixelBuffer[(rightIdx * 4) + 2];
-                    numSamples++;
-                }
-                if (bottomNgon && !bottomNgon.material.isInFocus)
-                {
-                    sumR += pixelBuffer[(bottomIdx * 4) + 0];
-                    sumG += pixelBuffer[(bottomIdx * 4) + 1];
-                    sumB += pixelBuffer[(bottomIdx * 4) + 2];
-                    numSamples++;
-                }
-
-                const brightnessFactor = 1.1;
-                pixelBuffer[(thisIdx * 4) + 0] = ((sumR / numSamples) * brightnessFactor);
-                pixelBuffer[(thisIdx * 4) + 1] = ((sumG / numSamples) * brightnessFactor);
-                pixelBuffer[(thisIdx * 4) + 2] = ((sumB / numSamples) * brightnessFactor);
-            }
-        }
-    }
-}
-
-// Pixel shader. Draws a 1-pixel-thin outline over any pixel that lies on the edge of
+// Pixel shader: Draws a 1-pixel-thin outline over any pixel that lies on the edge of
 // an n-gon whose material has the 'hasHalo' property set to true and which does not
 // border another n-gon that has that property set.
 function ps_selective_outline({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
@@ -333,164 +255,7 @@ function ps_selective_outline({renderWidth, renderHeight, fragmentBuffer, pixelB
     }
 }
 
-// Pixel shader. Converts into grayscale every pixel in the pixel buffer.
-function ps_selective_grayscale({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
-{
-    for (let i = 0; i < (renderWidth * renderHeight); i++)
-    {
-        const thisFragment = fragmentBuffer[i];
-        const thisNgon = (thisFragment? ngonCache[thisFragment.ngonIdx] : null);
-
-        if (!thisNgon || thisNgon.material.isNeverGrayscale)
-        {
-            continue;
-        }
-
-        const luminance = ((pixelBuffer[(i * 4) + 0] * 0.3) +
-                           (pixelBuffer[(i * 4) + 1] * 0.59) +
-                           (pixelBuffer[(i * 4) + 2] * 0.11));
-
-        pixelBuffer[(i * 4) + 0] = luminance;
-        pixelBuffer[(i * 4) + 1] = luminance;
-        pixelBuffer[(i * 4) + 2] = luminance;
-    }
-}
-
-// Pixel shader.
-function ps_shade_map({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
-{
-    for (let i = 0; i < (renderWidth * renderHeight); i++)
-    {
-        const shade = (fragmentBuffer[i].shade * 255);
-
-        pixelBuffer[(i * 4) + 0] = shade;
-        pixelBuffer[(i * 4) + 1] = shade;
-        pixelBuffer[(i * 4) + 2] = shade;
-    }
-}
-
-// Pixel shader.
-function ps_normal_map({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
-{
-    for (let i = 0; i < (renderWidth * renderHeight); i++)
-    {
-        const thisFragment = fragmentBuffer[i];
-        const thisNgon = (thisFragment? ngonCache[thisFragment.ngonIdx] : null);
-
-        if (!thisNgon)
-        {
-            continue;
-        }
-
-        pixelBuffer[(i * 4) + 0] = Math.abs(thisNgon.normal.x * 255);
-        pixelBuffer[(i * 4) + 1] = Math.abs(thisNgon.normal.y * 255);
-        pixelBuffer[(i * 4) + 2] = Math.abs(thisNgon.normal.z * 255);
-    }
-}
-
-// Pixel shader.
-function ps_world_position_map({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
-{
-    for (let i = 0; i < (renderWidth * renderHeight); i++)
-    {
-        const x = fragmentBuffer[i].worldX;
-        const y = fragmentBuffer[i].worldY;
-        const z = fragmentBuffer[i].worldZ;
-
-        pixelBuffer[(i * 4) + 0] = Math.abs(y);
-        pixelBuffer[(i * 4) + 1] = Math.abs(x);
-        pixelBuffer[(i * 4) + 2] = Math.abs(z);
-    }
-}
-
-// Pixel shader.
-function ps_uv_map({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
-{
-    for (let i = 0; i < (renderWidth * renderHeight); i++)
-    {
-        const thisFragment = fragmentBuffer[i];
-        const thisNgon = (thisFragment? ngonCache[thisFragment.ngonIdx] : null);
-
-        if (!thisNgon)
-        {
-            continue;
-        }
-
-        let u = fragmentBuffer[i].textureUScaled;
-        let v = fragmentBuffer[i].textureVScaled;
-        const texture = (thisNgon.material.texture || null);
-
-        // Take the scaled UV coordinates back into the [0,1] range.
-        if (texture)
-        {
-            u /= texture.width;
-            v /= texture.height;
-        }
-
-        pixelBuffer[(i * 4) + 0] = (v * 255);
-        pixelBuffer[(i * 4) + 1] = (u * 255);
-        pixelBuffer[(i * 4) + 2] = 127;
-    }
-}
-
-// Pixel shader.
-function ps_depth_map({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
-{
-    const {minDepth, maxDepth} = fragmentBuffer.reduce((minmax, fragment)=>
-    {
-        if (fragment.depth > minmax.maxDepth) minmax.maxDepth = fragment.depth;
-        if (fragment.depth < minmax.minDepth) minmax.minDepth = fragment.depth;
-
-        return minmax;
-    }, {minDepth:Infinity, maxDepth:Number.NEGATIVE_INFINITY});
-
-    for (let i = 0; i < (renderWidth * renderHeight); i++)
-    {
-        const depth = (((fragmentBuffer[i].depth - minDepth) / (maxDepth - minDepth)) * 255);
-
-        pixelBuffer[(i * 4) + 0] = depth;
-        pixelBuffer[(i * 4) + 1] = depth;
-        pixelBuffer[(i * 4) + 2] = depth;
-    }
-}
-
-// Pixel shader.
-function ps_reduce_color_fidelity({renderWidth, renderHeight, pixelBuffer})
-{
-    for (let i = 0; i < (renderWidth * renderHeight); i++)
-    {
-        const reductionFactor = 30;
-
-        pixelBuffer[(i * 4) + 0] = (~~(pixelBuffer[(i * 4) + 0] / reductionFactor) * reductionFactor);
-        pixelBuffer[(i * 4) + 1] = (~~(pixelBuffer[(i * 4) + 1] / reductionFactor) * reductionFactor);
-        pixelBuffer[(i * 4) + 2] = (~~(pixelBuffer[(i * 4) + 2] / reductionFactor) * reductionFactor);
-    }
-}
-
-// Pixel shader Draws black all pixels on scanlines divisible by 2; except for pixels
-// whose ngon has the material property 'hasNoScanlines' set to true.
-function ps_selective_scanlines({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
-{
-    for (let i = 0; i < (renderWidth * renderHeight); i++)
-    {
-        const thisFragment = fragmentBuffer[i];
-        const thisNgon = (thisFragment? ngonCache[thisFragment.ngonIdx] : null);
-
-        if (!thisNgon || thisNgon.material.hasNoScanlines)
-        {
-            continue;
-        }
-
-        if (((~~(i / renderWidth)+1) % 2) == 0)
-        {
-            pixelBuffer[(i * 4) + 0] = 0;
-            pixelBuffer[(i * 4) + 1] = 0;
-            pixelBuffer[(i * 4) + 2] = 0;
-        }
-    }
-}
-
-// Pixel shader. Draws a wireframe (outline) around each visible n-gon.
+// Pixel shader: Draws a wireframe (outline) around each visible n-gon.
 function ps_wireframe({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
 {
     for (let y = 0; y < renderHeight; y++)
@@ -577,7 +342,7 @@ function ps_per_pixel_light({renderState, renderWidth, renderHeight, fragmentBuf
     }
 }
 
-// Pixel shader. Desatures pixel colors based on their distance to the camera - pixels
+// Pixel shader: Desatures pixel colors based on their distance to the camera - pixels
 // that are further away are desatured to a greater extent. The desaturation algo is
 // adapted from http://alienryderflex.com/saturation.html.
 function ps_depth_desaturate({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
@@ -610,56 +375,6 @@ function ps_depth_desaturate({renderWidth, renderHeight, fragmentBuffer, pixelBu
     }
 }
 
-// Pixel shader. Lightens every xth pixel to create a perspective-correct grid pattern.
-function ps_grid_pattern({renderWidth, renderHeight, pixelBuffer, fragmentBuffer})
-{
-    const maxDepth = 200;
-
-    for (let i = 0; i < (renderWidth * renderHeight); i++)
-    {
-        const thisFragment = fragmentBuffer[i];
-
-        const depth = (1 - Math.max(0, Math.min(0.8, (thisFragment.w / maxDepth))));
-        let pixelColor = 0;
-
-        // Note: we slightly offset some of the coordinate values to prevent flat
-        // axis-aligned polygons in this particular scene from being entirely lit.
-        if (((~~thisFragment.worldX)     % 8 == 0) ||
-            ((~~thisFragment.worldY + 2) % 8 == 0) ||
-            ((~~thisFragment.worldZ - 3) % 8 == 0))
-        {
-            pixelColor = (190 * depth);
-        }
-        else
-        {
-            pixelColor = (220 * depth);
-        }
-
-        pixelBuffer[(i * 4) + 0] = pixelColor;
-        pixelBuffer[(i * 4) + 1] = pixelColor;
-        pixelBuffer[(i * 4) + 2] = pixelColor;
-    }
-}
-
-// Pixel shader.
-function ps_mip_level_map({renderWidth, renderHeight, fragmentBuffer, ngonCache, pixelBuffer})
-{
-    for (let i = 0; i < (renderWidth * renderHeight); i++)
-    {
-        const thisFragment = fragmentBuffer[i];
-        const thisNgon = (thisFragment? ngonCache[thisFragment.ngonIdx] : null);
-
-        if (!thisNgon)
-        {
-            continue;
-        }
-
-        pixelBuffer[(i * 4) + 0] = this.Rngon.lerp(0, 255, (1 - thisNgon.mipLevel));
-        pixelBuffer[(i * 4) + 1] = this.Rngon.lerp(0, 255, (1 - thisNgon.mipLevel));
-        pixelBuffer[(i * 4) + 2] = this.Rngon.lerp(0, 255, (1 - thisNgon.mipLevel));
-    }
-}
-
 // Pixel shader.
 function ps_distance_fog({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
 {
@@ -677,155 +392,7 @@ function ps_distance_fog({renderWidth, renderHeight, fragmentBuffer, pixelBuffer
     }
 }
 
-// Pixel shader. Applies a radial blur effect centered on the screen.
-function ps_radial_blur({renderWidth, renderHeight, pixelBuffer}) {
-    const centerX = (renderWidth / 2);
-    const centerY = (renderHeight / 2);
-    const blurRadius = 10;
-    const blurSamples = 3;
-    
-    const tempPixelBuffer = [];
-    
-    // Iterate through each pixel in the buffer.
-    for (let y = 0; y < renderHeight; y++)
-    {
-        for (let x = 0; x < renderWidth; x++)
-        {
-            let sumR = 0;
-            let sumG = 0;
-            let sumB = 0;
-    
-            // Calculate the distance from the current pixel to the center.
-            const dx = (x - centerX);
-            const dy = (y - centerY);
-            const distance = Math.sqrt(dx * dx + dy * dy);
-    
-            // Determine the number of samples for the radial blur based on the distance from the center.
-            const samples = Math.max(1, Math.round(blurSamples * (distance / blurRadius)));
-    
-            // Collect the color samples for the radial blur.
-            for (let i = 0; i < samples; i++)
-            {
-                const sampleX = Math.round(x - (dx * i / samples));
-                const sampleY = Math.round(y - (dy * i / samples));
-    
-                // Clamp the sample coordinates within the pixel buffer bounds.
-                const clampedX = Math.min(renderWidth - 1, Math.max(0, sampleX));
-                const clampedY = Math.min(renderHeight - 1, Math.max(0, sampleY));
-    
-                const sampleIdx = (clampedX + clampedY * renderWidth) * 4;
-    
-                sumR += pixelBuffer[sampleIdx + 0];
-                sumG += pixelBuffer[sampleIdx + 1];
-                sumB += pixelBuffer[sampleIdx + 2];
-            }
-    
-            // Calculate the average color of the samples.
-            const averageR = sumR / samples;
-            const averageG = sumG / samples;
-            const averageB = sumB / samples;
-    
-            const thisIdx = (x + y * renderWidth) * 4;
-            tempPixelBuffer[thisIdx + 0] = averageR;
-            tempPixelBuffer[thisIdx + 1] = averageG;
-            tempPixelBuffer[thisIdx + 2] = averageB;
-            tempPixelBuffer[thisIdx + 3] = pixelBuffer[thisIdx + 3];
-        }
-    }
-    
-    for (let i = 0; i < pixelBuffer.length; i++)
-    {
-        pixelBuffer[i] = tempPixelBuffer[i];
-    }
-}
-// Pixel shader. Applies a sepia tone to the pixel buffer.
-function ps_sepia({renderWidth, renderHeight, pixelBuffer})
-{
-    for (let i = 0; i < (renderWidth * renderHeight); i++)
-    {
-        const red = pixelBuffer[(i * 4) + 0];
-        const green = pixelBuffer[(i * 4) + 1];
-        const blue = pixelBuffer[(i * 4) + 2];
-
-        const tr = ((0.393 * red) + (0.769 * green) + (0.189 * blue));
-        const tg = ((0.349 * red) + (0.686 * green) + (0.168 * blue));
-        const tb = ((0.272 * red) + (0.534 * green) + (0.131 * blue));
-
-        pixelBuffer[(i * 4) + 0] = Math.min(tr, 255);
-        pixelBuffer[(i * 4) + 1] = Math.min(tg, 255);
-        pixelBuffer[(i * 4) + 2] = Math.min(tb, 255);
-    }
-}
-
-// Pixel shader. Applies ambient occlusion to the pixel buffer.
-function ps_ambient_occlusion({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
-{
-    const radius = 1;
-    const depthThreshold = 0.03;
-    const occlusionStrength = 1;
-
-    for (let y = 0; y < renderHeight; y++)
-    {
-        for (let x = 0; x < renderWidth; x++)
-        {
-            const bufferIdx = (x + y * renderWidth);
-            const thisFragment = fragmentBuffer[bufferIdx];
-
-            if (!thisFragment)
-            {
-                continue;
-            }
-
-            // Check neighboring pixels within the radius.
-            let occlusionValue = 0;
-            let numSamples = 0;
-            for (let dy = -radius; dy <= radius; dy++)
-            {
-                for (let dx = -radius; dx <= radius; dx++)
-                {
-                    if (dx === 0 && dy === 0) {
-                        continue;
-                    }
-
-                    const nx = (x + dx);
-                    const ny = (y + dy);
-
-                    if ((nx < 0) || (nx >= renderWidth) || (ny < 0) || (ny >= renderHeight))
-                    {
-                        continue;
-                    }
-
-                    const neighborIdx = (nx + ny * renderWidth);
-                    const neighborFragment = fragmentBuffer[neighborIdx];
-
-                    if (!neighborFragment)
-                    {
-                        continue;
-                    }
-
-                    const depthDifference = Math.abs(thisFragment.depth - neighborFragment.depth);
-
-                    if (depthDifference < depthThreshold) {
-                        occlusionValue += (1.0 - depthDifference / depthThreshold);
-                        numSamples++;
-                    }
-                }
-            }
-
-            if (numSamples)
-            {
-                occlusionValue = (1.0 - occlusionStrength * (occlusionValue / numSamples));
-
-                const pixelValue = (200 * (1 - occlusionValue));
-                pixelBuffer[(bufferIdx * 4) + 0] = pixelValue;
-                pixelBuffer[(bufferIdx * 4) + 1] = pixelValue;
-                pixelBuffer[(bufferIdx * 4) + 2] = pixelValue;
-            }
-        }
-    }
-}
-
-// Pixel shader. Applies edge anti-aliasing to the pixel buffer
+// Pixel shader: Applies edge anti-aliasing to the pixel buffer
 function ps_fxaa({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
 {
     for (let y = 0; y < renderHeight; y++)
@@ -870,7 +437,7 @@ function ps_fxaa({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCa
     }
 }
 
-// Pixel shader. Applies a vignette effect to the pixel buffer.
+// Pixel shader: Applies a vignette effect to the pixel buffer.
 function ps_vignette({renderWidth, renderHeight, pixelBuffer})
 {
     const centerX = (renderWidth / 2);
