@@ -50,14 +50,14 @@ Below are benchmark results (frames per second) running in Google Chrome on an A
     </tr>
     <tr>
         <td>1280 &times; 720</td>
-        <td>164</td>
-        <td>89</td>
+        <td>195</td>
+        <td>90</td>
         <td>65</td>
-        <td>11</td>
+        <td>10</td>
     </tr>
     <tr>
         <td>640 &times; 360</td>
-        <td>265</td>
+        <td>300</td>
         <td>200</td>
         <td>145</td>
         <td>40</td>
