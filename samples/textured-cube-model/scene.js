@@ -4,13 +4,13 @@ export const scene = {
 	{
 		const material1 = {
 			color: Rngon.color(150, 160, 190),
-			texture: await Rngon.texture.load("../samples/.shared/textures/wood.rngon-texture.json"),
+			texture: await Rngon.texture.load("../samples/shared/textures/wood.rngon-texture.json"),
 			textureMapping: "affine",
 		};
 
 		const material2 = {
 			color: Rngon.color(255, 255, 255),
-			texture: await Rngon.texture.load("../samples/.shared/textures/flowers.rngon-texture.json"),
+			texture: await Rngon.texture.load("../samples/shared/textures/flowers.rngon-texture.json"),
 			textureMapping: "affine",
 		};
 
