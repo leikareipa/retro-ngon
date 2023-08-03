@@ -47,11 +47,11 @@ export function rasterizer(renderState)
         {
             case 0: continue;
             case 1: rasterizer.point(renderState, ngon.vertices[0], ngon.material, n); break;
-            case 2: rasterizer.line(renderState, ngon.vertices[0], ngon.vertices[1], ngon.material.color, n, false); break;
+            case 2: rasterizer.line(renderState, ngon.vertices[0], ngon.vertices[1], ngon.material.color); break;
             default: rasterizer.polygon(renderState, ngon, n); break;
         }
     }
-
+    
     return;
 }
 
@@ -150,12 +150,12 @@ rasterizer.polygon = function(
     {
         for (let l = 1; l < numLeftVerts; l++)
         {
-            rasterizer.line(renderState, leftVerts[l-1], leftVerts[l], material.wireframeColor, ngonIdx, true);
+            rasterizer.line(renderState, leftVerts[l-1], leftVerts[l], material.wireframeColor);
         }
 
         for (let r = 1; r < numRightVerts; r++)
         {
-            rasterizer.line(renderState, rightVerts[r-1], rightVerts[r], material.wireframeColor, ngonIdx, true);
+            rasterizer.line(renderState, rightVerts[r-1], rightVerts[r], material.wireframeColor);
         }
     }
 
@@ -275,12 +275,24 @@ rasterizer.line = function(
     vert1 = Vertex(),
     vert2 = Vertex(),
     color = Color(),
-    ngonIdx = 0,
-    ignoreDepthBuffer = false
+    ignoreDepthBuffer = true
 )
 {
     if (color.alpha !== 255)
     {
+        return;
+    }
+
+    const renderWidth = renderState.pixelBuffer.width;
+    const renderHeight = renderState.pixelBuffer.height;
+
+    // If the line is fully outside the screen.
+    if (
+        ((vert1.x < 0) && (vert2.x < 0)) ||
+        ((vert1.x >= renderWidth) && (vert2.y >= renderWidth)) ||
+        ((vert1.y < 0) && (vert2.y < 0)) ||
+        ((vert1.y >= renderHeight) && (vert2.y < renderHeight))
+    ){
         return;
     }
     
@@ -290,129 +302,121 @@ rasterizer.line = function(
     const depthBuffer = (renderState.useDepthBuffer? renderState.depthBuffer.data : null);
     const pixelBufferClamped8 = renderState.pixelBuffer.data;
     const pixelBuffer = new Uint32Array(pixelBufferClamped8.buffer);
-    const renderWidth = renderState.pixelBuffer.width;
-    const renderHeight = renderState.pixelBuffer.height;
  
     const startX = Math.floor(vert1.x);
     const startY = Math.floor(vert1.y);
     const endX = Math.floor(vert2.x);
-    const endY = Math.floor(vert2.y);
-    let lineLength = Math.round(Math.sqrt((endX - startX) * (endX - startX) + (endY - startY) * (endY - startY)));
-    const deltaX = ((endX - startX) / lineLength);
-    const deltaY = ((endY - startY) / lineLength);
-    let curX = startX;
-    let curY = startY;
+    const endY = Math.ceil(vert2.y);
+    let lineLength = Math.ceil(Math.sqrt((endX - startX) * (endX - startX) + (endY - startY) * (endY - startY)));
 
     // Establish interpolation parameters.
     const w1 = (interpolatePerspective? vert1.w : 1);
     const w2 = (interpolatePerspective? vert2.w : 1);
-    const depth1 = (vert1.z / farPlane);
-    const depth2 = (vert2.z / farPlane);
-    let startDepth = depth1/w1;
-    const deltaDepth = ((depth2/w2 - depth1/w1) / lineLength);
-    let startShade = vert1.shade/w1;
-    const deltaShade = ((vert2.shade/w2 - vert1.shade/w1) / lineLength);
-    let startInvW = 1/w1;
-    const deltaInvW = ((1/w2 - 1/w1) / lineLength);
+    const startDepth = (vert1.z / farPlane);
+    const endDepth = (vert2.z / farPlane);
+    const deltaDepth = (((endDepth / w2) - (startDepth / w1)) / lineLength);
+    const deltaShade = (((vert2.shade / w2) - (vert1.shade / w2)) / lineLength);
+    const deltaInvW = (((1 / w2) - (1 / w1)) / lineLength);
+    let depth = (startDepth / w1);
+    let shade = (vert1.shade / w1);
+    let invW = (1 / w1);
+    let worldX, worldY, worldZ, deltaWorldX, deltaWorldY, deltaWorldZ;
     if (useFragmentBuffer)
     {
-        var startWorldX = vert1.worldX/w1;
-        var deltaWorldX = ((vert2.worldX/w2 - vert1.worldX/w1) / lineLength);
-
-        var startWorldY = vert1.worldY/w1;
-        var deltaWorldY = ((vert2.worldY/w2 - vert1.worldY/w1) / lineLength);
-
-        var startWorldZ = vert1.worldZ/w1;
-        var deltaWorldZ = ((vert2.worldZ/w2 - vert1.worldZ/w1) / lineLength);
+        worldX = (vert1.worldX / w1);
+        worldY = (vert1.worldY / w1);
+        worldZ = (vert1.worldZ / w1);
+        deltaWorldX = (((vert2.worldX / w2) - (vert1.worldX / w1)) / lineLength);
+        deltaWorldY = (((vert2.worldY / w2) - (vert1.worldY / w1)) / lineLength);
+        deltaWorldZ = (((vert2.worldZ / w2) - (vert1.worldZ / w1)) / lineLength);
     }
-
+    
+    // Render the line.
+    let curX = startX;
+    let curY = startY;
+    const deltaX = ((endX - startX) / lineLength);
+    const deltaY = ((endY - startY) / lineLength);
     while (lineLength--)
     {
-        const x = Math.floor(curX);
-        const y = Math.floor(curY);
+        const x = ~~curX;
+        const y = ~~curY;
+        
+        // Rasterize a pixel.
+        if (
+            (x >= 0) &&
+            (y >= 0) &&
+            (x < renderWidth) &&
+            (y < renderHeight)
+        ){
+            const depthPersp = (depth / invW);
+            const shadePersp = (shade / invW);
+            const pixelBufferIdx = (x + y * renderWidth);
 
-        put_pixel(x, y);
+            if (
+                ignoreDepthBuffer ||
+                !depthBuffer ||
+                (depthBuffer[pixelBufferIdx] > depthPersp)
+            ){
+                const red = (color.red * shadePersp);
+                const green = (color.green * shadePersp);
+                const blue = (color.blue * shadePersp);
+                
+                // If shade is > 1, the color values may exceed 255, in which case we write into
+                // the clamped 8-bit view to get 'free' clamping.
+                if (shadePersp > 1)
+                {
+                    const idx = (pixelBufferIdx * 4);
+                    pixelBufferClamped8[idx+0] = red;
+                    pixelBufferClamped8[idx+1] = green;
+                    pixelBufferClamped8[idx+2] = blue;
+                    pixelBufferClamped8[idx+3] = 255;
+                }
+                else
+                {
+                    pixelBuffer[pixelBufferIdx] = (
+                        (255 << 24) +
+                        (blue << 16) +
+                        (green << 8) +
+                        ~~red
+                    );
+                }
+
+                if (depthBuffer && !ignoreDepthBuffer)
+                {
+                    depthBuffer[pixelBufferIdx] = depthPersp;
+                }
+
+                if (useFragmentBuffer)
+                {
+                    const fragment = renderState.fragmentBuffer.data[pixelBufferIdx];
+                    fragment.ngonIdx = -1;
+                    fragment.textureUScaled = undefined; // We don't support textures on lines.
+                    fragment.textureVScaled = undefined;
+                    fragment.depth = depth;
+                    fragment.shade = shade;
+                    fragment.worldX = worldX;
+                    fragment.worldY = worldY;
+                    fragment.worldZ = worldZ;
+                    fragment.w = 1;
+                }
+            }
+        }
 
         // Increment interpolated values.
         {
             curX += deltaX;
             curY += deltaY;
-            startDepth += deltaDepth;
-            startShade += deltaShade;
-            startInvW += deltaInvW;
+            depth += deltaDepth;
+            shade += deltaShade;
+            invW += deltaInvW;
 
             if (useFragmentBuffer)
             {
-                startWorldX += deltaWorldX;
-                startWorldY += deltaWorldY;
-                startWorldZ += deltaWorldZ;
+                worldX += deltaWorldX;
+                worldY += deltaWorldY;
+                worldZ += deltaWorldZ;
             }
         }
-    }
-
-    function put_pixel(x, y)
-    {
-        if ((x < 0) ||
-            (y < 0) ||
-            (x >= renderWidth) ||
-            (y >= renderHeight))
-        {
-            return;
-        }
-
-        const pixelBufferIdx = (x + y * renderWidth);
-        const depth = (startDepth / startInvW);
-        const shade = (startShade / startInvW);
-        const red = (color.red * shade);
-        const green = (color.green * shade);
-        const blue = (color.blue * shade);
-
-        // Draw the pixel.
-        if (ignoreDepthBuffer ||
-            !depthBuffer ||
-            (depthBuffer[pixelBufferIdx] > depth))
-        {
-            // If shade is > 1, the color values may exceed 255, in which case we write into
-            // the clamped 8-bit view to get 'free' clamping.
-            if (shade > 1)
-            {
-                const idx = (pixelBufferIdx * 4);
-                pixelBufferClamped8[idx+0] = red;
-                pixelBufferClamped8[idx+1] = green;
-                pixelBufferClamped8[idx+2] = blue;
-                pixelBufferClamped8[idx+3] = 255;
-            }
-            else
-            {
-                pixelBuffer[pixelBufferIdx] = (
-                    (255 << 24) +
-                    (blue << 16) +
-                    (green << 8) +
-                    red
-                );
-            }
-
-            if (depthBuffer && !ignoreDepthBuffer)
-            {
-                depthBuffer[pixelBufferIdx] = depth;
-            }
-
-            if (useFragmentBuffer)
-            {
-                const fragment = renderState.fragmentBuffer.data[pixelBufferIdx];
-                fragment.ngonIdx = ngonIdx;
-                fragment.textureUScaled = undefined; // We don't support textures on lines.
-                fragment.textureVScaled = undefined;
-                fragment.depth = (startDepth / startInvW);
-                fragment.shade = (startShade / startInvW);
-                fragment.worldX = (startWorldX / startInvW);
-                fragment.worldY = (startWorldY / startInvW);
-                fragment.worldZ = (startWorldZ / startInvW);
-                fragment.w = (1 / startInvW);
-            }
-        }
-
-        return;
     }
 };
 
