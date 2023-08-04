@@ -117,11 +117,10 @@ export function generic_fill({
                     iplU += deltaU;
                     iplV += deltaV;
                     iplInvW += deltaInvW;
-                    pixelBufferIdx++;
-
                     iplWorldX += deltaWorldX;
                     iplWorldY += deltaWorldY;
                     iplWorldZ += deltaWorldZ;
+                    pixelBufferIdx++;
                 }
 
                 const depth = (iplDepth / iplInvW);

@@ -74,6 +74,7 @@ rasterizer.polygon = function(
 
     const interpolatePerspective = renderState.usePerspectiveInterpolation;
     const useFragmentBuffer = renderState.useFragmentBuffer;
+    const fragments = renderState.fragments;
     const depthBuffer = (renderState.useDepthBuffer? renderState.depthBuffer.data : null);
     const renderWidth = renderState.pixelBuffer.width;
     const renderHeight = renderState.pixelBuffer.height;
@@ -108,7 +109,7 @@ rasterizer.polygon = function(
             if (
                 material.texture &&
                 depthBuffer &&
-                !useFragmentBuffer &&
+                !(fragments.worldX || fragments.worldY || fragments.worldZ) &&
                 !material.allowAlphaReject &&
                 !material.allowAlphaBlend &&
                 (material.textureMapping === "affine") &&
@@ -130,7 +131,7 @@ rasterizer.polygon = function(
             else if (
                 !material.texture &&
                 depthBuffer &&
-                !useFragmentBuffer &&
+                !(fragments.worldX || fragments.worldY || fragments.worldZ) &&
                 !material.allowAlphaReject &&
                 !material.allowAlphaBlend
             ){

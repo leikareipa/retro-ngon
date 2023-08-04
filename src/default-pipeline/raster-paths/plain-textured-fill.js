@@ -20,6 +20,9 @@ export function plain_textured_fill({
     if (!numLeftEdges || !numRightEdges) return true;
 
     const ngon = renderState.ngonCache.ngons[ngonIdx];
+    const useFragmentBuffer = renderState.useFragmentBuffer;
+    const fragments = renderState.fragments;
+    const fragmentBuffer = renderState.fragmentBuffer.data;
     const pixelBufferImage = renderState.pixelBuffer;
     const pixelBufferClamped8 = pixelBufferImage.data;
     const pixelBufferWidth = pixelBufferImage.width;
@@ -150,6 +153,17 @@ export function plain_textured_fill({
                     }
 
                     depthBuffer[pixelBufferIdx] = depth;
+
+                    if (useFragmentBuffer)
+                    {
+                        const fragment = fragmentBuffer[pixelBufferIdx];
+                        fragments.ngonIdx? fragment.ngonIdx = ngonIdx : 1;
+                        fragments.textureUScaled? fragment.textureUScaled = ~~u : 1;
+                        fragments.textureVScaled? fragment.textureVScaled = ~~v : 1;
+                        fragments.depth? fragment.depth = (iplDepth / iplInvW) : 1;
+                        fragments.shade? fragment.shade = iplShade : 1;
+                        fragments.w? fragment.w = (1 / iplInvW) : 1;
+                    }
                 }
             }
         }
