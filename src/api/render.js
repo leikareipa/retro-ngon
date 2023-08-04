@@ -226,7 +226,7 @@ function setup_render_state(options = {}, pipeline = {})
     {
         for (const key of Object.keys(state.fragments))
         {
-            state.fragments[key] = true;
+            state.fragments[key] = state.useFragmentBuffer;
         }
     }
 
