@@ -50,10 +50,11 @@ export const sample = {
                 // this to 'true' always, but there's a performance gain in not using
                 // the fragment buffer when it's not needed.
                 useFragmentBuffer: (
-                    parent.ACTIVE_SHADER.function
+                    (parent.SHADER_PIPELINE_ENABLED && parent.ACTIVE_SHADER.function)
                         ? parent.ACTIVE_SHADER.function.toString().match(/{(.+)?}/)[1].includes("fragmentBuffer")
                         : false
                 ),
+                fragments: parent.ACTIVE_SHADER.function.fragments,
                 cameraDirection: this.camera.direction,
                 cameraPosition: this.camera.position,
             },
@@ -253,7 +254,10 @@ function ps_selective_outline({renderWidth, renderHeight, fragmentBuffer, pixelB
             }
         }
     }
-}
+} ps_selective_outline.fragments = {
+    ngonIdx: true,
+    depth: true,
+};
 
 // Pixel shader: Draws a wireframe (outline) around each visible n-gon.
 function ps_wireframe({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
@@ -286,7 +290,9 @@ function ps_wireframe({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
             }
         }
     }
-}
+} ps_wireframe.fragments = {
+    ngonIdx: true,
+};
 
 // Pixel shader.
 function ps_per_pixel_light({renderState, renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
@@ -301,9 +307,11 @@ function ps_per_pixel_light({renderState, renderWidth, renderHeight, fragmentBuf
         const thisFragment = fragmentBuffer[i];
         const thisNgon = (ngonCache[thisFragment.ngonIdx] || null);
 
-        const distance = (((thisFragment.worldX - light.position.x) * (thisFragment.worldX - light.position.x)) +
-                          ((thisFragment.worldY - light.position.y) * (thisFragment.worldY - light.position.y)) +
-                          ((thisFragment.worldZ - light.position.z) * (thisFragment.worldZ - light.position.z)));
+        const distance = (
+            ((thisFragment.worldX - light.position.x) * (thisFragment.worldX - light.position.x)) +
+            ((thisFragment.worldY - light.position.y) * (thisFragment.worldY - light.position.y)) +
+            ((thisFragment.worldZ - light.position.z) * (thisFragment.worldZ - light.position.z))
+        );
 
         const distanceMul = Math.max(0, Math.min(1, (1 - (distance / lightReach))));
 
@@ -340,7 +348,13 @@ function ps_per_pixel_light({renderState, renderWidth, renderHeight, fragmentBuf
             pixelBuffer[(i * 4) + 2] = 0;
         }
     }
-}
+} ps_per_pixel_light.fragments = {
+    ngonIdx: true,
+    worldX: true,
+    worldY: true,
+    worldZ: true,
+    shade: true,
+};
 
 // Pixel shader: Desatures pixel colors based on their distance to the camera - pixels
 // that are further away are desatured to a greater extent. The desaturation algo is
@@ -373,24 +387,23 @@ function ps_depth_desaturate({renderWidth, renderHeight, fragmentBuffer, pixelBu
         pixelBuffer[(i * 4) + 1] = green;
         pixelBuffer[(i * 4) + 2] = blue;
     }
-}
+} ps_depth_desaturate.fragments = {
+    w: true,
+};
 
-// Pixel shader.
+// Pixel shader: Obscures pixels progressively the further they are from the camera.
 function ps_distance_fog({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
 {
     const maxDepth = 200;
 
     for (let i = 0; i < (renderWidth * renderHeight); i++)
     {
-        const thisFragment = fragmentBuffer[i];
-
-        const depth = Math.max(0, Math.min(1, (thisFragment.w / maxDepth)));
-
-        pixelBuffer[(i * 4) + 0] = this.Rngon.lerp(pixelBuffer[(i * 4) + 0], 127, depth);
-        pixelBuffer[(i * 4) + 1] = this.Rngon.lerp(pixelBuffer[(i * 4) + 1], 127, depth);
-        pixelBuffer[(i * 4) + 2] = this.Rngon.lerp(pixelBuffer[(i * 4) + 2], 127, depth);
+        const depth = Math.max(0, Math.min(1, (fragmentBuffer[i].w / maxDepth)));
+        pixelBuffer[(i * 4) + 3] = (255 * (1 - depth));
     }
-}
+} ps_distance_fog.fragments = {
+    w: true,
+};
 
 // Pixel shader: Applies edge anti-aliasing to the pixel buffer
 function ps_fxaa({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})

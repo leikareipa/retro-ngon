@@ -20,22 +20,12 @@ function default_state() {
         // user can provide custom modules to be used in place of the default ones).
         // Each module is a function that performs a set of tasks.
         modules: {
-            // Transforms the given n-gons into screen space, placing the transformed
-            // n-gons into the internal n-gon cache. Also applies lighting and viewport
-            // clipping.
             transform_clip_lighter: undefined,
-            
-            // Removes all rendered pixels from the render surface.
             surface_wiper: undefined,
-
             rasterizer: undefined,
-
             vertex_shader: undefined,
-
             pixel_shader: undefined,
-
             context_shader: undefined,
-
             raster_shader: undefined,
         },
 
@@ -54,8 +44,7 @@ function default_state() {
         pixelBuffer: new ImageData(1, 1),
 
         // For each pixel in the rendered frame, metadata about the state of the renderer
-        // at that pixel, intended to be used by shaders. The array's size will be set to
-        // match the requested render resolution.
+        // at that pixel, intended to be used by pixel shaders.
         useFragmentBuffer: false,
         fragmentBuffer: {
             width: 1,
@@ -92,6 +81,19 @@ function default_state() {
 
                 w: undefined,
             }
+        },
+
+        // Determines which metadata are to be recorded in the fragment buffer.
+        fragments: {
+            w: true,
+            ngonIdx: true,
+            textureUScaled: true,
+            textureVScaled: true,
+            depth: true,
+            shade: true,
+            worldX: true,
+            worldY: true,
+            worldZ: true,
         },
 
         // If true, enables the fragment buffer and allows the use of pixel shaders.

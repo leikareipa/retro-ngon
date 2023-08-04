@@ -91,6 +91,7 @@ render.defaultOptions = {
     farPlane: 1000,
     useDepthBuffer: true,
     useFragmentBuffer: false,
+    fragments: undefined,
     usePerspectiveInterpolation: true,
     globalWireframe: false,
     hibernateWhenTargetNotVisible: true,
@@ -133,6 +134,7 @@ render.schema = {
             farPlane: ["number"],
             useDepthBuffer: ["boolean"],
             useFragmentBuffer: ["boolean"],
+            fragments: ["object", "undefined"],
             usePerspectiveInterpolation: ["boolean"],
             globalWireframe: ["boolean"],
             hibernateWhenTargetNotVisible: ["boolean"],
@@ -212,6 +214,21 @@ function setup_render_state(options = {}, pipeline = {})
         // Note that this doesn't always work, e.g. when the function has been .bind()ed.
         (state.usePixelShader && state.pixel_shader?.toString().match(/{(.+)?}/)[1].includes("fragmentBuffer"))
     );
+
+    if (typeof options.fragments === "object")
+    {
+        for (const key of Object.keys(state.fragments))
+        {
+            state.fragments[key] = (options.fragments[key] ?? false);
+        }
+    }
+    else
+    {
+        for (const key of Object.keys(state.fragments))
+        {
+            state.fragments[key] = true;
+        }
+    }
 
     state.modules.rasterizer = (
         (typeof pipeline.rasterizer === "function")

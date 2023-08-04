@@ -35,6 +35,7 @@ export function generic_fill({
 
     const ngon = renderState.ngonCache.ngons[ngonIdx];
     const useFragmentBuffer = renderState.useFragmentBuffer;
+    const fragments = renderState.fragments;
     const fragmentBuffer = renderState.fragmentBuffer.data;
     const depthBuffer = (renderState.useDepthBuffer? renderState.depthBuffer.data : null);
     const pixelBufferImage = renderState.pixelBuffer;
@@ -90,17 +91,14 @@ export function generic_fill({
             const deltaInvW = ((rightEdge.invW - leftEdge.invW) / spanWidth);
             let iplInvW = (leftEdge.invW - deltaInvW);
 
-            if (useFragmentBuffer)
-            {
-                var deltaWorldX = ((rightEdge.worldX - leftEdge.worldX) / spanWidth);
-                var iplWorldX = (leftEdge.worldX - deltaWorldX);
+            const deltaWorldX = ((rightEdge.worldX - leftEdge.worldX) / spanWidth);
+            let iplWorldX = (leftEdge.worldX - deltaWorldX);
 
-                var deltaWorldY = ((rightEdge.worldY - leftEdge.worldY) / spanWidth);
-                var iplWorldY = (leftEdge.worldY - deltaWorldY);
+            const deltaWorldY = ((rightEdge.worldY - leftEdge.worldY) / spanWidth);
+            let iplWorldY = (leftEdge.worldY - deltaWorldY);
 
-                var deltaWorldZ = ((rightEdge.worldZ - leftEdge.worldZ) / spanWidth);
-                var iplWorldZ = (leftEdge.worldZ - deltaWorldZ);
-            }
+            const deltaWorldZ = ((rightEdge.worldZ - leftEdge.worldZ) / spanWidth);
+            let iplWorldZ = (leftEdge.worldZ - deltaWorldZ);
 
             // Assumes the depth buffer consists of 1 element per pixel.
             let pixelBufferIdx = ((spanStartX + y * pixelBufferWidth) - 1);
@@ -120,10 +118,7 @@ export function generic_fill({
                     iplV += deltaV;
                     iplInvW += deltaInvW;
                     pixelBufferIdx++;
-                }
 
-                if (useFragmentBuffer)
-                {
                     iplWorldX += deltaWorldX;
                     iplWorldY += deltaWorldY;
                     iplWorldZ += deltaWorldZ;
@@ -322,15 +317,15 @@ export function generic_fill({
                     if (useFragmentBuffer)
                     {
                         const fragment = fragmentBuffer[pixelBufferIdx];
-                        fragment.ngonIdx = ngonIdx;
-                        fragment.textureUScaled = ~~u;
-                        fragment.textureVScaled = ~~v;
-                        fragment.depth = (iplDepth / iplInvW);
-                        fragment.shade = iplShade;
-                        fragment.worldX = (iplWorldX / iplInvW);
-                        fragment.worldY = (iplWorldY / iplInvW);
-                        fragment.worldZ = (iplWorldZ / iplInvW);
-                        fragment.w = (1 / iplInvW);
+                        fragments.ngonIdx? fragment.ngonIdx = ngonIdx : 1;
+                        fragments.textureUScaled? fragment.textureUScaled = ~~u : 1;
+                        fragments.textureVScaled? fragment.textureVScaled = ~~v : 1;
+                        fragments.depth? fragment.depth = (iplDepth / iplInvW) : 1;
+                        fragments.shade? fragment.shade = iplShade : 1;
+                        fragments.worldX? fragment.worldX = (iplWorldX / iplInvW) : 1;
+                        fragments.worldY? fragment.worldY = (iplWorldY / iplInvW) : 1;
+                        fragments.worldZ? fragment.worldZ = (iplWorldZ / iplInvW) : 1;
+                        fragments.w? fragment.w = (1 / iplInvW) : 1;
                     }
                 }
             }
@@ -344,6 +339,9 @@ export function generic_fill({
             leftEdge.u      += leftEdge.delta.u;
             leftEdge.v      += leftEdge.delta.v;
             leftEdge.invW   += leftEdge.delta.invW;
+            leftEdge.worldX += leftEdge.delta.worldX;
+            leftEdge.worldY += leftEdge.delta.worldY;
+            leftEdge.worldZ += leftEdge.delta.worldZ;
 
             rightEdge.x     += rightEdge.delta.x;
             rightEdge.depth += rightEdge.delta.depth;
@@ -351,17 +349,9 @@ export function generic_fill({
             rightEdge.u     += rightEdge.delta.u;
             rightEdge.v     += rightEdge.delta.v;
             rightEdge.invW  += rightEdge.delta.invW;
-
-            if (useFragmentBuffer)
-            {
-                leftEdge.worldX  += leftEdge.delta.worldX;
-                leftEdge.worldY  += leftEdge.delta.worldY;
-                leftEdge.worldZ  += leftEdge.delta.worldZ;
-
-                rightEdge.worldX += rightEdge.delta.worldX;
-                rightEdge.worldY += rightEdge.delta.worldY;
-                rightEdge.worldZ += rightEdge.delta.worldZ;
-            }
+            rightEdge.worldX += rightEdge.delta.worldX;
+            rightEdge.worldY += rightEdge.delta.worldY;
+            rightEdge.worldZ += rightEdge.delta.worldZ;
         }
 
         // We can move onto the next edge when we're at the end of the current one.

@@ -60,7 +60,7 @@ Below are benchmark results (frames per second) running in Google Chrome on an A
         <td>300</td>
         <td>200</td>
         <td>145</td>
-        <td>40</td>
+        <td>50</td>
     </tr>
 </table>
 
@@ -346,7 +346,18 @@ Renders meshes into a 32-bit RGBA pixel buffer, and optionally displays the imag
     - **usePerspectiveInterpolation** (boolean = *true*): Whether to apply perspective correction to property interpolation (e.g. texture coordinates) during rasterization.
     - **cameraPosition** (vector = *vector(0, 0, 0)*): The position from which the scene is rendered.
     - **cameraDirection** (vector = *vector(0, 0, 0)*): The direction in which the scene is viewed for rendering.
-    - **useFragmentBuffer** (boolean = *false*): Whether to generate a fragment buffer to store per-pixel metadata (e.g. world XYZ coordinates). Automatically enabled if the `options.pixelShader` function accepts a "fragmentBuffer" parameter. The fragment buffer, if generated, is accessible via `Rngon.state.default.fragmentBuffer` after the call.
+    - **useFragmentBuffer** (boolean = *false*): Whether to generate a fragment buffer which provides per-pixel metadata (e.g. world XYZ coordinates) to accompany the rasterized image, for use e.g. in pixel shaders. Automatically enabled if the `options.pixelShader` function accepts a "fragmentBuffer" parameter (although in some cases you may find the auto-detection unreliable). The fragment buffer, if generated, is accessible via `Rngon.state.default.fragmentBuffer` after the call. See also `options.fragments`.
+    - **fragments** (undefined | object = *undefined*): Determines which metadata the fragment buffer (see `options.useFragmentBuffer`) will store. If *undefined*, the fragment buffer will include all of the data properties listed below; otherwise, this value should be an object with one or more of the following keys set to *true* to have that property included in the fragment buffer:
+        - **ngonIdx**: Index to the `Rngon.state.default.ngonCache.ngons` array (provided to pixel shaders as the `ngonCache` argument) identifying which of the rasterized n-gons corresponds to this pixel.
+        - **textureUScaled**: The texel U coordinate used in rasterizing this pixel, if texturing was enabled. In the range from 0 to the width of the texture.
+        - **textureVScaled**: The texel V coordinate used in rasterizing this pixel, if texturing was enabled. In the range from 0 to the height of the texture.
+        - **worldX**: The X coordinate of the pixel's surface in world-space.
+        - **worldY**: The Y coordinate of the pixel's surface in world-space.
+        - **worldZ**: The Z coordinate of the pixel's surface in world-space.
+        - **depth**: The depth value written into the depth buffer for this pixel, if depth buffering was enabled.
+        - **shade**: The pixel's lightness level as computed by `pipeline.transformClipLighter`, in the range [0,1]. 
+        - **w**: The pixel's W coordinate.
+        - Including only the properties you need will generally result in better render performance.
     - **lights** (array = *[]*): The scene's light sources, as *`light`* objects. N-gons will be lit according to their `material.vertexShading` property.
 - **pipeline** (object): Customize the render pipeline:
     - **transformClipLighter** (function | undefined | null = *undefined*): A function to be called by the renderer to transform, clip, and light the input n-gons; or [the built-in function](./src/default-pipeline/transform-clip-lighter.js) (`Rngon.defaultPipeline.transform_clip_lighter`) if *undefined*; or disabled entirely if *null*.
@@ -358,16 +369,7 @@ Renders meshes into a 32-bit RGBA pixel buffer, and optionally displays the imag
             - **renderHeight** (number): The height of the rendered image.
             - **pixelBuffer** (Uint8ClampedArray): The pixels of the rendered image (32-bit RGBA).
             - **ngonCache** (array): The screen-space n-gons that were rasterized.
-            - **fragmentBuffer** (array): For each pixel in `pixelBuffer`, an object containing metadata about the pixel:
-                - **ngonIdx** (number): Index in the `ngonCache` array identifying the pixel's n-gon.
-                - **textureUScaled** (number): The U texel coordinate that was used to fetch this pixel. In the range from 0 to the width of the texture.
-                - **textureVScaled** (number): The V texel coordinate that was used to fetch this pixel. In the range from 0 to the height of the texture.
-                - **textureMipLevelIdx** (number): The texture mip level that was used. A value in the range [0,*n*-1], where *n* is the count of mip levels in the texture.
-                - **worldX** (number): World-space X coordinate.
-                - **worldY** (number): World-space Y coordinate.
-                - **worldZ** (number): World-space Z coordinate.
-                - **depth** (number): The depth value written into the depth buffer by this fragment.
-                - **shade** (number): The lightness level, in the range [0,1]. 
+            - **fragmentBuffer** (array): For each pixel in `pixelBuffer`, an object containing metadata about the pixel. See `options.fragments` for a list of the included data properties.
             - **cameraPosition** (vector): The world-space coordinates from which the scene is being rendered.
         - Note: `options.useFragmentBuffer` must be set to *true* if the pixel shader accesses the fragment buffer. The renderer will in most cases automatically detect this and set the property accordingly, but in some cases you may need to manually assign it.
     - **vertexShader** (function | null = *null*): A function to be called by `pipeline.transformClipLighter` for each of the scene's n-gons, to apply effects to the properties of the n-gon prior to rasterization; or disabled if *null*. The function will be called when the n-gon has been transformed into world-space coordinates. See the [vertex shader samples](./samples/vertex-shaders/vertex-shaders.js) for examples of usage.
