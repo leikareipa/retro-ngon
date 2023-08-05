@@ -404,9 +404,11 @@ Renders meshes into a 32-bit RGBA pixel buffer, and optionally displays the imag
             
             - **pixelBuffer** (Uint8ClampedArray): The pixels of the rendered image (32-bit RGBA).
             
-            - **ngonCache** (array): The screen-space n-gons that were rasterized.
+            - **depthBuffer** (Float32Array): For each pixel in pixelBuffer, an associated depth value. The values are in the range [0,1], where 0 corresponds to `options.nearPlane` and 1 to `options.farPlane`.
             
             - **fragmentBuffer** (array): For each pixel in `pixelBuffer`, an object containing metadata about the pixel. See `options.fragments` for a list of the included data properties.
+            
+            - **ngonCache** (array): The screen-space n-gons that were rasterized.
             
             - **cameraPosition** (vector): The world-space coordinates from which the scene is being rendered.
         

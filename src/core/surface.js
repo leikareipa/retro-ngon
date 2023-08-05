@@ -132,6 +132,7 @@ export function surface(canvasElement, renderState)
                     renderHeight: surfaceHeight,
                     fragmentBuffer: renderState.fragmentBuffer.data,
                     pixelBuffer: renderState.pixelBuffer.data,
+                    depthBuffer: renderState.depthBuffer.data,
                     ngonCache: renderState.ngonCache.ngons,
                     cameraPosition: renderState.cameraPosition,
                 };

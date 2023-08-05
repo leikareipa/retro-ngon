@@ -213,7 +213,7 @@ function ps_dithering({renderWidth, renderHeight, pixelBuffer})
 // Pixel shader: Draws a 1-pixel-thin outline over any pixel that lies on the edge of
 // an n-gon whose material has the 'hasHalo' property set to true and which does not
 // border another n-gon that has that property set.
-function ps_selective_outline({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
+function ps_selective_outline({renderWidth, renderHeight, fragmentBuffer, depthBuffer, pixelBuffer, ngonCache})
 {
     for (let y = 0; y < renderHeight; y++)
     {
@@ -221,6 +221,7 @@ function ps_selective_outline({renderWidth, renderHeight, fragmentBuffer, pixelB
         {
             const bufferIdx = (x + y * renderWidth);
             const thisFragment = fragmentBuffer[bufferIdx];
+            const thisDepth = depthBuffer[bufferIdx];
             const ngon = (thisFragment? ngonCache[thisFragment.ngonIdx] : null);
 
             if (!ngon || !ngon.material.hasHalo)
@@ -233,6 +234,11 @@ function ps_selective_outline({renderWidth, renderHeight, fragmentBuffer, pixelB
             let rightFragment  = (fragmentBuffer[((x + 1) + (y    ) * renderWidth)] || null);
             let bottomFragment = (fragmentBuffer[((x    ) + (y + 1) * renderWidth)] || null);
 
+            const leftDepth   = depthBuffer[((x - 1) + (y    ) * renderWidth)];
+            const topDepth    = depthBuffer[((x    ) + (y - 1) * renderWidth)];
+            const rightDepth  = depthBuffer[((x + 1) + (y    ) * renderWidth)];
+            const bottomDepth = depthBuffer[((x    ) + (y + 1) * renderWidth)];
+
             if (x == 0) leftFragment = null;
             if (y == 0) topFragment = null;
             if (x == (renderWidth - 1)) rightFragment = null;
@@ -243,10 +249,10 @@ function ps_selective_outline({renderWidth, renderHeight, fragmentBuffer, pixelB
             const rightNgon  = (rightFragment?  ngonCache[rightFragment.ngonIdx]  : null);
             const bottomNgon = (bottomFragment? ngonCache[bottomFragment.ngonIdx] : null);
 
-            if ((leftNgon   && !leftNgon.material.hasHalo   && (leftFragment.depth >= thisFragment.depth))   ||
-                (topNgon    && !topNgon.material.hasHalo    && (topFragment.depth >= thisFragment.depth))    ||
-                (rightNgon  && !rightNgon.material.hasHalo  && (rightFragment.depth >= thisFragment.depth))  ||
-                (bottomNgon && !bottomNgon.material.hasHalo && (bottomFragment.depth >= thisFragment.depth)))
+            if ((leftNgon   && !leftNgon.material.hasHalo   && (leftDepth >= thisDepth))   ||
+                (topNgon    && !topNgon.material.hasHalo    && (topDepth >= thisDepth))    ||
+                (rightNgon  && !rightNgon.material.hasHalo  && (rightDepth >= thisDepth))  ||
+                (bottomNgon && !bottomNgon.material.hasHalo && (bottomDepth >= thisDepth)))
             {
                 pixelBuffer[(bufferIdx * 4) + 0] = 255;
                 pixelBuffer[(bufferIdx * 4) + 1] = 255;
@@ -256,7 +262,6 @@ function ps_selective_outline({renderWidth, renderHeight, fragmentBuffer, pixelB
     }
 } ps_selective_outline.fragments = {
     ngonIdx: true,
-    depth: true,
 };
 
 // Pixel shader: Draws a wireframe (outline) around each visible n-gon.
@@ -299,7 +304,7 @@ function ps_per_pixel_light({renderState, renderWidth, renderHeight, fragmentBuf
 {
     const light = renderState.lights[0];
     const lightReach = (100 * 100);
-    const lightIntensity = 2.5;
+    const lightIntensity = 1.5;
     const lightDirection = this.Rngon.vector();
 
     for (let i = 0; i < (renderWidth * renderHeight); i++)
@@ -359,18 +364,16 @@ function ps_per_pixel_light({renderState, renderWidth, renderHeight, fragmentBuf
 // Pixel shader: Desatures pixel colors based on their distance to the camera - pixels
 // that are further away are desatured to a greater extent. The desaturation algo is
 // adapted from http://alienryderflex.com/saturation.html.
-function ps_depth_desaturate({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
+function ps_depth_desaturate({renderWidth, renderHeight, pixelBuffer, depthBuffer})
 {
     const Pr = .299;
     const Pg = .587;
     const Pb = .114;
-    const maxDepth = 200;
+    const maxDepth = 0.2;
 
     for (let i = 0; i < (renderWidth * renderHeight); i++)
     {
-        const thisFragment = fragmentBuffer[i];
-
-        const depth = Math.max(0, Math.min(1, (thisFragment.w / maxDepth)));
+        const depth = Math.max(0, Math.min(1, (depthBuffer[i] / maxDepth)));
 
         let red   = pixelBuffer[(i * 4) + 0];
         let green = pixelBuffer[(i * 4) + 1];
@@ -387,23 +390,19 @@ function ps_depth_desaturate({renderWidth, renderHeight, fragmentBuffer, pixelBu
         pixelBuffer[(i * 4) + 1] = green;
         pixelBuffer[(i * 4) + 2] = blue;
     }
-} ps_depth_desaturate.fragments = {
-    w: true,
-};
+}
 
 // Pixel shader: Obscures pixels progressively the further they are from the camera.
-function ps_distance_fog({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
+function ps_distance_fog({renderWidth, renderHeight, depthBuffer, pixelBuffer})
 {
-    const maxDepth = 200;
+    const maxDepth = 0.2;
 
     for (let i = 0; i < (renderWidth * renderHeight); i++)
     {
-        const depth = Math.max(0, Math.min(1, (fragmentBuffer[i].w / maxDepth)));
+        const depth = Math.max(0, Math.min(1, (depthBuffer[i] / maxDepth)));
         pixelBuffer[(i * 4) + 3] = (255 * (1 - depth));
     }
-} ps_distance_fog.fragments = {
-    w: true,
-};
+}
 
 // Pixel shader: Applies edge anti-aliasing to the pixel buffer
 function ps_fxaa({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
