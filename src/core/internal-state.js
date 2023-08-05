@@ -29,19 +29,27 @@ function default_state() {
             raster_shader: undefined,
         },
 
-        // Whether to require pixels to pass a depth test before being allowed on screen.
-        useDepthBuffer: false,
-        depthBuffer: {
-            width: 1,
-            height: 1,
-            data: new Array(1),
-            clearValue: Infinity,
-        },
-
         // Pixel buffer for rasterization. This will be scaled to match the requested
         // render resolution; and the renderer's rasterization pass will populate it
         // with the rendered frame's pixel values.
         pixelBuffer: new ImageData(1, 1),
+
+        // For each pixel in pixelBuffer, an associated depth value. The values are in
+        // the range [0,1], where 0 corresponds to nearPlane and 1 to farPlane.
+        useDepthBuffer: false,
+        depthBuffer: {
+            width: 1,
+            height: 1,
+            data: new Float32Array(1),
+            resize(width, height) {
+                this.width = width;
+                this.height = height;
+                this.data = new Float32Array(width * height);
+            },
+            clear() {
+                this.data.fill(1);
+            }
+        },
 
         // For each pixel in the rendered frame, metadata about the state of the renderer
         // at that pixel, intended to be used by pixel shaders.

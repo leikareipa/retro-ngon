@@ -14,7 +14,7 @@ export function surface_wiper(renderState)
 
     if (renderState.useDepthBuffer)
     {
-        renderState.depthBuffer.data.fill(renderState.depthBuffer.clearValue);
+        renderState.depthBuffer.clear();
     }
 
     return;
