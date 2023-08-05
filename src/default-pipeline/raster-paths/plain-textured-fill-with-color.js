@@ -166,9 +166,7 @@ export function plain_textured_fill_with_color({
                         fragments.ngonIdx? fragment.ngonIdx = ngonIdx : 1;
                         fragments.textureUScaled? fragment.textureUScaled = ~~u : 1;
                         fragments.textureVScaled? fragment.textureVScaled = ~~v : 1;
-                        fragments.depth? fragment.depth = (iplDepth / iplInvW) : 1;
                         fragments.shade? fragment.shade = iplShade : 1;
-                        fragments.w? fragment.w = (1 / iplInvW) : 1;
                     }
                 }
             }

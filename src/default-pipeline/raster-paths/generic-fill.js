@@ -319,12 +319,10 @@ export function generic_fill({
                         fragments.ngonIdx? fragment.ngonIdx = ngonIdx : 1;
                         fragments.textureUScaled? fragment.textureUScaled = ~~u : 1;
                         fragments.textureVScaled? fragment.textureVScaled = ~~v : 1;
-                        fragments.depth? fragment.depth = (iplDepth / iplInvW) : 1;
                         fragments.shade? fragment.shade = iplShade : 1;
                         fragments.worldX? fragment.worldX = (iplWorldX / iplInvW) : 1;
                         fragments.worldY? fragment.worldY = (iplWorldY / iplInvW) : 1;
                         fragments.worldZ? fragment.worldZ = (iplWorldZ / iplInvW) : 1;
-                        fragments.w? fragment.w = (1 / iplInvW) : 1;
                     }
                 }
             }

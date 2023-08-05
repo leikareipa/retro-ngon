@@ -50,16 +50,16 @@ Below are benchmark results (frames per second) running in Google Chrome on an A
     </tr>
     <tr>
         <td>1280 &times; 720</td>
-        <td>195</td>
+        <td>270</td>
         <td>90</td>
         <td>65</td>
         <td>10</td>
     </tr>
     <tr>
         <td>640 &times; 360</td>
-        <td>300</td>
-        <td>200</td>
-        <td>145</td>
+        <td>330</td>
+        <td>210</td>
+        <td>150</td>
         <td>50</td>
     </tr>
 </table>
@@ -375,12 +375,8 @@ Renders meshes into a 32-bit RGBA pixel buffer, and optionally displays the imag
         - **worldY**: The Y coordinate of the pixel's surface in world-space.
         
         - **worldZ**: The Z coordinate of the pixel's surface in world-space.
-        
-        - **depth**: The depth value written into the depth buffer for this pixel, if depth buffering was enabled.
-        
-        - **shade**: The pixel's lightness level as computed by `pipeline.transformClipLighter`, in the range [0,1]. 
-        
-        - **w**: The pixel's W coordinate.
+
+        - **shade**: The pixel's lightness level as computed by `pipeline.transformClipLighter`, in the range [0,1].
 
         The value of `options.fragments` should be an object with one or more of the above keys set to *true* to have the corresponding data property included in the fragment buffer. If the value of `options.fragments` is *undefined*, each key will be initialized to the value of `options.useFragmentBuffer`, i.e. *true* when a fragment buffer is used and *false* otherwise.
     
