@@ -40,11 +40,11 @@ function default_state() {
         depthBuffer: {
             width: 1,
             height: 1,
-            data: new Float32Array(1),
+            data: new Float64Array(1),
             resize(width, height) {
                 this.width = width;
                 this.height = height;
-                this.data = new Float32Array(width * height);
+                this.data = new Float64Array(width * height);
             },
             clear() {
                 this.data.fill(1);
