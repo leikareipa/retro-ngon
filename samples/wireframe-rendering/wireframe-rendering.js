@@ -32,7 +32,7 @@ export const sample = {
                 cameraDirection: this.camera.direction,
                 cameraPosition: this.camera.position,
                 nearPlane: 100,
-                farPlane: 25000,
+                farPlane: 40000,
                 fov: 55,
             },
         };

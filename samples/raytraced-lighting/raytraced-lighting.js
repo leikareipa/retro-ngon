@@ -194,9 +194,11 @@ function ps_raytraced_lighting({renderState, renderWidth, renderHeight, fragment
         lightDirection.z = (light.position.z - thisFragment.worldZ);
         this.Rngon.vector.normalize(lightDirection);
 
-        const lightDistance = Math.sqrt(((pixelWorldPosition.x - light.position.x) * (pixelWorldPosition.x - light.position.x)) +
-                                        ((pixelWorldPosition.y - light.position.y) * (pixelWorldPosition.y - light.position.y)) +
-                                        ((pixelWorldPosition.z - light.position.z) * (pixelWorldPosition.z - light.position.z)));
+        const lightDistance = Math.sqrt(
+            ((pixelWorldPosition.x - light.position.x) * (pixelWorldPosition.x - light.position.x)) +
+            ((pixelWorldPosition.y - light.position.y) * (pixelWorldPosition.y - light.position.y)) +
+            ((pixelWorldPosition.z - light.position.z) * (pixelWorldPosition.z - light.position.z))
+         );
         
         const distanceMul = (1 / (1 + (light.attenuation * lightDistance)));
 
@@ -205,16 +207,17 @@ function ps_raytraced_lighting({renderState, renderWidth, renderHeight, fragment
         // If distanceMul * shadeMul is <= 0, it means there's no light falling on this
         // pixel from the light source, and so we don't need to cast a light ray. Otherwise,
         // we cast a ray from this pixel toward the light's direction.
-        const intersection = ((distanceMul * shadeMul > 0) &&
-                              ray(pixelWorldPosition, lightDirection).intersect_bvh(this.sceneBVH, 1));
+        const intersection = (
+            (distanceMul * shadeMul > 0) &&
+            ray(pixelWorldPosition, lightDirection).intersect_bvh(this.sceneBVH, 1)
+        );
 
         // If the light ray intersects nothing or intersects something that's closer
         // than the light, it means light is prevented from reaching on this pixel.
         // (Technically, if the ray intersects nothing, it means there can be nothing
         // blocking the light from reaching the pixel, but for code simplicity we count
         // non-intersections as blocking.)
-        if (!intersection ||
-            (intersection.distance < lightDistance))
+        if (!intersection || (intersection.distance < lightDistance))
         {
             pixelBuffer[(i * 4) + 0] *= 0;
             pixelBuffer[(i * 4) + 1] *= 0;

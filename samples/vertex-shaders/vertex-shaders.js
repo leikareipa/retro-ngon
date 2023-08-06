@@ -48,7 +48,6 @@ export const sample = {
         {title:"Glitch",        function:vs_glitchy},
         {title:"Distance fog",  function:vs_depth_fog},
         {title:"Grow",          function:vs_grow},
-        {title:"Wave",          function:vs_wavy},
         {title:"UV shift",      function:vs_uv_shift},
         {title:"Fade in/out",   function:vs_fade_in_out},
     ],
@@ -84,15 +83,6 @@ function vs_grow(ngon)
             ngon.vertices[v].y += (growAmount * ngon.vertexNormals[v].y);
             ngon.vertices[v].z += (growAmount * ngon.vertexNormals[v].z);
         }
-    }
-}
-
-// Vertex shader: Moves vertices back and forth in a wave pattern.
-function vs_wavy(ngon)
-{
-    for (let v = 0; v < ngon.vertices.length; v++)
-    {
-        ngon.vertices[v].z += Math.sin(((ngon.vertices[v].y * 2) + this.numTicks) / 8);
     }
 }
 

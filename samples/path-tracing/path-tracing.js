@@ -39,11 +39,9 @@ export const sample = {
     {
         this.Rngon = Rngon;
         
+        Wray.maxRayDepth = 5;
         Wray.epsilon = 0.0001;
-        Wray.sky.sampler = Wray.sky.cie_overcast(
-            Wray.vector3(0, 0, 1),
-            1
-        );
+        Wray.sky.sampler = Wray.sky.cie_overcast(Wray.vector3(0, 0, 1), 1);
 
         this.camera = first_person_camera("canvas", {
             position: {x:0, y:-2, z:2.79},
@@ -65,9 +63,10 @@ export const sample = {
 
         // The accumulation buffer needs to be reset if the size of the rendering changes,
         // since otherwise the pixels in the buffer won't match the raster buffer's pixels.
-        if ((Rngon.state.default.pixelBuffer.width != this.latestRenderResolution.width) ||
-            (Rngon.state.default.pixelBuffer.height != this.latestRenderResolution.height))
-        {
+        if (
+            (Rngon.state.default.pixelBuffer.width != this.latestRenderResolution.width) ||
+            (Rngon.state.default.pixelBuffer.height != this.latestRenderResolution.height)
+        ){
             this.latestRenderResolution.width = Rngon.state.default.pixelBuffer.width;
             this.latestRenderResolution.height = Rngon.state.default.pixelBuffer.height;
             this.reset_accumulation_buffer();
@@ -75,10 +74,11 @@ export const sample = {
 
         // Once the scene's n-gons have been loaded and path tracing enabled, build a BVH
         // of the scene for the path tracer to use.
-        if (parent.PATH_TRACING_ENABLED &&
+        if (
+            parent.PATH_TRACING_ENABLED &&
             this.worldSpaceMesh.length &&
-            !this.sceneBVH)
-        {
+            !this.sceneBVH
+        ){
             this.sceneBVH = Wray.bvh(this.worldSpaceMesh);
         }
         // Otherwise, we'll keep generating an up-to-date list of the scene's world-space
@@ -150,20 +150,23 @@ function vs_copy_ngons(ngon)
     );
 
     const wrayVertices = ngon.vertices.map(v=>Wray.vertex(Wray.vector3(v.x, v.y, v.z)));
-    const wrayMaterial = ngon.material.isEmissive
-        ? Wray.material.emissive(
-            10,
-            Wray.color_rgb(
-                ngon.material.color.unitRange.red,
-                ngon.material.color.unitRange.green,
-                ngon.material.color.unitRange.blue
-            ))
-        : Wray.material.lambertian(
-            Wray.color_rgb(
-                ngon.material.color.unitRange.red,
-                ngon.material.color.unitRange.green,
-                ngon.material.color.unitRange.blue
+    const wrayMaterial = (
+        ngon.material.isEmissive?
+            Wray.material.emissive(
+                10,
+                Wray.color_rgb(
+                    ngon.material.color.unitRange.red,
+                    ngon.material.color.unitRange.green,
+                    ngon.material.color.unitRange.blue
+                )
             )
+        : Wray.material.lambertian(
+              Wray.color_rgb(
+                ngon.material.color.unitRange.red,
+                ngon.material.color.unitRange.green,
+                ngon.material.color.unitRange.blue
+             )
+         )
     );
 
     this.worldSpaceMesh.push(Wray.triangle(wrayVertices, wrayMaterial));
@@ -210,14 +213,15 @@ function ps_path_trace({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, 
 
         for (let samples = 0; samples < 1; samples++)
         {
-            const light = Wray.ray(initialRayOrigin)
-                          .step(Wray.epsilon, normalAtRayOrigin)
-                          .aimAt.random_in_hemisphere_cosine_weighted(normalAtRayOrigin)
-                          .trace(this.sceneBVH, 1);
+            const inLight =
+                Wray.ray(initialRayOrigin)
+                .step(Wray.epsilon, normalAtRayOrigin)
+                .aimAt.random_in_hemisphere_cosine_weighted(normalAtRayOrigin)
+                .trace(this.sceneBVH, 1);
 
-            accumulation.red += light.red;
-            accumulation.green += light.green;
-            accumulation.blue += light.blue;
+            accumulation.red += inLight.red;
+            accumulation.green += inLight.green;
+            accumulation.blue += inLight.blue;
             accumulation.numSamples++;
         }
 
