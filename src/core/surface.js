@@ -265,9 +265,7 @@ function massage_state(renderState, renderContext, surfaceWidth, surfaceHeight)
         ((renderState.fragmentBuffer.width != surfaceWidth) ||
          (renderState.fragmentBuffer.height != surfaceHeight))
     ){
-        renderState.fragmentBuffer.width = surfaceWidth;
-        renderState.fragmentBuffer.height = surfaceHeight;
-        renderState.fragmentBuffer.data = new Array(surfaceWidth * surfaceHeight).fill().map(e=>({}));
+        renderState.fragmentBuffer.resize(surfaceWidth, surfaceHeight);
     }
 
     if (

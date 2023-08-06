@@ -38,9 +38,9 @@ function default_state() {
         // the range [0,1], where 0 corresponds to nearPlane and 1 to farPlane.
         useDepthBuffer: false,
         depthBuffer: {
-            width: 1,
-            height: 1,
-            data: new Float64Array(1),
+            width: 0,
+            height: 0,
+            data: undefined,
             resize(width, height) {
                 this.width = width;
                 this.height = height;
@@ -55,35 +55,14 @@ function default_state() {
         // at that pixel, intended to be used by pixel shaders.
         useFragmentBuffer: false,
         fragmentBuffer: {
-            width: 1,
-            height: 1,
-            data: new Array(1),
-            clearValue: {
-                // Index to an n-gon in the list of transformed n-gons that this pixel is
-                // part of.
-                ngonIdx: undefined,
-
-                // Texture coordinates at this pixel, scaled to the dimensions of the
-                // n-gon's texture and with any clamping/repetition applied. In other
-                // words, these are the exact texture coordinates from which the pixel's
-                // texel was obtained.
-                textureUScaled: undefined,
-                textureVScaled: undefined,
-
-                // Which of the texture's mip levels was used. This is a value from 0
-                // to n-1, where n is the total number of mip levels available in the
-                // texture.
-                textureMipLevelIdx: undefined,
-
-                // World coordinates at this pixel.
-                worldX: undefined,
-                worldY: undefined,
-                worldZ: undefined,
-
-                // The light level (0..1) at this pixel as computed by the renderer's
-                // built-in lighting engine.
-                shade: undefined,
-            }
+            width: 0,
+            height: 0,
+            data: undefined,
+            resize(width, height) {
+                this.width = width;
+                this.height = height;
+                this.data = new Array(width * height).fill().map(_=>({}));
+            },
         },
 
         // Determines which metadata are to be recorded in the fragment buffer.
@@ -149,7 +128,7 @@ function default_state() {
         // Pre-allocated memory; stores the vertices of the n-gon cache's n-gons.
         vertexCache: {
             count: 0,
-            vertices:[],
+            vertices: [],
         },
 
         // All light sources that should currently apply to n-gons passed to render().
