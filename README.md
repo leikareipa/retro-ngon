@@ -46,21 +46,21 @@ Below are benchmark results (frames per second) running in Google Chrome on an A
         <th>Wireframe</th>
         <th>Untextured</th>
         <th>Textured</th>
-        <th>Shader</th>
+        <th>Pixel shader</th>
     </tr>
     <tr>
         <td>1280 &times; 720</td>
         <td>270</td>
-        <td>90</td>
-        <td>65</td>
-        <td>10</td>
+        <td>95</td>
+        <td>75</td>
+        <td>15</td>
     </tr>
     <tr>
         <td>640 &times; 360</td>
         <td>330</td>
         <td>210</td>
-        <td>150</td>
-        <td>50</td>
+        <td>160</td>
+        <td>60</td>
     </tr>
 </table>
 
@@ -364,7 +364,7 @@ Renders meshes into a 32-bit RGBA pixel buffer, and optionally displays the imag
     
     - **fragments** (undefined | object = *undefined*): Determines which metadata the fragment buffer (see `options.useFragmentBuffer`) will include. You can choose one or more of the following:
         
-        - **ngonIdx**: Index to the `Rngon.state.default.ngonCache.ngons` array (provided to pixel shaders as the `ngonCache` argument) identifying which of the rasterized n-gons corresponds to this pixel.
+        - **ngon**: The n-gon (as an *`ngon`* object) whose surface the pixel represents.
         
         - **textureUScaled**: The texel U coordinate used in rasterizing this pixel, if texturing was enabled. In the range from 0 to the width of the texture.
         
