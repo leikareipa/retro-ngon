@@ -67,11 +67,9 @@ function default_state() {
 
         // Determines which metadata are to be recorded in the fragment buffer.
         fragments: {
-            w: true,
-            ngonIdx: true,
+            ngon: true,
             textureUScaled: true,
             textureVScaled: true,
-            depth: true,
             shade: true,
             worldX: true,
             worldY: true,

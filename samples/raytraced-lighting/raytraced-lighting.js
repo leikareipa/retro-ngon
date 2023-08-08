@@ -172,7 +172,7 @@ function ps_raytraced_lighting({renderState, renderWidth, renderHeight, fragment
     for (let i = 0; i < (renderWidth * renderHeight); i++)
     {
         const thisFragment = fragmentBuffer[i];
-        const thisNgon = (thisFragment? ngonCache[thisFragment.ngonIdx] : null);
+        const thisNgon = thisFragment.ngon;
 
         if (!thisNgon)
         {

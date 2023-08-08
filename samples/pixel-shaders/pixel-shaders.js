@@ -213,7 +213,7 @@ function ps_dithering({renderWidth, renderHeight, pixelBuffer})
 // Pixel shader: Draws a 1-pixel-thin outline over any pixel that lies on the edge of
 // an n-gon whose material has the 'hasHalo' property set to true and which does not
 // border another n-gon that has that property set.
-function ps_selective_outline({renderWidth, renderHeight, fragmentBuffer, depthBuffer, pixelBuffer, ngonCache})
+function ps_selective_outline({renderWidth, renderHeight, fragmentBuffer, depthBuffer, pixelBuffer})
 {
     for (let y = 0; y < renderHeight; y++)
     {
@@ -222,7 +222,7 @@ function ps_selective_outline({renderWidth, renderHeight, fragmentBuffer, depthB
             const bufferIdx = (x + y * renderWidth);
             const thisFragment = fragmentBuffer[bufferIdx];
             const thisDepth = depthBuffer[bufferIdx];
-            const ngon = (thisFragment? ngonCache[thisFragment.ngonIdx] : null);
+            const ngon = thisFragment.ngon;
 
             if (!ngon || !ngon.material.hasHalo)
             {
@@ -244,10 +244,10 @@ function ps_selective_outline({renderWidth, renderHeight, fragmentBuffer, depthB
             if (x == (renderWidth - 1)) rightFragment = null;
             if (y == (renderHeight - 1)) bottomFragment = null;
 
-            const leftNgon   = (leftFragment?   ngonCache[leftFragment.ngonIdx]   : null);
-            const topNgon    = (topFragment?    ngonCache[topFragment.ngonIdx]    : null);
-            const rightNgon  = (rightFragment?  ngonCache[rightFragment.ngonIdx]  : null);
-            const bottomNgon = (bottomFragment? ngonCache[bottomFragment.ngonIdx] : null);
+            const leftNgon   = leftFragment.ngon;
+            const topNgon    = topFragment.ngon;
+            const rightNgon  = rightFragment.ngon;
+            const bottomNgon = bottomFragment.ngon;
 
             if ((leftNgon   && !leftNgon.material.hasHalo   && (leftDepth >= thisDepth))   ||
                 (topNgon    && !topNgon.material.hasHalo    && (topDepth >= thisDepth))    ||
@@ -261,7 +261,7 @@ function ps_selective_outline({renderWidth, renderHeight, fragmentBuffer, depthB
         }
     }
 } ps_selective_outline.fragments = {
-    ngonIdx: true,
+    ngon: true,
 };
 
 // Pixel shader: Draws a wireframe (outline) around each visible n-gon.
@@ -284,10 +284,10 @@ function ps_wireframe({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
             if (x == (renderWidth - 1)) rightFragment = null;
             if (y == (renderHeight - 1)) bottomFragment = null;
 
-            if ((leftFragment   && (leftFragment.ngonIdx   != thisFragment.ngonIdx)) ||
-                (topFragment    && (topFragment.ngonIdx    != thisFragment.ngonIdx)) ||
-                (rightFragment  && (rightFragment.ngonIdx  != thisFragment.ngonIdx)) ||
-                (bottomFragment && (bottomFragment.ngonIdx != thisFragment.ngonIdx)))
+            if ((leftFragment   && (leftFragment.ngon != thisFragment.ngon)) ||
+                (topFragment    && (topFragment.ngon != thisFragment.ngon)) ||
+                (rightFragment  && (rightFragment.ngon != thisFragment.ngon)) ||
+                (bottomFragment && (bottomFragment.ngon != thisFragment.ngon)))
             {
                 pixelBuffer[(bufferIdx * 4) + 0] = 0;
                 pixelBuffer[(bufferIdx * 4) + 1] = 0;
@@ -296,7 +296,7 @@ function ps_wireframe({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
         }
     }
 } ps_wireframe.fragments = {
-    ngonIdx: true,
+    ngon: true,
 };
 
 // Pixel shader.
@@ -310,7 +310,12 @@ function ps_per_pixel_light({renderState, renderWidth, renderHeight, fragmentBuf
     for (let i = 0; i < (renderWidth * renderHeight); i++)
     {
         const thisFragment = fragmentBuffer[i];
-        const thisNgon = (ngonCache[thisFragment.ngonIdx] || null);
+        const thisNgon = (thisFragment.ngon || null);
+
+        if (!thisNgon)
+        { 
+            continue;
+        }
 
         const distance = (
             ((thisFragment.worldX - light.position.x) * (thisFragment.worldX - light.position.x)) +
@@ -354,7 +359,7 @@ function ps_per_pixel_light({renderState, renderWidth, renderHeight, fragmentBuf
         }
     }
 } ps_per_pixel_light.fragments = {
-    ngonIdx: true,
+    ngon: true,
     worldX: true,
     worldY: true,
     worldZ: true,
@@ -405,14 +410,14 @@ function ps_distance_fog({renderWidth, renderHeight, depthBuffer, pixelBuffer})
 }
 
 // Pixel shader: Applies edge anti-aliasing to the pixel buffer
-function ps_fxaa({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
+function ps_fxaa({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
 {
     for (let y = 0; y < renderHeight; y++)
     {
         for (let x = 0; x < renderWidth; x++)
         {
             const thisFragment = fragmentBuffer[x + y * renderWidth];
-            const thisMaterial = ngonCache[thisFragment.ngonIdx].material;
+            const thisMaterial = thisFragment.ngon.material;
 
             let leftFragment   = fragmentBuffer[((x - 1) + (y    ) * renderWidth)];
             let topFragment    = fragmentBuffer[((x    ) + (y - 1) * renderWidth)];
@@ -425,10 +430,10 @@ function ps_fxaa({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCa
             if (y == (renderHeight - 1)) bottomFragment = null;
 
             if (
-                (leftFragment && (ngonCache[leftFragment.ngonIdx].material !== thisMaterial)) ||
-                (topFragment && (ngonCache[topFragment.ngonIdx].material !== thisMaterial)) ||
-                (rightFragment && (ngonCache[rightFragment.ngonIdx].material !== thisMaterial)) ||
-                (bottomFragment && (ngonCache[bottomFragment.ngonIdx].material !== thisMaterial))
+                (leftFragment && (leftFragment.ngon.material !== thisMaterial)) ||
+                (topFragment && (topFragment.ngon.material !== thisMaterial)) ||
+                (rightFragment && (rightFragment.ngon.material !== thisMaterial)) ||
+                (bottomFragment && (bottomFragment.ngon.material !== thisMaterial))
             ){
                 let idx = ((x + y * renderWidth) * 4);
                 
@@ -447,7 +452,9 @@ function ps_fxaa({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCa
             }
         }
     }
-}
+} ps_fxaa.fragments = {
+    ngon: true,
+};
 
 // Pixel shader: Applies a vignette effect to the pixel buffer.
 function ps_vignette({renderWidth, renderHeight, pixelBuffer})

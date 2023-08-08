@@ -106,7 +106,7 @@ export function plain_solid_fill({
                     if (useFragmentBuffer)
                     {
                         const fragment = fragmentBuffer[pixelBufferIdx];
-                        fragments.ngonIdx? fragment.ngonIdx = ngonIdx : 1;
+                        fragments.ngon? fragment.ngon = ngon : 1;
                         fragments.shade? fragment.shade = iplShade : 1;
                     }
                 }

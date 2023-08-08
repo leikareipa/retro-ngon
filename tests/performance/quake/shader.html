@@ -20,7 +20,7 @@
                     farPlane: 5000,
                     useFragmentBuffer: true,
                     fragments: {
-                        ngonIdx: true,
+                        ngon: true,
                         worldX: true,
                         worldY: true,
                         worldZ: true,
@@ -46,7 +46,12 @@
                 for (let i = 0; i < (renderWidth * renderHeight); i++)
                 {
                     const thisFragment = fragmentBuffer[i];
-                    const thisNgon = (ngonCache[thisFragment.ngonIdx] || null);
+                    const thisNgon = (thisFragment.ngon || null);
+
+                    if (!thisNgon)
+                    {
+                        continue;
+                    }
 
                     let strongestShade = 0;
 
@@ -54,9 +59,11 @@
                     {
                         const light = renderState.lights[l];
 
-                        const distance = (((thisFragment.worldX - light.position.x) * (thisFragment.worldX - light.position.x)) +
-                                          ((thisFragment.worldY - light.position.y) * (thisFragment.worldY - light.position.y)) +
-                                          ((thisFragment.worldZ - light.position.z) * (thisFragment.worldZ - light.position.z)));
+                        const distance = (
+                            ((thisFragment.worldX - light.position.x) * (thisFragment.worldX - light.position.x)) +
+                            ((thisFragment.worldY - light.position.y) * (thisFragment.worldY - light.position.y)) +
+                            ((thisFragment.worldZ - light.position.z) * (thisFragment.worldZ - light.position.z))
+                        );
 
                         const distanceMul = Math.max(0, Math.min(1, (1 - (distance / (light.reach * light.reach)))));
 

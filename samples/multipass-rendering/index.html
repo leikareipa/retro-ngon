@@ -117,6 +117,9 @@
                         cameraDirection: camera.direction,
                         cameraPosition: camera.position,
                         useFragmentBuffer: true,
+                        fragments: {
+                            ngon: true
+                        },
                     },
                     pipeline: {
                         // Make the portal sphere a bit bigger, so the portal effect is easier to see.
@@ -148,11 +151,10 @@
                                         continue;
                                     }
 
-                                    const ngon = ngonCache[fragment.ngonIdx];
                                     const dstIdx = ((x + y * renderWidth) * 4);
                                     const srcIdx = ((~~(x/2) + ~~(y/2) * ~~(renderWidth/2)) * 4);
 
-                                    if (ngon.material.isPortal) {
+                                    if (fragment.ngon.material.isPortal) {
                                         pixelBuffer[dstIdx] = reflectionPixelBuffer[srcIdx] * 1.8;
                                         pixelBuffer[dstIdx + 1] = reflectionPixelBuffer[srcIdx + 1] * 1.8;
                                         pixelBuffer[dstIdx + 2] = reflectionPixelBuffer[srcIdx + 2] * 1.8;

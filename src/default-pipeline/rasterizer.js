@@ -46,7 +46,7 @@ export function rasterizer(renderState)
         switch (ngon.vertices.length)
         {
             case 0: continue;
-            case 1: rasterizer.point(renderState, ngon.vertices[0], ngon.material, n); break;
+            case 1: rasterizer.point(renderState, ngon.vertices[0], ngon.material); break;
             case 2: rasterizer.line(renderState, ngon.vertices[0], ngon.vertices[1], ngon.material.color); break;
             default: rasterizer.polygon(renderState, ngon, n); break;
         }
@@ -390,15 +390,12 @@ rasterizer.line = function(
                 if (useFragmentBuffer)
                 {
                     const fragment = renderState.fragmentBuffer.data[pixelBufferIdx];
-                    fragment.ngonIdx = -1;
                     fragment.textureUScaled = undefined; // We don't support textures on lines.
                     fragment.textureVScaled = undefined;
-                    fragment.depth = depth;
                     fragment.shade = shade;
                     fragment.worldX = worldX;
                     fragment.worldY = worldY;
                     fragment.worldZ = worldZ;
-                    fragment.w = 1;
                 }
             }
         }
@@ -425,7 +422,6 @@ rasterizer.point = function(
     renderState,
     vertex = Vertex(),
     material = Material(),
-    ngonIdx = 0
 )
 {
     if (material.color.alpha != 255)
@@ -494,15 +490,12 @@ rasterizer.point = function(
         if (useFragmentBuffer)
         {
             const fragment = renderState.fragmentBuffer.data[pixelBufferIdx];
-            fragment.ngonIdx = ngonIdx;
             fragment.textureUScaled = 0;
             fragment.textureVScaled = 0;
-            fragment.depth = depth;
             fragment.shade = shade;
             fragment.worldX = vertex.worldX;
             fragment.worldY = vertex.worldY;
             fragment.worldZ = vertex.worldZ;
-            fragment.w = vertex.w;
         }
     }
 

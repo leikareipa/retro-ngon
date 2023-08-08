@@ -96,6 +96,12 @@ export const sample = {
                 cameraDirection: this.camera.direction,
                 cameraPosition: this.camera.position,
                 useFragmentBuffer: Boolean(parent.PATH_TRACING_ENABLED && this.sceneBVH),
+                fragments: {
+                    ngon: true,
+                    worldX: true,
+                    worldY: true,
+                    worldZ: true,
+                },
             },
             renderPipeline: {
                 vertexShader: (
@@ -175,12 +181,12 @@ function vs_copy_ngons(ngon)
 }
 
 // A pixel shader to shade each pixel based on path-traced rays' light contributions.
-function ps_path_trace({renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
+function ps_path_trace({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
 {
     for (let i = 0; i < (renderWidth * renderHeight); i++)
     {
         const thisFragment = fragmentBuffer[i];
-        const thisNgon = (thisFragment? ngonCache[thisFragment.ngonIdx] : null);
+        const thisNgon = thisFragment.ngon;
 
         if (!thisNgon)
         {
