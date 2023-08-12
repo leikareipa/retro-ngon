@@ -40,8 +40,11 @@
 export function first_person_camera(canvasID = "", {
         position = {x:0, y:0, z:0},
         direction = {x:0, y:0, z:0},
+        rotationSpeed = {x: 1, y: 1},
         movementSpeed = 0.1,
-        allowMoving = true,
+        allowMovement = true,
+        allowRotation = true,
+        allowPointerLock = true,
         callback_pointer_lock_acquired = ()=>{},
         callback_pointer_lock_released = ()=>{},
     } = {})
@@ -67,7 +70,7 @@ export function first_person_camera(canvasID = "", {
         down:     false,
     };
 
-    if (allowMoving)
+    if (allowPointerLock)
     {
         targetDOMCanvas.onclick = ()=>
         {
@@ -111,12 +114,15 @@ export function first_person_camera(canvasID = "", {
             frameDelta = (performance.now() - totalRunTime);
             totalRunTime += frameDelta;
 
-            const forwardVector = Rngon.vector(direction.x, direction.y, direction.z);
-            const movement = get_accumulated_movement(forwardVector, (movementSpeed * frameDelta));
+            if (allowMovement)
+            {
+                const forwardVector = Rngon.vector(direction.x, direction.y, direction.z);
+                const movement = get_accumulated_movement(forwardVector, (movementSpeed * frameDelta));
 
-            position.x -= movement.x;
-            position.y += movement.y;
-            position.z += movement.z;
+                position.x -= movement.x;
+                position.y += movement.y;
+                position.z += movement.z;
+            }
 
             return;
         },
@@ -124,8 +130,11 @@ export function first_person_camera(canvasID = "", {
 
     function listener_mouse_move(event)
     {
-        direction.x += (event.movementY / 6);
-        direction.y += (event.movementX / 6);
+        if (allowRotation)
+        {
+            direction.x += ((event.movementY / 6) * rotationSpeed.x);
+            direction.y += ((event.movementX / 6) * rotationSpeed.y);
+        }
 
         return;
     }

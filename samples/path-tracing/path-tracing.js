@@ -46,8 +46,7 @@ export const sample = {
         this.camera = first_person_camera("canvas", {
             position: {x:0, y:-2, z:2.79},
             direction: {x:110, y:0, z:0},
-            movementSpeed: 0.002,
-            allowMoving: false,
+            allowPointerLock: false,
         });
 
         cornellBox.initialize();
