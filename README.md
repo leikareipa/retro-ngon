@@ -307,7 +307,7 @@ The renderer's public API consists of the following functions:
 | [render()](#rendertarget-scene-options-pipeline)| Renders meshes.                            |
 | [ngon](#ngonvertices-material-normal)           | A polygon with *n* vertices (*n*-gon).     |
 | [mesh](#meshngons-transform)                    | A collection of related n-gons.            |
-| [vertex](#vertexx-y-z-u-v-w)                    | A corner of an n-gon.                      |
+| [vertex](#vertexx-y-z-u-v)                      | A corner of an n-gon.                      |
 | [vector](#vectorx-y-z)                          | A three-component vector.                  |
 | [color](#colorred-green-blue-alpha)             | A 32-bit RGBA color value.                 |
 | [texture](#texturedata)                         | A 2D RGBA image for texturing n-gons.      |
@@ -334,7 +334,7 @@ Renders meshes into a 32-bit RGBA pixel buffer, and optionally displays the imag
 
 - **target** (HTMLCanvasElement | string | null = *null*): Destination for the rendered image. Canvas element; `id` attribute of canvas element; or *null* for none. The raw pixel buffer is accessible via `Rngon.state.default.pixelBuffer` after the call.
 
-- **scene** (array): The *`mesh`* objects to be rendered.
+- **scene** (array): The [*`mesh`*](#meshngons-transform) objects to be rendered.
 
 - **options** (object): Additional rendering options:
 
@@ -364,7 +364,7 @@ Renders meshes into a 32-bit RGBA pixel buffer, and optionally displays the imag
     
     - **fragments** (undefined | object = *undefined*): Determines which metadata the fragment buffer (see `options.useFragmentBuffer`) will include. You can choose one or more of the following:
         
-        - **ngon**: The n-gon (as an *`ngon`* object) whose surface the pixel represents.
+        - **ngon**: The n-gon (as an [*`ngon`*](#ngonvertices-material-normal) object) whose surface the pixel represents.
         
         - **textureUScaled**: The texel U coordinate used in rasterizing this pixel, if texturing was enabled. In the range from 0 to the width of the texture.
         
@@ -508,7 +508,7 @@ A polygon made up of *n* vertices, also known as an n-gon. Single-vertex n-gons 
 
 ### Parameters
 
-- **vertices** (array = *[vertex()]*): The *`vertex`* objects that define the corners of the n-gon. The length of the array must be in the range [1,500].
+- **vertices** (array = *[vertex()]*): The [*`vertex`*](#vertexx-y-z-u-v) objects that define the corners of the n-gon. The length of the array must be in the range [1,500].
 
 - **material** (object): The material properties that define the n-gon's appearance:
 
@@ -518,9 +518,9 @@ A polygon made up of *n* vertices, also known as an n-gon. Single-vertex n-gons 
 
     - **textureMapping** (string = *"ortho"*): The method by which `material.texture` should be mapped onto the n-gon's face:
 
-        - "ortho": Map by automatically-generated UV coordinates in 2D screen space. Disregards perspective and rotation. UV coordinates provided by the n-gon's *`vertex`* objects are ignored.
+        - "ortho": Map by automatically-generated UV coordinates in 2D screen space. Disregards perspective and rotation. UV coordinates provided by the n-gon's [*`vertex`*](#vertexx-y-z-u-v) objects are ignored.
 
-        - "affine": Affine texture-mapping using the UV coordinates provided by the n-gon's *`vertex`* objects. For perspective-correct affine mapping, also enable the `options.usePerspectiveInterpolation` property to *`render()`*.
+        - "affine": Affine texture-mapping using the UV coordinates provided by the n-gon's [*`vertex`*](#vertexx-y-z-u-v) objects. For perspective-correct affine mapping, also enable the `options.usePerspectiveInterpolation` property to [*`render()`*](#rendertarget-scene-options-pipeline).
 
     - **textureFiltering** (string = *"none"*): The filtering effect to be applied when rasterizing `material.texture`:
 
@@ -540,7 +540,7 @@ A polygon made up of *n* vertices, also known as an n-gon. Single-vertex n-gons 
 
     - **hasFill** (boolean = *true*): Whether the face of the n-gon should be rendered. If *false* and `material.hasWireframe` is *true*, the n-gon's wireframe outline will be rendered.
 
-    - **isTwoSided** (boolean = *true*): Whether the n-gon should be visible from behind, as determined by the direction of its face normal. Should always be set to *true* for n-gons that are part of a *`mesh`* object to which you apply rotation, as rotation doesn't apply to normals.
+    - **isTwoSided** (boolean = *true*): Whether the n-gon should be visible from behind, as determined by the direction of its face normal. Should always be set to *true* for n-gons that are part of a [*`mesh`*](#meshngons-transform) object to which you apply rotation, as rotation doesn't apply to normals.
 
     - **isInScreenSpace** (boolean = *false*): Whether the XY coordinates of the n-gon's vertices are in screen space. If they are, the renderer won't transform them further (e.g. according to camera position or mesh transformations) before rasterization. If *true*, you must ensure that all vertex XY coordinates are within the boundaries of the rendered image.
 
@@ -554,11 +554,11 @@ A polygon made up of *n* vertices, also known as an n-gon. Single-vertex n-gons 
 
     - **renderVertexShade** (boolean = *true*): Whether the shading values calculated as per the `material.vertexShading` property should be used during rendering. If *false*, this shading information won't directly affect the rendered image, but is accessible to pixel shaders.
 
-    - **allowAlphaBlend** (boolean = *false*): Whether the alpha channel of the `*color` property can modify the appearance of the n-gon. If *true*, the n-gon's pixels will be blended with their background according to the alpha value (0 = fully transparent, 255 = fully opaque).
+    - **allowAlphaBlend** (boolean = *false*): Whether the alpha channel of the `material.color` property can modify the appearance of the n-gon. If *true*, the n-gon's pixels will be blended with their background according to the alpha value (0 = fully transparent, 255 = fully opaque).
 
-    - **allowAlphaReject** (boolean = *false*): Whether the alpha channel of the `*color` property can modify the appearance of the n-gon. If *true*, the pixel will be drawn only if the alpha value is 255.
+    - **allowAlphaReject** (boolean = *false*): Whether the alpha channel of the `material.color` property can modify the appearance of the n-gon. If *true*, the pixel will be drawn only if the alpha value is 255.
 
-- **normal** (array | vector = *vector(0, 1, 0)*): A vector determining the orientation of the n-gon's face. If given as a *`vector`* object, represents the face normal. If given as an array, each element must be a *`vector`* object that represents the normal of the corresponding vertex in the `vertices` parameter, and in this case the n-gon's face normal will be automatically calculated as the normalized average of these vertex normals.
+- **normal** (array | vector = *vector(0, 1, 0)*): A vector determining the orientation of the n-gon's face. If given as a [*`vector`*](#vectorx-y-z) object, represents the face normal. If given as an array, each element must be a [*`vector`*](#vectorx-y-z) object that represents the normal of the corresponding vertex in the `vertices` parameter, and in this case the n-gon's face normal will be automatically calculated as the normalized average of these vertex normals.
 
 ### Returns
 
@@ -568,7 +568,7 @@ An object with the following properties:
 
 - **material** (object): The `material` parameter.
 
-- **vertexNormals** (array): For each element in the `vertices` parameter, a corresponding *`vector`* object determining the normal of the vertex.
+- **vertexNormals** (array): For each element in the `vertices` parameter, a corresponding [*`vector`*](#vectorx-y-z) object determining the normal of the vertex.
 
 - **normal** (vector): The face normal.
 
