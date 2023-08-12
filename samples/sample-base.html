@@ -142,13 +142,17 @@
                 // Runs the renderer continuously, in sync with the device's refresh rate.
                 (function render_loop(timestamp = 0, frameTimeDeltaMs = 0, frameCount = 0)
                 {
+                    const perfTimer = performance.now();
+                 
                     const queue_new_frame = (additionalTimeDelta = 0)=>
                     {
                         window.requestAnimationFrame((newTimestamp)=>
                         {
-                            render_loop(newTimestamp,
-                                        (additionalTimeDelta + (newTimestamp - timestamp)),
-                                        (frameCount + 1));
+                            render_loop(
+                                newTimestamp,
+                                (additionalTimeDelta + (newTimestamp - timestamp)),
+                                (frameCount + 1)
+                            );
                         });
                     };
 
@@ -163,8 +167,7 @@
                     };
 
                     // Attempt to limit the renderer's refresh rate, if so requested by the user.
-                    if (scene.targetRefreshRate &&
-                        (frameTimeDeltaMs < Math.floor(1000 / scene.targetRefreshRate)))
+                    if (scene.targetRefreshRate && (frameTimeDeltaMs < Math.floor(1000 / scene.targetRefreshRate)))
                     {
                         queue_new_frame(frameTimeDeltaMs);
                         return;
@@ -179,10 +182,9 @@
 
                     if ((uiUpdateTimer += frameTimeDeltaMs) >= 500)
                     {
-                        document.querySelector(".infobox.fps .value").textContent = Math.floor(1000 / (renderInfo.totalRenderTimeMs || 1));
+                        document.querySelector(".infobox.fps .value").textContent = Math.floor(1000 / ((performance.now() - perfTimer) || 1));
                         document.querySelector(".infobox.polycount .value").textContent = renderInfo.numNgonsRendered;
                         document.querySelector(".infobox.refresh-rate .value").textContent = `${Math.floor(1000 / (frameTimeDeltaMs || 1))} Hz`;
-
                         uiUpdateTimer = 0;
                     }
 
