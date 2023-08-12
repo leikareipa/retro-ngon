@@ -3,13 +3,9 @@
  *
  * Software: Retro n-gon renderer / render sample
  * 
- * Renders a heightmapped voxel terrain directly into the pixel buffer.
- * 
  */
 
 import {first_person_camera} from "../first-person-camera/camera.js";
-
-let heightmap, colormap;
 
 export const sample = {
     initialize: async function()
@@ -21,102 +17,117 @@ export const sample = {
             allowMovement: false,
             allowRotation: true,
         });
-
         this.camera.fov = 70;
         this.camera.height = 140;
 
-        heightmap = await Rngon.texture.load("../samples/ray-casting/heightmap.json");
-        colormap = await Rngon.texture.load("../samples/ray-casting/colormap.json");
+        this.heightmap = await Rngon.texture.load("../samples/ray-casting/heightmap.json");
+        this.colormap = await Rngon.texture.load("../samples/ray-casting/colormap.json");
     },
     tick: function()
     {
         this.numTicks++;
         this.camera.update();
 
-        // Render the voxel terrain.
-        const pixelBuf = Rngon.state.default.pixelBuffer;
-        pixelBuf.data.fill(0);
-        if (heightmap && colormap)
-        {
-            const screenWidth = pixelBuf.width;
-            const screenHeight = pixelBuf.height;
-            const angleIncrement = deg2rad(this.camera.fov / screenWidth);
-            let viewAngle = deg2rad(this.camera.direction.y - (this.camera.fov / 2));
-            let viewAngleRelative = deg2rad(-(this.camera.fov / 2));
-
-            for (let x = 0; x < screenWidth; x++)
-            {
-                const xStep = Math.cos(viewAngle);
-                const yStep = Math.sin(viewAngle);
-                let xPos = this.camera.position.x;
-                let yPos = this.camera.position.y;
-                let highestVoxel = 0;
-
-                for (let distance = 0; distance < 500; distance++)
-                {
-                    const fishDistance = ((distance * Math.cos(viewAngleRelative)) || 1);
-
-                    xPos += xStep;
-                    yPos += yStep;
-
-                    // Wrap the ray around the heightmap at the borders.
-                    if (xPos <= 0) xPos = (heightmap.width - 1);
-                    else if (xPos > (heightmap.width - 1)) xPos = 1;
-                    if (yPos <= 0) yPos = (heightmap.height - 1);
-                    else if (yPos > (heightmap.height - 1)) yPos = 1;
-
-                    const heightmapValue = heightmap.pixels[(~~xPos + ~~yPos * heightmap.width) * 4];
-                    const projectedHeight = Math.min(screenHeight, ((heightmapValue - this.camera.height) * (255 / fishDistance) + this.camera.direction.x));
-
-                    if (projectedHeight > highestVoxel)
-                    {
-                        let idx = ((x + (screenHeight - ~~highestVoxel - 1) * screenWidth) * 4);
-                        for (let ySpan = ~~highestVoxel; ySpan < ~~projectedHeight; ySpan++)
-                        {
-                            pixelBuf.data[idx+0] = colormap.pixels[(~~xPos + ~~yPos * colormap.width) * 4 + 0];
-                            pixelBuf.data[idx+1] = colormap.pixels[(~~xPos + ~~yPos * colormap.width) * 4 + 1];
-                            pixelBuf.data[idx+2] = colormap.pixels[(~~xPos + ~~yPos * colormap.width) * 4 + 2];
-                            pixelBuf.data[idx+3] = 255;
-                            idx -= (screenWidth * 4);
-                        }
-
-                        highestVoxel = projectedHeight;
-                    }
-
-                    if (projectedHeight >= screenHeight)
-                    {
-                        break;
-                    }
-                }
-
-                // Draw the sky.
-                let idx = ((x + (screenHeight - ~~highestVoxel - 1) * screenWidth) * 4);
-                for (let ySpan = ~~highestVoxel; ySpan < screenHeight; ySpan++)
-                {
-                    pixelBuf.data[idx+0] = 50;
-                    pixelBuf.data[idx+1] = 140;
-                    pixelBuf.data[idx+2] = 180;
-                    pixelBuf.data[idx+3] = 255;
-                    idx -= (screenWidth * 4);
-                }
-
-                viewAngle += angleIncrement;
-                viewAngleRelative += angleIncrement;
-            }
-        }
-    
         return {
             mesh: Rngon.mesh(),
             renderPipeline: {
-                surfaceWiper: ()=>{},
+                rasterizer: (renderState)=>render_terrain(renderState.pixelBuffer, this.heightmap, this.colormap, this.camera),
                 transformClipLighter: ()=>{},
-                rasterizer: ()=>{},
             },
         };
     },
+    heightmap: undefined,
+    colormap: undefined,
     numTicks: 0,
     camera: undefined,
 };
+
+// Renders a 2.5D heightmapped voxel terrain into the given pixel buffer.
+function render_terrain(pixelBuffer, heightmap, colormap, camera)
+{
+    if (
+        !heightmap ||
+        !colormap ||
+        (Number(heightmap.width) !== colormap.width) ||
+        (Number(heightmap.height) !== colormap.height)
+    ){
+        return;
+    }
+
+    const renderWidth = pixelBuffer.width;
+    const renderHeight = pixelBuffer.height;
+    const angleIncrement = deg2rad(camera.fov / renderWidth);
+    let viewAngle = deg2rad(camera.direction.y - (camera.fov / 2));
+    let viewAngleRelative = deg2rad(-(camera.fov / 2));
+
+    // For each vertical pixel span in the destination pixel buffer...
+    for (let x = 0; x < renderWidth; x++)
+    {
+        const xStep = Math.cos(viewAngle);
+        const yStep = Math.sin(viewAngle);
+        let xPos = camera.position.x;
+        let yPos = camera.position.y;
+        let tallestVoxel = 0;
+
+        // ...trace a ray for at most this many steps along the heightmap. At each step,
+        // if the height of the current voxel is greater than the highest voxel so far,
+        // we'll draw it as a vertical column into the pixel buffer.
+        for (let distance = 0; distance < 600; distance++)
+        {
+            const fishDistance = ((distance * Math.cos(viewAngleRelative)) || 1);
+
+            xPos += xStep;
+            yPos += yStep;
+
+            // Infinite wraparound at heightmap borders.
+            if (xPos < 0) xPos = (heightmap.width - 1);
+            else if (xPos >= heightmap.width) xPos = 0;
+            if (yPos < 0) yPos = (heightmap.height - 1);
+            else if (yPos >= heightmap.height) yPos = 0;
+
+            const heightmapValue = heightmap.pixels[(~~xPos + ~~yPos * heightmap.width) * 4];
+            const voxelHeight = ~~Math.min(renderHeight, ((heightmapValue - camera.height) * (255 / fishDistance) + camera.direction.x));
+
+            // Draw the voxel if it isn't occluded by the previous voxels.
+            if (voxelHeight > tallestVoxel)
+            {
+                let srcIdx = ((~~xPos + ~~yPos * colormap.width) * 4);
+                let dstIdx = ((x + (renderHeight - tallestVoxel - 1) * renderWidth) * 4);
+
+                for (let ySpan = tallestVoxel; ySpan < voxelHeight; ySpan++, dstIdx -= (renderWidth * 4))
+                {
+                    pixelBuffer.data[dstIdx+0] = colormap.pixels[srcIdx+0];
+                    pixelBuffer.data[dstIdx+1] = colormap.pixels[srcIdx+1];
+                    pixelBuffer.data[dstIdx+2] = colormap.pixels[srcIdx+2];
+                    pixelBuffer.data[dstIdx+3] = 255;
+                }
+
+                tallestVoxel = voxelHeight;
+            }
+
+            if (voxelHeight >= renderHeight)
+            {
+                break;
+            }
+        }
+
+        // Draw the sky.
+        {
+            let dstIdx = ((x + (renderHeight - tallestVoxel - 1) * renderWidth) * 4);
+
+            for (let ySpan = tallestVoxel; ySpan < renderHeight; ySpan++, dstIdx -= (renderWidth * 4))
+            {
+                pixelBuffer.data[dstIdx+0] = 50;
+                pixelBuffer.data[dstIdx+1] = 140;
+                pixelBuffer.data[dstIdx+2] = 180;
+                pixelBuffer.data[dstIdx+3] = 255;
+            }
+        }
+
+        viewAngle += angleIncrement;
+        viewAngleRelative += angleIncrement;
+    }
+}
 
 function deg2rad(deg)
 {
