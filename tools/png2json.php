@@ -86,21 +86,23 @@ for ($y = 0; $y < $height; $y++)
 
         if ($save_raw_pixel_data)
         {
-            $data .= ($color["red"] . "," . $color["green"] . "," . $color["blue"] . "," . ($alpha*255));
-
-            // Break the line every couple of pixels.
-            if (($y*$width+$x+1)%5==0) $data .= ",\n\t";
-            else $data .= ", ";
+            // Pack the pixel into 32 bits (8888).
+            $data .= pack("V", (
+                 $color["red"]          |
+                ($color["green"] << 8)  |
+                ($color["blue"]  << 16) |
+                (($alpha * 255)  << 24)
+            ));
         }
         else
         {
-            // Pack the pixel's RGBA into a 16-bit value of the format 5551.
-            $packed =  (int)($color["red"]   / 8)        |
-                      ((int)($color["green"] / 8) << 5)  |
-                      ((int)($color["blue"]  / 8) << 10) |
-                     ((bool)($alpha          & 1) << 15);
-
-            $data .= pack("v", $packed);
+            // Pack the pixel into 16 bits (5551).
+            $data .= pack("v", (
+                 (int)($color["red"]   / 8)        |
+                ((int)($color["green"] / 8) << 5)  |
+                ((int)($color["blue"]  / 8) << 10) |
+                ((bool)($alpha         & 1) << 15)
+             ));
         }
     }
 }
@@ -113,14 +115,12 @@ fprintf($outfile, "\t\"height\":%d,\n", $height);
 if ($save_raw_pixel_data)
 {
     fprintf($outfile, "\t\"channels\":\"rgba:8+8+8+8\",\n");
-    fprintf($outfile, "\t\"encoding\":\"none\",\n");
-    fprintf($outfile, "\t\"pixels\":[\n\t%s\n\t]", rtrim(rtrim($data, ", "), ", \n\t"));
 }
 else
 {
     fprintf($outfile, "\t\"channels\":\"rgba:5+5+5+1\",\n");
-    fprintf($outfile, "\t\"encoding\":\"base64\",\n");
-    fprintf($outfile, "\t\"pixels\":\"%s\"", base64_encode($data));
 }
+fprintf($outfile, "\t\"encoding\":\"base64\",\n");
+fprintf($outfile, "\t\"pixels\":\"%s\"", base64_encode($data));
 fprintf($outfile, "\n}");
 ?>

@@ -1,6 +1,6 @@
-## Data converters for the retro n-gon renderer
+# Data converters for the retro n-gon renderer
 
-#### PNG to JSON converter &mdash; [png2json.php](png2json.php)
+## png2json.php &ndash; PNG to JSON converter
 Usage: `$ php png2json.php -i <INPUT_PNG_FILENAME> [-r -o <OUTPUT_JSON_FILENAME>]`
 
 Converts PNG images into a JSON format compatible with the retro n-gon renderer. The output JSON will be of the following form:
@@ -29,7 +29,7 @@ JSON files created with this converter can be loaded into the retro n-gon render
 })()
 ```
 
-#### Blender exporter &mdash; [blender-export.py](blender-export.py)
+## blender-export.py &ndash; Blender model exporter
 A very rough export script for Blender to convert 3d scenes modeled in it into a format compatible with the retro n-gon renderer. The script was made for Blender 2.76, but may work with other versions. It's currently pre-alpha; a stopgap for a more permanent Blender export solution; so unfortunately you can expect some issues while using it.
 
 To use the script, first create your model in Blender, or import one into it, then open and run the script inside Blender. The specifics of how to run scripts in Blender will depend on your version of the program etc. &ndash; if you're unsure of how to do it (which is likely, unless you're an experienced Blender user), just have a quick googling and it should become clear.
