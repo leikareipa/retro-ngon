@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width">
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <title>Ray casting - Render sample - Retro n-gon renderer</title>
+        <link rel="stylesheet" type="text/css" href="../sample-base.css">
+        <style>
+            body
+            {
+                background-color: #6e6e6e;
+            }
+        </style>
+    </head>
+    <body id="sample-container">
+        <div class="content">
+            <iframe id="render-target">
+            </iframe>
+        </div>
+
+        <script>
+            parent.USAGE = `
+                Click to capture mouse
+            `;
+
+            const renderer = (new URLSearchParams(window.location.search).get("renderer") || "dev");
+            const renderTarget = document.getElementById("render-target");
+            renderTarget.src = `../sample-base.html?sample=ray-casting&renderer=${renderer}`;
+        </script>
+    </body>
+</html>

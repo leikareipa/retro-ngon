@@ -129,7 +129,7 @@
                 const sampleId = (new URLSearchParams(window.location.search).get("sample") || "textured-cube-model");
                 const {sample} = await import(`./${sampleId}/${sampleId}.js`);
 
-                sample.initialize();
+                await sample.initialize();
 
                 // The renderable assets will have finished loading when we reach this,
                 // so it's safe to remove the loading indicator.

@@ -17,8 +17,7 @@
             <main>
                 <div id="sample-selector-container" class="selector-container">
                     <div class="selector-tag">Sample</div>
-                    <select id="sample-selector"
-                            onchange="set_sample(event.target.value);">
+                    <select id="sample-selector" onchange="set_sample(event.target.value);">
 
                         <optgroup label='Sample scenes'></optgroup>
                         <option value='tomb-raider-home'>Tomb Raider &ndash; Lara's Home</option>
@@ -38,10 +37,11 @@
 
                         <optgroup label="Ideas & Implementations"></optgroup>
                         <option value="first-person-camera">First-person camera</option>
+                        <option value='oblique-2d-tiles'>Isometric 2D</option>
                         <option value="layered-rendering">Layered rendering</option>
                         <option value="masking">Masking</option>
-                        <option value='oblique-2d-tiles'>Oblique 2D tiles</option>
                         <option value="path-tracing">Path tracing</option>
+                        <option value="ray-casting">Ray casting</option>
                         <option value="framerate-limiter">Refresh rate limiter</option>
 
                     </select>
@@ -49,8 +49,7 @@
                 <div id="renderer-selector-container"
                     class="selector-container">
                     <div class="selector-tag">Renderer</div>
-                    <select id="renderer-selector"
-                            onchange="set_version(event.target.value);">
+                    <select id="renderer-selector" onchange="set_version(event.target.value);">
                         <optgroup label="Supported"></optgroup>
                         <option value="dev">~dev</option>
                         <optgroup label="Deprecated"></optgroup>
