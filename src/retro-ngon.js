@@ -43,7 +43,7 @@ import {matrix44} from "./core/matrix44.js";
 export const Rngon = {
     version: {
         major: 0,
-        minor: 5,
+        minor: 1,
         patch: 0,
         dev: !IS_PRODUCTION_BUILD,
     },
