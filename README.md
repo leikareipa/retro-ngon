@@ -2,7 +2,7 @@
 
 A low-level retro-themed 3D software renderer for the HTML5 \<canvas\> (also supports off-screen rendering).
 
-You can view various interactive render samples [here](https://www.tarpeeksihyvaesoft.com/experimental/retro-ngon/samples/).
+You can view various interactive render samples [here](https://www.tarpeeksihyvaesoft.com/rngon/samples/).
 
 ![A textured cube](./images/screenshots/beta/tomb-raider-crt.webp)\
 *An indoor scene from Tomb Raider, with a CRT shader. (Based on assets created by Core Design for Tomb Raider. Core Design is not associated with this renderer.)*
