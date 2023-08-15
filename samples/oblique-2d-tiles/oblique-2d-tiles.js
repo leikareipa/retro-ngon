@@ -187,7 +187,7 @@ export const sample = {
                         }),
 
                         // A light that follows the mouse cursor.
-                        Rngon.light(Rngon.vector((mousePos.x * baseRenderOptions.resolution), (mousePos.y * baseRenderOptions.resolution)), {
+                        Rngon.light(Rngon.vector((mousePos.x * defaultRenderOptions.resolution), (mousePos.y * defaultRenderOptions.resolution)), {
                             intensity: 20,
                         }),
                     ];

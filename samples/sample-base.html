@@ -7,11 +7,23 @@
         <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" integrity="sha384-gfdkjb5BdAXd+lj+gudLWI+BXq4IuLW5IT+brZEZsLFm++aCMlF1V92rMkPaX4PP" crossorigin="anonymous">
         <title>Sample template - Retro n-gon renderer</title>
         <style>
-            html
-            {
+            html {
                 background-color: #6e6e6e;
             }
         </style>
+        <script>
+            const rendererName = (new URLSearchParams(window.location.search)).get("renderer");
+            const rngonScriptElement = document.createElement("script");
+
+            if (!rendererName || (rendererName === "dev")) {
+                rngonScriptElement.src = "../distributable/rngon.js"
+            }
+            else {
+                rngonScriptElement.src = `../distributable/old/rngon.${rendererName}.js`;
+            }
+
+            document.head.appendChild(rngonScriptElement);
+    </script>
     </head>
     <body>
         <div id="loading-bar">
@@ -20,134 +32,91 @@
                       padding-bottom: 50px;
                       top: -25px;
                       left: -25px;
-                      margin-right: 10px;"></i>
+                      margin-right: 10px;"
+            ></i>
             Loading render sample...
         </div>
 
-        <canvas id="canvas" class="rngon-canvas rngon-pixelated-upscale">
-        </canvas>
+        <canvas id="canvas" class="rngon-canvas rngon-pixelated-upscale"></canvas>
 
         <div class="infoboxes-container">
             <div class="infobox scale">
-                <div class="adjust left" onclick="change_scale(-1);"></div>
+                <div class="adjust left" onclick="change_render_scale(-1);"></div>
                 <div class="content">
                     <div class="title">Scale</div>
-                    <div class="value"><i class="fas fa-sm fa-spin fa-spinner"></i></div>
+                    <div class="value">
+                        <i class="fas fa-sm fa-spin fa-spinner"></i>
+                    </div>
                 </div>
-                <div class="adjust right" onclick="change_scale(1);"></div>
+                <div class="adjust right" onclick="change_render_scale(1);"></div>
             </div>
             <div class="infobox polycount">
                 <div class="content">
                     <div class="title">Polygons</div>
-                    <div class="value"><i class="fas fa-sm fa-spin fa-spinner"></i></div>
+                    <div class="value">
+                        <i class="fas fa-sm fa-spin fa-spinner"></i>
+                    </div>
                 </div>
             </div>
             <div class="infobox fps">
                 <div class="content">
                     <div class="title">FPS</div>
-                    <div class="value"><i class="fas fa-sm fa-spin fa-spinner"></i></div>
+                    <div class="value">
+                        <i class="fas fa-sm fa-spin fa-spinner"></i>
+                    </div>
                 </div>
             </div>
             <div class="infobox refresh-rate">
                 <div class="content">
                     <div class="title">Refresh</div>
-                    <div class="value"><i class="fas fa-sm fa-spin fa-spinner"></i></div>
+                    <div class="value">
+                        <i class="fas fa-sm fa-spin fa-spinner"></i>
+                    </div>
                 </div>
             </div>
         </div>
-
         <script>
-            const rendererName = (new URLSearchParams(window.location.search).get("renderer") || null);
-            const rngonScriptElement = document.createElement("script");
+            // Start rendering.
+            window.addEventListener("load", async()=>{
+                // These render options are used if the render sample doesn't provide
+                // overrides for them.
+                const defaultRenderOptions = {
+                    resolution: 0.25,
+                    useDepthBuffer: true,
+                    cameraDirection: Rngon.vector(0, 0, 0),
+                    cameraPosition: Rngon.vector(0, 0, -170),
+                };
 
-            if (!rendererName ||
-                (rendererName == "dev"))
-            {
-                rngonScriptElement.src = "../distributable/rngon.js"
-            }
-            else
-            {
-                rngonScriptElement.src = `../distributable/old/rngon.${rendererName}.js`;
-            }
-
-            document.body.appendChild(rngonScriptElement);
-        </script>
-        <script>
-            function polyfill_api()
-            {
-                // Post-beta.5 API renaming.
-                Rngon.vector = (Rngon.vector || Rngon.vector3);
-                Rngon.texture = (Rngon.texture || Rngon.texture_rgba);
-                Rngon.color = (Rngon.color || Rngon.color_rgba);
-
-                // In pre-beta.6, Rngon.rotation_vector was an alias for Rngon.vector3 that additionally
-                // transformed the input XYZ coordinates into Rngon.trig's space, whereas later versions
-                // baked the transformation into Rngon.matrix44.rotate() and obsoleted Rngon.rotation_vector.
-                // So when using a pre-beta.6 renderer with newer render calls, we need to bake the
-                // transformation step into its matrix functionality.
-                if (Rngon.rotation_vector)
+                const change_render_scale = window.change_render_scale = function(dir)
                 {
-                    const rotKey = (Rngon.matrix44.rotation? "rotation" : "rotate");
-                    const orig_rot_fn = Rngon.matrix44[rotKey];
-                    Rngon.matrix44[rotKey] = function(x = 0, y = 0, z = 0)
-                    {
-                        return orig_rot_fn(Rngon.trig.deg(x), Rngon.trig.deg(y), Rngon.trig.deg(z));
-                    }
+                    const scales = [0.05, 0.10, 0.15, 0.20, 0.25, 0.5, 0.75, 1];
+                    const newScaleIdx = Math.max(0, Math.min((scales.length - 1), (scales.indexOf(defaultRenderOptions.resolution) + Math.sign(dir))));
+                    defaultRenderOptions.resolution = (scales[newScaleIdx] || scales[0]);
+                    document.querySelector(".infobox.scale .value").innerHTML = defaultRenderOptions.resolution.toFixed(2);
                 }
 
-                // Pre-beta.2 didn't implement Rngon.light().
-                if (!Rngon.light)
-                {
-                    Rngon.light = (position, settings)=>({position, ...settings});
-                }
-            }
-        </script>
-        <script>
-            var baseRenderOptions = {
-                resolution: 0.25,
-            };
+                // Force the UI's render scale indicator to initialize to the value set
+                // in defaultRenderOptions.scale.
+                change_render_scale(0);
 
-            // Force the scale to initialize to the value set in baseRenderOptions.scale.
-            change_scale(0);
-
-            function change_scale(dir)
-            {
-                const scales = [0.05, 0.10, 0.15, 0.20, 0.25, 0.5, 0.75, 1];
-                const newScaleIdx = Math.max(0, Math.min((scales.length - 1), (scales.indexOf(baseRenderOptions.resolution) + Math.sign(dir))));
-
-                baseRenderOptions.resolution = (scales[newScaleIdx] || scales[0]);
-                document.querySelector(".infobox.scale .value").innerHTML = baseRenderOptions.resolution.toFixed(2);
-            }
-        </script>
-        <script>
-            window.addEventListener("load", run);
-
-            async function run()
-            {
-                polyfill_api();
-
+                // Load the render sample.
                 const sampleId = (new URLSearchParams(window.location.search).get("sample") || "textured-cube-model");
                 const {sample} = await import(`./${sampleId}/${sampleId}.js`);
+                await sample.initialize(structuredClone(defaultRenderOptions));
 
-                await sample.initialize();
-
-                // The renderable assets will have finished loading when we reach this,
-                // so it's safe to remove the loading indicator.
+                // The render sample will now have finished loading, so we can remove the
+                // loading indicator.
                 document.getElementById("loading-bar").remove();
 
-                // Used to keep track of when to update the UI's FPS and polycount displays
-                // (and whatever other real-time-updated info the UI might be showing).
                 let uiUpdateTimer = 0;
+                const uiUpdateIntervalMs = 500;
 
-                // Runs the renderer continuously, in sync with the device's refresh rate.
                 (function render_loop(timestamp = 0, frameTimeDeltaMs = 0, frameCount = 0)
                 {
                     const perfTimer = performance.now();
                  
-                    const queue_new_frame = (additionalTimeDelta = 0)=>
-                    {
-                        window.requestAnimationFrame((newTimestamp)=>
-                        {
+                    const queue_new_frame = (additionalTimeDelta = 0)=>{
+                        window.requestAnimationFrame((newTimestamp)=>{
                             render_loop(
                                 newTimestamp,
                                 (additionalTimeDelta + (newTimestamp - timestamp)),
@@ -156,18 +125,10 @@
                         });
                     };
 
-                    const scene = sample.tick();
-
-                    const renderOptions = {
-                        useDepthBuffer: true,
-                        cameraDirection: Rngon.vector(0, 0, 0),
-                        cameraPosition: Rngon.vector(0, 0, -170),
-                        resolution: baseRenderOptions.resolution,
-                        ...(scene.renderOptions || {}),
-                    };
+                    const scene = sample.tick(structuredClone(defaultRenderOptions));
 
                     // Attempt to limit the renderer's refresh rate, if so requested by the user.
-                    if (scene.targetRefreshRate && (frameTimeDeltaMs < Math.floor(1000 / scene.targetRefreshRate)))
+                    if (scene.targetRefreshRate && (frameTimeDeltaMs < Math.floor(1000 / (scene.targetRefreshRate + 1))))
                     {
                         queue_new_frame(frameTimeDeltaMs);
                         return;
@@ -176,21 +137,24 @@
                     const renderInfo = Rngon.render({
                         target: "canvas",
                         scene: [scene.mesh],
-                        options: renderOptions,
+                        options: {
+                            ...defaultRenderOptions,
+                            ...(scene.renderOptions || {}),
+                        },
                         pipeline: (scene.renderPipeline || {}),
                     });
 
-                    if ((uiUpdateTimer += frameTimeDeltaMs) >= 500)
+                    if ((uiUpdateTimer += frameTimeDeltaMs) >= uiUpdateIntervalMs)
                     {
                         document.querySelector(".infobox.fps .value").textContent = Math.floor(1000 / ((performance.now() - perfTimer) || 1));
                         document.querySelector(".infobox.polycount .value").textContent = renderInfo.numNgonsRendered;
-                        document.querySelector(".infobox.refresh-rate .value").textContent = `${Math.floor(1000 / (frameTimeDeltaMs || 1))} Hz`;
+                        document.querySelector(".infobox.refresh-rate .value").textContent = `${Math.round(1000 / (frameTimeDeltaMs || 1))} Hz`;
                         uiUpdateTimer = 0;
                     }
 
                     queue_new_frame();
                 })();
-            };
+            });
         </script>
     </body>
 </html>
