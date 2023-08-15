@@ -37,17 +37,17 @@
                 Click to capture mouse, ESDF & QA to move
             `;
 
-            const refreshRates = ["10", "15", "30", "60", "120"];
-            let rateIdx = refreshRates.indexOf("60");
+            const refreshRates = [12, 24, 25, 30, 36, 40, 50, 60, 72, 100, 120, 144];
+            let rateIdx = refreshRates.indexOf(60);
 
-            var REFRESH_RATE = refreshRates[rateIdx];
+            window.REFRESH_RATE = refreshRates[rateIdx];
 
             function change_rate(direction = 1)
             {
                 rateIdx = Math.max(0, Math.min((refreshRates.length - 1), (rateIdx + direction)));
-                REFRESH_RATE = refreshRates[rateIdx];
+                window.REFRESH_RATE = refreshRates[rateIdx];
 
-                document.querySelector(".infobox.refresh-rate .value").innerHTML = `${REFRESH_RATE} Hz`;
+                document.querySelector(".infobox.refresh-rate .value").innerHTML = `${window.REFRESH_RATE} Hz`;
 
                 return;
             }
