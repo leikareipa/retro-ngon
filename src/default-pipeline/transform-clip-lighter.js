@@ -248,7 +248,7 @@ function apply_lighting(ngon, renderState)
                     ((vertex.z - light.position.z) * (vertex.z - light.position.z))
                 );
 
-                const distanceMul = (1 / (1 + (light.attenuation * distance)));
+                const distanceMul = (1 / (1 + distance));
 
                 lightDirection.x = (light.position.x - vertex.x);
                 lightDirection.y = (light.position.y - vertex.y);
@@ -256,7 +256,7 @@ function apply_lighting(ngon, renderState)
                 Vector.normalize(lightDirection);
 
                 const shadeFromThisLight = Math.max(0, Math.min(1, Vector.dot(ngon.vertexNormals[v], lightDirection)));
-                vertex.shade = Math.max(vertex.shade, Math.min(light.clip, (shadeFromThisLight * distanceMul * light.intensity)));
+                vertex.shade = Math.max(vertex.shade, Math.min(1, (shadeFromThisLight * distanceMul * light.intensity)));
             }
         }
         else if (ngon.material.vertexShading === "flat")
@@ -267,7 +267,7 @@ function apply_lighting(ngon, renderState)
                 ((faceZ - light.position.z) * (faceZ - light.position.z))
             );
 
-            const distanceMul = (1 / (1 + (light.attenuation * distance)));
+            const distanceMul = (1 / (1 + distance));
 
             lightDirection.x = (light.position.x - faceX);
             lightDirection.y = (light.position.y - faceY);
@@ -275,7 +275,7 @@ function apply_lighting(ngon, renderState)
             Vector.normalize(lightDirection);
 
             const shadeFromThisLight = Math.max(0, Math.min(1, Vector.dot(ngon.normal, lightDirection)));
-            faceShade = Math.max(faceShade, Math.min(light.clip, (shadeFromThisLight * distanceMul * light.intensity)));
+            faceShade = Math.max(faceShade, Math.min(1, (shadeFromThisLight * distanceMul * light.intensity)));
         }
         else
         {

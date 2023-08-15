@@ -20,11 +20,7 @@ export const sample = {
         });
 
         this.lights = [
-            Rngon.light(Rngon.vector(11, 45, -35), {
-                intensity: 70,
-                clip: 1,
-                attenuation: 1,
-            }),
+            Rngon.light(70, Rngon.vector(11, 45, -35)),
         ];
 
         // To allow the pixel shader functions access to the Rngon namespace.

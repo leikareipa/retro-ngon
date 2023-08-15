@@ -54,9 +54,9 @@ export function apply_lighting_to_tile(renderState, ngon)
             const distance = Math.sqrt(((vX - light.position.x) * (vX - light.position.x)) +
                                        ((vY - light.position.y) * (vY - light.position.y)));
 
-            const distanceMul = (1 / (1 + (light.attenuation * distance)));
+            const distanceMul = (1 / (1 + distance));
 
-            vertex.shade = Math.max(vertex.shade, Math.min(light.clip, (distanceMul * light.intensity)));
+            vertex.shade = Math.max(vertex.shade, Math.min(1, (distanceMul * light.intensity)));
         }
     }
 

@@ -30,17 +30,15 @@ export const sample = {
             ),
         };
 
-        const lightSource = Rngon.light(Rngon.vector(0, 70, -120), {
-            clip: 1.5,
-            attenuation: 1,
-            intensity: 150,
-        });
-
         scene.material.vertexShading = parent.MODEL_SHADING.toLowerCase();
         scene.material.ambientLightLevel = parent.MODEL_AMBIENT;
 
         return {
-            renderOptions: {lights: [lightSource]},
+            renderOptions: {
+                lights: [
+                    Rngon.light(150, Rngon.vector(0, 70, -120)),
+                ],
+            },
             mesh: Rngon.mesh(scene.ngons, meshSettings)
         };
     },

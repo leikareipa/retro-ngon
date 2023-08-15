@@ -112,7 +112,7 @@ export const sample = {
             this.mousePos.y = event.clientY;
         }));
     },
-    tick: function()
+    tick: function(defaultRenderOptions)
     {
         this.numTicks++;
 
@@ -143,7 +143,7 @@ export const sample = {
                     ngons.push(Rngon.ngon([Rngon.vertex( posX,                     startY),
                                            Rngon.vertex( posX,                    (startY + groundTileHeight)),
                                            Rngon.vertex((posX + groundTileWidth), (startY + groundTileHeight)),
-                                           Rngon.vertex((posX + groundTileWidth),  startY)], {
+                                           Rngon.vertex((posX + groundTileWidth),  startY)] , {
                         texture: (((Math.floor(this.camera.pos.x - posX) % 2) == 0)? grass1 : grass2),
                         isInScreenSpace: true,
                         vertexShading: ((parent.TIME_TYPE == "Night")? "gouraud" : "none"),
@@ -178,18 +178,11 @@ export const sample = {
                 get lights()
                 {
                     return [
-                        Rngon.light(Rngon.vector(...tile_pos_to_world_pos(21, 7)),{
-                            intensity: 20,
-                        }),
-
-                        Rngon.light(Rngon.vector(...tile_pos_to_world_pos(15, 7)),{
-                            intensity: 20,
-                        }),
+                        Rngon.light(20, Rngon.vector(...tile_pos_to_world_pos(21, 7))),
+                        Rngon.light(20, Rngon.vector(...tile_pos_to_world_pos(15, 7))),
 
                         // A light that follows the mouse cursor.
-                        Rngon.light(Rngon.vector((mousePos.x * defaultRenderOptions.resolution), (mousePos.y * defaultRenderOptions.resolution)), {
-                            intensity: 20,
-                        }),
+                        Rngon.light(20, Rngon.vector((mousePos.x * defaultRenderOptions.resolution), (mousePos.y * defaultRenderOptions.resolution))),
                     ];
 
                     function tile_pos_to_world_pos(tileX, tileY)

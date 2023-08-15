@@ -138,7 +138,7 @@ render.schema = {
             usePerspectiveInterpolation: ["boolean"],
             globalWireframe: ["boolean"],
             hibernateWhenTargetNotVisible: ["boolean"],
-            lights: [["Light"]],
+            lights: [["Light", "object"]],
         },
     },
     pipeline: {

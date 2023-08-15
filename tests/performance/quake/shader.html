@@ -27,8 +27,18 @@
                         shade: true,
                     },
                     lights: [
-                        Rngon.light(Rngon.vector(409, 115, 758), {reach: 350, intensity: 1.5}),
-                        Rngon.light(Rngon.vector(481, 182, 113), {reach: 450, intensity: 2}),
+                        // Note: We use custom objects instead of the standard Rngon.light(),
+                        // since we want to include some non-standard properties.
+                        {
+                            position: Rngon.vector(409, 115, 758),
+                            reach: 350,
+                            intensity: 1.5,
+                        },
+                        {
+                            position: Rngon.vector(481, 182, 113),
+                            reach: 450,
+                            intensity: 2,
+                        },
                     ],
                 },
                 renderPipeline: {
