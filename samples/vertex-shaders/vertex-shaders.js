@@ -44,8 +44,7 @@ export const sample = {
         };
     },
     shaders: [
-        {title:"Bend",          function:vs_bendy},
-        {title:"Glitch",        function:vs_glitchy},
+        {title:"Bendy",         function:vs_bendy},
         {title:"Distance fog",  function:vs_depth_fog},
         {title:"Grow",          function:vs_grow},
         {title:"UV shift",      function:vs_uv_shift},
@@ -115,23 +114,5 @@ function vs_bendy(ngon)
         const scaleFactor = (1 + (ngon.vertices[v].y - 0.5) * taperFactor);
         ngon.vertices[v].x *= scaleFactor;
         ngon.vertices[v].z *= scaleFactor;
-    }
-}
-
-// Vertex shader: Randomly jitter vertices, simulating noise.
-function vs_glitchy(ngon)
-{
-    if (this.numTicks % 15 !== 0)
-    {
-        return;
-    }
-
-    const noiseFactor = 0.3;
-
-    for (let v = 0; v < ngon.vertices.length; v++)
-    {
-        ngon.vertices[v].x += ((Math.random() * 2 - 1) * noiseFactor);
-        ngon.vertices[v].y += ((Math.random() * 2 - 1) * noiseFactor);
-        ngon.vertices[v].z += ((Math.random() * 2 - 1) * noiseFactor);
     }
 }
