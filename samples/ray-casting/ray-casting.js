@@ -18,7 +18,7 @@ export const sample = {
             allowRotation: true,
         });
         this.camera.fov = 70;
-        this.camera.height = 127;
+        this.camera.height = 130;
 
         this.heightmap = await Rngon.texture.load("../samples/ray-casting/heightmap.json");
         this.colormap = await Rngon.texture.load("../samples/ray-casting/colormap.json");
