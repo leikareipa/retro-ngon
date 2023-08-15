@@ -60,7 +60,7 @@ export const validate_object = IS_PRODUCTION_BUILD? undefined
 
         if (missingProperties.length)
         {
-            throw new Error(`Missing '${missingProperties.map(p=>(propertyChain + p)).join("', '")}' ${schema.where}`);
+            throw new Error(`Missing property '${missingProperties.map(p=>(propertyChain + p)).join("', '")}' ${schema.where}`);
         }
     }
 
@@ -155,6 +155,10 @@ export const validate_object = IS_PRODUCTION_BUILD? undefined
                     throw new TypeError(`The property '${propertyChain + objectKey}' ${schema.where} is of unsupported type ${objectValueType}`);
                 }
             }
+        }
+        else
+        {
+            throw new SyntaxError(`Invalid schema`);
         }
     }
 
