@@ -12,10 +12,14 @@ import {vector as Vector} from "./vector.js";
 export function light(
     intensity = 100,
     position = Vector(0, 0, 0),
+    options = {}
 )
 {
+    validate_object?.({intensity, position, options}, light.schema.arguments);
+
     const publicInterface = {
         $constructor: "Light",
+        ...options,
         intensity,
         position,
     };
@@ -26,14 +30,23 @@ export function light(
 }
 
 light.schema = {
+    arguments: {
+        where: "in arguments passed to light()",
+        properties: {
+            "intensity": ["number"],
+            "position": ["Vector"],
+            "options": ["object"],
+        },
+    },
     interface: {
         where: "in the return value of light()",
+        allowAdditionalProperties: true,
         properties: {
             "$constructor": {
                 value: "Light",
             },
             "intensity": ["number"],
-            "position": ["Vector", "object"],
+            "position": ["Vector"],
         },
     },
 };
