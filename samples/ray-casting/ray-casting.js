@@ -29,7 +29,6 @@ export const sample = {
         this.camera.update();
 
         return {
-            mesh: Rngon.mesh(),
             renderPipeline: {
                 rasterizer: (renderState)=>render_terrain(renderState.pixelBuffer, this.heightmap, this.colormap, this.camera),
                 transformClipLighter: ()=>{},
