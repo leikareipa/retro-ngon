@@ -39,22 +39,22 @@ import {trig as Trig} from "../core/trig.js";
 export const matrix = {
     scaling: function(x = 0, y = 0, z = 0)
     {
-        return Object.freeze([
+        return [
             x, 0, 0, 0,
             0, y, 0, 0,
             0, 0, z, 0,
             0, 0, 0, 1,
-        ]);
+        ];
     },
 
     translation: function(x = 0, y = 0, z = 0)
     {
-        return Object.freeze([
+        return [
             1, 0, 0, 0,
             0, 1, 0, 0,
             0, 0, 1, 0,
             x, y, z, 1,
-        ]);
+        ];
     },
 
     rotation: function(x = 0, y = 0, z = 0)
@@ -94,7 +94,7 @@ export const matrix = {
             "Expected a 4 x 4 matrix."
         );
 
-        return Object.freeze(mResult);
+        return mResult;
     },
 
     perspective: function(fov = 0, aspectRatio = 0, zNear = 0, zFar = 0)
@@ -102,22 +102,22 @@ export const matrix = {
         const fovHalf = Math.tan(fov / 2);
         const zRange = (zNear - zFar);
 
-        return Object.freeze([
+        return [
             (1 / (fovHalf * aspectRatio)), 0,             0,                             0,
             0,                             (1 / fovHalf), 0,                             0,
             0,                             0,             ((-zNear - zFar) / zRange),    1,
             0,                             0,             (2 * zFar * (zNear / zRange)), 0,
-        ]);
+        ];
     },
 
     ortho: function(width = 0, height = 0)
     {
-        return Object.freeze([
+        return [
             (width/2),     0,              0, 0,
             0,             -(height/2),    0, 0,
             0,             0,              1, 0,
             (width/2)-0.5, (height/2)-0.5, 0, 1,
-        ]);
+        ];
     },
     
     multiply: function(m1 = [], m2 = [])
@@ -142,6 +142,6 @@ export const matrix = {
             }
         }
 
-        return Object.freeze(mResult);
+        return mResult;
     },
 }

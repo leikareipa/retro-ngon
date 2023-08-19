@@ -18,8 +18,6 @@ unitTestResults = unit_tests("Retro n-gon renderer", ()=>
                                                   trunc4(m[1])===-0.2824 && trunc4(m[5])===0.9454  && trunc4(m[ 9])===0.1627 && trunc4(m[13])===0.0000 && 
                                                   trunc4(m[2])===0.3432  && trunc4(m[6])===-0.0588 && trunc4(m[10])===0.9374 && trunc4(m[14])===0.0000 && 
                                                   trunc4(m[3])===0.0000  && trunc4(m[7])===0.0000  && trunc4(m[11])===0.0000 && trunc4(m[15])===1.0000))]);
-
-            expect_true([()=>(Object.isFrozen(m))]);
         }
 
         {
@@ -29,8 +27,6 @@ unitTestResults = unit_tests("Retro n-gon renderer", ()=>
                                                   trunc4(m[1])===0.0000 && trunc4(m[5])===1.0000 && trunc4(m[ 9])===0.0000 && trunc4(m[13])===2.5412    && 
                                                   trunc4(m[2])===0.0000 && trunc4(m[6])===0.0000 && trunc4(m[10])===1.0000 && trunc4(m[14])===8745.1645 && 
                                                   trunc4(m[3])===0.0000 && trunc4(m[7])===0.0000 && trunc4(m[11])===0.0000 && trunc4(m[15])===1.0000))]);
-
-            expect_true([()=>(Object.isFrozen(m))]);
         }
 
         {
@@ -40,8 +36,6 @@ unitTestResults = unit_tests("Retro n-gon renderer", ()=>
                                                   trunc4(m[1])===0.0000 && trunc4(m[5])===2.5238 && trunc4(m[ 9])===0.0000 && trunc4(m[13])===0.0000  && 
                                                   trunc4(m[2])===0.0000 && trunc4(m[6])===0.0000 && trunc4(m[10])===1.0000 && trunc4(m[14])===-1.8276 && 
                                                   trunc4(m[3])===0.0000 && trunc4(m[7])===0.0000 && trunc4(m[11])===1.0000 && trunc4(m[15])===0.0000))]);
-
-            expect_true([()=>(Object.isFrozen(m))]);
         }
 
         {
@@ -51,8 +45,6 @@ unitTestResults = unit_tests("Retro n-gon renderer", ()=>
                                                   trunc4(m[1])===0.0000    && trunc4(m[5])===-1.5642 && trunc4(m[ 9])===0.0000 && trunc4(m[13])===1.0642    && 
                                                   trunc4(m[2])===0.0000    && trunc4(m[6])===0.0000  && trunc4(m[10])===1.0000 && trunc4(m[14])===0.0000    && 
                                                   trunc4(m[3])===0.0000    && trunc4(m[7])===0.0000  && trunc4(m[11])===0.0000 && trunc4(m[15])===1.0000))]);
-
-            expect_true([()=>(Object.isFrozen(m))]);
         }
 
         {
@@ -65,8 +57,6 @@ unitTestResults = unit_tests("Retro n-gon renderer", ()=>
                                                   trunc4(m[1])===0.0000 && trunc4(m[5])===2.5238 && trunc4(m[ 9])===2.5412    && trunc4(m[13])===0.0000  && 
                                                   trunc4(m[2])===0.0000 && trunc4(m[6])===0.0000 && trunc4(m[10])===8746.1645 && trunc4(m[14])===-1.8276 && 
                                                   trunc4(m[3])===0.0000 && trunc4(m[7])===0.0000 && trunc4(m[11])===1.0000    && trunc4(m[15])===0.0000))]);
-
-            expect_true([()=>(Object.isFrozen(m))]);
         }
     });
 
@@ -179,13 +169,6 @@ unitTestResults = unit_tests("Retro n-gon renderer", ()=>
             ()=>(color.green === 2),
             ()=>(color.blue === 3),
             ()=>(color.alpha === 4)
-        ]);
-
-        // Immutability.
-        expect_fail([
-            ()=>{color.red = 1},
-            ()=>{color.green = 1},
-            ()=>{color.blue = 1}
         ]);
 
         // Values out of bounds.

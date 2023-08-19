@@ -17,7 +17,7 @@ You can view various interactive render samples [here](https://www.tarpeeksihyva
 
 - Genuine retro aesthetics
 - Customizable render pipeline
-- Reasonable performance (for retro uses)
+- Good performance (for retro uses)
 
 ## Documentation
 
@@ -49,18 +49,25 @@ Below are benchmark results (frames per second) running in Google Chrome on an A
         <th>Pixel shader</th>
     </tr>
     <tr>
+        <td>1920 &times; 1080</td>
+        <td>255</td>
+        <td>70</td>
+        <td>45</td>
+        <td>5</td>
+    </tr>
+    <tr>
         <td>1280 &times; 720</td>
-        <td>270</td>
-        <td>95</td>
-        <td>75</td>
+        <td>340</td>
+        <td>110</td>
+        <td>80</td>
         <td>15</td>
     </tr>
     <tr>
         <td>640 &times; 360</td>
-        <td>330</td>
-        <td>210</td>
-        <td>160</td>
-        <td>60</td>
+        <td>470</td>
+        <td>260</td>
+        <td>180</td>
+        <td>65</td>
     </tr>
 </table>
 

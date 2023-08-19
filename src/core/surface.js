@@ -66,8 +66,7 @@ export function surface(canvasElement, renderState)
         (surfaceHeight + 1)
     );
 
-    const publicInterface = Object.freeze(
-    {
+    const publicInterface = {
         width: surfaceWidth,
         height: surfaceHeight,
 
@@ -195,7 +194,7 @@ export function surface(canvasElement, renderState)
                 (containerRect.top < viewHeight)
             );
         },
-    });
+    };
 
     return publicInterface;
 }

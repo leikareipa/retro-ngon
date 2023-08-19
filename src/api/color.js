@@ -26,19 +26,19 @@ export function color(
         "One or more of the given color values are out of range."
     );
 
-    const publicInterface = Object.freeze({
+    const publicInterface = {
         $constructor: "Color",
         red,
         green,
         blue,
         alpha,
-        unitRange: Object.freeze({
+        unitRange: {
             red: (red / 255),
             green: (green / 255),
             blue: (blue / 255),
             alpha: (alpha / 255),
-        }),
-    });
+        },
+    };
 
     validate_object?.(publicInterface, color.schema.interface);
     
