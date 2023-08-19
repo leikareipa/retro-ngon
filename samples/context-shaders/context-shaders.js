@@ -134,7 +134,7 @@ function cs_osd({context, image})
     context.fillStyle = "white";
     context.fillText("Retro n-gon renderer", (image.width / 2), fontSize*2);
     context.fillStyle = "gold";
-    context.fillText(`${this.Rngon.version.major}.${this.Rngon.version.minor}.${this.Rngon.version.patch}`, (image.width / 2), fontSize*3.25);
+    context.fillText(`${this.Rngon.version.major}.${this.Rngon.version.minor}`, (image.width / 2), fontSize*3.25);
     
     context.fillStyle = "white";
     context.font = `italic ${fontSize}px monospace`;

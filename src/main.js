@@ -34,7 +34,6 @@ export const Rngon = {
     version: {
         major: 0,
         minor: 2,
-        patch: 0,
         isProductionBuild: IS_PRODUCTION_BUILD,
     },
     defaultPipeline: {
