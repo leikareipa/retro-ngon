@@ -33,7 +33,8 @@
  */
 
 import {assert as Assert} from "../core/util.js";
-import {trig as Trig} from "../core/trig.js";
+
+const PI_180 = (Math.PI / 180);
 
 // Provides manipulation of 4-by-4 matrices.
 export const matrix = {
@@ -59,31 +60,30 @@ export const matrix = {
 
     rotation: function(x = 0, y = 0, z = 0)
     {
-        x = Trig.deg(x);
-        y = Trig.deg(y);
-        z = Trig.deg(z);
-        const cos = Trig.cos;
-        const sin = Trig.sin;
+        // Degrees to radians.
+        x *= PI_180;
+        y *= PI_180;
+        z *= PI_180;
 
         const mx = [
-            1,       0,       0,       0,
-            0,       cos(x),  -sin(x), 0,
-            0,       sin(x),  cos(x),  0,
-            0,       0,       0,       1,
+            1,       0,            0,            0,
+            0,       Math.cos(x),  -Math.sin(x), 0,
+            0,       Math.sin(x),  Math.cos(x),  0,
+            0,       0,            0,            1,
         ];
 
         const my = [
-            cos(y),  0,       sin(y),  0,
-            0,       1,       0,       0,
-            -sin(y), 0,       cos(y),  0,
-            0,       0,       0,       1,
+            Math.cos(y),  0,       Math.sin(y),  0,
+            0,            1,       0,            0,
+            -Math.sin(y), 0,       Math.cos(y),  0,
+            0,            0,       0,            1,
         ];
 
         const mz = [
-            cos(z),  -sin(z), 0,       0,
-            sin(z),  cos(z),  0,       0,
-            0,       0,       1,       0,
-            0,       0,       0,       1,
+            Math.cos(z),  -Math.sin(z), 0,       0,
+            Math.sin(z),  Math.cos(z),  0,       0,
+            0,            0,            1,       0,
+            0,            0,            0,       1,
         ];
 
         const temp = this.multiply(my, mz);
