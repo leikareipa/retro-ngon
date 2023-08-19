@@ -9,7 +9,7 @@ import {mesh as Mesh} from "../api/mesh.js";
 import {vector as Vector} from "../api/vector.js";
 import {ngon as Ngon} from "../api/ngon.js";
 import {$throw as Throw} from "../core/util.js";
-import {matrix44 as Matrix44} from "../core/matrix44.js";
+import {matrix as Matrix} from "../core/matrix.js";
 
 // Applies lighting to the given n-gons, and transforms them into screen space
 // for rendering. The processed n-gons are stored in the internal n-gon cache.
@@ -24,7 +24,7 @@ export function transform_clip_lighter({
     const viewVector = {x:0.0, y:0.0, z:0.0};
     const ngonCache = renderState.ngonCache;
     const vertexCache = renderState.vertexCache;
-    const clipSpaceMatrix = Matrix44.multiply(perspectiveMatrix, cameraMatrix);
+    const clipSpaceMatrix = Matrix.multiply(perspectiveMatrix, cameraMatrix);
     const objectSpaceMatrix = Mesh.object_space_matrix(mesh);
 
     for (const ngon of mesh.ngons)

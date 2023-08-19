@@ -36,7 +36,7 @@ import {assert as Assert} from "../core/util.js";
 import {trig as Trig} from "../core/trig.js";
 
 // Provides manipulation of 4-by-4 matrices.
-export const matrix44 = {
+export const matrix = {
     scaling: function(x = 0, y = 0, z = 0)
     {
         return Object.freeze([
@@ -86,8 +86,8 @@ export const matrix44 = {
             0,       0,       0,       1,
         ];
 
-        const temp = matrix44.multiply(my, mz);
-        const mResult = matrix44.multiply(mx, temp);
+        const temp = this.multiply(my, mz);
+        const mResult = this.multiply(mx, temp);
 
         Assert?.(
             (mResult.length === 16),

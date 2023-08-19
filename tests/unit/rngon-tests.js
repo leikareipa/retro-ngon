@@ -2,7 +2,7 @@
 
 let unitTestResults = undefined;
 
-if (!Rngon.version.dev || !Rngon.assert)
+if (Rngon.version.isProd || !Rngon.assert)
 {
     throw (unitTestResults = "Unit tests require a developer build.");
 }
@@ -12,7 +12,7 @@ unitTestResults = unit_tests("Retro n-gon renderer", ()=>
     unit("matrix", ()=>
     {
         {
-            const m = Rngon.matrix44.rotation(10, 18, 380);
+            const m = Rngon.matrix.rotation(10, 18, 380);
 
             expect_true([()=>(m.length === 16 && (trunc4(m[0])===0.8958  && trunc4(m[4])===0.3205  && trunc4(m[ 8])===-0.3078 && trunc4(m[12])===0.0000 && 
                                                   trunc4(m[1])===-0.2824 && trunc4(m[5])===0.9454  && trunc4(m[ 9])===0.1627 && trunc4(m[13])===0.0000 && 
@@ -23,7 +23,7 @@ unitTestResults = unit_tests("Retro n-gon renderer", ()=>
         }
 
         {
-            const m = Rngon.matrix44.translation(452.8541, 2.5412, 8745.1645);
+            const m = Rngon.matrix.translation(452.8541, 2.5412, 8745.1645);
 
             expect_true([()=>(m.length === 16 && (trunc4(m[0])===1.0000 && trunc4(m[4])===0.0000 && trunc4(m[ 8])===0.0000 && trunc4(m[12])===452.8541  && 
                                                   trunc4(m[1])===0.0000 && trunc4(m[5])===1.0000 && trunc4(m[ 9])===0.0000 && trunc4(m[13])===2.5412    && 
@@ -34,7 +34,7 @@ unitTestResults = unit_tests("Retro n-gon renderer", ()=>
         }
 
         {
-            const m = Rngon.matrix44.perspective(0.7545, 1.7155, 0.9138, 97852.8647);
+            const m = Rngon.matrix.perspective(0.7545, 1.7155, 0.9138, 97852.8647);
 
             expect_true([()=>(m.length === 16 && (trunc4(m[0])===1.4712 && trunc4(m[4])===0.0000 && trunc4(m[ 8])===0.0000 && trunc4(m[12])===0.0000  && 
                                                   trunc4(m[1])===0.0000 && trunc4(m[5])===2.5238 && trunc4(m[ 9])===0.0000 && trunc4(m[13])===0.0000  && 
@@ -45,7 +45,7 @@ unitTestResults = unit_tests("Retro n-gon renderer", ()=>
         }
 
         {
-            const m = Rngon.matrix44.ortho(4567.2434, 3.1284);
+            const m = Rngon.matrix.ortho(4567.2434, 3.1284);
 
             expect_true([()=>(m.length === 16 && (trunc4(m[0])===2283.6217 && trunc4(m[4])===0.0000  && trunc4(m[ 8])===0.0000 && trunc4(m[12])===2283.1217 && 
                                                   trunc4(m[1])===0.0000    && trunc4(m[5])===-1.5642 && trunc4(m[ 9])===0.0000 && trunc4(m[13])===1.0642    && 
@@ -56,9 +56,9 @@ unitTestResults = unit_tests("Retro n-gon renderer", ()=>
         }
 
         {
-            const m = Rngon.matrix44.multiply(
-                Rngon.matrix44.translation(452.8541, 2.5412, 8745.1645),
-                Rngon.matrix44.perspective(0.7545, 1.7155, 0.9138, 97852.8647)
+            const m = Rngon.matrix.multiply(
+                Rngon.matrix.translation(452.8541, 2.5412, 8745.1645),
+                Rngon.matrix.perspective(0.7545, 1.7155, 0.9138, 97852.8647)
             );
 
             expect_true([()=>(m.length === 16 && (trunc4(m[0])===1.4712 && trunc4(m[4])===0.0000 && trunc4(m[ 8])===452.8541  && trunc4(m[12])===0.0000  && 

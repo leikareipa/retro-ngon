@@ -7,7 +7,7 @@
 
 import {assert as Assert} from "../core/util.js";
 import {$throw as Throw} from "../core/util.js";
-import {matrix44 as Matrix44} from "./matrix44.js";
+import {matrix as Matrix} from "./matrix.js";
 import {ngon as Ngon} from "../api/ngon.js";
 import {vertex as Vertex} from "../api/vertex.js";
 
@@ -41,27 +41,27 @@ export function surface(canvasElement, renderState)
         return null;
     }
 
-    const cameraMatrix = Matrix44.multiply(
-        Matrix44.rotation(
+    const cameraMatrix = Matrix.multiply(
+        Matrix.rotation(
             renderState.cameraDirection.x,
             renderState.cameraDirection.y,
             renderState.cameraDirection.z
         ),
-        Matrix44.translation(
+        Matrix.translation(
             -renderState.cameraPosition.x,
             -renderState.cameraPosition.y,
             -renderState.cameraPosition.z
         )
     );
 
-    const perspectiveMatrix = Matrix44.perspective(
+    const perspectiveMatrix = Matrix.perspective(
         (renderState.fov * (Math.PI / 180)),
         (surfaceWidth / surfaceHeight),
         renderState.nearPlaneDistance,
         renderState.farPlaneDistance
     );
 
-    const screenSpaceMatrix = Matrix44.ortho(
+    const screenSpaceMatrix = Matrix.ortho(
         (surfaceWidth + 1),
         (surfaceHeight + 1)
     );

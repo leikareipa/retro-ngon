@@ -26,7 +26,7 @@ import {vector} from "./api/vector.js";
 import {vertex} from "./api/vertex.js";
 
 import {state} from "./core/internal-state.js";
-import {matrix44} from "./core/matrix44.js";
+import {matrix} from "./core/matrix.js";
 import {assert, lerp} from "./core/util.js";
 
 // The public API.
@@ -35,6 +35,7 @@ export const Rngon = {
         major: 0,
         minor: 1,
         patch: 0,
+        isProd: IS_PRODUCTION_BUILD,
     },
     defaultPipeline: {
         rasterizer,
@@ -47,7 +48,7 @@ export const Rngon = {
     color,
     state,
     light,
-    matrix44,
+    matrix,
     mesh,
     ngon,
     texture,

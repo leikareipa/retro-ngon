@@ -6,7 +6,7 @@
  */
 
 import {validate_object} from "../core/schema.js";
-import {matrix44 as Matrix44} from "../core/matrix44";
+import {matrix as Matrix} from "../core/matrix.js";
 import {vector as Vector} from "./vector.js";
 import {mesh as Mesh} from "./mesh.js";
 import {ngon as Ngon} from "./ngon.js";
@@ -44,6 +44,13 @@ mesh.defaultTransform = {
 };
 
 mesh.schema = {
+    arguments: {
+        where: "in arguments passed to mesh()",
+        properties: {
+            "ngons": [["Ngon"]],
+            "transform": ["object"],
+        },
+    },
     interface: {
         where: "in the return value of mesh()",
         allowAdditionalProperties: true,
@@ -57,34 +64,27 @@ mesh.schema = {
             "scale": ["Vector"],
         },
     },
-    arguments: {
-        where: "in arguments passed to mesh()",
-        properties: {
-            "ngons": [["Ngon"]],
-            "transform": ["object"],
-        },
-    },
 };
 
 mesh.object_space_matrix = function(mesh)
 {
-    const translationMatrix = Matrix44.translation(
+    const translationMatrix = Matrix.translation(
         mesh.translation.x,
         mesh.translation.y,
         mesh.translation.z
     );
 
-    const rotationMatrix = Matrix44.rotation(
+    const rotationMatrix = Matrix.rotation(
         mesh.rotation.x,
         mesh.rotation.y,
         mesh.rotation.z
     );
 
-    const scalingMatrix = Matrix44.scaling(
+    const scalingMatrix = Matrix.scaling(
         mesh.scale.x,
         mesh.scale.y,
         mesh.scale.z
     );
 
-    return Matrix44.multiply(Matrix44.multiply(translationMatrix, rotationMatrix), scalingMatrix);
+    return Matrix.multiply(Matrix.multiply(translationMatrix, rotationMatrix), scalingMatrix);
 }

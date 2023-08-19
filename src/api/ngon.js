@@ -106,11 +106,11 @@ ngon.perspective_divide = function(ngon)
     }
 }
 
-ngon.transform = function(ngon, matrix44)
+ngon.transform = function(ngon, matrix)
 {
     for (const vert of ngon.vertices)
     {
-        Vertex.transform(vert, matrix44);
+        Vertex.transform(vert, matrix);
     }
 }
 
@@ -166,8 +166,10 @@ ngon.clip_to_viewport = function(ngon)
                 // the clipping plane.
                 if (thisVertexIsInside ^ isPrevVertexInside)
                 {
-                    const lerpStep = (prevVertex.w - prevComponent) /
-                                    ((prevVertex.w - prevComponent) - (ngon.vertices[i].w - curComponent));
+                    const lerpStep = (
+                        (prevVertex.w - prevComponent) /
+                        ((prevVertex.w - prevComponent) - (ngon.vertices[i].w - curComponent))
+                    );
 
                     ngon.vertices[numOriginalVertices + k++] = Vertex(
                         Lerp(prevVertex.x, ngon.vertices[i].x, lerpStep),
