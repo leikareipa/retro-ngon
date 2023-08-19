@@ -33,7 +33,7 @@ import {assert, lerp} from "./core/util.js";
 export const Rngon = {
     version: {
         major: 0,
-        minor: 1,
+        minor: 2,
         patch: 0,
         isProd: IS_PRODUCTION_BUILD,
     },
