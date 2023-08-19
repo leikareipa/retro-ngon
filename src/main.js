@@ -26,6 +26,10 @@ import {texture} from "./api/texture.js";
 import {vector} from "./api/vector.js";
 import {vertex} from "./api/vertex.js";
 
+import {surface} from "./core/surface.js";
+import {state} from "./core/internal-state.js";
+import {trig} from "./core/trig.js";
+import {matrix44} from "./core/matrix44.js";
 import {
     assert,
     $throw,
@@ -35,10 +39,6 @@ import {
     renderable_width_of,
     renderable_height_of,
 } from "./core/util.js";
-import {surface} from "./core/surface.js";
-import {state} from "./core/internal-state.js";
-import {trig} from "./core/trig.js";
-import {matrix44} from "./core/matrix44.js";
 
 export const Rngon = {
     version: {
