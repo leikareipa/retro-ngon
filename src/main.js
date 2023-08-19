@@ -30,15 +30,7 @@ import {surface} from "./core/surface.js";
 import {state} from "./core/internal-state.js";
 import {trig} from "./core/trig.js";
 import {matrix44} from "./core/matrix44.js";
-import {
-    assert,
-    $throw,
-    lerp,
-    bilinear_sample,
-    log,
-    renderable_width_of,
-    renderable_height_of,
-} from "./core/util.js";
+import {assert, lerp} from "./core/util.js";
 
 export const Rngon = {
     version: {
@@ -52,14 +44,11 @@ export const Rngon = {
         surface_wiper,
         transform_clip_lighter,
     },
-    render,
+    surface,
     assert,
-    $throw,
     lerp,
-    bilinear_sample,
-    log,
-    renderable_width_of,
-    renderable_height_of,
+    trig,
+    render,
     color,
     state,
     light,
@@ -67,9 +56,7 @@ export const Rngon = {
     matrix44,
     mesh,
     ngon,
-    surface,
     texture,
-    trig,
     vector,
     vertex,
 };

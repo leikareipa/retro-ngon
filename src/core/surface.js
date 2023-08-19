@@ -7,8 +7,6 @@
 
 import {assert as Assert} from "../core/util.js";
 import {$throw as Throw} from "../core/util.js";
-import {renderable_width_of} from "../core/util.js";
-import {renderable_height_of} from "../core/util.js";
 import {matrix44 as Matrix44} from "./matrix44.js";
 import {ngon as Ngon} from "../api/ngon.js";
 import {vertex as Vertex} from "../api/vertex.js";
@@ -213,11 +211,11 @@ function setup_onscreen(renderState, canvasElement)
     );
 
     // Size the canvas as per the requested render scale.
-    const surfaceWidth = renderable_width_of(canvasElement, renderState.renderScale);
-    const surfaceHeight = renderable_height_of(canvasElement, renderState.renderScale);
+    const surfaceWidth = Math.floor(parseInt(window.getComputedStyle(canvasElement).getPropertyValue("width")) * renderState.renderScale);
+    const surfaceHeight = Math.floor(parseInt(window.getComputedStyle(canvasElement).getPropertyValue("height")) * renderState.renderScale);
     Assert?.(
         ((surfaceWidth > 0) && (surfaceHeight > 0)),
-        "Failed to query the dimensions of the canvas."
+        "Failed to query the dimensions of the target canvas."
     );
     canvasElement.setAttribute("width", surfaceWidth);
     canvasElement.setAttribute("height", surfaceHeight);
