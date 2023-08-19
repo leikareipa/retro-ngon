@@ -7,7 +7,6 @@
 
 import {validate_object} from "../core/schema.js";
 import {assert as Assert} from "../core/util.js";
-import {$throw as Throw} from "../core/util.js";
 
 const maxTextureWidth = 32768;
 const maxTextureHeight = 32768;
@@ -136,7 +135,7 @@ texture.load = function(filename)
             resolve(texture(data));
         })
         .catch((error)=>{
-            Throw(`Failed to create a texture with data from file '${filename}'. Error: '${error}'.`)
+            throw new Error(`Failed to create a texture with data from file '${filename}'. Error: '${error}'.`)
         });
     });
 }
@@ -197,12 +196,12 @@ function decode_pixel_data(data)
 
                     break;
                 }
-                default: Throw("Unrecognized value for texture 'channels' attribute."); break;
+                default: throw new Error("Unrecognized value for texture 'channels' attribute."); break;
             }
         }
         else if (data.encoding !== "none")
         {
-            Throw("Unknown texture data encoding '" + data.encoding + "'.");
+            throw new Error("Unknown texture data encoding '" + data.encoding + "'.");
         }
     }
 

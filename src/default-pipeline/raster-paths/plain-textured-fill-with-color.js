@@ -5,8 +5,6 @@
  * 
  */
 
-import {$throw as Throw} from "../../core/util.js";
-
 export function plain_textured_fill_with_color({
     renderState,
     ngonIdx,
@@ -126,7 +124,7 @@ export function plain_textured_fill_with_color({
 
                         break;
                     }
-                    default: Throw("Unrecognized UV wrapping mode."); break;
+                    default: throw new Error("Unrecognized UV wrapping mode."); break;
                 }
 
                 const texelIdx = (((~~u) + (~~v) * textureMipLevel.width) * 4);

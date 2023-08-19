@@ -14,11 +14,6 @@ export const assert = IS_PRODUCTION_BUILD? undefined
 {
     if (!condition)
     { 
-        $throw(errMessage);
+        throw new Error(errorMessage);
     }
-}
-
-export function $throw(errMessage = "")
-{
-    throw Error(errMessage);
 }

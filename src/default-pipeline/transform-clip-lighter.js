@@ -8,7 +8,6 @@
 import {mesh as Mesh} from "../api/mesh.js";
 import {vector as Vector} from "../api/vector.js";
 import {ngon as Ngon} from "../api/ngon.js";
-import {$throw as Throw} from "../core/util.js";
 import {matrix as Matrix} from "../core/matrix.js";
 
 // Applies lighting to the given n-gons, and transforms them into screen space
@@ -161,7 +160,7 @@ export function transform_clip_lighter({
                         }
                         default:
                         {
-                            Throw("Unrecognized type of vertex shader function.");
+                            throw new Error("Unrecognized type of vertex shader function.");
                             break;
                         }
                     }
@@ -279,7 +278,7 @@ function apply_lighting(ngon, renderState)
         }
         else
         {
-            Throw("Unknown shading mode.");
+            throw new Error("Unknown shading mode.");
         }
     }
 

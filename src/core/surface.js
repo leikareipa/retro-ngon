@@ -6,7 +6,6 @@
  */
 
 import {assert as Assert} from "../core/util.js";
-import {$throw as Throw} from "../core/util.js";
 import {matrix as Matrix} from "./matrix.js";
 import {ngon as Ngon} from "../api/ngon.js";
 import {vertex as Vertex} from "../api/vertex.js";
@@ -150,7 +149,7 @@ export function surface(canvasElement, renderState)
                         break;
                     }
                     default: {
-                        Throw("Unrecognized type of pixel shader function.");
+                        throw new Error("Unrecognized type of pixel shader function.");
                         break;
                     }
                 }

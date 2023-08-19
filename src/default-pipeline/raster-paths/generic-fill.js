@@ -6,7 +6,6 @@
  */
 
 import {rasterizer} from "../rasterizer";
-import {$throw as Throw} from "../../core/util.js";
 
 // UV offsets for applying Unreal-style dithered texture filtering.
 // See https://www.flipcode.com/archives/Texturing_As_In_Unreal.shtml.
@@ -205,7 +204,7 @@ export function generic_fill({
 
                                     break;
                                 }
-                                default: Throw("Unrecognized UV wrapping mode."); break;
+                                default: throw new Error("Unrecognized UV wrapping mode."); break;
                             }
 
                             break;
@@ -260,7 +259,7 @@ export function generic_fill({
 
                             break;
                         }
-                        default: Throw("Unknown texture-mapping mode."); break;
+                        default: throw new Error("Unknown texture-mapping mode."); break;
                     }
 
                     const texelIdx = (((~~u) + (~~v) * textureMipLevel.width) * 4);
