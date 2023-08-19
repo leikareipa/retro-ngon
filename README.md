@@ -4,14 +4,8 @@ A low-level retro-themed 3D software renderer for the HTML5 \<canvas\> (also sup
 
 You can view various interactive render samples [here](https://www.tarpeeksihyvaesoft.com/rngon/samples/).
 
-![A textured cube](./images/screenshots/beta/tomb-raider-crt.webp)\
+![Tomb Raider](./images/screenshots/beta/tomb-raider-crt.webp)\
 *An indoor scene from Tomb Raider, with a CRT shader. (Based on assets created by Core Design for Tomb Raider. Core Design is not associated with this renderer.)*
-
-![A view from Grand Prix Legends](./images/screenshots/beta/gpl.webp)\
-*A view of the race track and stands at Rouen in Grand Prix Legends. (Based on textures and 3D models created by Papyrus Design Group for Grand Prix Legends. Papyrus Design Group is not associated with this renderer.)*
-
-![A view from Grand Prix Legends](./images/screenshots/beta/quake-bilinear.webp)\
-*A corridor in Quake, with bilinear texture filtering and per-pixel lighting. (Based on textures and 3D models created by id Software for Quake. id Software is not associated with this renderer.)*
 
 ## Key features
 
