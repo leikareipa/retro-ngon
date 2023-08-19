@@ -26,7 +26,6 @@ import {vector} from "./api/vector.js";
 import {vertex} from "./api/vertex.js";
 
 import {state} from "./core/internal-state.js";
-import {matrix} from "./core/matrix.js";
 import {assert, lerp} from "./core/util.js";
 
 // The public API.
@@ -47,7 +46,6 @@ export const Rngon = {
     color,
     state,
     light,
-    matrix,
     mesh,
     ngon,
     texture,
