@@ -9,7 +9,8 @@ if (!IS_PRODUCTION_BUILD) {
     console.log(
         "This is a %cnon-production build %cof the retro n-gon renderer. It performs additional runtime data validation and error reporting. For best render throughput, switch to a production build.",
         "font-weight: bold;",
-        "font-weight: normal;");
+        "font-weight: normal;"
+    );
 }
 
 import {rasterizer} from "./default-pipeline/rasterizer.js";
@@ -26,7 +27,7 @@ import {vector} from "./api/vector.js";
 import {vertex} from "./api/vertex.js";
 
 import {state} from "./core/internal-state.js";
-import {assert, lerp} from "./core/util.js";
+import {assert} from "./core/util.js";
 
 // The public API.
 export const Rngon = {
@@ -41,7 +42,6 @@ export const Rngon = {
         transform_clip_lighter,
     },
     assert,
-    lerp,
     render,
     color,
     state,

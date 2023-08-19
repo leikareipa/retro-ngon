@@ -18,11 +18,6 @@ export const assert = IS_PRODUCTION_BUILD? undefined
     }
 }
 
-export function lerp(x, y, interval)
-{
-    return (x + (interval * (y - x)));
-}
-
 export function $throw(errMessage = "")
 {
     throw Error(errMessage);

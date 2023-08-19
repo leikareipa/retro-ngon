@@ -6,7 +6,6 @@
  */
 
 import {validate_object} from "../core/schema.js";
-import {lerp as Lerp} from "../core/util.js";
 import {vector as Vector} from "./vector.js";
 import {material as Material} from "./material.js";
 import {vertex as Vertex} from "./vertex";
@@ -172,16 +171,16 @@ ngon.clip_to_viewport = function(ngon)
                     );
 
                     ngon.vertices[numOriginalVertices + k++] = Vertex(
-                        Lerp(prevVertex.x, ngon.vertices[i].x, lerpStep),
-                        Lerp(prevVertex.y, ngon.vertices[i].y, lerpStep),
-                        Lerp(prevVertex.z, ngon.vertices[i].z, lerpStep),
-                        Lerp(prevVertex.u, ngon.vertices[i].u, lerpStep),
-                        Lerp(prevVertex.v, ngon.vertices[i].v, lerpStep),
-                        Lerp(prevVertex.w, ngon.vertices[i].w, lerpStep),
-                        Lerp(prevVertex.shade, ngon.vertices[i].shade, lerpStep),
-                        Lerp(prevVertex.worldX, ngon.vertices[i].worldX, lerpStep),
-                        Lerp(prevVertex.worldY, ngon.vertices[i].worldY, lerpStep),
-                        Lerp(prevVertex.worldZ, ngon.vertices[i].worldZ, lerpStep),
+                        lerp(prevVertex.x, ngon.vertices[i].x, lerpStep),
+                        lerp(prevVertex.y, ngon.vertices[i].y, lerpStep),
+                        lerp(prevVertex.z, ngon.vertices[i].z, lerpStep),
+                        lerp(prevVertex.u, ngon.vertices[i].u, lerpStep),
+                        lerp(prevVertex.v, ngon.vertices[i].v, lerpStep),
+                        lerp(prevVertex.w, ngon.vertices[i].w, lerpStep),
+                        lerp(prevVertex.shade, ngon.vertices[i].shade, lerpStep),
+                        lerp(prevVertex.worldX, ngon.vertices[i].worldX, lerpStep),
+                        lerp(prevVertex.worldY, ngon.vertices[i].worldY, lerpStep),
+                        lerp(prevVertex.worldZ, ngon.vertices[i].worldZ, lerpStep),
                     );
                 }
                 
@@ -200,4 +199,9 @@ ngon.clip_to_viewport = function(ngon)
     }
 
     return;
+}
+
+function lerp(x, y, interval)
+{
+    return (x + (interval * (y - x)));
 }

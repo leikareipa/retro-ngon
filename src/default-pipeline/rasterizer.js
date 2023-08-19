@@ -10,7 +10,6 @@ import {vertex as Vertex} from "../api/vertex.js";
 import {color as Color} from "../api/color.js";
 import {material as Material} from "../api/material.js";
 import {assert as Assert} from "../core/util.js";
-import {lerp as Lerp} from "../core/util.js";
 
 import {generic_fill} from "./raster-paths/generic-fill.js";
 import {plain_solid_fill} from "./raster-paths/plain-solid-fill.js";
@@ -33,6 +32,11 @@ const rightEdges = new Array(maxNumVertsPerPolygon).fill().map(()=>edge_object_f
 const vertexSorters = {
     verticalAscending: (vertA, vertB)=>((vertA.y === vertB.y)? 0 : ((vertA.y < vertB.y)? -1 : 1)),
     verticalDescending: (vertA, vertB)=>((vertA.y === vertB.y)? 0 : ((vertA.y > vertB.y)? -1 : 1))
+}
+
+function lerp(x, y, interval)
+{
+    return (x + (interval * (y - x)));
 }
 
 // Rasterizes into the render state's pixel buffer all n-gons currently stored in the
@@ -253,7 +257,7 @@ rasterizer.polygon = function(
         // otherwise it's on the right side.
         for (let i = 1; i < (ngon.vertices.length - 1); i++)
         {
-            const lr = Lerp(topVert.x, bottomVert.x, ((ngon.vertices[i].y - topVert.y) / (bottomVert.y - topVert.y)));
+            const lr = lerp(topVert.x, bottomVert.x, ((ngon.vertices[i].y - topVert.y) / (bottomVert.y - topVert.y)));
 
             if (ngon.vertices[i].x >= lr)
             {

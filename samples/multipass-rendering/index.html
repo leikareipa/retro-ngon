@@ -266,14 +266,19 @@
 
                             for (let i = 0; i < pixelBuffer.length; i += 4)
                             {
-                                pixelBuffer[i+0] = Rngon.lerp(pixelBuffer[i+0], prevPixelBuffer[i+0], blurStrength);
-                                pixelBuffer[i+1] = Rngon.lerp(pixelBuffer[i+1], prevPixelBuffer[i+1], blurStrength);
-                                pixelBuffer[i+2] = Rngon.lerp(pixelBuffer[i+2], prevPixelBuffer[i+2], blurStrength);
-                                pixelBuffer[i+3] = Rngon.lerp(pixelBuffer[i+3], prevPixelBuffer[i+3], blurStrength);
+                                pixelBuffer[i+0] = lerp(pixelBuffer[i+0], prevPixelBuffer[i+0], blurStrength);
+                                pixelBuffer[i+1] = lerp(pixelBuffer[i+1], prevPixelBuffer[i+1], blurStrength);
+                                pixelBuffer[i+2] = lerp(pixelBuffer[i+2], prevPixelBuffer[i+2], blurStrength);
+                                pixelBuffer[i+3] = lerp(pixelBuffer[i+3], prevPixelBuffer[i+3], blurStrength);
                             }
                         },
                     },
                 });
+            }
+
+            function lerp(x, y, interval)
+            {
+                return (x + (interval * (y - x)));
             }
 
             window.addEventListener("load", (async()=>
@@ -305,6 +310,6 @@
                     window.requestAnimationFrame(()=>render(numTicks + 1));
                 })();
             }));
-        </script>        
+        </script>
     </body>
 </html>

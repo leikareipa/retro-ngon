@@ -110,9 +110,9 @@ export function tile_filler(renderState)
                         const prevGreen = pixelBuffer[pixelBufferIdx + 2];
                         const factor = (material.color.alpha / 255);
 
-                        red = Rngon.lerp(prevRed, red, factor);
-                        green = Rngon.lerp(prevBlue, green, factor);
-                        blue = Rngon.lerp(prevGreen, blue, factor);
+                        red = lerp(prevRed, red, factor);
+                        green = lerp(prevBlue, green, factor);
+                        blue = lerp(prevGreen, blue, factor);
                     }
 
                     pixelBuffer[pixelBufferIdx + 0] = red;
@@ -125,4 +125,9 @@ export function tile_filler(renderState)
     }
 
     return;
+}
+
+function lerp(x, y, interval)
+{
+    return (x + (interval * (y - x)));
 }
