@@ -6,7 +6,7 @@
  */
 
 import {validate_object} from "../core/schema.js";
-import {assert as Assert} from "../core/util.js";
+import {assert as Assert} from "../core/assert.js";
 
 export function vertex(
     x = 0,

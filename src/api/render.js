@@ -10,7 +10,7 @@ import {rasterizer} from "../default-pipeline/rasterizer.js"
 import {transform_clip_lighter} from "../default-pipeline/transform-clip-lighter.js"
 import {surface_wiper} from "../default-pipeline/surface-wiper.js"
 import {surface as Surface} from "../core/surface.js";
-import {assert as Assert} from "../core/util.js";
+import {assert as Assert} from "../core/assert.js";
 import {vector as Vector} from "./vector.js";
 import {state as State} from "../core/internal-state.js";
 

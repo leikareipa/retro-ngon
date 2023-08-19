@@ -6,7 +6,7 @@
  */
 
 import {validate_object} from "../core/schema.js";
-import {assert as Assert} from "../core/util.js";
+import {assert as Assert} from "../core/assert.js";
 
 const maxTextureWidth = 32768;
 const maxTextureHeight = 32768;

@@ -6,7 +6,7 @@
  */
 
 import {validate_object} from "../core/schema.js";
-import {assert as Assert} from "../core/util.js";
+import {assert as Assert} from "../core/assert.js";
 
 // Red, green, blue, alpha; in the range [0,255].
 export function color(

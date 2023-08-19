@@ -2,8 +2,6 @@
  * 2019-2023 Tarpeeksi Hyvae Soft
  * 
  * Software: Retro n-gon renderer
- * 
- * Various small utility functions and the like.
  *
  */
 

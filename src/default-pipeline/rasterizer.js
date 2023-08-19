@@ -9,7 +9,7 @@ import {ngon as Ngon} from "../api/ngon.js";
 import {vertex as Vertex} from "../api/vertex.js";
 import {color as Color} from "../api/color.js";
 import {material as Material} from "../api/material.js";
-import {assert as Assert} from "../core/util.js";
+import {assert as Assert} from "../core/assert.js";
 
 import {generic_fill} from "./raster-paths/generic-fill.js";
 import {plain_solid_fill} from "./raster-paths/plain-solid-fill.js";
