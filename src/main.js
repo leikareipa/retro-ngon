@@ -27,7 +27,6 @@ import {vector} from "./api/vector.js";
 import {vertex} from "./api/vertex.js";
 
 import {state} from "./core/internal-state.js";
-import {assert} from "./core/util.js";
 
 // The public API.
 export const Rngon = {
@@ -41,7 +40,6 @@ export const Rngon = {
         surface_wiper,
         transform_clip_lighter,
     },
-    assert,
     render,
     color,
     state,

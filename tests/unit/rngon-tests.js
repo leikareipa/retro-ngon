@@ -2,7 +2,7 @@
 
 let unitTestResults = undefined;
 
-if (Rngon.version.isProductionBuild || !Rngon.assert)
+if (Rngon.version.isProductionBuild)
 {
     throw (unitTestResults = "Unit tests require a developer build.");
 }

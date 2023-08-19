@@ -149,7 +149,7 @@ export const sample = {
 // to viewport clipping, screen-space transformation etc.
 function vs_copy_ngons(ngon)
 {
-    Rngon.assert?.(
+    console.assert?.(
         (ngon.vertices.length === 3),
         "Only triangles are supported."
     );

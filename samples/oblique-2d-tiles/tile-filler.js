@@ -25,7 +25,7 @@ export function tile_filler(renderState)
         const material = ngon.material;
         const texture = material.texture;
 
-        Rngon.assert?.(
+        console.assert?.(
             (ngon.vertices.length == 4),
             "Expected four-sided polygons."
         );

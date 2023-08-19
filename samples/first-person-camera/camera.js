@@ -204,7 +204,7 @@ export function first_person_camera(domElementId = "", {
 
     function multiply_matrix(m1 = [], m2 = [])
     {
-        Rngon.assert?.(
+        console.assert?.(
             ((m1.length === 16) && (m2.length === 16)),
             "Expected 4 x 4 matrices."
         );
