@@ -35,7 +35,7 @@ export const Rngon = {
         major: 0,
         minor: 2,
         patch: 0,
-        isProd: IS_PRODUCTION_BUILD,
+        isProductionBuild: IS_PRODUCTION_BUILD,
     },
     defaultPipeline: {
         rasterizer,
