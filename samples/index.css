@@ -124,6 +124,7 @@ body
 #sample-selector-container
 {
     flex-grow: 1;
+    align-items: baseline;
 }
 
 @media only screen and (max-width: 850px)
@@ -136,11 +137,6 @@ body
 
 @media only screen and (max-width: 600px)
 {
-    #renderer-selector-container
-    {
-        display: none !important;
-    }
-    
     #sample-selector-container
     {
         width: 100% !important;

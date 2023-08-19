@@ -16,7 +16,7 @@
         <div id="header">
             <main>
                 <div id="sample-selector-container" class="selector-container">
-                    <div class="selector-tag">Sample</div>
+                    <div class="selector-tag">Sample:</div>
                     <select id="sample-selector" onchange="set_sample(event.target.value);">
 
                         <optgroup label='Sample scenes'></optgroup>
@@ -46,16 +46,6 @@
 
                     </select>
                 </div>
-                <div id="renderer-selector-container"
-                    class="selector-container">
-                    <div class="selector-tag">Renderer</div>
-                    <select id="renderer-selector" onchange="set_version(event.target.value);">
-                        <optgroup label="Supported"></optgroup>
-                        <option value="dev">~dev</option>
-                        <optgroup label="Deprecated"></optgroup>
-                        <option value="0.1.0">0.1.0</option>
-                    </select>
-                </div>
             </main>
         </div>
         <iframe id="sample-frame"></iframe>
@@ -63,41 +53,24 @@
 
     <script>
         const defaultSample = "point-rendering";
-        const defaultRenderer = "dev";
 
         const urlParams = new URLSearchParams(window.location.search);
         const sample = (urlParams.get("sample") || defaultSample);
-        const renderer = (urlParams.get("renderer") || defaultRenderer);
 
-        const rendererSelectorContainer = document.getElementById("renderer-selector-container");
         const sampleSelectorContainer = document.getElementById("sample-selector-container");
         const sampleSelector = document.getElementById("sample-selector");
-        const rendererSelector = document.getElementById("renderer-selector");
-
-        // These samples provide no way to set the renderer version.
-        if (["layered-rendering", "multipass-rendering"].includes(sample))
-        {
-            rendererSelectorContainer.style.display = "none";
-            sampleSelectorContainer.style.width = "100%";
-        }
 
         if (!Array.from(sampleSelector.options).map(o=>o.value).includes(sample))
         {
             urlParams.set("sample", defaultSample);
             window.location.search = urlParams.toString();
         }
-        else if (!Array.from(rendererSelector.options).map(o=>o.value).includes(renderer))
-        {
-            urlParams.set("renderer", defaultRenderer);
-            window.location.search = urlParams.toString();
-        }
         else
         {
             sampleSelector.value = sample;
-            rendererSelector.value = renderer;
 
             const frameEl = document.getElementById("sample-frame");
-            frameEl.src = `./${sample}/?renderer=${renderer}`;
+            frameEl.src = `./${sample}/`;
             frameEl.onload = ()=>
             {
                 const headerEl = document.getElementById("header");
@@ -120,12 +93,6 @@
                     headerEl.append(copyrightEl)
                 }
             }
-        }
-
-        function set_version(newEngineName)
-        {
-            urlParams.set("renderer", newEngineName);
-            window.location.search = urlParams.toString();
         }
 
         function set_sample(newTestName)
