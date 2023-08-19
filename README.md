@@ -38,9 +38,9 @@ Below are benchmark results (frames per second) running in Google Chrome on an A
     <tr>
         <th></th>
         <th>Wireframe</th>
-        <th>Untextured</th>
-        <th>Textured</th>
-        <th>Pixel shader</th>
+        <th>Untextured<sup>1</sup></th>
+        <th>Textured<sup>1</sup></th>
+        <th>Pixel shader<sup>2</sup></th>
     </tr>
     <tr>
         <td>1920 &times; 1080</td>
@@ -63,11 +63,23 @@ Below are benchmark results (frames per second) running in Google Chrome on an A
         <td>180</td>
         <td>65</td>
     </tr>
+    <tfoot>
+        <tr>
+            <td colspan="5">
+                <sup>1</sup>With Gouraud shading.
+            </td>
+        </tr>
+        <tr>
+            <td colspan="5">
+                <sup>2</sup>Simpler pixel shaders may impact performance by as little as 10%.
+            </td>
+        </tr>
+    </tfoot>
 </table>
 
 ![A view from Grand Prix Legends](./images/screenshots/beta/bench-quake.jpg)
 
-Pixel shaders have a large impact on the frame rate, but otherwise this 800-polygon scene is renderable at a high rate with texturing and per-vertex Gouraud shading.*
+Pixel shaders can have a large impact on the frame rate, but otherwise this 800-polygon scene with texturing and Gouraud shading is renderable at a high rate.*
 
 \*Note that the renderer performs no pre-rasterization visibility culling other than back-face removal and frustum clipping. It's at the discretion of the host application to apply more sophisticated culling techniques to maximize performance.
 
