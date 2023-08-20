@@ -65,29 +65,35 @@ export const matrix = {
         y *= PI_180;
         z *= PI_180;
 
+        const sx = Math.sin(x);
+        const cx = Math.cos(x);
+        const sy = Math.sin(y);
+        const cy = Math.cos(y);
+        const sz = Math.sin(z);
+        const cz = Math.cos(z);
+
         const mx = [
-            1,       0,            0,            0,
-            0,       Math.cos(x),  -Math.sin(x), 0,
-            0,       Math.sin(x),  Math.cos(x),  0,
-            0,       0,            0,            1,
+            1,   0,   0,  0,
+            0,   cx, -sx, 0,
+            0,   sx,  cx, 0,
+            0,   0,   0,  1,
         ];
 
         const my = [
-            Math.cos(y),  0,       Math.sin(y),  0,
-            0,            1,       0,            0,
-            -Math.sin(y), 0,       Math.cos(y),  0,
-            0,            0,       0,            1,
+            cy,  0,   sy, 0,
+            0,   1,   0,  0,
+           -sy,  0,   cy, 0,
+            0,   0,   0,  1,
         ];
 
         const mz = [
-            Math.cos(z),  -Math.sin(z), 0,       0,
-            Math.sin(z),  Math.cos(z),  0,       0,
-            0,            0,            1,       0,
-            0,            0,            0,       1,
+            cz, -sz,  0,  0,
+            sz,  cz,  0,  0,
+            0,   0,   1,  0,
+            0,   0,   0,  1,
         ];
 
-        const temp = this.multiply(my, mz);
-        const mResult = this.multiply(mx, temp);
+        const mResult = this.multiply(mx, this.multiply(my, mz));
 
         Assert?.(
             (mResult.length === 16),
@@ -99,24 +105,27 @@ export const matrix = {
 
     perspective: function(fov = 0, aspectRatio = 0, zNear = 0, zFar = 0)
     {
-        const fovHalf = Math.tan(fov / 2);
-        const zRange = (zNear - zFar);
+        const fh = Math.tan(fov / 2);
+        const zr = (zNear - zFar);
 
         return [
-            (1 / (fovHalf * aspectRatio)), 0,             0,                             0,
-            0,                             (1 / fovHalf), 0,                             0,
-            0,                             0,             ((-zNear - zFar) / zRange),    1,
-            0,                             0,             (2 * zFar * (zNear / zRange)), 0,
+            (1 / (fh * aspectRatio)), 0,           0,                         0,
+            0,                        (1 / fh),    0,                         0,
+            0,                        0,           ((-zNear - zFar) / zr),    1,
+            0,                        0,           (2 * zFar * (zNear / zr)), 0,
         ];
     },
 
     ortho: function(width = 0, height = 0)
     {
+        const wh = (width / 2);
+        const hh = (height / 2);
+
         return [
-            (width/2),     0,              0, 0,
-            0,             -(height/2),    0, 0,
-            0,             0,              1, 0,
-            (width/2)-0.5, (height/2)-0.5, 0, 1,
+            wh,      0,      0, 0,
+            0,      -hh,     0, 0,
+            0,       0,      1, 0,
+            wh-0.5,  hh-0.5, 0, 1,
         ];
     },
     
@@ -131,13 +140,13 @@ export const matrix = {
 
         for (let i = 0; i < 4; i++)
         {
-            for (let j = 0; j < 4; j++)
+            for (let j = 0; j < 16; j += 4)
             {
-                mResult[i + (j * 4)] = (
-                    (m1[i + (0 * 4)] * m2[0 + (j * 4)]) +
-                    (m1[i + (1 * 4)] * m2[1 + (j * 4)]) +
-                    (m1[i + (2 * 4)] * m2[2 + (j * 4)]) +
-                    (m1[i + (3 * 4)] * m2[3 + (j * 4)])
+                mResult[i+j] = (
+                    (m1[i]    * m2[j])   +
+                    (m1[i+4]  * m2[j+1]) +
+                    (m1[i+8]  * m2[j+2]) +
+                    (m1[i+12] * m2[j+3])
                 );
             }
         }
