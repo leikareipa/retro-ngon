@@ -39,7 +39,7 @@ export const sample = {
                 // masked have their depth values set to a small number, so they don't pass the depth
                 // test during rasterization.
                 surfaceWiper: (renderState)=>{
-                    Rngon.defaultPipeline.surface_wiper(renderState);
+                    Rngon.default.render.pipeline.surfaceWiper(renderState);
 
                     const depthBuf = renderState.depthBuffer;
                     const maxDistance = Math.abs((depthBuf.width ** 2) / (Math.cos(this.numTicks / 100) * 50));

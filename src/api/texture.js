@@ -12,31 +12,7 @@ const maxTextureWidth = 32768;
 const maxTextureHeight = 32768;
 const numColorChannels = 4;
 
-// Texture with 32-bit color.
-export function texture(data = {})
-{
-    // Combine default data properties with the user-supplied ones.
-    for (const key of Object.keys(texture.defaultData))
-    {
-        data.hasOwnProperty(key)? 1 : (data[key] = texture.defaultData[key]);
-    }
-
-    validate_object?.(data, texture.schema.arguments);
-
-    decode_pixel_data(data);
-
-    const publicInterface = {
-        $constructor: "Texture",
-        mipLevels: generate_mipmaps(data),
-        ...data,
-    };
-
-    validate_object?.(publicInterface, texture.schema.interface);
-    
-    return publicInterface;
-}
-
-texture.defaultData = {
+export const textureDefaultData = {
     width: 1,
     height: 1,
     pixels: [255, 255, 255, 255],
@@ -44,7 +20,7 @@ texture.defaultData = {
     channels: "rgba:8+8+8+8",
 };
 
-texture.schema = {
+const schema = {
     arguments: {
         where: "in arguments passed to texture()",
         allowAdditionalProperties: true,
@@ -107,41 +83,42 @@ texture.schema = {
     },
 };
 
-// Returns a new texture whose pixel data are a deep copy of the given texture.
-texture.deep_copy = function(srcTexture)
+// Texture with 32-bit color.
+export function texture(data = {})
 {
-    const copiedPixels = new Array(srcTexture.width * srcTexture.height * 4);
-
-    for (let i = 0; i< (srcTexture.width * srcTexture.height * 4); i++)
+    // Combine default data properties with the user-supplied ones.
+    for (const key of Object.keys(textureDefaultData))
     {
-        copiedPixels[i] = srcTexture.pixels[i];
+        data.hasOwnProperty(key)? 1 : (data[key] = textureDefaultData[key]);
     }
 
-    return texture({
-        ...srcTexture,
-        pixels: copiedPixels,
-    });
+    validate_object?.(data, schema.arguments);
+
+    decode_pixel_data(data);
+
+    const publicInterface = {
+        $constructor: "Texture",
+        mipLevels: generate_mipmaps(data),
+        ...data,
+    };
+
+    validate_object?.(publicInterface, schema.interface);
+    
+    return publicInterface;
 }
 
 // Returns a Promise of a texture whose data is loaded from the given file. The actual
-// texture is returned once the data has been loaded.
-//
-// NOTE: Only supports JSON files at the moment, expecting them to contain a valid
-// object to be passed as-is into texture().
-texture.load = function(filename)
+// texture object is returned once the data has been loaded.
+texture.load = async function(filename)
 {
-    return new Promise((resolve, reject)=>
-    {
-        fetch(filename)
-        .then((response)=>response.json())
-        .then((data)=>
-        {
-            resolve(texture(data));
-        })
-        .catch((error)=>{
-            throw new Error(`Failed to create a texture with data from file '${filename}'. Error: '${error}'.`)
-        });
-    });
+    try {
+        const response = await fetch(filename);
+        const textureData = await response.json();
+        return texture(textureData);
+    }
+    catch (error) {
+        throw new Error(`Failed to create a texture with data from file '${filename}'. ${error}`);
+    }
 }
 
 // Decodes the pixel data passed to Rngon.texture() into a Uint8ClampedArray that stores

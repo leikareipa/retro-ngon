@@ -8,23 +8,7 @@
 import {validate_object} from "../core/schema.js";
 import {assert as Assert} from "../core/assert.js";
 
-export function vector(x = 0, y = 0, z = 0)
-{
-    validate_object?.({x, y, z}, vector.schema.arguments);
-
-    const publicInterface = {
-        $constructor: "Vector",
-        x,
-        y,
-        z,
-    };
-
-    validate_object?.(publicInterface, vector.schema.interface);
-
-    return publicInterface;
-}
-
-vector.schema = {
+const schema = {
     interface: {
         where: "in the return value of vector()",
         properties: {
@@ -45,6 +29,22 @@ vector.schema = {
         },
     },
 };
+
+export function vector(x = 0, y = 0, z = 0)
+{
+    validate_object?.({x, y, z}, schema.arguments);
+
+    const publicInterface = {
+        $constructor: "Vector",
+        x,
+        y,
+        z,
+    };
+
+    validate_object?.(publicInterface, schema.interface);
+
+    return publicInterface;
+}
 
 // Transforms the vector by the given 4x4 matrix.
 vector.transform = function(v, m = [])

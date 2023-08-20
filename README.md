@@ -397,13 +397,13 @@ Renders meshes into a 32-bit RGBA pixel buffer, and optionally displays the imag
 
 - **pipeline** (object): Customize the render pipeline:
     
-    - **transformClipLighter** (function | undefined | null = *undefined*): A function to be called by the renderer to transform, clip, and light the input n-gons; or [the built-in function](./src/default-pipeline/transform-clip-lighter.js) (`Rngon.defaultPipeline.transform_clip_lighter`) if *undefined*; or disabled entirely if *null*.
+    - **transformClipLighter** (function | undefined | null = *undefined*): A function to be called by the renderer to transform, clip, and light the input n-gons; or [the default built-in function](./src/default-pipeline/transform-clip-lighter.js) (`Rngon.default.render.pipeline.transformClipLighter`) if *undefined*; or disabled entirely if *null*.
     
-    - **rasterizer** (function | undefined | null = *undefined*): A function to be called by the renderer to rasterize the input n-gons; or [the built-in function](./src/default-pipeline/rasterizer.js) (`Rngon.defaultPipeline.rasterizer`) if *undefined*; or disabled entirely if *null*.
+    - **rasterizer** (function | undefined | null = *undefined*): A function to be called by the renderer to rasterize the input n-gons; or [the default built-in function](./src/default-pipeline/rasterizer.js) (`Rngon.default.render.pipeline.rasterizer`) if *undefined*; or disabled entirely if *null*.
     
-    - **surfaceWiper** (function | undefined | null = *undefined*): A function tp be called by the renderer to clear the render surface of previous renderings (pixel colors, depth values, etc.); or [the built-in function](./src/default-pipeline/surface-wiper.js) (`Rngon.defaultPipeline.surface_wiper`) if *undefined*; or disabled entirely if *null*.
+    - **surfaceWiper** (function | undefined | null = *undefined*): A function to be called by the renderer to clear the render surface of previous renderings (pixel colors, depth values, etc.); or [the default built-in function](./src/default-pipeline/surface-wiper.js) (`Rngon.default.render.pipeline.surfaceWiper`) if *undefined*; or disabled entirely if *null*.
     
-    - **pixelShader** (function | null = *null*): A function to be called by the renderer at the completion of rasterization to apply pixel-shading effects to the rendered image; or disabled if *null*. See the [pixel shader samples](./samples/pixel-shaders/pixel-shaders.js) for examples of usage.
+    - **pixelShader** (function | undefined = *undefined*): A function to be called by the renderer at the completion of rasterization to apply pixel-shading effects to the rendered image; or disabled if *undefined*. See the [pixel shader samples](./samples/pixel-shaders/pixel-shaders.js) for examples of usage.
         
         - Function signature: pixelShader({renderWidth, renderHeight, pixelBuffer, fragmentBuffer, ngonCache, cameraPosition}) {..}. The function returns nothing.
             
@@ -423,7 +423,7 @@ Renders meshes into a 32-bit RGBA pixel buffer, and optionally displays the imag
         
         - Note: `options.useFragmentBuffer` must be set to *true* if the pixel shader accesses the fragment buffer. The renderer will in most cases automatically detect this and set the property accordingly, but in some cases you may need to manually assign it.
     
-    - **vertexShader** (function | null = *null*): A function to be called by `pipeline.transformClipLighter` for each of the scene's n-gons, to apply effects to the properties of the n-gon prior to rasterization; or disabled if *null*. The function will be called when the n-gon has been transformed into world-space coordinates. See the [vertex shader samples](./samples/vertex-shaders/vertex-shaders.js) for examples of usage.
+    - **vertexShader** (function | undefined = *undefined*): A function to be called by `pipeline.transformClipLighter` for each of the scene's n-gons, to apply effects to the properties of the n-gon prior to rasterization; or disabled if *undefined*. The function will be called when the n-gon has been transformed into world-space coordinates. See the [vertex shader samples](./samples/vertex-shaders/vertex-shaders.js) for examples of usage.
         
         - Function signature: vertexShader(ngon, cameraPosition) {..}. The function returns nothing.
             

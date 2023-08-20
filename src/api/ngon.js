@@ -6,9 +6,72 @@
  */
 
 import {validate_object} from "../core/schema.js";
-import {vector as Vector} from "./vector.js";
 import {vertex as Vertex} from "./vertex.js";
+import {vector as Vector} from "./vector.js";
 import {color as Color} from "./color.js";
+
+export const ngonDefaultMaterial = {
+    color: Color(255, 255, 255, 255),
+    wireframeColor: Color(0, 0, 0, 255),
+    texture: undefined,
+    textureMapping: "ortho",
+    textureFiltering: "none",
+    uvWrapping: "repeat",
+    vertexShading: "none",
+    renderVertexShade: true,
+    ambientLightLevel: 0,
+    hasWireframe: false,
+    hasFill: true,
+    isTwoSided: true,
+    isInScreenSpace: false,
+    allowAlphaReject: false,
+    allowAlphaBlend: false,
+};
+
+const schema = {
+    arguments: {
+        where: "in arguments passed to ngon()",
+        properties: {
+            "vertices": [["Vertex"]],
+            "material": ["object"],
+            "vertexNormals": [["Vector"], "Vector"],
+        },
+    },
+    interface: {
+        where: "in the return value of ngon()",
+        properties: {
+            "$constructor": {
+                value: "Ngon",
+            },
+            "vertices": [["Vertex"]],
+            "vertexNormals": [["Vector"]],
+            "normal": ["Vector"],
+            "material": {
+                subschema: {
+                    allowAdditionalProperties: true,
+                    properties: {
+                        "color": ["Color"],
+                        "wireframeColor": ["Color"],
+                        "texture": ["undefined", "null", "Texture"],
+                        "textureMapping": ["string"],
+                        "textureFiltering": ["string"],
+                        "uvWrapping": ["string"],
+                        "vertexShading": ["string"],
+                        "renderVertexShade": ["boolean"],
+                        "ambientLightLevel": ["number"],
+                        "hasWireframe": ["boolean"],
+                        "hasFill": ["boolean"],
+                        "isTwoSided": ["boolean"],
+                        "isInScreenSpace": ["boolean"],
+                        "allowAlphaReject": ["boolean"],
+                        "allowAlphaBlend": ["boolean"],
+                    },
+                },
+            },
+            "mipLevel": ["number"],
+        },
+    },
+};
 
 // A single n-sided ngon.
 export function ngon(
@@ -19,12 +82,12 @@ export function ngon(
 {
     // Combine default material options with the user-supplied ones. Note that we
     // want to keep the reference to the original material object intact.
-    for (const key of Object.keys(ngon.defaultMaterial))
+    for (const key of Object.keys(ngonDefaultMaterial))
     {
-        material.hasOwnProperty(key)? 1 : (material[key] = ngon.defaultMaterial[key]);
+        material.hasOwnProperty(key)? 1 : (material[key] = ngonDefaultMaterial[key]);
     }
 
-    validate_object?.({vertices, material, vertexNormals}, ngon.schema.arguments);
+    validate_object?.({vertices, material, vertexNormals}, schema.arguments);
 
     // Assuming that only a single normal vector was provided, in which case, let's
     // duplicate that normal for all vertices.
@@ -72,83 +135,21 @@ export function ngon(
         mipLevel: 0,
     };
 
-    validate_object?.(publicInterface, ngon.schema.interface);
+    validate_object?.(publicInterface, schema.interface);
 
     return publicInterface;
 }
 
-ngon.defaultMaterial = {
-    color: Color(255, 255, 255, 255),
-    wireframeColor: Color(0, 0, 0, 255),
-    texture: undefined,
-    textureMapping: "ortho",
-    textureFiltering: "none",
-    uvWrapping: "repeat",
-    vertexShading: "none",
-    renderVertexShade: true,
-    ambientLightLevel: 0,
-    hasWireframe: false,
-    hasFill: true,
-    isTwoSided: true,
-    isInScreenSpace: false,
-    allowAlphaReject: false,
-    allowAlphaBlend: false,
-};
-
-ngon.schema = {
-    arguments: {
-        where: "in arguments passed to ngon()",
-        properties: {
-            "vertices": [["Vertex"]],
-            "material": ["object"],
-            "vertexNormals": [["Vector"], "Vector"],
-        },
-    },
-    interface: {
-        where: "in the return value of ngon()",
-        properties: {
-            "$constructor": {
-                value: "Ngon",
-            },
-            "vertices": [["Vertex"]],
-            "vertexNormals": [["Vector"]],
-            "normal": ["Vector"],
-            "material": {
-                subschema: {
-                    allowAdditionalProperties: true,
-                    properties: {
-                        "color": ["Color"],
-                        "wireframeColor": ["Color"],
-                        "texture": ["undefined", "null", "Texture"],
-                        "textureMapping": ["string"],
-                        "textureFiltering": ["string"],
-                        "uvWrapping": ["string"],
-                        "vertexShading": ["string"],
-                        "renderVertexShade": ["boolean"],
-                        "ambientLightLevel": ["number"],
-                        "hasWireframe": ["boolean"],
-                        "hasFill": ["boolean"],
-                        "isTwoSided": ["boolean"],
-                        "isInScreenSpace": ["boolean"],
-                        "allowAlphaReject": ["boolean"],
-                        "allowAlphaBlend": ["boolean"],
-                    },
-                },
-            },
-            "mipLevel": ["number"],
-        },
-    },
-};
-
-ngon.perspective_divide = function(ngon)
+export function ngon_perspective_divide(ngon)
 {
     for (const vert of ngon.vertices)
     {
-        Vertex.perspective_divide(vert);
+        vert.x /= vert.w;
+        vert.y /= vert.w;
     }
 }
 
-ngon.transform = function(ngon, matrix)
+export function ngon_transform(ngon, matrix)
 {
     for (const vert of ngon.vertices)
     {
@@ -161,7 +162,7 @@ ngon.transform = function(ngon, matrix)
 // https://github.com/BennyQBD/3DSoftwareRenderer.
 const axes = ["x", "y", "z"];
 const factors = [1, -1];
-ngon.clip_to_viewport = function(ngon)
+export function ngon_clip_to_viewport(ngon)
 {
     for (const axis of axes)
     {

@@ -8,47 +8,7 @@
 import {validate_object} from "../core/schema.js";
 import {assert as Assert} from "../core/assert.js";
 
-export function vertex(
-    x = 0,
-    y = 0,
-    z = 0,
-    u = 0,
-    v = 0,
-    w = 1,
-    shade = 1,
-    worldX = x,
-    worldY = y,
-    worldZ = z,
-)
-{
-    validate_object?.({x, y, z, u, v, w, shade, worldX, worldY, worldZ}, vertex.schema.arguments);
-
-    const publicInterface = {
-        $constructor: "Vertex",
-        
-        x,
-        y,
-        z,
-        u,
-        v,
-        w,
-
-        // A value in the range >= 0 that defines how lit this vertex is. A value of
-        // 1 corresponds to fully lit, 0 to fully unlit.
-        shade,
-
-        // The vertex's original coordinates, before any transformations.
-        worldX,
-        worldY,
-        worldZ,
-    };
-
-    validate_object?.(publicInterface, vertex.schema.interface);
-
-    return publicInterface;
-}
-
-vertex.schema = {
+const schema = {
     arguments: {
         where: "in arguments passed to vertex()",
         properties: {
@@ -84,6 +44,46 @@ vertex.schema = {
     },
 };
 
+export function vertex(
+    x = 0,
+    y = 0,
+    z = 0,
+    u = 0,
+    v = 0,
+    w = 1,
+    shade = 1,
+    worldX = x,
+    worldY = y,
+    worldZ = z,
+)
+{
+    validate_object?.({x, y, z, u, v, w, shade, worldX, worldY, worldZ}, schema.arguments);
+
+    const publicInterface = {
+        $constructor: "Vertex",
+        
+        x,
+        y,
+        z,
+        u,
+        v,
+        w,
+
+        // A value in the range >= 0 that defines how lit this vertex is. A value of
+        // 1 corresponds to fully lit, 0 to fully unlit.
+        shade,
+
+        // The vertex's original coordinates, before any transformations.
+        worldX,
+        worldY,
+        worldZ,
+    };
+
+    validate_object?.(publicInterface, schema.interface);
+
+    return publicInterface;
+}
+
 // Transforms the vertex by the given 4x4 matrix.
 vertex.transform = function(v, m = [])
 {
@@ -101,11 +101,4 @@ vertex.transform = function(v, m = [])
     v.y = y_;
     v.z = z_;
     v.w = w_;
-}
-
-// Applies perspective division to the vertex.
-vertex.perspective_divide = function(v)
-{
-    v.x /= v.w;
-    v.y /= v.w;
 }

@@ -10,33 +10,13 @@ import {matrix as Matrix} from "../core/matrix.js";
 import {vector as Vector} from "./vector.js";
 import {ngon as Ngon} from "./ngon.js";
 
-// A collection of ngons, with shared translation and rotation.
-export function mesh(
-    ngons = [Ngon()],
-    transform = {}
-)
-{
-    validate_object?.({ngons, transform}, mesh.schema.arguments);
-
-    const publicInterface = {
-        $constructor: "Mesh",
-        ngons,
-        ...mesh.defaultTransform,
-        ...transform
-    };
-
-    validate_object?.(publicInterface, mesh.schema.interface);
-    
-    return publicInterface;
-}
-
-mesh.defaultTransform = {
+export const meshDefaultTransform = {
     translate: Vector(0, 0, 0),
     rotate: Vector(0, 0, 0),
     scale: Vector(1, 1, 1),
 };
 
-mesh.schema = {
+const schema = {
     arguments: {
         where: "in arguments passed to mesh()",
         properties: {
@@ -59,7 +39,27 @@ mesh.schema = {
     },
 };
 
-mesh.object_space_matrix = function(mesh)
+// A collection of ngons, with shared translation and rotation.
+export function mesh(
+    ngons = [Ngon()],
+    transform = {}
+)
+{
+    validate_object?.({ngons, transform}, schema.arguments);
+
+    const publicInterface = {
+        $constructor: "Mesh",
+        ngons,
+        ...meshDefaultTransform,
+        ...transform
+    };
+
+    validate_object?.(publicInterface, schema.interface);
+    
+    return publicInterface;
+}
+
+export function mesh_to_object_space_matrix(mesh)
 {
     const translationMatrix = Matrix.translation(
         mesh.translate.x,

@@ -26,7 +26,6 @@ function default_state() {
             vertex_shader: undefined,
             pixel_shader: undefined,
             context_shader: undefined,
-            raster_shader: undefined,
         },
 
         // Pixel buffer for rasterization. This will be scaled to match the requested

@@ -13,10 +13,6 @@ if (!IS_PRODUCTION_BUILD) {
     );
 }
 
-import {rasterizer} from "./default-pipeline/rasterizer.js";
-import {surface_wiper} from "./default-pipeline/surface-wiper.js";
-import {transform_clip_lighter} from "./default-pipeline/transform-clip-lighter.js";
-
 import {render} from "./api/render.js";
 import {color} from "./api/color.js";
 import {light} from "./api/light.js";
@@ -25,6 +21,7 @@ import {ngon} from "./api/ngon.js";
 import {texture} from "./api/texture.js";
 import {vector} from "./api/vector.js";
 import {vertex} from "./api/vertex.js";
+import {_default} from "./api/default.js";
 
 import {state} from "./core/internal-state.js";
 
@@ -35,11 +32,7 @@ export const Rngon = {
         minor: 2,
         isProductionBuild: IS_PRODUCTION_BUILD,
     },
-    defaultPipeline: {
-        rasterizer,
-        surface_wiper,
-        transform_clip_lighter,
-    },
+    default: _default,
     render,
     color,
     state,

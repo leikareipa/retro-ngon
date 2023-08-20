@@ -5,9 +5,13 @@
  * 
  */
 
-import {mesh as Mesh} from "../api/mesh.js";
+import {mesh_to_object_space_matrix} from "../api/mesh.js";
 import {vector as Vector} from "../api/vector.js";
-import {ngon as Ngon} from "../api/ngon.js";
+import {
+    ngon_clip_to_viewport,
+    ngon_perspective_divide,
+    ngon_transform,
+} from "../api/ngon.js";
 import {matrix as Matrix} from "../core/matrix.js";
 
 // Applies lighting to the given n-gons, and transforms them into screen space
@@ -24,7 +28,7 @@ export function transform_clip_lighter({
     const ngonCache = renderState.ngonCache;
     const vertexCache = renderState.vertexCache;
     const clipSpaceMatrix = Matrix.multiply(perspectiveMatrix, cameraMatrix);
-    const objectSpaceMatrix = Mesh.object_space_matrix(mesh);
+    const objectSpaceMatrix = mesh_to_object_space_matrix(mesh);
 
     for (const ngon of mesh.ngons)
     {
@@ -95,7 +99,7 @@ export function transform_clip_lighter({
             // World space. Any built-in lighting is applied, if requested by the n-gon's
             // material.
             {
-                Ngon.transform(cachedNgon, objectSpaceMatrix);
+                ngon_transform(cachedNgon, objectSpaceMatrix);
 
                 // Interpolated world XYZ coordinates will be made available via the fragment
                 // buffer, but aren't needed if shaders are disabled.
@@ -169,8 +173,8 @@ export function transform_clip_lighter({
 
             // Clip space. Vertices that fall outside of the view frustum will be removed.
             {
-                Ngon.transform(cachedNgon, clipSpaceMatrix);
-                Ngon.clip_to_viewport(cachedNgon);
+                ngon_transform(cachedNgon, clipSpaceMatrix);
+                ngon_clip_to_viewport(cachedNgon);
 
                 // If there are no vertices left after clipping, it means this n-gon is
                 // not visible on the screen at all, and so we don't need to consider it
@@ -186,8 +190,8 @@ export function transform_clip_lighter({
             // map directly into XY pixel coordinates in the rendered image (although
             // the values may still be in floating-point).
             {
-                Ngon.transform(cachedNgon, screenSpaceMatrix);
-                Ngon.perspective_divide(cachedNgon);
+                ngon_transform(cachedNgon, screenSpaceMatrix);
+                ngon_perspective_divide(cachedNgon);
             }
         }
     };

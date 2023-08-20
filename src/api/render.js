@@ -14,74 +14,7 @@ import {assert as Assert} from "../core/assert.js";
 import {vector as Vector} from "./vector.js";
 import {state as State} from "../core/internal-state.js";
 
-export function render({
-    target = null,
-    scene,
-    options = {},
-    pipeline = {},
-} = {})
-{
-    validate_object?.({target, scene, options, pipeline}, render.schema.arguments);
-
-    const renderCallInfo = {
-        renderWidth: 0,
-        renderHeight: 0,
-        numNgonsRendered: 0,
-        totalRenderTimeMs: performance.now(),
-    };
-
-    options = Object.freeze({
-        ...render.defaultOptions,
-        ...options
-    });
-
-    pipeline = Object.freeze({
-        ...render.defaultPipeline,
-        ...pipeline
-    });
-
-    validate_object?.(options, render.schema.options);
-    validate_object?.(pipeline, render.schema.pipeline);
-
-    const state = setup_render_state(options, pipeline);
-
-    // The canvas element can be passed in in a couple of ways, e.g. as a string that
-    // identifies the DOM element, or directly as a DOM element object. So let's figure
-    // out what we received, and turn it into a DOM element object for the renderer
-    // to operate on.
-    if (typeof target === "string")
-    {
-        target = document.getElementById(target);
-    }
-
-    Assert?.(
-        ((target === null) ||
-         (target instanceof HTMLCanvasElement)),
-        "Invalid canvas element for rendering into."
-    );
-
-    // Render a single frame.
-    {
-        const surface = Surface(target, state);
-
-        renderCallInfo.renderWidth = surface.width;
-        renderCallInfo.renderHeight = surface.height;
-
-        // We'll render either always or only when the render canvas is in view,
-        // depending on whether the user asked us for the latter option.
-        if (surface && (!options.hibernateWhenTargetNotVisible || surface.is_in_view()))
-        {
-            surface.display_meshes(scene);
-            renderCallInfo.numNgonsRendered = state.ngonCache.count;
-        }
-    }
-
-    renderCallInfo.totalRenderTimeMs = (performance.now() - renderCallInfo.totalRenderTimeMs);
-
-    return renderCallInfo;
-};
-
-render.defaultOptions = {
+export const renderDefaultOptions = {
     cameraPosition: Vector(0, 0, 0),
     cameraDirection: Vector(0, 0, 0),
     state: "default",
@@ -98,17 +31,16 @@ render.defaultOptions = {
     lights: [],
 };
 
-render.defaultPipeline = {
-    surfaceWiper: undefined,
-    rasterizer: undefined,
-    transformClipLighter: undefined,
-    pixelShader: null,
-    vertexShader: null,
-    contextShader: null,
-    rasterShader: undefined,
-}
+export const renderDefaultPipeline = {
+    surfaceWiper: surface_wiper,
+    rasterizer: rasterizer,
+    transformClipLighter: transform_clip_lighter,
+    pixelShader: undefined,
+    vertexShader: undefined,
+    contextShader: undefined,
+};
 
-render.schema = {
+const schema = {
     arguments: {
         where: "in arguments passed to render()",
         properties: {
@@ -161,26 +93,88 @@ render.schema = {
             ],
             pixelShader: [
                 "undefined",
-                "null",
                 "function"
             ],
             vertexShader: [
                 "undefined",
-                "null",
                 "function"
             ],
             contextShader: [
                 "undefined",
-                "null",
-                "function"
-            ],
-            rasterShader: [
-                "undefined",
-                "null",
                 "function"
             ],
         },
     },
+};
+
+export function render({
+    target = null,
+    scene,
+    options = {},
+    pipeline = {},
+} = {})
+{
+    validate_object?.({target, scene, options, pipeline}, schema.arguments);
+
+    const renderCallInfo = {
+        renderWidth: 0,
+        renderHeight: 0,
+        numNgonsRendered: 0,
+        totalRenderTimeMs: performance.now(),
+    };
+
+    options = Object.freeze({
+        ...renderDefaultOptions,
+        ...options
+    });
+
+    for (const key of Object.keys(renderDefaultPipeline))
+    {
+        if (typeof pipeline[key] === "undefined")
+        {
+            pipeline[key] = renderDefaultPipeline[key];
+        }
+    }
+
+    validate_object?.(options, schema.options);
+    validate_object?.(pipeline, schema.pipeline);
+
+    const state = setup_render_state(options, pipeline);
+
+    // The canvas element can be passed in in a couple of ways, e.g. as a string that
+    // identifies the DOM element, or directly as a DOM element object. So let's figure
+    // out what we received, and turn it into a DOM element object for the renderer
+    // to operate on.
+    if (typeof target === "string")
+    {
+        target = document.getElementById(target);
+    }
+
+    Assert?.(
+        ((target === null) ||
+         (target instanceof HTMLCanvasElement)),
+        "Invalid canvas element for rendering into."
+    );
+
+    // Render a single frame.
+    {
+        const surface = Surface(target, state);
+
+        renderCallInfo.renderWidth = surface.width;
+        renderCallInfo.renderHeight = surface.height;
+
+        // We'll render either always or only when the render canvas is in view,
+        // depending on whether the user asked us for the latter option.
+        if (surface && (!options.hibernateWhenTargetNotVisible || surface.is_in_view()))
+        {
+            surface.display_meshes(scene);
+            renderCallInfo.numNgonsRendered = state.ngonCache.count;
+        }
+    }
+
+    renderCallInfo.totalRenderTimeMs = (performance.now() - renderCallInfo.totalRenderTimeMs);
+
+    return renderCallInfo;
 };
 
 function setup_render_state(options = {}, pipeline = {})
@@ -230,62 +224,18 @@ function setup_render_state(options = {}, pipeline = {})
         }
     }
 
-    state.modules.rasterizer = (
-        (typeof pipeline.rasterizer === "function")
-            ? pipeline.rasterizer
-            : (pipeline.rasterizer === null)
-                ? null
-                : rasterizer
-    );
-
-    state.modules.transform_clip_lighter = (
-        (typeof pipeline.transformClipLighter === "function")
-            ? pipeline.transformClipLighter
-            : (pipeline.transformClipLighter === null)
-                ? null
-                : transform_clip_lighter
-    );
-
-    state.modules.surface_wiper = (
-        (typeof pipeline.surfaceWiper === "function")
-            ? pipeline.surfaceWiper
-            : (pipeline.surfaceWiper === null)
-                ? null
-                : surface_wiper
-    );
+    state.modules.rasterizer = pipeline.rasterizer;
+    state.modules.transform_clip_lighter = pipeline.transformClipLighter;
+    state.modules.surface_wiper = pipeline.surfaceWiper;
 
     state.usePixelShader = Boolean(pipeline.pixelShader);
-    state.modules.pixel_shader = (
-        (typeof pipeline.pixelShader === "function")
-            ? pipeline.pixelShader
-            : (pipeline.pixelShader === null)
-                ? null
-                : null /// TODO: Default pixel shader here.
-    );
+    state.modules.pixel_shader = pipeline.pixelShader;
 
     state.useVertexShader = Boolean(pipeline.vertexShader);
-    state.modules.vertex_shader = (
-        (typeof pipeline.vertexShader === "function")
-            ? pipeline.vertexShader
-            : (pipeline.vertexShader === null)
-                ? null
-                : null /// TODO: Default vertex shader here.
-    );
+    state.modules.vertex_shader = pipeline.vertexShader;
 
     state.useContextShader = Boolean(pipeline.contextShader);
-    state.modules.context_shader = (
-        (typeof pipeline.contextShader === "function")
-            ? pipeline.contextShader
-            : (pipeline.contextShader === null)
-                ? null
-                : null /// TODO: Default context shader here.
-    );
-
-    state.modules.raster_shader = (
-        (typeof pipeline.rasterShader === "function")
-            ? pipeline.rasterShader
-            : undefined
-    );
+    state.modules.context_shader = pipeline.contextShader;
 
     return state;
 }

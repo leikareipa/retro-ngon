@@ -8,44 +8,7 @@
 import {validate_object} from "../core/schema.js";
 import {assert as Assert} from "../core/assert.js";
 
-// Red, green, blue, alpha; in the range [0,255].
-export function color(
-    red = 0,
-    green = 0,
-    blue = 0,
-    alpha = 255
-)
-{
-    validate_object?.({red, green, blue, alpha}, color.schema.arguments);
-
-    Assert?.(
-        (((red   >= 0) && (red   <= 255)) &&
-         ((green >= 0) && (green <= 255)) &&
-         ((blue  >= 0) && (blue  <= 255)) &&
-         ((alpha >= 0) && (alpha <= 255))),
-        "One or more of the given color values are out of range."
-    );
-
-    const publicInterface = {
-        $constructor: "Color",
-        red,
-        green,
-        blue,
-        alpha,
-        unitRange: {
-            red: (red / 255),
-            green: (green / 255),
-            blue: (blue / 255),
-            alpha: (alpha / 255),
-        },
-    };
-
-    validate_object?.(publicInterface, color.schema.interface);
-    
-    return publicInterface;
-}
-
-color.schema = {
+const schema = {
     arguments: {
         where: "in arguments passed to color()",
         properties: {
@@ -76,3 +39,40 @@ color.schema = {
         },
     },
 };
+
+// Red, green, blue, alpha; in the range [0,255].
+export function color(
+    red = 0,
+    green = 0,
+    blue = 0,
+    alpha = 255
+)
+{
+    validate_object?.({red, green, blue, alpha}, schema.arguments);
+
+    Assert?.(
+        (((red   >= 0) && (red   <= 255)) &&
+         ((green >= 0) && (green <= 255)) &&
+         ((blue  >= 0) && (blue  <= 255)) &&
+         ((alpha >= 0) && (alpha <= 255))),
+        "One or more of the given color values are out of range."
+    );
+
+    const publicInterface = {
+        $constructor: "Color",
+        red,
+        green,
+        blue,
+        alpha,
+        unitRange: {
+            red: (red / 255),
+            green: (green / 255),
+            blue: (blue / 255),
+            alpha: (alpha / 255),
+        },
+    };
+
+    validate_object?.(publicInterface, schema.interface);
+    
+    return publicInterface;
+}
