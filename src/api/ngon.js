@@ -1,5 +1,5 @@
 /*
- * 2019 Tarpeeksi Hyvae Soft
+ * 2019-2023 Tarpeeksi Hyvae Soft
  * 
  * Software: Retro n-gon renderer
  *
@@ -100,7 +100,7 @@ ngon.schema = {
         where: "in arguments passed to ngon()",
         properties: {
             "vertices": [["Vertex"]],
-            "material": ["Material", "object"],
+            "material": ["object"],
             "vertexNormals": [["Vector"], "Vector"],
         },
     },

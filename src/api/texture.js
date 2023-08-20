@@ -15,15 +15,11 @@ const numColorChannels = 4;
 // Texture with 32-bit color.
 export function texture(data = {})
 {
-    // Append default arguments.
-    data = {
-        width: 1,
-        height: 1,
-        pixels: [255, 255, 255, 255],
-        encoding: "none",
-        channels: "rgba:8+8+8+8",
-        ...data,
-    };
+    // Combine default data properties with the user-supplied ones.
+    for (const key of Object.keys(texture.defaultData))
+    {
+        data.hasOwnProperty(key)? 1 : (data[key] = texture.defaultData[key]);
+    }
 
     validate_object?.(data, texture.schema.arguments);
 
@@ -39,6 +35,14 @@ export function texture(data = {})
     
     return publicInterface;
 }
+
+texture.defaultData = {
+    width: 1,
+    height: 1,
+    pixels: [255, 255, 255, 255],
+    encoding: "none",
+    channels: "rgba:8+8+8+8",
+};
 
 texture.schema = {
     arguments: {
@@ -204,6 +208,11 @@ function decode_pixel_data(data)
             throw new Error("Unknown texture data encoding '" + data.encoding + "'.");
         }
     }
+
+    Assert?.(
+        (data.pixels instanceof Uint8ClampedArray),
+        "Expected texture data to be output as a Uint8ClampedArray."
+    );
 
     Assert?.(
         (data.pixels.length === (data.width * data.height * numColorChannels)),
