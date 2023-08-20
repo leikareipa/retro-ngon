@@ -13,17 +13,17 @@ if (!IS_PRODUCTION_BUILD) {
     );
 }
 
-import {render} from "./api/render.js";
-import {color} from "./api/color.js";
-import {light} from "./api/light.js";
-import {mesh} from "./api/mesh.js";
-import {ngon} from "./api/ngon.js";
-import {texture} from "./api/texture.js";
-import {vector} from "./api/vector.js";
-import {vertex} from "./api/vertex.js";
-import {_default} from "./api/default.js";
+import {render} from "./api/render.mjs";
+import {color} from "./api/color.mjs";
+import {light} from "./api/light.mjs";
+import {mesh} from "./api/mesh.mjs";
+import {ngon} from "./api/ngon.mjs";
+import {texture} from "./api/texture.mjs";
+import {vector} from "./api/vector.mjs";
+import {vertex} from "./api/vertex.mjs";
+import {_default} from "./api/default.mjs";
 
-import {state} from "./core/internal-state.js";
+import {state} from "./core/internal-state.mjs";
 
 // The public API.
 export const Rngon = {

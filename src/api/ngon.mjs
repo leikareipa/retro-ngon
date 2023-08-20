@@ -5,10 +5,10 @@
  *
  */
 
-import {validate_object} from "../core/schema.js";
-import {vertex as Vertex} from "./vertex.js";
-import {vector as Vector} from "./vector.js";
-import {color as Color} from "./color.js";
+import {validate_object} from "../core/schema.mjs";
+import {vertex as Vertex} from "./vertex.mjs";
+import {vector as Vector} from "./vector.mjs";
+import {color as Color} from "./color.mjs";
 
 export const ngonDefaultMaterial = {
     color: Color(255, 255, 255, 255),

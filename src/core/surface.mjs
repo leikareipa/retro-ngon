@@ -5,10 +5,10 @@
  *
  */
 
-import {assert as Assert} from "../core/assert.js";
-import {matrix as Matrix} from "./matrix.js";
-import {ngon as Ngon} from "../api/ngon.js";
-import {vertex as Vertex} from "../api/vertex.js";
+import {assert as Assert} from "../core/assert.mjs";
+import {matrix as Matrix} from "./matrix.mjs";
+import {ngon as Ngon} from "../api/ngon.mjs";
+import {vertex as Vertex} from "../api/vertex.mjs";
 
 // A surface for rendering onto. Will also paint the rendered image onto a HTML5 <canvas>
 // element unless the 'canvasElement' parameter is null, in which case rendering will be

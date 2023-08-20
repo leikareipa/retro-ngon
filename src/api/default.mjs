@@ -5,13 +5,13 @@
  *
  */
 
-import {meshDefaultTransform} from "./mesh.js";
-import {ngonDefaultMaterial} from "./ngon.js";
-import {textureDefaultData} from "./texture.js";
+import {meshDefaultTransform} from "./mesh.mjs";
+import {ngonDefaultMaterial} from "./ngon.mjs";
+import {textureDefaultData} from "./texture.mjs";
 import {
     renderDefaultOptions,
     renderDefaultPipeline
-} from "./render.js";
+} from "./render.mjs";
 
 export const _default = {
     render: {

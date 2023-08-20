@@ -6,7 +6,7 @@ module.exports = (env, argv)=>{
     return {
         mode,
         entry: {
-            "rngon": "./src/main.js",
+            "rngon": "./src/main.mjs",
         },
         output: {
             library: {

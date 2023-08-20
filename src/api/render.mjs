@@ -5,14 +5,14 @@
  *
  */
 
-import {validate_object} from "../core/schema.js";
-import {rasterizer} from "../default-pipeline/rasterizer.js"
-import {transform_clip_lighter} from "../default-pipeline/transform-clip-lighter.js"
-import {surface_wiper} from "../default-pipeline/surface-wiper.js"
-import {surface as Surface} from "../core/surface.js";
-import {assert as Assert} from "../core/assert.js";
-import {vector as Vector} from "./vector.js";
-import {state as State} from "../core/internal-state.js";
+import {validate_object} from "../core/schema.mjs";
+import {rasterizer} from "../default-pipeline/rasterizer.mjs";
+import {transform_clip_lighter} from "../default-pipeline/transform-clip-lighter.mjs";
+import {surface_wiper} from "../default-pipeline/surface-wiper.mjs";
+import {surface as Surface} from "../core/surface.mjs";
+import {assert as Assert} from "../core/assert.mjs";
+import {vector as Vector} from "./vector.mjs";
+import {state as State} from "../core/internal-state.mjs";
 
 export const renderDefaultOptions = {
     cameraPosition: Vector(0, 0, 0),

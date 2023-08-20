@@ -5,8 +5,8 @@
  *
  */
 
-import {validate_object} from "../core/schema.js";
-import {vector as Vector} from "./vector.js";
+import {validate_object} from "../core/schema.mjs";
+import {vector as Vector} from "./vector.mjs";
 
 const schema = {
     arguments: {

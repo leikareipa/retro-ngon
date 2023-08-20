@@ -5,7 +5,7 @@
  * 
  */
 
-import {rasterizer} from "../rasterizer";
+import {rasterizer} from "../rasterizer.mjs";
 
 // UV offsets for applying Unreal-style dithered texture filtering.
 // See https://www.flipcode.com/archives/Texturing_As_In_Unreal.shtml.

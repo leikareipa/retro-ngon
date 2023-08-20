@@ -26,7 +26,7 @@
  *
  */
 
-import {assert as Assert} from "./assert.js";
+import {assert as Assert} from "./assert.mjs";
 
 // Compares the properties of the specified object against the given schema.
 //

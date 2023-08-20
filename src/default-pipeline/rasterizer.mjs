@@ -5,15 +5,15 @@
  * 
  */
 
-import {ngon as Ngon} from "../api/ngon.js";
-import {vertex as Vertex} from "../api/vertex.js";
-import {color as Color} from "../api/color.js";
-import {assert as Assert} from "../core/assert.js";
+import {ngon as Ngon} from "../api/ngon.mjs";
+import {vertex as Vertex} from "../api/vertex.mjs";
+import {color as Color} from "../api/color.mjs";
+import {assert as Assert} from "../core/assert.mjs";
 
-import {generic_fill} from "./raster-paths/generic-fill.js";
-import {plain_solid_fill} from "./raster-paths/plain-solid-fill.js";
-import {plain_textured_fill} from "./raster-paths/plain-textured-fill.js";
-import {plain_textured_fill_with_color} from "./raster-paths/plain-textured-fill-with-color.js";
+import {generic_fill} from "./raster-paths/generic-fill.mjs";
+import {plain_solid_fill} from "./raster-paths/plain-solid-fill.mjs";
+import {plain_textured_fill} from "./raster-paths/plain-textured-fill.mjs";
+import {plain_textured_fill_with_color} from "./raster-paths/plain-textured-fill-with-color.mjs";
 
 const maxNumVertsPerPolygon = 500;
 

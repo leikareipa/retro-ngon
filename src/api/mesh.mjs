@@ -5,10 +5,10 @@
  *
  */
 
-import {validate_object} from "../core/schema.js";
-import {matrix as Matrix} from "../core/matrix.js";
-import {vector as Vector} from "./vector.js";
-import {ngon as Ngon} from "./ngon.js";
+import {validate_object} from "../core/schema.mjs";
+import {matrix as Matrix} from "../core/matrix.mjs";
+import {vector as Vector} from "./vector.mjs";
+import {ngon as Ngon} from "./ngon.mjs";
 
 export const meshDefaultTransform = {
     translate: Vector(0, 0, 0),

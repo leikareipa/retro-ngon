@@ -5,14 +5,14 @@
  * 
  */
 
-import {mesh_to_object_space_matrix} from "../api/mesh.js";
-import {vector as Vector} from "../api/vector.js";
+import {mesh_to_object_space_matrix} from "../api/mesh.mjs";
+import {vector as Vector} from "../api/vector.mjs";
 import {
     ngon_clip_to_viewport,
     ngon_perspective_divide,
     ngon_transform,
-} from "../api/ngon.js";
-import {matrix as Matrix} from "../core/matrix.js";
+} from "../api/ngon.mjs";
+import {matrix as Matrix} from "../core/matrix.mjs";
 
 // Applies lighting to the given n-gons, and transforms them into screen space
 // for rendering. The processed n-gons are stored in the internal n-gon cache.

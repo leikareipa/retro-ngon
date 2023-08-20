@@ -341,7 +341,7 @@ The API functions are accessible via the global `Rngon` namespace after you've i
 
 Renders meshes into a 32-bit RGBA pixel buffer, and optionally displays the image on a \<canvas\> element.
 
-(Implemented in [api/render.js](./src/api/render.js).)
+(Implemented in [api/render.mjs](./src/api/render.mjs).)
 
 ### Parameters
 
@@ -397,11 +397,11 @@ Renders meshes into a 32-bit RGBA pixel buffer, and optionally displays the imag
 
 - **pipeline** (object): Customize the render pipeline:
     
-    - **transformClipLighter** (function | undefined | null = *undefined*): A function to be called by the renderer to transform, clip, and light the input n-gons; or [the default built-in function](./src/default-pipeline/transform-clip-lighter.js) (`Rngon.default.render.pipeline.transformClipLighter`) if *undefined*; or disabled entirely if *null*.
+    - **transformClipLighter** (function | undefined | null = *undefined*): A function to be called by the renderer to transform, clip, and light the input n-gons; or [the default built-in function](./src/default-pipeline/transform-clip-lighter.mjs) (`Rngon.default.render.pipeline.transformClipLighter`) if *undefined*; or disabled entirely if *null*.
     
-    - **rasterizer** (function | undefined | null = *undefined*): A function to be called by the renderer to rasterize the input n-gons; or [the default built-in function](./src/default-pipeline/rasterizer.js) (`Rngon.default.render.pipeline.rasterizer`) if *undefined*; or disabled entirely if *null*.
+    - **rasterizer** (function | undefined | null = *undefined*): A function to be called by the renderer to rasterize the input n-gons; or [the default built-in function](./src/default-pipeline/rasterizer.mjs) (`Rngon.default.render.pipeline.rasterizer`) if *undefined*; or disabled entirely if *null*.
     
-    - **surfaceWiper** (function | undefined | null = *undefined*): A function to be called by the renderer to clear the render surface of previous renderings (pixel colors, depth values, etc.); or [the default built-in function](./src/default-pipeline/surface-wiper.js) (`Rngon.default.render.pipeline.surfaceWiper`) if *undefined*; or disabled entirely if *null*.
+    - **surfaceWiper** (function | undefined | null = *undefined*): A function to be called by the renderer to clear the render surface of previous renderings (pixel colors, depth values, etc.); or [the default built-in function](./src/default-pipeline/surface-wiper.mjs) (`Rngon.default.render.pipeline.surfaceWiper`) if *undefined*; or disabled entirely if *null*.
     
     - **pixelShader** (function | undefined = *undefined*): A function to be called by the renderer at the completion of rasterization to apply pixel-shading effects to the rendered image; or disabled if *undefined*. See the [pixel shader samples](./samples/pixel-shaders/pixel-shaders.js) for examples of usage.
         
@@ -473,7 +473,7 @@ Rngon.render({
 
 A selection of n-gons related to each other in some way, rendered as a unit with shared transformations.
 
-(Implemented in [api/mesh.js](./src/api/mesh.js).)
+(Implemented in [api/mesh.mjs](./src/api/mesh.mjs).)
 
 ### Parameters
 
@@ -517,7 +517,7 @@ mesh.scale.x = 100;
 
 A polygon made up of *n* vertices, also known as an n-gon. Single-vertex n-gons are treated as points, and two-vertex n-gons as lines.
 
-(Implemented in [api/ngon.js](./src/api/ngon.js).)
+(Implemented in [api/ngon.mjs](./src/api/ngon.mjs).)
 
 ### Parameters
 
@@ -602,7 +602,7 @@ A point in space representing a corner of an n-gon.
 
 Note: In the renderer's coordinate space, X is horizontal (positive = right), and Y is vertical (positive = up); positive Z is forward.
 
-(Implemented in [api/vertex.js](./src/api/vertex.js).)
+(Implemented in [api/vertex.mjs](./src/api/vertex.mjs).)
 
 ### Parameters
 
@@ -658,7 +658,7 @@ An object with the following properties:
 
 A 32-bit, four-channel, RGBA color value, where each color channel is 8 bits.
 
-(Implemented in [api/color.js](./src/api/color.js).)
+(Implemented in [api/color.mjs](./src/api/color.mjs).)
 
 ### Parameters
 
@@ -688,7 +688,7 @@ A 2D RGBA image for texturing n-gons. Supports 16 and 32-bit input data and gene
 
 Note: Textures with a power-of-two resolution may render faster and support more features than textures that are not a power of two.
 
-(Implemented in [api/texture.js](./src/api/texture.js).)
+(Implemented in [api/texture.mjs](./src/api/texture.mjs).)
 
 ### Parameters
 
