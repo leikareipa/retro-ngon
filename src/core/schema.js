@@ -78,13 +78,14 @@ export const validate_object = IS_PRODUCTION_BUILD? undefined
             }
         }
 
-        const schemaAcceptedTypes = (schemaProperties[objectKey]?.type || schemaProperties[objectKey]);
+        const schemaProperty = schemaProperties[objectKey];
+        const schemaAcceptedTypes = (schemaProperty?.type || schemaProperty);
         const objectValueType = type_of_value(objectValue);
 
         // The schema either requires a specific value or comes with a function that evaluates the value.
-        if (schemaProperties[objectKey].hasOwnProperty?.("value"))
+        if (schemaProperty.hasOwnProperty?.("value"))
         {
-            const valueEvaluator = schemaProperties[objectKey].value;
+            const valueEvaluator = schemaProperty.value;
 
             switch (typeof valueEvaluator)
             {
@@ -103,7 +104,7 @@ export const validate_object = IS_PRODUCTION_BUILD? undefined
                 {
                     if (objectValue !== valueEvaluator)
                     {
-                        throw new Error(`The property '${propertyChain + objectKey}' ${schema.where} doesn't evaluate to "${schemaProperties[objectKey].value}"`);
+                        throw new Error(`The property '${propertyChain + objectKey}' ${schema.where} doesn't evaluate to "${schemaProperty.value}"`);
                     }
 
                     break;
@@ -111,14 +112,19 @@ export const validate_object = IS_PRODUCTION_BUILD? undefined
             }
         }
         // The schema is recursive to evaluate a sub-object.
-        else if (schemaProperties[objectKey].hasOwnProperty?.("subschema"))
+        else if (schemaProperty.hasOwnProperty?.("subschema"))
         {
             if (objectValueType.toLowerCase() !== "object")
             {
                 throw new TypeError(`The property '${propertyChain + objectKey}' ${schema.where} must be of type Object`);
             }
 
-            validate_object(objectValue, schema, schemaProperties[objectKey].subschema, `${propertyChain}${objectKey}.`);
+            validate_object(
+                objectValue, 
+                {...schemaProperty.subschema, where: schema.where},
+                (schemaProperty.subschema.properties || schemaProperty.subschema),
+                `${propertyChain}${objectKey}.`
+            );
         }
         // The schema lists an array of one or more supported types.
         else if (Array.isArray(schemaAcceptedTypes))

@@ -8,7 +8,6 @@
 import {ngon as Ngon} from "../api/ngon.js";
 import {vertex as Vertex} from "../api/vertex.js";
 import {color as Color} from "../api/color.js";
-import {material as Material} from "../api/material.js";
 import {assert as Assert} from "../core/assert.js";
 
 import {generic_fill} from "./raster-paths/generic-fill.js";
@@ -50,7 +49,7 @@ export function rasterizer(renderState)
         switch (ngon.vertices.length)
         {
             case 0: continue;
-            case 1: rasterizer.point(renderState, ngon.vertices[0], ngon.material); break;
+            case 1: rasterizer.point(renderState, ngon.vertices[0], ngon.material.color); break;
             case 2: rasterizer.line(renderState, ngon.vertices[0], ngon.vertices[1], ngon.material.color); break;
             default: rasterizer.polygon(renderState, ngon, n); break;
         }
@@ -425,10 +424,10 @@ rasterizer.line = function(
 rasterizer.point = function(
     renderState,
     vertex = Vertex(),
-    material = Material(),
+    color = Color(),
 )
 {
-    if (material.color.alpha != 255)
+    if (color.alpha != 255)
     {
         return;
     }
@@ -453,8 +452,7 @@ rasterizer.point = function(
     }
 
     const depth = (vertex.z / renderState.farPlaneDistance);
-    const shade = (material.renderVertexShade? vertex.shade : 1);
-    const color = (material.texture? material.texture.pixels[0] : material.color);
+    const shade = vertex.shade;
     const red = (color.red * shade);
     const green = (color.green * shade);
     const blue = (color.blue * shade);

@@ -7,20 +7,24 @@
 
 import {validate_object} from "../core/schema.js";
 import {vector as Vector} from "./vector.js";
-import {material as Material} from "./material.js";
-import {vertex as Vertex} from "./vertex";
+import {vertex as Vertex} from "./vertex.js";
+import {color as Color} from "./color.js";
 
 // A single n-sided ngon.
 export function ngon(
     vertices = [Vertex()],
-    material = Material(),
+    material = {},
     vertexNormals = Vector(0, 1, 0)
 )
 {
-    validate_object?.({vertices, material, vertexNormals}, ngon.schema.arguments);
+    // Combine default material options with the user-supplied ones. Note that we
+    // want to keep the reference to the original material object intact.
+    for (const key of Object.keys(ngon.defaultMaterial))
+    {
+        material.hasOwnProperty(key)? 1 : (material[key] = ngon.defaultMaterial[key]);
+    }
 
-    // Combine default material options with the user-supplied ones.
-    Object.assign(material, Material(material));
+    validate_object?.({vertices, material, vertexNormals}, ngon.schema.arguments);
 
     // Assuming that only a single normal vector was provided, in which case, let's
     // duplicate that normal for all vertices.
@@ -73,6 +77,24 @@ export function ngon(
     return publicInterface;
 }
 
+ngon.defaultMaterial = {
+    color: Color(255, 255, 255, 255),
+    wireframeColor: Color(0, 0, 0, 255),
+    texture: undefined,
+    textureMapping: "ortho",
+    textureFiltering: "none",
+    uvWrapping: "repeat",
+    vertexShading: "none",
+    renderVertexShade: true,
+    ambientLightLevel: 0,
+    hasWireframe: false,
+    hasFill: true,
+    isTwoSided: true,
+    isInScreenSpace: false,
+    allowAlphaReject: false,
+    allowAlphaBlend: false,
+};
+
 ngon.schema = {
     arguments: {
         where: "in arguments passed to ngon()",
@@ -91,7 +113,28 @@ ngon.schema = {
             "vertices": [["Vertex"]],
             "vertexNormals": [["Vector"]],
             "normal": ["Vector"],
-            "material": ["Material"],
+            "material": {
+                subschema: {
+                    allowAdditionalProperties: true,
+                    properties: {
+                        "color": ["Color"],
+                        "wireframeColor": ["Color"],
+                        "texture": ["undefined", "null", "Texture"],
+                        "textureMapping": ["string"],
+                        "textureFiltering": ["string"],
+                        "uvWrapping": ["string"],
+                        "vertexShading": ["string"],
+                        "renderVertexShade": ["boolean"],
+                        "ambientLightLevel": ["number"],
+                        "hasWireframe": ["boolean"],
+                        "hasFill": ["boolean"],
+                        "isTwoSided": ["boolean"],
+                        "isInScreenSpace": ["boolean"],
+                        "allowAlphaReject": ["boolean"],
+                        "allowAlphaBlend": ["boolean"],
+                    },
+                },
+            },
             "mipLevel": ["number"],
         },
     },
