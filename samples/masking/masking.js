@@ -28,7 +28,7 @@ export const sample = {
     
         return {
             mesh: Rngon.mesh(scene.ngons, {
-                scaling: Rngon.vector(25, 25, 25)
+                scale: Rngon.vector(25, 25, 25)
             }),
             renderOptions: {
                 cameraDirection: this.camera.direction,

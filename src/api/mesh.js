@@ -8,7 +8,6 @@
 import {validate_object} from "../core/schema.js";
 import {matrix as Matrix} from "../core/matrix.js";
 import {vector as Vector} from "./vector.js";
-import {mesh as Mesh} from "./mesh.js";
 import {ngon as Ngon} from "./ngon.js";
 
 // A collection of ngons, with shared translation and rotation.
@@ -19,17 +18,11 @@ export function mesh(
 {
     validate_object?.({ngons, transform}, mesh.schema.arguments);
 
-    transform = {
-        ...Mesh.defaultTransform,
-        ...transform
-    };
-
     const publicInterface = {
         $constructor: "Mesh",
         ngons,
-        rotation: transform.rotation,
-        translation: transform.translation,
-        scale: transform.scaling,
+        ...mesh.defaultTransform,
+        ...transform
     };
 
     validate_object?.(publicInterface, mesh.schema.interface);
@@ -38,9 +31,9 @@ export function mesh(
 }
 
 mesh.defaultTransform = {
-    translation: Vector(0, 0, 0),
-    rotation: Vector(0, 0, 0),
-    scaling: Vector(1, 1, 1),
+    translate: Vector(0, 0, 0),
+    rotate: Vector(0, 0, 0),
+    scale: Vector(1, 1, 1),
 };
 
 mesh.schema = {
@@ -69,15 +62,15 @@ mesh.schema = {
 mesh.object_space_matrix = function(mesh)
 {
     const translationMatrix = Matrix.translation(
-        mesh.translation.x,
-        mesh.translation.y,
-        mesh.translation.z
+        mesh.translate.x,
+        mesh.translate.y,
+        mesh.translate.z
     );
 
     const rotationMatrix = Matrix.rotation(
-        mesh.rotation.x,
-        mesh.rotation.y,
-        mesh.rotation.z
+        mesh.rotate.x,
+        mesh.rotate.y,
+        mesh.rotate.z
     );
 
     const scalingMatrix = Matrix.scaling(

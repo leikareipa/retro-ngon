@@ -27,9 +27,9 @@ export const sample = {
     
         return {
             mesh: Rngon.mesh(torusModel.ngons, {
-                scaling: Rngon.vector(30, 30, 30),
-                translation: Rngon.vector(-3, 3, 0),
-                rotation: Rngon.vector(
+                scale: Rngon.vector(30, 30, 30),
+                translate: Rngon.vector(-3, 3, 0),
+                rotate: Rngon.vector(
                     (-60 + rotationSpeed * this.numTicks),
                     (-60 + rotationSpeed * this.numTicks),
                     0

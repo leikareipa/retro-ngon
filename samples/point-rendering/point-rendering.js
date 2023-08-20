@@ -24,9 +24,9 @@ export const sample = {
                 cameraPosition: Rngon.vector(-70, 33, -7),
             },
             mesh: Rngon.mesh(teapot.ngons, {
-                rotation: Rngon.vector(90, 20, (0 + (this.numTicks / 2))),
-                translation: Rngon.vector(0, 15, -7),
-                scaling: Rngon.vector(7, 7, 7)
+                rotate: Rngon.vector(90, 20, (0 + (this.numTicks / 2))),
+                translate: Rngon.vector(0, 15, -7),
+                scale: Rngon.vector(7, 7, 7)
             }),
         };
     },

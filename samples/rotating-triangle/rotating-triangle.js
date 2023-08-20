@@ -28,7 +28,7 @@ export const sample = {
 
         return {
             mesh: Rngon.mesh([triangle], {
-                rotation: Rngon.vector(0, (-40 + rotationSpeed * this.numTicks), 0),
+                rotate: Rngon.vector(0, (-40 + rotationSpeed * this.numTicks), 0),
             }),
         };
     },

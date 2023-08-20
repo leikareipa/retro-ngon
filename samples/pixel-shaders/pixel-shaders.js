@@ -80,7 +80,7 @@ export const sample = {
                 ),
             },
             mesh: this.Rngon.mesh(scene.ngons, {
-                scaling: this.Rngon.vector(25, 25, 25)
+                scale: this.Rngon.vector(25, 25, 25)
             }),
         };
     },

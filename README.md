@@ -138,7 +138,7 @@ const quad = Rngon.ngon([
 });
 
 const quadMesh = Rngon.mesh([quad], {
-    rotation: Rngon.vector(0, 0, 45),
+    rotate: Rngon.vector(0, 0, 45),
 });
 
 Rngon.render({
@@ -457,7 +457,7 @@ const quad = Rngon.ngon([
 });
 
 const mesh = Rngon.mesh([quad], {
-    rotation: Rngon.vector(0, 0, 45)
+    rotate: Rngon.vector(0, 0, 45)
 });
 
 Rngon.render({
@@ -481,13 +481,13 @@ A selection of n-gons related to each other in some way, rendered as a unit with
 
 - **transform** (object): Transformations to the mesh's n-gons, to be applied at render-time:
 
-    - **translation** (vector = *vector(0, 0, 0)*): Delta increments to XYZ vertex coordinates.
+    - **translate** (vector = *vector(0, 0, 0)*): Delta increments to XYZ vertex coordinates.
 
-    - **rotation** (vector = *vector(0, 0, 0)*): Rotation around the origin of (0, 0, 0), in degrees. The rotation is not applied to normals.
+    - **rotate** (vector = *vector(0, 0, 0)*): Rotation around the origin of (0, 0, 0), in degrees. The rotation is not applied to normals.
          
-    - **scaling** (vector = *vector(1, 1, 1)*): Multipliers to XYZ vertex coordinates.
+    - **scale** (vector = *vector(1, 1, 1)*): Multipliers to XYZ vertex coordinates.
 
-Note: If both `transform.translation` and `transform.rotation` are given, rotation will be applied first.
+Note: If both `transform.translate` and `transform.rotate` are given, rotation will be applied first.
 
 ### Returns
 
@@ -495,22 +495,22 @@ An object with the following properties:
 
 - **ngons** (array): The `ngons` parameter.
 
-- **translation** (vector): The `transform.translation` parameter.
+- **translate** (vector): The `transform.translate` parameter.
 
-- **rotation** (vector): The `transform.rotation` parameter.
+- **rotate** (vector): The `transform.rotate` parameter.
 
-- **scale** (vector): The `transform.scaling` parameter.
+- **scale** (vector): The `transform.scale` parameter.
 
 ### Sample usage
 
 ```javascript
 // Construct a mesh containing one n-gon, and apply scaling to it.
 const mesh = Rngon.mesh([ngon], {
-    scaling: Rngon.vector(10, 15, 5),
+    scale: Rngon.vector(10, 15, 5),
 });
 
 // Transformations can be edited directly:
-mesh.scaling.x = 100;
+mesh.scale.x = 100;
 ```
 
 ## ngon([vertices[, material[, normal]]])

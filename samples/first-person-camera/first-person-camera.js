@@ -36,7 +36,7 @@ export const sample = {
                 cameraPosition: this.camera.position,
             },
             mesh: Rngon.mesh(scene.ngons, {
-                scaling: Rngon.vector(25, 25, 25)
+                scale: Rngon.vector(25, 25, 25)
             })
         };
     },

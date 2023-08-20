@@ -22,8 +22,8 @@ export const sample = {
     
         return {
             mesh: Rngon.mesh(scene.ngons, {
-                scaling: Rngon.vector(30, 25, 25),
-                rotation: Rngon.vector(
+                scale: Rngon.vector(30, 25, 25),
+                rotate: Rngon.vector(
                     (-60 + rotationSpeed * this.numTicks),
                     (-60 + rotationSpeed * this.numTicks),
                     0
