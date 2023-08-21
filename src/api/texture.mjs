@@ -116,7 +116,7 @@ Texture.load = async function(filename)
     try {
         const response = await fetch(filename);
         const textureData = await response.json();
-        return texture(textureData);
+        return Texture(textureData);
     }
     catch (error) {
         throw new Error(`Failed to create a texture with data from file '${filename}'. ${error}`);

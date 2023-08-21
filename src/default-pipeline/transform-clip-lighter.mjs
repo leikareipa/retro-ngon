@@ -73,15 +73,10 @@ export function transform_clip_lighter({
                 dstVertex.w = srcVertex.w;
                 dstVertex.shade = srcVertex.shade;
 
-                if (renderState.useVertexShader ||
-                    (ngon.material.vertexShading === "gouraud"))
-                {
-                    cachedNgon.vertexNormals[v] = Vector(
-                        ngon.vertexNormals[v].x,
-                        ngon.vertexNormals[v].y,
-                        ngon.vertexNormals[v].z
-                    );
-                }
+                cachedNgon.vertexNormals[v] = vertexNormalCache.normals[vertexNormalCache.count++];
+                cachedNgon.vertexNormals[v].x = ngon.vertexNormals[v].x;
+                cachedNgon.vertexNormals[v].y = ngon.vertexNormals[v].y;
+                cachedNgon.vertexNormals[v].z = ngon.vertexNormals[v].z;
             }
 
             cachedNgon.material = ngon.material;
@@ -114,21 +109,14 @@ export function transform_clip_lighter({
                     }
                 }
 
-                // If using Gouraud shading, we need to transform all vertex normals; but
-                // the face normal won't be used and so can be ignored.
-                if (renderState.useVertexShader ||
-                    (cachedNgon.material.vertexShading === "gouraud"))
+                // Transform normals.
                 {
                     for (let v = 0; v < cachedNgon.vertices.length; v++)
                     {
                         Vector.transform(cachedNgon.vertexNormals[v], objectSpaceMatrix);
                         Vector.normalize(cachedNgon.vertexNormals[v]);
                     }
-                }
-                // With shading other than Gouraud, only the face normal will be used, and
-                // we can ignore the vertex normals.
-                else
-                {
+
                     Vector.transform(cachedNgon.normal, objectSpaceMatrix);
                     Vector.normalize(cachedNgon.normal);
                 }
