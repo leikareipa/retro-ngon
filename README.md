@@ -1,17 +1,17 @@
 # The retro n-gon renderer
 
-A low-level retro-themed 3D software renderer for the HTML5 \<canvas\> (also supports off-screen rendering).
+A low-level retro-oriented 3D software renderer for the HTML5 \<canvas\> (also supports rendering into an off-screen pixel buffer).
 
 You can view various interactive render samples [here](https://www.tarpeeksihyvaesoft.com/rngon/samples/).
-
-![Tomb Raider](./images/screenshots/beta/tomb-raider-crt.webp)\
-*An indoor scene from Tomb Raider, with a CRT shader. (Based on assets created by Core Design for Tomb Raider. Core Design is not associated with this renderer.)*
 
 ## Key features
 
 - Genuine retro aesthetics
-- Customizable render pipeline
+- Programmable render pipeline
 - Good performance (for retro uses)
+
+![Tomb Raider](./images/screenshots/beta/tomb-raider-crt.webp)\
+*A scene from [Tomb Raider](https://en.wikipedia.org/wiki/Tomb_Raider_(1996_video_game)), rendered with a CRT-like shader. (Based on assets created by Core Design for Tomb Raider. Core Design is not associated with this renderer.)*
 
 ## Documentation
 
