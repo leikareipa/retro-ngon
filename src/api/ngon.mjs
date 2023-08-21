@@ -22,7 +22,7 @@ export const ngonDefaultMaterial = {
     ambientLightLevel: 0,
     hasWireframe: false,
     hasFill: true,
-    isTwoSided: true,
+    isTwoSided: false,
     isInScreenSpace: false,
     allowAlphaReject: false,
     allowAlphaBlend: false,

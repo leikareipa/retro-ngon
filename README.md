@@ -553,7 +553,7 @@ A polygon made up of *n* vertices, also known as an n-gon. Single-vertex n-gons 
 
     - **hasFill** (boolean = *true*): Whether the face of the n-gon should be rendered. If *false* and `material.hasWireframe` is *true*, the n-gon's wireframe outline will be rendered.
 
-    - **isTwoSided** (boolean = *true*): Whether the n-gon should be visible from behind, as determined by the direction of its face normal.
+    - **isTwoSided** (boolean = *false*): Whether the n-gon should be visible from behind, as determined by the direction of its face normal.
 
     - **isInScreenSpace** (boolean = *false*): Whether the XY coordinates of the n-gon's vertices are in screen space. If they are, the renderer won't transform them further (e.g. according to camera position or mesh transformations) before rasterization. If *true*, you must ensure that all vertex XY coordinates are within the boundaries of the rendered image.
 

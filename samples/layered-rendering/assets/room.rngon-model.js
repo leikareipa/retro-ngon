@@ -22,7 +22,6 @@ export const room =
 		const no = Rngon.vector; // Normal.
 		const v = Rngon.vertex;
 		const c = Rngon.color;
-		const ct = Rngon.texture.load;
 
 		// Load the textures.
 		const t = {
@@ -33,9 +32,9 @@ export const room =
 
 		// Set up the materials.
 		const m = {
-			"Floor":{color:c(60,41,20),texture:t["ground"],textureMapping:"affine",},
-			"Pillar":{color:c(163,126,88),texture:t["bark"],textureMapping:"affine",},
-			"Wall":{color:c(163,72,27),texture:t["shrub"],textureMapping:"affine",},
+			"Floor":{color:c(60,41,20),texture:t["ground"],textureMapping:"affine",isTwoSided:true},
+			"Pillar":{color:c(163,126,88),texture:t["bark"],textureMapping:"affine",isTwoSided:true},
+			"Wall":{color:c(163,72,27),texture:t["shrub"],textureMapping:"affine",isTwoSided:true},
 		};
 
 		// Create the n-gons.
