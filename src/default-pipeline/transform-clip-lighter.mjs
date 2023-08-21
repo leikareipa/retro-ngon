@@ -41,19 +41,6 @@ export function transform_clip_lighter({
             continue;
         }
 
-        // Backface culling.
-        if (!ngon.material.isTwoSided)
-        {
-            viewVector.x = (ngon.vertices[0].x - renderState.cameraPosition.x);
-            viewVector.y = (ngon.vertices[0].y - renderState.cameraPosition.y);
-            viewVector.z = (ngon.vertices[0].z - renderState.cameraPosition.z);
-
-            if (Vector.dot(ngon.normal, viewVector) >= 0)
-            {
-                continue;
-            }
-        }
-
         // Copy the ngon into the internal n-gon cache, so we can operate on it without
         // mutating the original n-gon's data.
         const cachedNgon = ngonCache.ngons[ngonCache.count++];
@@ -119,6 +106,21 @@ export function transform_clip_lighter({
 
                     Vector.transform(cachedNgon.normal, objectSpaceMatrix);
                     Vector.normalize(cachedNgon.normal);
+                }
+
+                // Backface culling.
+                if (!cachedNgon.material.isTwoSided)
+                {
+                    viewVector.x = (cachedNgon.vertices[0].x - renderState.cameraPosition.x);
+                    viewVector.y = (cachedNgon.vertices[0].y - renderState.cameraPosition.y);
+                    viewVector.z = (cachedNgon.vertices[0].z - renderState.cameraPosition.z);
+        
+                    if (Vector.dot(cachedNgon.normal, viewVector) >= 0)
+                    {
+                        cachedNgon.isActive = false;
+                        ngonCache.count--;
+                        continue;
+                    }
                 }
 
                 if (cachedNgon.material.vertexShading !== "none")
