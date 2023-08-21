@@ -24,9 +24,17 @@
                     <div class="adjust left" onclick="change_level(-1);"></div>
                     <div class="content" style="width: 6rem;">
                         <div class="title">Mip level</div>
-                        <div class="value">Auto</div>
+                        <div class="value"></div>
                     </div>
                     <div class="adjust right" onclick="change_level(1);"></div>
+                </div>
+                <div class="infobox mip-type">
+                    <div class="adjust left" onclick="change_type(-1);"></div>
+                    <div class="content" style="width: 6rem;">
+                        <div class="title">Mip trigger</div>
+                        <div class="value"></div>
+                    </div>
+                    <div class="adjust right" onclick="change_type(1);"></div>
                 </div>
             </div>
             
@@ -35,18 +43,27 @@
         <script type="module">
             import {sample} from "./mipmapping.js";
 
-            let mipLevelIdx = 0;
-            window.MIPMAP_LEVEL = sample.mipmapLevels[0];
-
             window.change_level = function(direction = 1)
             {
-                mipLevelIdx = Math.max(0, Math.min((sample.mipmapLevels.length - 1), (mipLevelIdx + direction)));
-                MIPMAP_LEVEL = sample.mipmapLevels[mipLevelIdx];
+                if (direction > 0) sample.mipmapLevels.push(sample.mipmapLevels.shift());
+                else if (direction < 0) sample.mipmapLevels.unshift(sample.mipmapLevels.pop());
 
-                document.querySelector(".infobox.mip-level .value").innerHTML = MIPMAP_LEVEL;
-
-                return;
+                window.MIPMAP_LEVEL = sample.mipmapLevels[0];
+                document.querySelector(".infobox.mip-level .value").innerHTML = window.MIPMAP_LEVEL;
             }
+
+            window.change_type = function(direction = 1)
+            {
+                if (direction > 0) sample.mipmapTypes.push(sample.mipmapTypes.shift());
+                else if (direction < 0) sample.mipmapTypes.unshift(sample.mipmapTypes.pop());
+
+                window.MIPMAP_TYPE = sample.mipmapTypes[0];
+                document.querySelector(".infobox.mip-type .value").innerHTML = window.MIPMAP_TYPE;
+            }
+
+            // Initialize to default values.
+            change_level(0);
+            change_type(0);
 
             const renderer = (new URLSearchParams(window.location.search).get("renderer") || "dev");
             const renderTarget = document.getElementById("render-target");
