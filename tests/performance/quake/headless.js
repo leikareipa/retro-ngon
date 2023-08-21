@@ -1,4 +1,5 @@
-const puppeteer = require("puppeteer");
+import puppeteer from "puppeteer";
+
 const resourceOrigin = (process.env.RESOURCE_ORIGIN || "http://localhost:8222");
 
 (async()=>{
