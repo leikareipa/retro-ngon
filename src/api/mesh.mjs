@@ -6,9 +6,9 @@
  */
 
 import {validate_object} from "../core/schema.mjs";
-import {matrix as Matrix} from "../core/matrix.mjs";
-import {vector as Vector} from "./vector.mjs";
-import {ngon as Ngon} from "./ngon.mjs";
+import {Matrix} from "../core/matrix.mjs";
+import {Vector} from "./vector.mjs";
+import {Ngon} from "./ngon.mjs";
 
 export const meshDefaultTransform = {
     translate: Vector(0, 0, 0),
@@ -40,7 +40,7 @@ const schema = {
 };
 
 // A collection of ngons, with shared translation and rotation.
-export function mesh(
+export function Mesh(
     ngons = [Ngon()],
     transform = {}
 )

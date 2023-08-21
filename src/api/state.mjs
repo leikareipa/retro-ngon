@@ -5,11 +5,11 @@
  *
  */
 
-export function state(id = "default") {
-    return (state[id] || (state[id] = default_state()));
+export function State(id = "default") {
+    return (State[id] || (State[id] = default_state()));
 };
 
-state.default = default_state();
+State.default = default_state();
 
 // Global app state, for internal use by the renderer. Unless otherwise noted, these
 // parameters should not be modified directly; they're instead set by the renderer

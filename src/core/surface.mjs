@@ -5,17 +5,18 @@
  *
  */
 
-import {assert as Assert} from "../core/assert.mjs";
-import {matrix as Matrix} from "./matrix.mjs";
-import {ngon as Ngon} from "../api/ngon.mjs";
-import {vertex as Vertex} from "../api/vertex.mjs";
+import {Assert} from "../core/assert.mjs";
+import {Matrix} from "./matrix.mjs";
+import {Ngon} from "../api/ngon.mjs";
+import {Vertex} from "../api/vertex.mjs";
+import {Vector} from "../api/vector.mjs";
 
 // A surface for rendering onto. Will also paint the rendered image onto a HTML5 <canvas>
 // element unless the 'canvasElement' parameter is null, in which case rendering will be
 // to an off-screen buffer only.
 //
 // Returns null if the surface could not be created.
-export function surface(canvasElement, renderState)
+export function Surface(canvasElement, renderState)
 {
     const renderOffscreen = (canvasElement === null);
 
@@ -287,6 +288,7 @@ function prepare_vertex_cache(renderState, meshes = [Ngon()])
     );
 
     const vertexCache = renderState.vertexCache;
+    const vertexNormalCache = renderState.vertexNormalCache;
     let totalVertexCount = 0;
 
     for (const mesh of meshes)
@@ -304,13 +306,21 @@ function prepare_vertex_cache(renderState, meshes = [Ngon()])
         const lengthDelta = (totalVertexCount - vertexCache.vertices.length);
         vertexCache.vertices.push(...new Array(lengthDelta).fill().map(e=>Vertex()));
     }
-
     vertexCache.count = 0;
+
+    if (!vertexNormalCache ||
+        !vertexNormalCache.normals.length ||
+        (vertexNormalCache.normals.length < totalVertexCount))
+    {
+        const lengthDelta = (totalVertexCount - vertexNormalCache.normals.length);
+        vertexNormalCache.normals.push(...new Array(lengthDelta).fill().map(e=>Vector()));
+    }
+    vertexNormalCache.count = 0;
 
     return;
 }
 
-// Creates or resizes the n-gon cache to fit at least the number of n-gons contained
+// Creates or resizes the n-gon cache to fit at least the number of n-goans contained
 // in the given array of meshes.
 function prepare_ngon_cache(renderState, meshes = [Ngon()])
 {

@@ -5,11 +5,11 @@
  *
  */
 
-import {mesh as Mesh} from "../../src/api/mesh.mjs";
-import {vertex as Vertex} from "../../src/api/vertex.mjs";
-import {vector as Vector} from "../../src/api/vector.mjs";
-import {color as Color} from "../../src/api/color.mjs";
-import {ngon as Ngon} from "../../src/api/ngon.mjs";
+import {Mesh} from "../../src/api/mesh.mjs";
+import {Vertex} from "../../src/api/vertex.mjs";
+import {Vector} from "../../src/api/vector.mjs";
+import {Color} from "../../src/api/color.mjs";
+import {Ngon} from "../../src/api/ngon.mjs";
 import {good} from "./utest2.mjs";
 
 export default ()=>{

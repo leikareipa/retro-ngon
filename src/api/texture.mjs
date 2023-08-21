@@ -6,7 +6,7 @@
  */
 
 import {validate_object} from "../core/schema.mjs";
-import {assert as Assert} from "../core/assert.mjs";
+import {Assert} from "../core/assert.mjs";
 
 const maxTextureWidth = 32768;
 const maxTextureHeight = 32768;
@@ -84,7 +84,7 @@ const schema = {
 };
 
 // Texture with 32-bit color.
-export function texture(data = {})
+export function Texture(data = {})
 {
     data = structuredClone(data);
     
@@ -111,7 +111,7 @@ export function texture(data = {})
 
 // Returns a Promise of a texture whose data is loaded from the given file. The actual
 // texture object is returned once the data has been loaded.
-texture.load = async function(filename)
+Texture.load = async function(filename)
 {
     try {
         const response = await fetch(filename);

@@ -6,7 +6,7 @@
  */
 
 import {validate_object} from "../core/schema.mjs";
-import {assert as Assert} from "../core/assert.mjs";
+import {Assert} from "../core/assert.mjs";
 
 const schema = {
     interface: {
@@ -30,7 +30,7 @@ const schema = {
     },
 };
 
-export function vector(x = 0, y = 0, z = 0)
+export function Vector(x = 0, y = 0, z = 0)
 {
     validate_object?.({x, y, z}, schema.arguments);
 
@@ -47,7 +47,7 @@ export function vector(x = 0, y = 0, z = 0)
 }
 
 // Transforms the vector by the given 4x4 matrix.
-vector.transform = function(v, m = [])
+Vector.transform = function(v = vector(), m)
 {
     Assert?.(
         (m.length === 16),
@@ -63,7 +63,7 @@ vector.transform = function(v, m = [])
     v.z = z_;
 }
 
-vector.normalize = function(v)
+Vector.normalize = function(v = vector())
 {
     const sn = ((v.x * v.x) + (v.y * v.y) + (v.z * v.z));
 
@@ -76,12 +76,12 @@ vector.normalize = function(v)
     }
 }
 
-vector.dot = function(v, other)
+Vector.dot = function(v = vector(), other = vector())
 {
     return ((v.x * other.x) + (v.y * other.y) + (v.z * other.z));
 }
 
-vector.cross = function(v, other)
+Vector.cross = function(v = vector(), other = vector())
 {
     const c = vector();
 
@@ -92,7 +92,7 @@ vector.cross = function(v, other)
     return c;
 }
 
-vector.invert = function(v)
+Vector.invert = function(v = vector())
 {
     v.x *= -1;
     v.y *= -1;

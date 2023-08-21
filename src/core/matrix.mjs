@@ -32,12 +32,12 @@
  *
  */
 
-import {assert as Assert} from "../core/assert.mjs";
+import {Assert} from "../core/assert.mjs";
 
 const PI_180 = (Math.PI / 180);
 
 // Provides manipulation of 4-by-4 matrices.
-export const matrix = {
+export const Matrix = {
     scaling: function(x = 0, y = 0, z = 0)
     {
         return [

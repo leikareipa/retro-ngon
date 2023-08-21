@@ -6,9 +6,9 @@
  */
 
 import {validate_object} from "../core/schema.mjs";
-import {vertex as Vertex} from "./vertex.mjs";
-import {vector as Vector} from "./vector.mjs";
-import {color as Color} from "./color.mjs";
+import {Vertex} from "./vertex.mjs";
+import {Vector} from "./vector.mjs";
+import {Color} from "./color.mjs";
 
 export const ngonDefaultMaterial = {
     color: Color(255, 255, 255, 255),
@@ -74,7 +74,7 @@ const schema = {
 };
 
 // A single n-sided ngon.
-export function ngon(
+export function Ngon(
     vertices = [Vertex()],
     material = {},
     vertexNormals = Vector(0, 1, 0)
@@ -102,7 +102,6 @@ export function ngon(
         faceNormal.z += vertexNormal.z;
         return faceNormal;
     }, Vector(0, 0, 0));
-
     Vector.normalize(faceNormal);
 
     // If we get vertex U or V coordinates in the range [0,-x], we want to change 0 to
@@ -198,11 +197,12 @@ export function ngon_clip_to_viewport(ngon)
             // The vertices array will be modified in-place by appending the clipped vertices
             // onto the end of the array, then removing the previous ones.
             let k = 0;
-            let numOriginalVertices = ngon.vertices.length;
+            const numOriginalVertices = ngon.vertices.length;
             for (let i = 0; i < numOriginalVertices; i++)
             {
-                const curComponent = (ngon.vertices[i][axis] * factor);
-                const thisVertexIsInside = (curComponent <= ngon.vertices[i].w);
+                const vert = ngon.vertices[i];
+                const curComponent = (vert[axis] * factor);
+                const thisVertexIsInside = (curComponent <= vert.w);
 
                 // If either the current vertex or the previous vertex is inside but the other isn't,
                 // and they aren't both inside, interpolate a new vertex between them that lies on
@@ -211,29 +211,29 @@ export function ngon_clip_to_viewport(ngon)
                 {
                     const lerpStep = (
                         (prevVertex.w - prevComponent) /
-                        ((prevVertex.w - prevComponent) - (ngon.vertices[i].w - curComponent))
+                        ((prevVertex.w - prevComponent) - (vert.w - curComponent))
                     );
 
                     ngon.vertices[numOriginalVertices + k++] = Vertex(
-                        lerp(prevVertex.x, ngon.vertices[i].x, lerpStep),
-                        lerp(prevVertex.y, ngon.vertices[i].y, lerpStep),
-                        lerp(prevVertex.z, ngon.vertices[i].z, lerpStep),
-                        lerp(prevVertex.u, ngon.vertices[i].u, lerpStep),
-                        lerp(prevVertex.v, ngon.vertices[i].v, lerpStep),
-                        lerp(prevVertex.w, ngon.vertices[i].w, lerpStep),
-                        lerp(prevVertex.shade, ngon.vertices[i].shade, lerpStep),
-                        lerp(prevVertex.worldX, ngon.vertices[i].worldX, lerpStep),
-                        lerp(prevVertex.worldY, ngon.vertices[i].worldY, lerpStep),
-                        lerp(prevVertex.worldZ, ngon.vertices[i].worldZ, lerpStep),
+                        lerp(prevVertex.x, vert.x, lerpStep),
+                        lerp(prevVertex.y, vert.y, lerpStep),
+                        lerp(prevVertex.z, vert.z, lerpStep),
+                        lerp(prevVertex.u, vert.u, lerpStep),
+                        lerp(prevVertex.v, vert.v, lerpStep),
+                        lerp(prevVertex.w, vert.w, lerpStep),
+                        lerp(prevVertex.shade, vert.shade, lerpStep),
+                        lerp(prevVertex.worldX, vert.worldX, lerpStep),
+                        lerp(prevVertex.worldY, vert.worldY, lerpStep),
+                        lerp(prevVertex.worldZ, vert.worldZ, lerpStep),
                     );
                 }
                 
                 if (thisVertexIsInside)
                 {
-                    ngon.vertices[numOriginalVertices + k++] = ngon.vertices[i];
+                    ngon.vertices[numOriginalVertices + k++] = vert;
                 }
 
-                prevVertex = ngon.vertices[i];
+                prevVertex = vert;
                 prevComponent = curComponent;
                 isPrevVertexInside = thisVertexIsInside;
             }

@@ -6,7 +6,7 @@
  */
 
 import {validate_object} from "../core/schema.mjs";
-import {vector as Vector} from "./vector.mjs";
+import {Vector} from "./vector.mjs";
 
 const schema = {
     arguments: {
@@ -31,7 +31,7 @@ const schema = {
 };
 
 // A light source. This is a work-in-progress implementation.
-export function light(
+export function Light(
     intensity = 100,
     position = Vector(0, 0, 0),
     options = {}

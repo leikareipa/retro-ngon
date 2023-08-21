@@ -14,15 +14,15 @@ if (!IS_PRODUCTION_BUILD) {
 }
 
 import {render} from "./api/render.mjs";
-import {color} from "./api/color.mjs";
-import {light} from "./api/light.mjs";
-import {mesh} from "./api/mesh.mjs";
-import {ngon} from "./api/ngon.mjs";
-import {texture} from "./api/texture.mjs";
-import {vector} from "./api/vector.mjs";
-import {vertex} from "./api/vertex.mjs";
-import {_default} from "./api/default.mjs";
-import {state} from "./api/state.mjs";
+import {Color} from "./api/color.mjs";
+import {Light} from "./api/light.mjs";
+import {Mesh} from "./api/mesh.mjs";
+import {Ngon} from "./api/ngon.mjs";
+import {Texture} from "./api/texture.mjs";
+import {Vector} from "./api/vector.mjs";
+import {Vertex} from "./api/vertex.mjs";
+import {Default} from "./api/default.mjs";
+import {State} from "./api/state.mjs";
 
 // The public API.
 export const Rngon = {
@@ -31,14 +31,14 @@ export const Rngon = {
         minor: 2,
         isProductionBuild: IS_PRODUCTION_BUILD,
     },
-    default: _default,
+    default: Default,
     render,
-    color,
-    state,
-    light,
-    mesh,
-    ngon,
-    texture,
-    vector,
-    vertex,
+    color: Color,
+    state: State,
+    light: Light,
+    mesh: Mesh,
+    ngon: Ngon,
+    texture: Texture,
+    vector: Vector,
+    vertex: Vertex,
 };

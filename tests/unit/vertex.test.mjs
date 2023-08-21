@@ -5,7 +5,7 @@
  *
  */
 
-import {vertex as Vertex} from "../../src/api/vertex.mjs";
+import {Vertex} from "../../src/api/vertex.mjs";
 import {good, tr4} from "./utest2.mjs";
 
 export default ()=>{

@@ -7,7 +7,7 @@
 
 // Call this function using optional chaining - "assert?.()" - so it doesn't get
 // invoked in production builds.
-export const assert = ((typeof window === "object") && IS_PRODUCTION_BUILD)? undefined
+export const Assert = ((typeof window === "object") && IS_PRODUCTION_BUILD)? undefined
 : function(condition, errorMessage)
 {
     if (!condition)

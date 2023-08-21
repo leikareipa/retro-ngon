@@ -5,10 +5,10 @@
  *
  */
 
-import {vertex as Vertex} from "../../src/api/vertex.mjs";
-import {color as Color} from "../../src/api/color.mjs";
-import {ngon as Ngon} from "../../src/api/ngon.mjs";
-import {_default as Default} from "../../src/api/default.mjs";
+import {Vertex} from "../../src/api/vertex.mjs";
+import {Color} from "../../src/api/color.mjs";
+import {Ngon} from "../../src/api/ngon.mjs";
+import {Default} from "../../src/api/default.mjs";
 import {good} from "./utest2.mjs";
 
 export default ()=>{

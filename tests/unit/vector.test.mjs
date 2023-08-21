@@ -5,7 +5,7 @@
  *
  */
 
-import {vector as Vector} from "../../src/api/vector.mjs";
+import {Vector} from "../../src/api/vector.mjs";
 import {good, tr4} from "./utest2.mjs";
 
 export default ()=>{

@@ -6,7 +6,7 @@
  */
 
 import {validate_object} from "../core/schema.mjs";
-import {assert as Assert} from "../core/assert.mjs";
+import {Assert} from "../core/assert.mjs";
 
 const schema = {
     arguments: {
@@ -44,7 +44,7 @@ const schema = {
     },
 };
 
-export function vertex(
+export function Vertex(
     x = 0,
     y = 0,
     z = 0,
@@ -85,7 +85,7 @@ export function vertex(
 }
 
 // Transforms the vertex by the given 4x4 matrix.
-vertex.transform = function(v, m = [])
+Vertex.transform = function(v, m = [])
 {
     Assert?.(
         (m.length === 16),

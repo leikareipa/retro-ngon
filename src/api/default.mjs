@@ -13,7 +13,7 @@ import {
     renderDefaultPipeline
 } from "./render.mjs";
 
-export const _default = {
+export const Default = {
     render: {
         options: renderDefaultOptions,
         pipeline: renderDefaultPipeline,

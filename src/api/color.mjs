@@ -6,7 +6,7 @@
  */
 
 import {validate_object} from "../core/schema.mjs";
-import {assert as Assert} from "../core/assert.mjs";
+import {Assert} from "../core/assert.mjs";
 
 const schema = {
     arguments: {
@@ -41,7 +41,7 @@ const schema = {
 };
 
 // Red, green, blue, alpha; in the range [0,255].
-export function color(
+export function Color(
     red = 0,
     green = 0,
     blue = 0,

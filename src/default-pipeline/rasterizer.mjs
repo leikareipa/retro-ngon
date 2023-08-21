@@ -5,10 +5,10 @@
  * 
  */
 
-import {ngon as Ngon} from "../api/ngon.mjs";
-import {vertex as Vertex} from "../api/vertex.mjs";
-import {color as Color} from "../api/color.mjs";
-import {assert as Assert} from "../core/assert.mjs";
+import {Ngon} from "../api/ngon.mjs";
+import {Vertex} from "../api/vertex.mjs";
+import {Color} from "../api/color.mjs";
+import {Assert} from "../core/assert.mjs";
 
 import {generic_fill} from "./raster-paths/generic-fill.mjs";
 import {plain_solid_fill} from "./raster-paths/plain-solid-fill.mjs";
