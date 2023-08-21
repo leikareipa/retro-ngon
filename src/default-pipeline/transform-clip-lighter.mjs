@@ -27,6 +27,7 @@ export function transform_clip_lighter({
     const viewVector = {x:0.0, y:0.0, z:0.0};
     const ngonCache = renderState.ngonCache;
     const vertexCache = renderState.vertexCache;
+    const vertexNormalCache = renderState.vertexNormalCache;
     const clipSpaceMatrix = Matrix.multiply(perspectiveMatrix, cameraMatrix);
     const objectSpaceMatrix = mesh_to_object_space_matrix(mesh);
 

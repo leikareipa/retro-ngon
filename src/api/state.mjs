@@ -128,6 +128,12 @@ function default_state() {
             vertices: [],
         },
 
+        // Pre-allocated memory; stores the vertex normals of the n-gon cache's n-gons.
+        vertexNormalCache: {
+            count: 0,
+            normals: [],
+        },
+
         // All light sources that should currently apply to n-gons passed to render().
         lights: [],
     }
