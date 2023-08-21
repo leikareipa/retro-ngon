@@ -31,7 +31,7 @@ function default_state() {
         // Pixel buffer for rasterization. This will be scaled to match the requested
         // render resolution; and the renderer's rasterization pass will populate it
         // with the rendered frame's pixel values.
-        pixelBuffer: new ImageData(1, 1),
+        pixelBuffer: undefined,
 
         // For each pixel in pixelBuffer, an associated depth value. The values are in
         // the range [0,1], where 0 corresponds to nearPlane and 1 to farPlane.

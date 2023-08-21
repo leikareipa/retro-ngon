@@ -34,7 +34,7 @@ import {assert as Assert} from "./assert.mjs";
 //
 // Note: Call this function using optional chaining - "validate_object?.()" - so
 // it doesn't get invoked in production builds.
-export const validate_object = IS_PRODUCTION_BUILD? undefined
+export const validate_object = ((typeof window === "object") && IS_PRODUCTION_BUILD)? undefined
 : function(object, schema, schemaProperties = schema.properties, propertyChain = "")
 {
     Assert?.(

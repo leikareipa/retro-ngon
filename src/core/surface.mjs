@@ -250,6 +250,7 @@ function setup_offscreen(renderState)
 function massage_state(renderState, renderContext, surfaceWidth, surfaceHeight)
 {
     if (
+        (typeof renderState.pixelBuffer === "undefined") ||
         (renderState.pixelBuffer.width != surfaceWidth) ||
         (renderState.pixelBuffer.height != surfaceHeight)
     ){
