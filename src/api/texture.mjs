@@ -25,7 +25,7 @@ const schema = {
         where: "in arguments passed to texture()",
         allowAdditionalProperties: true,
         properties: {
-            "pixels": [["number"], "string"],
+            "pixels": ["Uint8ClampedArray", ["number"], "string"],
             "width": {
                 type: ["number"],
                 value(width) {
@@ -86,6 +86,8 @@ const schema = {
 // Texture with 32-bit color.
 export function texture(data = {})
 {
+    data = structuredClone(data);
+    
     // Combine default data properties with the user-supplied ones.
     for (const key of Object.keys(textureDefaultData))
     {
