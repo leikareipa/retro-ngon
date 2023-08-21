@@ -19,8 +19,18 @@ export const sample = {
         this.numTicks++;
         
         const rotationSpeed = 0.3;
+
+        for (const mat of scene.materials)
+        {
+            mat.vertexShading = (parent.LIGHT_ON? "gouraud" : "none");
+        }
     
         return {
+            renderOptions: {
+                lights: [
+                    Rngon.light(150, Rngon.vector(0, 70, -120)),
+                ],
+            },
             mesh: Rngon.mesh(scene.ngons, {
                 scale: Rngon.vector(30, 25, 25),
                 rotate: Rngon.vector(
