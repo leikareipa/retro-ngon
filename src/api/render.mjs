@@ -12,7 +12,7 @@ import {surface_wiper} from "../default-pipeline/surface-wiper.mjs";
 import {surface as Surface} from "../core/surface.mjs";
 import {assert as Assert} from "../core/assert.mjs";
 import {vector as Vector} from "./vector.mjs";
-import {state as State} from "../core/internal-state.mjs";
+import {state as State} from "../api/state.mjs";
 
 export const renderDefaultOptions = {
     cameraPosition: Vector(0, 0, 0),

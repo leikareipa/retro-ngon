@@ -22,8 +22,7 @@ import {texture} from "./api/texture.mjs";
 import {vector} from "./api/vector.mjs";
 import {vertex} from "./api/vertex.mjs";
 import {_default} from "./api/default.mjs";
-
-import {state} from "./core/internal-state.mjs";
+import {state} from "./api/state.mjs";
 
 // The public API.
 export const Rngon = {

@@ -1,5 +1,5 @@
 /*
- * 2020 Tarpeeksi Hyvae Soft
+ * 2020-2023 Tarpeeksi Hyvae Soft
  *
  * Software: Retro n-gon renderer
  *
