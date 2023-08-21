@@ -41,13 +41,13 @@ export const sample = {
                 contextShader: (
                     parent.ACTIVE_SHADER.function
                         ? parent.ACTIVE_SHADER.function.bind(this)
-                        : null
+                        : undefined
                 ),
             },
         };
     },
     shaders: [
-        {title:"None",               function:null},
+        {title:"None",               function:undefined},
         {title:"On-screen display",  function:cs_osd},
         {title:"Rasterized overlay", function:cs_rasterized_overlay},
         {title:"Screen fade",        function:cs_screen_fade},
