@@ -46,7 +46,7 @@ Rngon.render({
 });
 ```
 
-![A blue quad](/images/tutorials/blue-quad.png)
+![A blue quad](/docs/images/tutorials/blue-quad.png)
 
 ## Add a texture
 
@@ -74,7 +74,7 @@ const quad = Rngon.ngon([
 });
 ```
 
-![A textured quad](/images/tutorials/textured-quad.png)
+![A textured quad](/docs/images/tutorials/textured-quad.png)
 
 2. Optionally, you can load the texture's data from a JSON file:
 
@@ -106,7 +106,7 @@ const quad = Rngon.ngon([
 });
 ```
 
-![A textured quad with affine mapping](/images/tutorials/textured-quad-affine.png)
+![A textured quad with affine mapping](/docs/images/tutorials/textured-quad-affine.png)
 
 ## Make it pixelated
 
@@ -123,14 +123,14 @@ Rngon.render({
 });
 ```
 
-![A textured quad with blurry upscaling](/images/tutorials/textured-quad-upscaled-blurry.png)
+![A textured quad with blurry upscaling](/docs/images/tutorials/textured-quad-upscaled-blurry.png)
 
 2. Modify the canvas's CSS to disable blurry upscaling:
 
 ```html
 <canvas id="canvas" style="image-rendering: pixelated; width: 300px; height: 300px;"></canvas>
 ```
-![A textured quad with pixelated upscaling](/images/tutorials/textured-quad-upscaled-pixelated.png)
+![A textured quad with pixelated upscaling](/docs/images/tutorials/textured-quad-upscaled-pixelated.png)
 
 ## Brief introduction to pixel shaders
 
@@ -167,8 +167,8 @@ function sample_shader({renderWidth, renderHeight, pixelBuffer})
 }
 ```
 
-![Before applying the shader](/images/tutorials/shader-before-all-blue.png)
-![After applying the shader](/images/tutorials/shader-after-all-blue.png)
+![Before applying the shader](/docs/images/tutorials/shader-before-all-blue.png)
+![After applying the shader](/docs/images/tutorials/shader-after-all-blue.png)
 
 3. A pixel shader to color half of our quad blue:
 
@@ -187,8 +187,8 @@ function sample_shader({renderWidth, renderHeight, pixelBuffer, fragmentBuffer})
 }
 ```
 
-![Before applying the shader](/images/tutorials/shader-before-corner-blue.png)
-![After applying the shader](/images/tutorials/shader-after-corner-blue.png)
+![Before applying the shader](/docs/images/tutorials/shader-before-corner-blue.png)
+![After applying the shader](/docs/images/tutorials/shader-after-corner-blue.png)
 
 ## Exporting scenes from Blender
 

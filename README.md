@@ -10,7 +10,7 @@ You can view various interactive render samples [here](https://www.tarpeeksihyva
 - Programmable render pipeline
 - Good performance (for retro uses)
 
-![Tomb Raider](/images/screenshots/beta/tomb-raider-crt.webp)\
+![Tomb Raider](/screenshot.png)\
 *A scene from [Tomb Raider](https://en.wikipedia.org/wiki/Tomb_Raider_(1996_video_game)), rendered with a CRT-like shader. (Based on assets created by Core Design for Tomb Raider. Core Design is not associated with this renderer.)*
 
 ## Documentation
@@ -59,10 +59,10 @@ Below are benchmark results (frames per second) running in Google Chrome on an A
     </tr>
     <tr>
         <td>640 &times; 360</td>
-        <td>470</td>
-        <td>260</td>
-        <td>180</td>
-        <td>65</td>
+        <td>450</td>
+        <td>250</td>
+        <td>170</td>
+        <td>60</td>
     </tr>
     <tfoot>
         <tr>
@@ -78,7 +78,7 @@ Below are benchmark results (frames per second) running in Google Chrome on an A
     </tfoot>
 </table>
 
-![A view from Grand Prix Legends](/images/screenshots/beta/bench-quake.jpg)
+![A screenshot of the benchmark](/docs/images/bench-quake.jpg)
 
 Pixel shaders can have a large impact on the frame rate, but otherwise this 800-polygon scene with texturing and Gouraud shading is renderable at a high rate.*
 
@@ -107,7 +107,7 @@ $ yarn run build
 The build process should produce the file [distributable/rngon.js](/distributable/rngon.js), which you can embed into a HTML document to expose the rendering API as a global `Rngon` object:
 
 ```html
-<script src="distributable/rngon.js"></script>
+<script src="rngon.js"></script>
 ```
 
 ### Testing
