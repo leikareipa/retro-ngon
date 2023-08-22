@@ -18,6 +18,7 @@ export function plain_textured_fill_with_color({
     if (!numLeftEdges || !numRightEdges) return true;
 
     const ngon = renderState.ngonCache.ngons[ngonIdx];
+    const fullInterpolation = renderState.useFullInterpolation;
     const useFragmentBuffer = renderState.useFragmentBuffer;
     const fragments = renderState.fragments;
     const fragmentBuffer = renderState.fragmentBuffer.data;
@@ -52,20 +53,23 @@ export function plain_textured_fill_with_color({
 
         if (spanWidth > 0)
         {
-            const deltaDepth = ((rightEdge.depth - leftEdge.depth) / spanWidth);
-            let iplDepth = (leftEdge.depth - deltaDepth);
+            const leftW = (fullInterpolation? 1 : leftEdge.invW);
+            const rightW = (fullInterpolation? 1 : rightEdge.invW);
+
+            const deltaInvW = (fullInterpolation? ((rightEdge.invW - leftEdge.invW) / spanWidth) : 0);
+            let iplInvW = (fullInterpolation? (leftEdge.invW - deltaInvW) : 1);
+
+            const deltaDepth = ((rightEdge.depth/rightW - leftEdge.depth/leftW) / spanWidth);
+            let iplDepth = (leftEdge.depth/leftW - deltaDepth);
 
             const deltaShade = ((rightEdge.shade - leftEdge.shade) / spanWidth);
             let iplShade = (leftEdge.shade - deltaShade);
 
-            const deltaU = ((rightEdge.u - leftEdge.u) / spanWidth);
-            let iplU = (leftEdge.u - deltaU);
+            const deltaU = ((rightEdge.u/rightW - leftEdge.u/leftW) / spanWidth);
+            let iplU = (leftEdge.u/leftW - deltaU);
 
-            const deltaV = ((rightEdge.v - leftEdge.v) / spanWidth);
-            let iplV = (leftEdge.v - deltaV);
-
-            const deltaInvW = ((rightEdge.invW - leftEdge.invW) / spanWidth);
-            let iplInvW = (leftEdge.invW - deltaInvW);
+            const deltaV = ((rightEdge.v/rightW - leftEdge.v/leftW) / spanWidth);
+            let iplV = (leftEdge.v/leftW - deltaV);
 
             let pixelBufferIdx = ((spanStartX + y * pixelBufferWidth) - 1);
 

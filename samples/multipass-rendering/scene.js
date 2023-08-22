@@ -6,5 +6,6 @@ export const scene = {
 		await testRoom.initialize();
 
 		testRoom.materials["Object"].isPortal = true;
+		testRoom.materials["Object"].isTwoSided = true;
 	}
 };

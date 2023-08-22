@@ -94,7 +94,7 @@ function default_state() {
         // will be rendered at a resolution lower than the display size, then upscaled.
         renderScale: 1,
 
-        usePerspectiveInterpolation: true,
+        useFullInterpolation: true,
 
         // If set to true, all n-gons will be rendered with a wireframe.
         showGlobalWireframe: false,

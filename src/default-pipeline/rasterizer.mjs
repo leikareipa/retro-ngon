@@ -75,7 +75,6 @@ rasterizer.polygon = function(
         "Overflowing the vertex buffer"
     );
 
-    const interpolatePerspective = renderState.usePerspectiveInterpolation;
     const useFragmentBuffer = renderState.useFragmentBuffer;
     const fragments = renderState.fragments;
     const depthBuffer = (renderState.useDepthBuffer? renderState.depthBuffer.data : null);
@@ -181,8 +180,8 @@ rasterizer.polygon = function(
             // Ignore horizontal edges.
             if (edgeHeight === 0) return;
 
-            const w1 = interpolatePerspective? vert1.w : 1;
-            const w2 = interpolatePerspective? vert2.w : 1;
+            const w1 = vert1.w;
+            const w2 = vert2.w;
 
             const startX = Math.min(renderWidth, Math.max(0, Math.floor(vert1.x)));
             const endX = Math.min(renderWidth, Math.max(0, Math.floor(vert2.x)));
@@ -191,22 +190,22 @@ rasterizer.polygon = function(
             const depth1 = (vert1.z / renderState.farPlaneDistance);
             const depth2 = (vert2.z / renderState.farPlaneDistance);
             const startDepth = (depth1 / w1);
-            const deltaDepth = (((depth2 / w2) - (depth1 / w1)) / edgeHeight);
+            const deltaDepth = (((depth2 / w2) - startDepth) / edgeHeight);
 
             const startShade = vert1.shade;
-            const deltaShade = ((vert2.shade - vert1.shade) / edgeHeight);
+            const deltaShade = ((vert2.shade - startShade) / edgeHeight);
 
             const u1 = (material.texture? vert1.u : 1);
             const v1 = (material.texture? (1 - vert1.v) : 1);
             const u2 = (material.texture? vert2.u : 1);
             const v2 = (material.texture? (1 - vert2.v) : 1);
             const startU = (u1 / w1);
-            const deltaU = (((u2 / w2) - (u1 / w1)) / edgeHeight);
+            const deltaU = (((u2 / w2) - startU) / edgeHeight);
             const startV = (v1 / w1);
-            const deltaV = (((v2 / w2) - (v1 / w1)) / edgeHeight);
+            const deltaV = (((v2 / w2) - startV) / edgeHeight);
 
             const startInvW = (1 / w1);
-            const deltaInvW = (((1 / w2) - (1 / w1)) / edgeHeight);
+            const deltaInvW = (((1 / w2) - startInvW) / edgeHeight);
 
             const edge = (isLeftEdge? leftEdges[numLeftEdges++] : rightEdges[numRightEdges++]);
             edge.top = startY;
@@ -300,7 +299,7 @@ rasterizer.line = function(
         return;
     }
     
-    const interpolatePerspective = renderState.usePerspectiveInterpolation;
+    const fullInterpolation = renderState.useFullInterpolation;
     const farPlane = renderState.farPlaneDistance;
     const useFragmentBuffer = renderState.useFragmentBuffer;
     const depthBuffer = (renderState.useDepthBuffer? renderState.depthBuffer.data : null);
@@ -314,8 +313,8 @@ rasterizer.line = function(
     let lineLength = Math.ceil(Math.sqrt((endX - startX) * (endX - startX) + (endY - startY) * (endY - startY)));
 
     // Establish interpolation parameters.
-    const w1 = (interpolatePerspective? vert1.w : 1);
-    const w2 = (interpolatePerspective? vert2.w : 1);
+    const w1 = (fullInterpolation? vert1.w : 1);
+    const w2 = (fullInterpolation? vert2.w : 1);
     const startDepth = (vert1.z / farPlane);
     const endDepth = (vert2.z / farPlane);
     const deltaDepth = (((endDepth / w2) - (startDepth / w1)) / lineLength);

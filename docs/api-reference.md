@@ -54,7 +54,7 @@ Renders meshes into a 32-bit RGBA pixel buffer, and optionally displays the imag
 
     - **farPlane** (number = *1000*): Vertices further from the camera will be clipped.
 
-    - **usePerspectiveInterpolation** (boolean = *true*): Whether to apply perspective correction to property interpolation (e.g. texture coordinates) during rasterization.
+    - **useFullInterpolation** (boolean = *true*): Whether to apply full perspective correction in property interpolation (e.g. of texture UV coordinates) during rasterization. If set to *false*, artifacts like warping of textures may become evident.
 
     - **cameraPosition** (vector = *vector(0, 0, 0)*): The position from which the scene is rendered.
 
@@ -220,7 +220,7 @@ A polygon made up of *n* vertices, also known as an n-gon. Single-vertex n-gons 
 
         - "ortho": Map by automatically-generated UV coordinates in 2D screen space. Disregards perspective and rotation. UV coordinates provided by the n-gon's [*`vertex`*](#vertexx-y-z-u-v) objects are ignored.
 
-        - "affine": Affine texture-mapping using the UV coordinates provided by the n-gon's [*`vertex`*](#vertexx-y-z-u-v) objects. For perspective-correct affine mapping, also enable the `options.usePerspectiveInterpolation` property to [*`render`*](#rendertarget-scene-options-pipeline).
+        - "affine": Affine texture-mapping using the UV coordinates provided by the n-gon's [*`vertex`*](#vertexx-y-z-u-v) objects. For perspective-correct affine mapping, also enable the `options.useFullInterpolation` property to [*`render`*](#rendertarget-scene-options-pipeline).
 
     - **textureFiltering** (string = *"none"*): The filtering effect to be applied when rasterizing `material.texture`:
 

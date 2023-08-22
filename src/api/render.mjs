@@ -25,7 +25,7 @@ export const renderDefaultOptions = {
     useDepthBuffer: true,
     useFragmentBuffer: false,
     fragments: undefined,
-    usePerspectiveInterpolation: true,
+    useFullInterpolation: true,
     globalWireframe: false,
     hibernateWhenTargetNotVisible: true,
     lights: [],
@@ -67,7 +67,7 @@ const schema = {
             useDepthBuffer: ["boolean"],
             useFragmentBuffer: ["boolean"],
             fragments: ["object", "undefined"],
-            usePerspectiveInterpolation: ["boolean"],
+            useFullInterpolation: ["boolean"],
             globalWireframe: ["boolean"],
             hibernateWhenTargetNotVisible: ["boolean"],
             lights: [["Light", "object"]],
@@ -200,7 +200,7 @@ function setup_render_state(options = {}, pipeline = {})
     state.cameraDirection = options.cameraDirection;
     state.cameraPosition = options.cameraPosition;
 
-    state.usePerspectiveInterpolation = Boolean(options.usePerspectiveInterpolation);
+    state.useFullInterpolation = Boolean(options.useFullInterpolation);
 
     state.useFragmentBuffer = Boolean(
         options.useFragmentBuffer ||

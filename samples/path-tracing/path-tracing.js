@@ -92,7 +92,7 @@ export const sample = {
             mesh: Rngon.mesh(cornellBox.ngons),
             renderOptions: {
                 nearPlane: 0.1,
-                usePerspectiveInterpolation: true,
+                useFullInterpolation: true,
                 cameraDirection: this.camera.direction,
                 cameraPosition: this.camera.position,
                 useFragmentBuffer: Boolean(parent.PATH_TRACING_ENABLED && this.sceneBVH),

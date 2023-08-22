@@ -33,6 +33,7 @@ export function generic_fill({
     if (!numLeftEdges || !numRightEdges) return true;
 
     const ngon = renderState.ngonCache.ngons[ngonIdx];
+    const fullInterpolation = renderState.useFullInterpolation;
     const useFragmentBuffer = renderState.useFragmentBuffer;
     const fragments = renderState.fragments;
     const fragmentBuffer = renderState.fragmentBuffer.data;
@@ -75,29 +76,32 @@ export function generic_fill({
 
         if (spanWidth > 0)
         {
-            const deltaDepth = ((rightEdge.depth - leftEdge.depth) / spanWidth);
-            let iplDepth = (leftEdge.depth - deltaDepth);
+            const leftW = (fullInterpolation? 1 : leftEdge.invW);
+            const rightW = (fullInterpolation? 1 : rightEdge.invW);
+
+            const deltaInvW = (fullInterpolation? ((rightEdge.invW - leftEdge.invW) / spanWidth) : 0);
+            let iplInvW = (fullInterpolation? (leftEdge.invW - deltaInvW) : 1);
+
+            const deltaDepth = ((rightEdge.depth/rightW - leftEdge.depth/leftW) / spanWidth);
+            let iplDepth = (leftEdge.depth/leftW - deltaDepth);
 
             const deltaShade = ((rightEdge.shade - leftEdge.shade) / spanWidth);
             let iplShade = (leftEdge.shade - deltaShade);
 
-            const deltaU = ((rightEdge.u - leftEdge.u) / spanWidth);
-            let iplU = (leftEdge.u - deltaU);
+            const deltaU = ((rightEdge.u/rightW - leftEdge.u/leftW) / spanWidth);
+            let iplU = (leftEdge.u/leftW - deltaU);
 
-            const deltaV = ((rightEdge.v - leftEdge.v) / spanWidth);
-            let iplV = (leftEdge.v - deltaV);
+            const deltaV = ((rightEdge.v/rightW - leftEdge.v/leftW) / spanWidth);
+            let iplV = (leftEdge.v/leftW - deltaV);
 
-            const deltaInvW = ((rightEdge.invW - leftEdge.invW) / spanWidth);
-            let iplInvW = (leftEdge.invW - deltaInvW);
+            const deltaWorldX = ((rightEdge.worldX/rightW - leftEdge.worldX/leftW) / spanWidth);
+            let iplWorldX = (leftEdge.worldX/leftW - deltaWorldX);
 
-            const deltaWorldX = ((rightEdge.worldX - leftEdge.worldX) / spanWidth);
-            let iplWorldX = (leftEdge.worldX - deltaWorldX);
+            const deltaWorldY = ((rightEdge.worldY/rightW - leftEdge.worldY/leftW) / spanWidth);
+            let iplWorldY = (leftEdge.worldY/leftW - deltaWorldY);
 
-            const deltaWorldY = ((rightEdge.worldY - leftEdge.worldY) / spanWidth);
-            let iplWorldY = (leftEdge.worldY - deltaWorldY);
-
-            const deltaWorldZ = ((rightEdge.worldZ - leftEdge.worldZ) / spanWidth);
-            let iplWorldZ = (leftEdge.worldZ - deltaWorldZ);
+            const deltaWorldZ = ((rightEdge.worldZ/rightW - leftEdge.worldZ/leftW) / spanWidth);
+            let iplWorldZ = (leftEdge.worldZ/leftW - deltaWorldZ);
 
             // Assumes the depth buffer consists of 1 element per pixel.
             let pixelBufferIdx = ((spanStartX + y * pixelBufferWidth) - 1);
@@ -128,7 +132,7 @@ export function generic_fill({
                     continue;
                 }
 
-                let shade = (material.renderVertexShade? iplShade  : 1);
+                let shade = (material.renderVertexShade? iplShade : 1);
 
                 // The color we'll write into the pixel buffer for this pixel; assuming
                 // it passes the alpha test, the depth test, etc.
