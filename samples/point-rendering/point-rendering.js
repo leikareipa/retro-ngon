@@ -17,11 +17,21 @@ export const sample = {
     tick: function()
     {
         this.numTicks++;
+
+        for (const mat of teapot.materials)
+        {
+            mat.vertexShading = (parent.LIGHT_ON? "flat" : "none");
+            mat.color = (parent.LIGHT_ON? Rngon.color(255, 255, 255) : Rngon.color(40, 40, 40));
+        }
     
         return {
             renderOptions: {
+                useDepthBuffer: false,
                 cameraDirection: Rngon.vector(7, 90, 0),
                 cameraPosition: Rngon.vector(-70, 33, -7),
+                lights: [
+                    Rngon.light(30, Rngon.vector(-60, 0, 0)),
+                ],
             },
             mesh: Rngon.mesh(teapot.ngons, {
                 rotate: Rngon.vector(90, 20, (0 + (this.numTicks / 2))),
