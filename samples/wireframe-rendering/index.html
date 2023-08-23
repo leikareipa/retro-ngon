@@ -4,6 +4,7 @@
         <meta name="viewport" content="width=device-width">
         <meta http-equiv="content-type" content="text/html; charset=UTF-8">
         <title>Wireframe rendering - Render sample - Retro n-gon renderer</title>
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" integrity="sha384-gfdkjb5BdAXd+lj+gudLWI+BXq4IuLW5IT+brZEZsLFm++aCMlF1V92rMkPaX4PP" crossorigin="anonymous">
         <link rel="stylesheet" type="text/css" href="../sample-base.css">
         <style>
             body
@@ -14,8 +15,21 @@
     </head>
     <body id="sample-container">
         <div class="content">
+
             <iframe id="render-target">
             </iframe>
+
+            <div class="infoboxes-container additional">
+                <div class="infobox light">
+                    <div class="adjust left" onclick="toggle_light();"></div>
+                    <div class="content" style="width: 6rem;">
+                        <div class="title">Lights</div>
+                        <div class="value"></div>
+                    </div>
+                    <div class="adjust right" onclick="toggle_light();"></div>
+                </div>
+            </div>
+
         </div>
 
         <script>
@@ -27,6 +41,17 @@
             parent.USAGE = `
                 Click to capture mouse, ESDF & QA to move
             `;
+
+            window.LIGHT_ON = true;
+
+            window.toggle_light = function()
+            {
+                window.LIGHT_ON = !window.LIGHT_ON;
+                document.querySelector(".infobox.light .value").innerHTML = (window.LIGHT_ON? "On" : "Off");
+            }
+
+            // Initialize to default values.
+            toggle_light();
             
             const renderer = (new URLSearchParams(window.location.search).get("renderer") || "dev");
             const renderTarget = document.getElementById("render-target");

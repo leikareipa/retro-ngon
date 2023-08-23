@@ -25,6 +25,12 @@ export const sample = {
     {
         this.numTicks++;
         this.camera.update();
+
+        for (const mat of scene.materials)
+        {
+            mat.vertexShading = (parent.LIGHT_ON? "gouraud" : "none");
+            mat.wireframeColor = (parent.LIGHT_ON? Rngon.color(255, 255, 255) : Rngon.color(40, 40, 40));
+        }
     
         return {
             mesh: Rngon.mesh(scene.ngons),
@@ -35,6 +41,13 @@ export const sample = {
                 nearPlane: 100,
                 farPlane: 40000,
                 fov: 55,
+                lights: [
+                    Rngon.light(7000, Rngon.vector(36089, 2600, -33240)),
+                    Rngon.light(4000, Rngon.vector(39548, 2846, -31564)),
+                    Rngon.light(4000, Rngon.vector(44519, 2840, -31380)),
+                    Rngon.light(5000, Rngon.vector(53262, 1681, -28547)),
+                    Rngon.light(5000, Rngon.vector(58280, 1681, -28547)),
+                ],
             },
         };
     },
