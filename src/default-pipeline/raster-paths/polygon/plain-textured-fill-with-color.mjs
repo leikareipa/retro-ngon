@@ -7,7 +7,7 @@
 
 export function poly_plain_textured_fill_with_color({
     renderState,
-    ngonIdx,
+    ngon,
     leftEdges,
     rightEdges,
     numLeftEdges,
@@ -17,7 +17,6 @@ export function poly_plain_textured_fill_with_color({
 {
     if (!numLeftEdges || !numRightEdges) return true;
 
-    const ngon = renderState.ngonCache.ngons[ngonIdx];
     const fullInterpolation = renderState.useFullInterpolation;
     const useFragmentBuffer = renderState.useFragmentBuffer;
     const fragments = renderState.fragments;

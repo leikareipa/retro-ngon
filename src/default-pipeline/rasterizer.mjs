@@ -14,8 +14,8 @@ import {poly_generic_fill} from "./raster-paths/polygon/generic-fill.mjs";
 import {poly_plain_solid_fill} from "./raster-paths/polygon/plain-solid-fill.mjs";
 import {poly_plain_textured_fill} from "./raster-paths/polygon/plain-textured-fill.mjs";
 import {poly_plain_textured_fill_with_color} from "./raster-paths/polygon/plain-textured-fill-with-color.mjs";
-
 import {line_generic_fill} from "./raster-paths/line/generic-fill.mjs";
+import {point_generic_fill} from "./raster-paths/point/generic-fill.mjs";
 
 const maxNumVertsPerPolygon = 500;
 
@@ -27,8 +27,18 @@ const rightVerts = new Array(maxNumVertsPerPolygon);
 // Edges connect a polygon's vertices and provide interpolation parameters for
 // rasterization. For each horizontal span inside the polygon, we'll render pixels
 // from the left edge to the right edge.
-const leftEdges = new Array(maxNumVertsPerPolygon).fill().map(()=>edge_object_factory());
-const rightEdges = new Array(maxNumVertsPerPolygon).fill().map(()=>edge_object_factory());
+const leftEdges = new Array(maxNumVertsPerPolygon).fill().map(()=>({
+    top: undefined,
+    bottom: undefined,
+    start: {},
+    delta: {},
+}));
+const rightEdges = new Array(maxNumVertsPerPolygon).fill().map(()=>({
+    top: undefined,
+    bottom: undefined,
+    start: {},
+    delta: {},
+}));
 
 const vertexSorters = {
     verticalAscending: (vertA, vertB)=>((vertA.y === vertB.y)? 0 : ((vertA.y < vertB.y)? -1 : 1)),
@@ -47,13 +57,14 @@ export function rasterizer(renderState)
     for (let n = 0; n < renderState.ngonCache.count; n++)
     {
         const ngon = renderState.ngonCache.ngons[n];
-
+        Assert?.(ngon.vertices.length, "Encountered an n-gon with 0 vertices");
+        
         switch (ngon.vertices.length)
         {
             case 0: continue;
             case 1: rasterizer.point(renderState, ngon.vertices[0], ngon.material.color); break;
             case 2: rasterizer.line(renderState, ngon.vertices[0], ngon.vertices[1], ngon.material.color); break;
-            default: rasterizer.polygon(renderState, ngon, n); break;
+            default: rasterizer.polygon(renderState, ngon); break;
         }
     }
     
@@ -64,7 +75,6 @@ export function rasterizer(renderState)
 rasterizer.polygon = function(
     renderState,
     ngon = Ngon(),
-    ngonIdx = 0,
 )
 {
     Assert?.(
@@ -132,7 +142,7 @@ rasterizer.polygon = function(
 
         raster_fn({
             renderState,
-            ngonIdx,
+            ngon,
             leftEdges,
             rightEdges,
             numLeftEdges,
@@ -283,7 +293,7 @@ rasterizer.line = function(
     // If the line is fully outside the screen.
     if (
         ((vert1.x < 0) && (vert2.x < 0)) ||
-        ((vert1.x >= renderWidth) && (vert2.y >= renderWidth)) ||
+        ((vert1.x >= renderWidth) && (vert2.x >= renderWidth)) ||
         ((vert1.y < 0) && (vert2.y < 0)) ||
         ((vert1.y >= renderHeight) && (vert2.y < renderHeight))
     ){
@@ -295,9 +305,11 @@ rasterizer.line = function(
     return;
 };
 
+// Rasterizes the given vertex as a point into the render state's pixel buffer.
+// Assumes the vertex to be in screen space.
 rasterizer.point = function(
     renderState,
-    vertex = Vertex(),
+    vert = Vertex(),
     color = Color(),
 )
 {
@@ -306,74 +318,20 @@ rasterizer.point = function(
         return;
     }
 
-    const useFragmentBuffer = renderState.useFragmentBuffer;
-    const depthBuffer = (renderState.useDepthBuffer? renderState.depthBuffer.data : null);
-    const pixelBufferClamped8 = renderState.pixelBuffer.data;
-    const pixelBuffer = new Uint32Array(pixelBufferClamped8.buffer);
     const renderWidth = renderState.pixelBuffer.width;
     const renderHeight = renderState.pixelBuffer.height;
 
-    const x = Math.floor(vertex.x);
-    const y = Math.floor(vertex.y);
-    const pixelBufferIdx = (x + y * renderWidth);
-
-    if ((x < 0) ||
-        (y < 0) ||
-        (x >= renderWidth) ||
-        (y >= renderHeight))
-    {
+    // If the point is fully outside the screen.
+    if (
+        (vert.x < 0) ||
+        (vert.y < 0) ||
+        (vert.x >= renderWidth) ||
+        (vert.y >= renderHeight)
+    ){
         return;
     }
 
-    const depth = (vertex.z / renderState.farPlaneDistance);
-    const shade = vertex.shade;
-    const red = (color.red * shade);
-    const green = (color.green * shade);
-    const blue = (color.blue * shade);
-
-    if (depthBuffer && (depthBuffer[pixelBufferIdx] <= depth))
-    {
-        return;
-    }
-    
-    // Write the pixel.
-    {
-        // If shade is > 1, the color values may exceed 255, in which case we write into
-        // the clamped 8-bit view to get 'free' clamping.
-        if (shade > 1)
-        {
-            const idx = (pixelBufferIdx * 4);
-            pixelBufferClamped8[idx+0] = red;
-            pixelBufferClamped8[idx+1] = green;
-            pixelBufferClamped8[idx+2] = blue;
-            pixelBufferClamped8[idx+3] = 255;
-        }
-        else
-        {
-            pixelBuffer[pixelBufferIdx] = (
-                (255 << 24) +
-                (blue << 16) +
-                (green << 8) +
-                red
-            );
-        }
-
-        if (depthBuffer)
-        {
-            depthBuffer[pixelBufferIdx] = depth;
-        }
-
-        if (useFragmentBuffer)
-        {
-            const fragment = renderState.fragmentBuffer.data[pixelBufferIdx];
-            fragment.textureUScaled = 0;
-            fragment.textureVScaled = 0;
-            fragment.shade = shade;
-            fragment.worldX = vertex.worldX;
-            fragment.worldY = vertex.worldY;
-            fragment.worldZ = vertex.worldZ;
-        }
-    }
+    point_generic_fill(renderState, vert, color);
 
     return;
 }
@@ -453,31 +411,3 @@ rasterizer.stipple = (function()
         return false;
     };
 })();
-
-// Returns an empty polygon edge object. An edge represents an outer edge of a polygon,
-// associated with values that are to be interpolated across the polygon during rasterization.
-function edge_object_factory()
-{
-    return {
-        // The top (smallest Y) and bottom (largest Y) extent of this edge, in screen coordinates.
-        top: undefined,
-        bottom: undefined,
-
-        // The starting values of the properties associated with this edge, at the top of the edge.
-        start: {
-            x: undefined,
-            depth: undefined,
-            shade: undefined,
-            u: undefined,
-            v: undefined,
-            invW: undefined,
-            worldX: undefined,
-            worldY: undefined,
-            worldZ: undefined,
-        },
-
-        // For each property in 'start', a corresponding amount by which that value is changed per
-        // horizontal pixel span from the top of the edge down.
-        delta: {},
-    }
-}

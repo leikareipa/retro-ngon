@@ -22,7 +22,7 @@ const textureDitherFilterKernel = {
 
 export function poly_generic_fill({
     renderState,
-    ngonIdx,
+    ngon,
     leftEdges,
     rightEdges,
     numLeftEdges,
@@ -32,7 +32,6 @@ export function poly_generic_fill({
 {
     if (!numLeftEdges || !numRightEdges) return true;
 
-    const ngon = renderState.ngonCache.ngons[ngonIdx];
     const fullInterpolation = renderState.useFullInterpolation;
     const useFragmentBuffer = renderState.useFragmentBuffer;
     const fragments = renderState.fragments;

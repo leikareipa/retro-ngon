@@ -7,7 +7,7 @@
 
 export function poly_plain_solid_fill({
     renderState,
-    ngonIdx,
+    ngon,
     leftEdges,
     rightEdges,
     numLeftEdges,
@@ -15,7 +15,6 @@ export function poly_plain_solid_fill({
     pixelBuffer32,
 })
 {
-    const ngon = renderState.ngonCache.ngons[ngonIdx];
     const fullInterpolation = renderState.useFullInterpolation;
     const useFragmentBuffer = renderState.useFragmentBuffer;
     const fragments = renderState.fragments;
