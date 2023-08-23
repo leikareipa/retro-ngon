@@ -1,11 +1,11 @@
 /*
- * 2019-2022 Tarpeeksi Hyvae Soft
+ * 2019-2023 Tarpeeksi Hyvae Soft
  * 
  * Software: Retro n-gon renderer
  * 
  */
 
-export function plain_textured_fill_with_color({
+export function poly_plain_solid_fill({
     renderState,
     ngonIdx,
     leftEdges,
@@ -15,8 +15,6 @@ export function plain_textured_fill_with_color({
     pixelBuffer32,
 })
 {
-    if (!numLeftEdges || !numRightEdges) return true;
-
     const ngon = renderState.ngonCache.ngons[ngonIdx];
     const fullInterpolation = renderState.useFullInterpolation;
     const useFragmentBuffer = renderState.useFragmentBuffer;
@@ -27,23 +25,17 @@ export function plain_textured_fill_with_color({
     const pixelBufferWidth = pixelBufferImage.width;
     const depthBuffer = (renderState.useDepthBuffer? renderState.depthBuffer.data : null);
     const material = ngon.material;
-    const texture = (material.texture || null);
-    
-    let textureMipLevel = null;
-    let textureMipLevelIdx = 0;
-    const numMipLevels = texture.mipLevels.length;
-    textureMipLevelIdx = Math.max(0, Math.min((numMipLevels - 1), Math.round((numMipLevels - 1) * ngon.mipLevel)));
-    textureMipLevel = texture.mipLevels[textureMipLevelIdx];
 
     let curLeftEdgeIdx = 0;
     let curRightEdgeIdx = 0;
     let leftEdge = leftEdges[curLeftEdgeIdx];
     let rightEdge = rightEdges[curRightEdgeIdx];
+    
+    if (!numLeftEdges || !numRightEdges) return;
 
-    // Note: We assume the n-gon's vertices to be sorted by increasing Y.
     const ngonStartY = leftEdges[0].top;
     const ngonEndY = leftEdges[numLeftEdges-1].bottom;
-
+    
     let y = (ngonStartY - 1);
     while (++y < ngonEndY)
     {
@@ -65,12 +57,6 @@ export function plain_textured_fill_with_color({
             const deltaShade = ((rightEdge.shade - leftEdge.shade) / spanWidth);
             let iplShade = (leftEdge.shade - deltaShade);
 
-            const deltaU = ((rightEdge.u/rightW - leftEdge.u/leftW) / spanWidth);
-            let iplU = (leftEdge.u/leftW - deltaU);
-
-            const deltaV = ((rightEdge.v/rightW - leftEdge.v/leftW) / spanWidth);
-            let iplV = (leftEdge.v/leftW - deltaV);
-
             let pixelBufferIdx = ((spanStartX + y * pixelBufferWidth) - 1);
 
             let x = (spanStartX - 1);
@@ -80,65 +66,24 @@ export function plain_textured_fill_with_color({
                 {
                     iplDepth += deltaDepth;
                     iplShade += deltaShade;
-                    iplU += deltaU;
-                    iplV += deltaV;
                     iplInvW += deltaInvW;
                     pixelBufferIdx++;
                 }
 
                 const depth = (iplDepth / iplInvW);
-                if (depthBuffer[pixelBufferIdx] <= depth)
+                if (depthBuffer[pixelBufferIdx] <= depth) 
                 {
                     continue;
                 }
 
-                // Compute texture UV coordinates.
-                let u = (iplU / iplInvW);
-                let v = (iplV / iplInvW);
-                switch (material.uvWrapping)
-                {
-                    case "clamp":
-                    {
-                        const upperLimit = (1 - Number.EPSILON);
-
-                        // Negative UV coordinates flip the texture.
-                        u = ((u < 0)? (upperLimit + u) : u);
-                        v = ((v < 0)? (upperLimit + v) : v);
-
-                        u = (textureMipLevel.width * ((u < 0)? 0 : (u > upperLimit)? upperLimit : u));
-                        v = (textureMipLevel.height * ((v < 0)? 0 : (v > upperLimit)? upperLimit : v));
-
-                        break;
-                    }
-                    case "repeat":
-                    {
-                        u = (textureMipLevel.width * (u - Math.floor(u)));
-                        v = (textureMipLevel.height * (v - Math.floor(v)));
-
-                        const uAbs = Math.abs(u);
-                        const vAbs = Math.abs(v);
-                        const uFrac = (uAbs - ~~uAbs);
-                        const vFrac = (vAbs - ~~vAbs);
-
-                        // Modulo for power-of-two. This will also flip the texture for
-                        // negative UV coordinates. Note that we restore the fractional
-                        // part, for potential texture filtering etc. later on.
-                        u = ((u & (textureMipLevel.width - 1)) + uFrac);
-                        v = ((v & (textureMipLevel.height - 1)) + vFrac);
-
-                        break;
-                    }
-                    default: throw new Error("Unrecognized UV wrapping mode."); break;
-                }
-
-                const texelIdx = (((~~u) + (~~v) * textureMipLevel.width) * 4);
-                
                 // Draw the pixel.
                 {
+                    // The color we'll write into the pixel buffer for this pixel; assuming
+                    // it passes the alpha test, the depth test, etc.
                     const shade = (material.renderVertexShade? iplShade : 1);
-                    const red   = (textureMipLevel.pixels[texelIdx + 0] * shade * material.color.unitRange.red);
-                    const green = (textureMipLevel.pixels[texelIdx + 1] * shade * material.color.unitRange.green);
-                    const blue  = (textureMipLevel.pixels[texelIdx + 2] * shade * material.color.unitRange.blue);
+                    const red   = (material.color.red   * shade);
+                    const green = (material.color.green * shade);
+                    const blue  = (material.color.blue  * shade);
 
                     // If shade is > 1, the color values may exceed 255, in which case we write into
                     // the clamped 8-bit view to get 'free' clamping.
@@ -166,8 +111,6 @@ export function plain_textured_fill_with_color({
                     {
                         const fragment = fragmentBuffer[pixelBufferIdx];
                         fragments.ngon? fragment.ngon = ngon : 1;
-                        fragments.textureUScaled? fragment.textureUScaled = ~~u : 1;
-                        fragments.textureVScaled? fragment.textureVScaled = ~~v : 1;
                         fragments.shade? fragment.shade = iplShade : 1;
                     }
                 }
@@ -179,15 +122,11 @@ export function plain_textured_fill_with_color({
             leftEdge.x      += leftEdge.delta.x;
             leftEdge.depth  += leftEdge.delta.depth;
             leftEdge.shade  += leftEdge.delta.shade;
-            leftEdge.u      += leftEdge.delta.u;
-            leftEdge.v      += leftEdge.delta.v;
             leftEdge.invW   += leftEdge.delta.invW;
 
             rightEdge.x     += rightEdge.delta.x;
             rightEdge.depth += rightEdge.delta.depth;
             rightEdge.shade += rightEdge.delta.shade;
-            rightEdge.u     += rightEdge.delta.u;
-            rightEdge.v     += rightEdge.delta.v;
             rightEdge.invW  += rightEdge.delta.invW;
         }
 

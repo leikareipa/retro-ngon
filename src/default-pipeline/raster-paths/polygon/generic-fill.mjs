@@ -1,11 +1,11 @@
 /*
- * 2019-2022 Tarpeeksi Hyvae Soft
+ * 2019-2023 Tarpeeksi Hyvae Soft
  * 
  * Software: Retro n-gon renderer
  * 
  */
 
-import {rasterizer} from "../rasterizer.mjs";
+import {rasterizer} from "../../rasterizer.mjs";
 
 // UV offsets for applying Unreal-style dithered texture filtering.
 // See https://www.flipcode.com/archives/Texturing_As_In_Unreal.shtml.
@@ -20,7 +20,7 @@ const textureDitherFilterKernel = {
     ],
 };
 
-export function generic_fill({
+export function poly_generic_fill({
     renderState,
     ngonIdx,
     leftEdges,

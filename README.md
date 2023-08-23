@@ -45,21 +45,21 @@ Below are benchmark results (frames per second) running in Google Chrome on an A
     </tr>
     <tr>
         <td>1920 &times; 1080</td>
-        <td>255</td>
+        <td>420</td>
         <td>70</td>
         <td>45</td>
         <td>5</td>
     </tr>
     <tr>
         <td>1280 &times; 720</td>
-        <td>340</td>
+        <td>490</td>
         <td>110</td>
         <td>80</td>
         <td>15</td>
     </tr>
     <tr>
         <td>640 &times; 360</td>
-        <td>450</td>
+        <td>610</td>
         <td>250</td>
         <td>170</td>
         <td>60</td>
@@ -109,6 +109,8 @@ The build process should produce the file [distributable/rngon.js](/distributabl
 ```html
 <script src="rngon.js"></script>
 ```
+
+To learn how to use the rendering API, head over to the [quick-start guide](/docs/quick-start.md), or have a look at the [API reference](/docs/api-reference.md).
 
 ### Testing
 

@@ -7,7 +7,6 @@ export const scene = {
 			color: Rngon.color(255,255,255),
 			texture,
 			textureMapping: "affine",
-			hasWireframe: true,
 		};
 
 		const n = Rngon.ngon;

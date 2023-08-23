@@ -288,7 +288,6 @@ function run_bencmark(sceneMeshes = [], renderOptions = {}, renderPipeline = {})
                 scene: sceneMeshes,
                 options: {
                     ...renderOptions,
-                    useDepthBuffer: true,
                     cameraDirection: Rngon.vector(cameraDirection.x, cameraDirection.y, cameraDirection.z),
                     cameraPosition: cameraPosition,
                 },

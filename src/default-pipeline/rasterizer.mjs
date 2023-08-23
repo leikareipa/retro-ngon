@@ -10,10 +10,12 @@ import {Vertex} from "../api/vertex.mjs";
 import {Color} from "../api/color.mjs";
 import {Assert} from "../assert.mjs";
 
-import {generic_fill} from "./raster-paths/generic-fill.mjs";
-import {plain_solid_fill} from "./raster-paths/plain-solid-fill.mjs";
-import {plain_textured_fill} from "./raster-paths/plain-textured-fill.mjs";
-import {plain_textured_fill_with_color} from "./raster-paths/plain-textured-fill-with-color.mjs";
+import {poly_generic_fill} from "./raster-paths/polygon/generic-fill.mjs";
+import {poly_plain_solid_fill} from "./raster-paths/polygon/plain-solid-fill.mjs";
+import {poly_plain_textured_fill} from "./raster-paths/polygon/plain-textured-fill.mjs";
+import {poly_plain_textured_fill_with_color} from "./raster-paths/polygon/plain-textured-fill-with-color.mjs";
+
+import {line_generic_fill} from "./raster-paths/line/generic-fill.mjs";
 
 const maxNumVertsPerPolygon = 500;
 
@@ -91,10 +93,44 @@ rasterizer.polygon = function(
     sort_vertices();
     define_edges();
 
-    // Rasterize the polygon using the most appropriate raster shader.
+    // Rasterize the polygon using the most appropriate raster path.
     if (material.hasFill)
     {
-        const rasterShaderArgs = {
+        let raster_fn = poly_generic_fill;
+
+        if (
+            material.texture &&
+            depthBuffer &&
+            !(fragments.worldX || fragments.worldY || fragments.worldZ) &&
+            !material.allowAlphaReject &&
+            !material.allowAlphaBlend &&
+            (material.textureMapping === "affine") &&
+            (material.textureFiltering !== "dither")
+        ){
+            if (
+                (material.color.red === 255) &&
+                (material.color.green === 255) &&
+                (material.color.blue === 255) &&
+                (material.textureFiltering === "none")
+            ){
+                raster_fn = poly_plain_textured_fill;
+            }
+            else
+            {
+                raster_fn = poly_plain_textured_fill_with_color;
+            }
+        }
+        else if (
+            !material.texture &&
+            depthBuffer &&
+            !(fragments.worldX || fragments.worldY || fragments.worldZ) &&
+            !material.allowAlphaReject &&
+            !material.allowAlphaBlend
+        ){
+            raster_fn = poly_plain_solid_fill;
+        }
+
+        raster_fn({
             renderState,
             ngonIdx,
             leftEdges,
@@ -102,50 +138,7 @@ rasterizer.polygon = function(
             numLeftEdges,
             numRightEdges,
             pixelBuffer32,
-        };
-
-        if (!renderState.modules.raster_shader?.(rasterShaderArgs))
-        {
-            let raster_fn = undefined;
-
-            if (
-                material.texture &&
-                depthBuffer &&
-                !(fragments.worldX || fragments.worldY || fragments.worldZ) &&
-                !material.allowAlphaReject &&
-                !material.allowAlphaBlend &&
-                (material.textureMapping === "affine") &&
-                (material.textureFiltering !== "dither")
-            ){
-                if (
-                    (material.color.red === 255) &&
-                    (material.color.green === 255) &&
-                    (material.color.blue === 255) &&
-                    (material.textureFiltering === "none")
-                ){
-                    raster_fn = plain_textured_fill;
-                }
-                else
-                {
-                    raster_fn = plain_textured_fill_with_color;
-                }
-            }
-            else if (
-                !material.texture &&
-                depthBuffer &&
-                !(fragments.worldX || fragments.worldY || fragments.worldZ) &&
-                !material.allowAlphaReject &&
-                !material.allowAlphaBlend
-            ){
-                raster_fn = plain_solid_fill;
-            }
-            else
-            {
-                raster_fn = generic_fill;
-            }
-
-            raster_fn(rasterShaderArgs);
-        }
+        });
     }
 
     // Draw a wireframe around any n-gons that wish for one.
@@ -187,10 +180,8 @@ rasterizer.polygon = function(
             const endX = Math.min(renderWidth, Math.max(0, Math.floor(vert2.x)));
             const deltaX = ((endX - startX) / edgeHeight);
 
-            const depth1 = (vert1.z / renderState.farPlaneDistance);
-            const depth2 = (vert2.z / renderState.farPlaneDistance);
-            const startDepth = (depth1 / w1);
-            const deltaDepth = (((depth2 / w2) - startDepth) / edgeHeight);
+            const startDepth = ((vert1.z / renderState.farPlaneDistance) / w1);
+            const deltaDepth = ((((vert2.z / renderState.farPlaneDistance) / w2) - startDepth) / edgeHeight);
 
             const startShade = vert1.shade;
             const deltaShade = ((vert2.shade - startShade) / edgeHeight);
@@ -273,12 +264,12 @@ rasterizer.polygon = function(
 }
 
 // Rasterizes a line between the two given vertices into the render state's pixel buffer.
+// Assumes the vertices are in screen space.
 rasterizer.line = function(
     renderState,
     vert1 = Vertex(),
     vert2 = Vertex(),
     color = Color(),
-    ignoreDepthBuffer = true
 )
 {
     if (color.alpha !== 255)
@@ -298,126 +289,10 @@ rasterizer.line = function(
     ){
         return;
     }
-    
-    const fullInterpolation = renderState.useFullInterpolation;
-    const farPlane = renderState.farPlaneDistance;
-    const useFragmentBuffer = renderState.useFragmentBuffer;
-    const depthBuffer = (renderState.useDepthBuffer? renderState.depthBuffer.data : null);
-    const pixelBufferClamped8 = renderState.pixelBuffer.data;
-    const pixelBuffer = new Uint32Array(pixelBufferClamped8.buffer);
- 
-    const startX = Math.floor(vert1.x);
-    const startY = Math.floor(vert1.y);
-    const endX = Math.floor(vert2.x);
-    const endY = Math.ceil(vert2.y);
-    let lineLength = Math.ceil(Math.sqrt((endX - startX) * (endX - startX) + (endY - startY) * (endY - startY)));
 
-    // Establish interpolation parameters.
-    const w1 = (fullInterpolation? vert1.w : 1);
-    const w2 = (fullInterpolation? vert2.w : 1);
-    const startDepth = (vert1.z / farPlane);
-    const endDepth = (vert2.z / farPlane);
-    const deltaDepth = (((endDepth / w2) - (startDepth / w1)) / lineLength);
-    const deltaShade = (((vert2.shade / w2) - (vert1.shade / w2)) / lineLength);
-    const deltaInvW = (((1 / w2) - (1 / w1)) / lineLength);
-    let depth = (startDepth / w1);
-    let shade = (vert1.shade / w1);
-    let invW = (1 / w1);
-    let worldX, worldY, worldZ, deltaWorldX, deltaWorldY, deltaWorldZ;
-    if (useFragmentBuffer)
-    {
-        worldX = (vert1.worldX / w1);
-        worldY = (vert1.worldY / w1);
-        worldZ = (vert1.worldZ / w1);
-        deltaWorldX = (((vert2.worldX / w2) - (vert1.worldX / w1)) / lineLength);
-        deltaWorldY = (((vert2.worldY / w2) - (vert1.worldY / w1)) / lineLength);
-        deltaWorldZ = (((vert2.worldZ / w2) - (vert1.worldZ / w1)) / lineLength);
-    }
-    
-    // Render the line.
-    let curX = startX;
-    let curY = startY;
-    const deltaX = ((endX - startX) / lineLength);
-    const deltaY = ((endY - startY) / lineLength);
-    while (lineLength--)
-    {
-        const x = ~~curX;
-        const y = ~~curY;
-        
-        // Rasterize a pixel.
-        if (
-            (x >= 0) &&
-            (y >= 0) &&
-            (x < renderWidth) &&
-            (y < renderHeight)
-        ){
-            const depthPersp = (depth / invW);
-            const shadePersp = (shade / invW);
-            const pixelBufferIdx = (x + y * renderWidth);
+    line_generic_fill(renderState, vert1, vert2, color);
 
-            if (
-                ignoreDepthBuffer ||
-                !depthBuffer ||
-                (depthBuffer[pixelBufferIdx] > depthPersp)
-            ){
-                const red = (color.red * shadePersp);
-                const green = (color.green * shadePersp);
-                const blue = (color.blue * shadePersp);
-                
-                // If shade is > 1, the color values may exceed 255, in which case we write into
-                // the clamped 8-bit view to get 'free' clamping.
-                if (shadePersp > 1)
-                {
-                    const idx = (pixelBufferIdx * 4);
-                    pixelBufferClamped8[idx+0] = red;
-                    pixelBufferClamped8[idx+1] = green;
-                    pixelBufferClamped8[idx+2] = blue;
-                    pixelBufferClamped8[idx+3] = 255;
-                }
-                else
-                {
-                    pixelBuffer[pixelBufferIdx] = (
-                        (255 << 24) +
-                        (blue << 16) +
-                        (green << 8) +
-                        ~~red
-                    );
-                }
-
-                if (depthBuffer && !ignoreDepthBuffer)
-                {
-                    depthBuffer[pixelBufferIdx] = depthPersp;
-                }
-
-                if (useFragmentBuffer)
-                {
-                    const fragment = renderState.fragmentBuffer.data[pixelBufferIdx];
-                    fragment.textureUScaled = undefined; // We don't support textures on lines.
-                    fragment.textureVScaled = undefined;
-                    fragment.shade = shade;
-                    fragment.worldX = worldX;
-                    fragment.worldY = worldY;
-                    fragment.worldZ = worldZ;
-                }
-            }
-        }
-
-        // Increment interpolated values.
-        {
-            curX += deltaX;
-            curY += deltaY;
-            depth += deltaDepth;
-            shade += deltaShade;
-            invW += deltaInvW;
-
-            if (useFragmentBuffer)
-            {
-                worldX += deltaWorldX;
-                worldY += deltaWorldY;
-                worldZ += deltaWorldZ;
-            }
-        }
-    }
+    return;
 };
 
 rasterizer.point = function(

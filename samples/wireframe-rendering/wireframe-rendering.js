@@ -29,6 +29,7 @@ export const sample = {
         return {
             mesh: Rngon.mesh(scene.ngons),
             renderOptions: {
+                useDepthBuffer: false,
                 cameraDirection: this.camera.direction,
                 cameraPosition: this.camera.position,
                 nearPlane: 100,
