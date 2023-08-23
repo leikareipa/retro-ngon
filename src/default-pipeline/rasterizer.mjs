@@ -17,6 +17,7 @@ import {poly_plain_textured_fill_with_color} from "./raster-paths/polygon/plain-
 import {line_generic_fill} from "./raster-paths/line/generic-fill.mjs";
 import {line_plain_fill} from "./raster-paths/line/plain-fill.mjs";
 import {point_generic_fill} from "./raster-paths/point/generic-fill.mjs";
+import {point_plain_fill} from "./raster-paths/point/plain-fill.mjs";
 
 const maxNumVertsPerPolygon = 500;
 
@@ -318,7 +319,7 @@ rasterizer.line = function(
 };
 
 // Rasterizes the given vertex as a point into the render state's pixel buffer.
-// Assumes the vertex to be in screen space.
+// Assumes the vertex is in screen space.
 rasterizer.point = function(
     renderState,
     vert = Vertex(),
@@ -343,13 +344,25 @@ rasterizer.point = function(
         return;
     }
 
-    point_generic_fill(renderState, vert, color);
+    // Rasterize the point using the most appropriate raster path.
+    {
+        let raster_fn = point_generic_fill;
+
+        if (
+            !renderState.useDepthBuffer &&
+            (vert.shade === 1)
+        ){
+            raster_fn = point_plain_fill;
+        }
+
+        raster_fn(renderState, vert, color);
+    }
 
     return;
 }
 
-// For emulating pixel transparency with stipple patterns.
-rasterizer.stipple = (function()
+// For emulating alpha blending with stipple patterns.
+rasterizer.stipple_test = (function()
 {
     const patterns = [
         // ~99% transparent.

@@ -17,7 +17,6 @@ export function line_plain_fill(
 {
     const renderWidth = renderState.pixelBuffer.width;
     const renderHeight = renderState.pixelBuffer.height;
-    const pixelBuffer32 = new Uint32Array(renderState.pixelBuffer.data.buffer);
     const startX = Math.floor(vert1.x);
     const startY = Math.floor(vert1.y);
     const endX = Math.floor(vert2.x);
@@ -47,7 +46,7 @@ export function line_plain_fill(
             (y < renderHeight)
         ){
             const pixelBufferIdx = (x + y * renderWidth);
-            pixelBuffer32[pixelBufferIdx] = color32;
+            renderState.pixelBuffer32[pixelBufferIdx] = color32;
         }
 
         realX += deltaX;
