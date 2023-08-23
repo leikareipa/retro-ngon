@@ -35,7 +35,7 @@ export const sample = {
                 vertexShader: (
                     (parent.SHADER_PIPELINE_ENABLED && parent.ACTIVE_SHADER.function)
                         ? parent.ACTIVE_SHADER.function.bind(this)
-                        : null
+                        : undefined
                 ),
             },
             mesh: Rngon.mesh(scene.ngons, {

@@ -269,7 +269,7 @@ function apply_lighting(ngon, renderState)
             lightDirection.z = (light.position.z - faceZ);
             Vector.normalize(lightDirection);
 
-            const angle = ((ngon.vertices.length < 3)? 1 : Vector.dot(ngon.vertexNormals[v], lightDirection));
+            const angle = ((ngon.vertices.length < 3)? 1 : Vector.dot(ngon.normal, lightDirection));
             const shadeFromThisLight = Math.max(0, Math.min(1, angle));
             faceShade = Math.max(faceShade, Math.min(1, (shadeFromThisLight * distanceMul * light.intensity)));
         }
