@@ -15,8 +15,6 @@ export function point_generic_fill(
 )
 {
     const depthBuffer = (renderState.useDepthBuffer? renderState.depthBuffer.data : null);
-    const pixelBufferClamped8 = renderState.pixelBuffer.data;
-    const pixelBuffer32 = new Uint32Array(pixelBufferClamped8.buffer);
     const renderWidth = renderState.pixelBuffer.width;
     const x = Math.floor(vertex.x);
     const y = Math.floor(vertex.y);
@@ -40,14 +38,14 @@ export function point_generic_fill(
         if (shade > 1)
         {
             const idx = (pixelBufferIdx * 4);
-            pixelBufferClamped8[idx+0] = red;
-            pixelBufferClamped8[idx+1] = green;
-            pixelBufferClamped8[idx+2] = blue;
-            pixelBufferClamped8[idx+3] = 255;
+            renderState.pixelBuffer8[idx+0] = red;
+            renderState.pixelBuffer8[idx+1] = green;
+            renderState.pixelBuffer8[idx+2] = blue;
+            renderState.pixelBuffer8[idx+3] = 255;
         }
         else
         {
-            pixelBuffer32[pixelBufferIdx] = (
+            renderState.pixelBuffer32[pixelBufferIdx] = (
                 (255 << 24) +
                 (blue << 16) +
                 (green << 8) +

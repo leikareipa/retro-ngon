@@ -94,7 +94,6 @@ rasterizer.polygon = function(
     const renderWidth = renderState.pixelBuffer.width;
     const renderHeight = renderState.pixelBuffer.height;
     const material = ngon.material;
-    const pixelBuffer32 = new Uint32Array(renderState.pixelBuffer.data.buffer);
 
     let numLeftVerts = 0;
     let numRightVerts = 0;
@@ -148,7 +147,6 @@ rasterizer.polygon = function(
             rightEdges,
             numLeftEdges,
             numRightEdges,
-            pixelBuffer32,
         });
     }
 

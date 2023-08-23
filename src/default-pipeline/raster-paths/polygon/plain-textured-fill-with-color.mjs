@@ -12,7 +12,6 @@ export function poly_plain_textured_fill_with_color({
     rightEdges,
     numLeftEdges,
     numRightEdges,
-    pixelBuffer32,
 })
 {
     if (!numLeftEdges || !numRightEdges) return true;
@@ -21,9 +20,7 @@ export function poly_plain_textured_fill_with_color({
     const useFragmentBuffer = renderState.useFragmentBuffer;
     const fragments = renderState.fragments;
     const fragmentBuffer = renderState.fragmentBuffer.data;
-    const pixelBufferImage = renderState.pixelBuffer;
-    const pixelBufferClamped8 = pixelBufferImage.data;
-    const pixelBufferWidth = pixelBufferImage.width;
+    const pixelBufferWidth = renderState.pixelBuffer.width;
     const depthBuffer = (renderState.useDepthBuffer? renderState.depthBuffer.data : null);
     const material = ngon.material;
     const texture = (material.texture || null);
@@ -144,14 +141,14 @@ export function poly_plain_textured_fill_with_color({
                     if (shade > 1)
                     {
                         const idx = (pixelBufferIdx * 4);
-                        pixelBufferClamped8[idx+0] = red;
-                        pixelBufferClamped8[idx+1] = green;
-                        pixelBufferClamped8[idx+2] = blue;
-                        pixelBufferClamped8[idx+3] = 255;
+                        renderState.pixelBuffer8[idx+0] = red;
+                        renderState.pixelBuffer8[idx+1] = green;
+                        renderState.pixelBuffer8[idx+2] = blue;
+                        renderState.pixelBuffer8[idx+3] = 255;
                     }
                     else
                     {
-                        pixelBuffer32[pixelBufferIdx] = (
+                        renderState.pixelBuffer32[pixelBufferIdx] = (
                             (255 << 24) +
                             (blue << 16) +
                             (green << 8) +

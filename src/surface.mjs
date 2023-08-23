@@ -256,6 +256,8 @@ function massage_state(renderState, renderContext, surfaceWidth, surfaceHeight)
         (renderState.pixelBuffer.height != surfaceHeight)
     ){
         renderState.pixelBuffer = renderContext.createImageData(surfaceWidth, surfaceHeight);
+        renderState.pixelBuffer8 = new Uint8ClampedArray(renderState.pixelBuffer.data.buffer);
+        renderState.pixelBuffer32 = new Uint32Array(renderState.pixelBuffer.data.buffer);
     }
 
     if (

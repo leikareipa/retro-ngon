@@ -27,7 +27,6 @@ export function poly_generic_fill({
     rightEdges,
     numLeftEdges,
     numRightEdges,
-    pixelBuffer32,
 })
 {
     if (!numLeftEdges || !numRightEdges) return true;
@@ -37,9 +36,7 @@ export function poly_generic_fill({
     const fragments = renderState.fragments;
     const fragmentBuffer = renderState.fragmentBuffer.data;
     const depthBuffer = (renderState.useDepthBuffer? renderState.depthBuffer.data : null);
-    const pixelBufferImage = renderState.pixelBuffer;
-    const pixelBufferClamped8 = pixelBufferImage.data;
-    const pixelBufferWidth = pixelBufferImage.width;
+    const pixelBufferWidth = renderState.pixelBuffer.width;
     const material = ngon.material;
     const texture = (material.texture || null);
     const uvDitherKernel = (
@@ -146,7 +143,7 @@ export function poly_generic_fill({
                     // n-gons whose base color alpha is less than 255; so we don't test for
                     // material.allowAlphaReject.
 
-                    if (material.allowAlphaBlend && rasterizer.stipple(material.color.alpha, x, y))
+                    if (material.allowAlphaBlend && rasterizer.stipple_test(material.color.alpha, x, y))
                     {
                         continue;
                     }
@@ -267,13 +264,12 @@ export function poly_generic_fill({
 
                     const texelIdx = (((~~u) + (~~v) * textureMipLevel.width) * 4);
 
-                    if (material.allowAlphaReject &&
-                        (textureMipLevel.pixels[texelIdx + 3] !== 255))
+                    if (material.allowAlphaReject && (textureMipLevel.pixels[texelIdx + 3] !== 255))
                     {
                         continue;
                     }
 
-                    if (material.allowAlphaBlend && rasterizer.stipple(material.color.alpha, x, y))
+                    if (material.allowAlphaBlend && rasterizer.stipple_test(material.color.alpha, x, y))
                     {
                         continue;
                     }
@@ -295,14 +291,14 @@ export function poly_generic_fill({
                     if (shade > 1)
                     {
                         const idx = (pixelBufferIdx * 4);
-                        pixelBufferClamped8[idx+0] = red;
-                        pixelBufferClamped8[idx+1] = green;
-                        pixelBufferClamped8[idx+2] = blue;
-                        pixelBufferClamped8[idx+3] = 255;
+                        renderState.pixelBuffer8[idx+0] = red;
+                        renderState.pixelBuffer8[idx+1] = green;
+                        renderState.pixelBuffer8[idx+2] = blue;
+                        renderState.pixelBuffer8[idx+3] = 255;
                     }
                     else
                     {
-                        pixelBuffer32[pixelBufferIdx] = (
+                        renderState.pixelBuffer32[pixelBufferIdx] = (
                             (255 << 24) +
                             (blue << 16) +
                             (green << 8) +

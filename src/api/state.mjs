@@ -33,6 +33,10 @@ function default_state() {
         // with the rendered frame's pixel values.
         pixelBuffer: undefined,
 
+        // Typed array (Uint32Array Uint8ClampedArray) views to the pixel buffer's data.
+        pixelBuffer8: undefined,
+        pixelBuffer32: undefined,
+
         // For each pixel in pixelBuffer, an associated depth value. The values are in
         // the range [0,1], where 0 corresponds to nearPlane and 1 to farPlane.
         useDepthBuffer: false,
