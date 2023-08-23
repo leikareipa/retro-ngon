@@ -237,16 +237,8 @@ export function first_person_camera(domElementId = "", {
             (movementStatus.forward? 1 : movementStatus.backward? -1 : 0)
         );
 
-        if (Rngon.vector.normalize)
-        {
-            Rngon.vector.normalize(accumulatedMovement);
-            Rngon.vector.transform(accumulatedMovement, cameraRotationMatrix);
-        }
-        else
-        {
-            accumulatedMovement.normalize();
-            accumulatedMovement.transform(cameraRotationMatrix);
-        }
+        Rngon.vector.normalize(accumulatedMovement);
+        Rngon.vector.transform(accumulatedMovement, cameraRotationMatrix);
 
         accumulatedMovement.x *= movementSpeed;
         accumulatedMovement.y *= movementSpeed;

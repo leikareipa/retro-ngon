@@ -5,11 +5,11 @@
  *
  */
 
-import {Assert} from "../core/assert.mjs";
+import {Assert} from "./assert.mjs";
 import {Matrix} from "./matrix.mjs";
-import {Ngon} from "../api/ngon.mjs";
-import {Vertex} from "../api/vertex.mjs";
-import {Vector} from "../api/vector.mjs";
+import {Ngon} from "./api/ngon.mjs";
+import {Vertex} from "./api/vertex.mjs";
+import {Vector} from "./api/vector.mjs";
 
 // A surface for rendering onto. Will also paint the rendered image onto a HTML5 <canvas>
 // element unless the 'canvasElement' parameter is null, in which case rendering will be

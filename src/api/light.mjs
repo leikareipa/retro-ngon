@@ -5,7 +5,7 @@
  *
  */
 
-import {validate_object} from "../core/schema.mjs";
+import {validate_object} from "../schema.mjs";
 import {Vector} from "./vector.mjs";
 
 const schema = {

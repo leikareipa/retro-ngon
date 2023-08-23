@@ -5,7 +5,7 @@
  *
  */
 
-import {Matrix} from "../../src/core/matrix.mjs";
+import {Matrix} from "../../src/matrix.mjs";
 import {good, tr4} from "./utest2.mjs";
 
 export default ()=>{

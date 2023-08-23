@@ -32,7 +32,7 @@
  *
  */
 
-import {Assert} from "../core/assert.mjs";
+import {Assert} from "./assert.mjs";
 
 const PI_180 = (Math.PI / 180);
 

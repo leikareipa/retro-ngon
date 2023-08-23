@@ -7,7 +7,7 @@
 
 import {mesh_to_object_space_matrix} from "../api/mesh.mjs";
 import {Vector} from "../api/vector.mjs";
-import {Matrix} from "../core/matrix.mjs";
+import {Matrix} from "../matrix.mjs";
 import {
     ngon_clip_to_viewport,
     ngon_perspective_divide,

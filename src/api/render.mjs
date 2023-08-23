@@ -5,12 +5,12 @@
  *
  */
 
-import {validate_object} from "../core/schema.mjs";
+import {validate_object} from "../schema.mjs";
 import {rasterizer} from "../default-pipeline/rasterizer.mjs";
 import {transform_clip_lighter} from "../default-pipeline/transform-clip-lighter.mjs";
 import {surface_wiper} from "../default-pipeline/surface-wiper.mjs";
-import {Surface} from "../core/surface.mjs";
-import {Assert} from "../core/assert.mjs";
+import {Surface} from "../surface.mjs";
+import {Assert} from "../assert.mjs";
 import {Vector} from "./vector.mjs";
 import {State} from "../api/state.mjs";
 

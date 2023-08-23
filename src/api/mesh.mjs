@@ -5,8 +5,8 @@
  *
  */
 
-import {validate_object} from "../core/schema.mjs";
-import {Matrix} from "../core/matrix.mjs";
+import {validate_object} from "../schema.mjs";
+import {Matrix} from "../matrix.mjs";
 import {Vector} from "./vector.mjs";
 import {Ngon} from "./ngon.mjs";
 

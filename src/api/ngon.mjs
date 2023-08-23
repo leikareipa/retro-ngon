@@ -5,7 +5,7 @@
  *
  */
 
-import {validate_object} from "../core/schema.mjs";
+import {validate_object} from "../schema.mjs";
 import {Vertex} from "./vertex.mjs";
 import {Vector} from "./vector.mjs";
 import {Color} from "./color.mjs";
