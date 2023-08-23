@@ -13,11 +13,16 @@ export function line_generic_fill(
     vert1 = Vertex(),
     vert2 = Vertex(),
     color = Color(),
+    renderShade = true,
 )
 {
+    const depthBuffer = (renderState.useDepthBuffer? renderState.depthBuffer.data : null);
     const renderWidth = renderState.pixelBuffer.width;
     const renderHeight = renderState.pixelBuffer.height;
-    const pixelBuffer32 = new Uint32Array(renderState.pixelBuffer.data.buffer);
+    const pixelBufferClamped8 = renderState.pixelBuffer.data;
+    const pixelBuffer32 = new Uint32Array(pixelBufferClamped8.buffer);
+
+    // Interpolated values.
     const startX = Math.floor(vert1.x);
     const startY = Math.floor(vert1.y);
     const endX = Math.floor(vert2.x);
@@ -25,33 +30,65 @@ export function line_generic_fill(
     let lineLength = Math.ceil(Math.sqrt((endX - startX)**2 + (endY - startY)**2));
     const deltaX = ((endX - startX) / lineLength);
     const deltaY = ((endY - startY) / lineLength);
-    const color32 = (
-        (255 << 24) +
-        (color.blue << 16) +
-        (color.green << 8) +
-        ~~color.red
-    );
+    const startDepth = (vert1.z / renderState.farPlaneDistance);
+    const endDepth = (vert2.z / renderState.farPlaneDistance);
+    const deltaDepth = ((endDepth - startDepth) / lineLength);
+    const startShade = (renderShade? vert1.shade : 1);
+    const endShade = (renderShade? vert2.shade : 1);
+    const deltaShade = ((endShade - startShade) / lineLength);
 
     // Rasterize the line.
     let realX = startX;
     let realY = startY;
+    let depth = startDepth;
+    let shade = startShade;
     while (lineLength--)
     {
         const x = ~~realX;
         const y = ~~realY;
+        const pixelBufferIdx = (x + y * renderWidth);
         
         if (
             (x >= 0) &&
             (y >= 0) &&
             (x < renderWidth) &&
-            (y < renderHeight)
+            (y < renderHeight) &&
+            (!depthBuffer || (depthBuffer[pixelBufferIdx] > depth))
         ){
-            const pixelBufferIdx = (x + y * renderWidth);
-            pixelBuffer32[pixelBufferIdx] = color32;
+            const red = (color.red * shade);
+            const green = (color.green * shade);
+            const blue = (color.blue * shade);
+    
+            // If shade is > 1, the color values may exceed 255, in which case we write into
+            // the clamped 8-bit view to get 'free' clamping.
+            if (shade > 1)
+            {
+                const idx = (pixelBufferIdx * 4);
+                pixelBufferClamped8[idx+0] = red;
+                pixelBufferClamped8[idx+1] = green;
+                pixelBufferClamped8[idx+2] = blue;
+                pixelBufferClamped8[idx+3] = 255;
+            }
+            else
+            {
+                pixelBuffer32[pixelBufferIdx] = (
+                    (255 << 24) +
+                    (blue << 16) +
+                    (green << 8) +
+                    ~~red
+                );
+            }
+
+            if (depthBuffer)
+            {
+                depthBuffer[pixelBufferIdx] = depth;
+            }
         }
 
         realX += deltaX;
         realY += deltaY;
+        depth += deltaDepth;
+        shade += deltaShade;
     }
 
     return true;

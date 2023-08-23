@@ -15,6 +15,7 @@ import {poly_plain_solid_fill} from "./raster-paths/polygon/plain-solid-fill.mjs
 import {poly_plain_textured_fill} from "./raster-paths/polygon/plain-textured-fill.mjs";
 import {poly_plain_textured_fill_with_color} from "./raster-paths/polygon/plain-textured-fill-with-color.mjs";
 import {line_generic_fill} from "./raster-paths/line/generic-fill.mjs";
+import {line_plain_fill} from "./raster-paths/line/plain-fill.mjs";
 import {point_generic_fill} from "./raster-paths/point/generic-fill.mjs";
 
 const maxNumVertsPerPolygon = 500;
@@ -63,7 +64,7 @@ export function rasterizer(renderState)
         {
             case 0: continue;
             case 1: rasterizer.point(renderState, ngon.vertices[0], ngon.material.color); break;
-            case 2: rasterizer.line(renderState, ngon.vertices[0], ngon.vertices[1], ngon.material.color); break;
+            case 2: rasterizer.line(renderState, ngon.vertices[0], ngon.vertices[1], ngon.material.color, ngon.material.renderVertexShade); break;
             default: rasterizer.polygon(renderState, ngon); break;
         }
     }
@@ -156,12 +157,12 @@ rasterizer.polygon = function(
     {
         for (let l = 1; l < numLeftVerts; l++)
         {
-            rasterizer.line(renderState, leftVerts[l-1], leftVerts[l], material.wireframeColor);
+            rasterizer.line(renderState, leftVerts[l-1], leftVerts[l], material.wireframeColor, material.renderVertexShade);
         }
 
         for (let r = 1; r < numRightVerts; r++)
         {
-            rasterizer.line(renderState, rightVerts[r-1], rightVerts[r], material.wireframeColor);
+            rasterizer.line(renderState, rightVerts[r-1], rightVerts[r], material.wireframeColor, material.renderVertexShade);
         }
     }
 
@@ -280,6 +281,7 @@ rasterizer.line = function(
     vert1 = Vertex(),
     vert2 = Vertex(),
     color = Color(),
+    renderShade = true,
 )
 {
     if (color.alpha !== 255)
@@ -300,7 +302,19 @@ rasterizer.line = function(
         return;
     }
 
-    line_generic_fill(renderState, vert1, vert2, color);
+    // Rasterize the line using the most appropriate raster path.
+    {
+        let raster_fn = line_generic_fill;
+
+        if (
+            !renderState.useDepthBuffer &&
+            (!renderShade || ((vert1.shade === 1) && (vert2.shade === 1)))
+        ){
+            raster_fn = line_plain_fill;
+        }
+
+        raster_fn(renderState, vert1, vert2, color, renderShade);
+    }
 
     return;
 };
