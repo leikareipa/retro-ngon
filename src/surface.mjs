@@ -123,7 +123,7 @@ export function Surface(canvasElement, renderState)
             // Apply a custom pixel shader effect on renderState.pixelBuffer.
             if (renderState.usePixelShader)
             {
-                const args = {
+                renderState.modules.pixel_shader({
                     renderState,
                     renderWidth: surfaceWidth,
                     renderHeight: surfaceHeight,
@@ -132,28 +132,7 @@ export function Surface(canvasElement, renderState)
                     depthBuffer: renderState.depthBuffer.data,
                     ngonCache: renderState.ngonCache.ngons,
                     cameraPosition: renderState.cameraPosition,
-                };
-
-                const paramNamesString = `{${Object.keys(args).join(",")}}`;
-
-                switch (typeof renderState.modules.pixel_shader)
-                {
-                    case "function": {
-                        renderState.modules.pixel_shader(args);
-                        break;
-                    }
-                    // Shader functions as strings are supported to allow shaders to be
-                    // used in Web Workers. These strings are expected to be of - or
-                    // equivalent to - the form "(a)=>{console.log(a)}".
-                    case "string": {
-                        Function(paramNamesString, `(${renderState.modules.pixel_shader})(${paramNamesString})`)(args);
-                        break;
-                    }
-                    default: {
-                        throw new Error("Unrecognized type of pixel shader function.");
-                        break;
-                    }
-                }
+                });
             }
 
             if (!renderOffscreen)

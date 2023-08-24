@@ -132,34 +132,10 @@ export function transform_clip_lighter({
                 // Apply an optional, user-defined vertex shader.
                 if (renderState.useVertexShader)
                 {
-                    const args = [
+                    renderState.modules.vertex_shader(
                         cachedNgon,
                         renderState.cameraPosition,
-                    ];
-
-                    const paramNamesString = "ngon, cameraPos";
-
-                    switch (typeof renderState.modules.vertex_shader)
-                    {
-                        case "function":
-                        {
-                            renderState.modules.vertex_shader(...args);
-                            break;
-                        }
-                        // Shader functions as strings are supported to allow shaders to be
-                        // used in Web Workers. These strings are expected to be of - or
-                        // equivalent to - the form "(a)=>{console.log(a)}".
-                        case "string":
-                        {
-                            Function(paramNamesString, `(${renderState.modules.vertex_shader})(${paramNamesString})`)(...args);
-                            break;
-                        }
-                        default:
-                        {
-                            throw new Error("Unrecognized type of vertex shader function.");
-                            break;
-                        }
-                    }
+                    );
                 }
             }
 
