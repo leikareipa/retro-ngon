@@ -6,6 +6,7 @@
  */
 
 import {mesh_to_object_space_matrix} from "../api/mesh.mjs";
+import {Assert} from "../assert.mjs";
 import {Vector} from "../api/vector.mjs";
 import {Matrix} from "../matrix.mjs";
 import {
@@ -199,6 +200,11 @@ export function transform_clip_lighter({
 
 function apply_lighting(ngon, renderState)
 {
+    Assert?.(
+        ["flat", "gouraud"].includes(ngon.material.vertexShading),
+        `Unrecognized shading mode: ${ngon.material.vertexShading}`
+    );
+
     // Pre-allocate a vector object to operate on, so we don't need to create one repeatedly.
     const lightDirection = Vector();
 
@@ -272,10 +278,6 @@ function apply_lighting(ngon, renderState)
             const angle = ((ngon.vertices.length < 3)? 1 : Vector.dot(ngon.normal, lightDirection));
             const shadeFromThisLight = Math.max(0, Math.min(1, angle));
             faceShade = Math.max(faceShade, Math.min(1, (shadeFromThisLight * distanceMul * light.intensity)));
-        }
-        else
-        {
-            throw new Error("Unknown shading mode.");
         }
     }
 

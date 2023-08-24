@@ -139,6 +139,16 @@ export function render({
     validate_object?.(options, schema.options);
     validate_object?.(pipeline, schema.pipeline);
 
+    if (target === null)
+    {
+        Assert?.(
+            (typeof options.resolution === "object") &&
+            (typeof options.resolution.width === "number") &&
+            (typeof options.resolution.height === "number"),
+            "Undefined render resolution. Off-screen rendering requires `options.resolution` to be an object of the form {width, height}."
+        );
+    }
+
     const state = setup_render_state(options, pipeline);
 
     // The canvas element can be passed in in a couple of ways, e.g. as a string that
