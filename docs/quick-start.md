@@ -12,16 +12,16 @@ If you've only just downloaded the repository, follow the [installation instruct
 <canvas id="canvas" style="width: 300px; height: 300px;"></canvas>
 ```
 
-2. Import the renderer's distributable into the document:
+2. Import the rendering API (as a global `Rngon` object) into the document:
 
 ```html
-<script src="distributable/rngon.js"></script>
+<script src="distributable/rngon.global.js"></script>
 <script>
     // Your JavaScript rendering code can go here.
 </script>
 ```
 
-3. Define a quad and render it onto the canvas:
+3. Define a four-sided polygon and render it onto the canvas:
 
 ```javascript
 const quad = Rngon.ngon([

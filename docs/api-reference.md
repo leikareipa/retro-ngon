@@ -18,7 +18,7 @@ All but *`render`* are factory functions, i.e. their purpose is to construct and
 The API functions are accessible via the global `Rngon` namespace after you've imported the renderer's script in your application:
 
 ```html
-<script src="distributable/rngon.js"></script>
+<script src="distributable/rngon.global.js"></script>
 <script>
     console.log(Rngon.texture) // ƒ texture(...) ...
 </script>

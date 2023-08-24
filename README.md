@@ -104,13 +104,26 @@ $ yarn run build
 
 - Optionally, you can build the distributable in developer mode with `$ yarn run build:dev`. The developer mode includes additional run-time error checks and data validation, which help you find bugs at the cost of run-time performance. Keep an eye on your browser's developer console.
 
-The build process should produce the file [distributable/rngon.js](/distributable/rngon.js), which you can embed into a HTML document to expose the rendering API as a global `Rngon` object:
+The build process should produce a distributable in two flavors:
+
+1. [distributable/rngon.global.js](/distributable/rngon.global.js)
+2. [distributable/rngon.module.js](/distributable/rngon.module.js)
+
+The first file can be imported globally:
 
 ```html
-<script src="rngon.js"></script>
+<script src="rngon.global.js"></script>
 ```
 
-To learn how to use the rendering API, head over to the [quick-start guide](/docs/quick-start.md), or have a look at the [API reference](/docs/api-reference.md).
+The second file can be imported into a module:
+
+```html
+<script type="module">
+    import {Rngon} from "rngon.module.js";
+</script>
+```
+
+Both methods expose the rendering API as an `Rngon` object. To learn how to use the API, head over to the [quick-start guide](/docs/quick-start.md) or have a look at the [API reference](/docs/api-reference.md).
 
 ### Testing
 

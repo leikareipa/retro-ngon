@@ -1,7 +1,7 @@
 {
   "scripts": {
-    "build": "npx webpack",
-    "build:dev": "npx webpack --mode=development",
+    "build": "npx webpack --config webpack.config.global.cjs && npx webpack --config webpack.config.module.cjs",
+    "build:dev": "npx webpack --mode=development --config webpack.config.global.cjs && npx webpack --mode=development --config webpack.config.module.cjs",
     "test:unit": "node ./tests/unit/utest2.mjs",
     "test:perf:textured": "node ./tests/performance/quake/headless.js textured",
     "test:perf:shader": "node ./tests/performance/quake/headless.js shader",
