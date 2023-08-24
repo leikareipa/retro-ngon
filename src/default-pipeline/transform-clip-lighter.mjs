@@ -132,10 +132,7 @@ export function transform_clip_lighter({
                 // Apply an optional, user-defined vertex shader.
                 if (renderState.useVertexShader)
                 {
-                    renderState.modules.vertex_shader(
-                        cachedNgon,
-                        renderState.cameraPosition,
-                    );
+                    renderState.modules.vertex_shader(cachedNgon, renderState);
                 }
             }
 

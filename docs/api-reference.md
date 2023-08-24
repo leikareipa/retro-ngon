@@ -110,13 +110,15 @@ Renders meshes into a 32-bit RGBA pixel buffer, and optionally displays the imag
         
         - Note: `options.useFragmentBuffer` must be set to *true* if the pixel shader accesses the fragment buffer. The renderer will in most cases automatically detect this and set the property accordingly, but in some cases you may need to manually assign it.
     
-    - **vertexShader** (function | undefined = *undefined*): A function to be called by `pipeline.transformClipLighter` for each of the scene's n-gons, to apply effects to the properties of the n-gon prior to rasterization; or disabled if *undefined*. The function will be called when the n-gon has been transformed into world-space coordinates. See the [vertex shader samples](/samples/vertex-shaders/vertex-shaders.js) for examples of usage.
+    - **vertexShader** (function | undefined = *undefined*): A function to be called by `pipeline.transformClipLighter` for each of the scene's n-gons, to apply effects to the properties of the n-gon prior to rasterization; or disabled if *undefined*. The function will be called after world-space transformation and vertex lighting. See the [vertex shader samples](/samples/vertex-shaders/vertex-shaders.js) for examples of usage.
         
-        - Function signature: vertexShader(ngon, cameraPosition) {..}. The function returns nothing.
+        - Function signature: vertexShader(ngon, renderState)
             
-            - **ngon** (*ngon*): The target n-gon, in world-space coordinates and prior to clipping.
+            - **ngon** (ngon): The target n-gon, in world-space coordinates and prior to clipping.
             
-            - **cameraPosition** (vector): The world-space coordinates from which the scene is being rendered.
+            - **renderState** (state): (Todo.)
+
+        - The function returns nothing.
 
 ### Returns
 

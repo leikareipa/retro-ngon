@@ -66,13 +66,13 @@ export const sample = {
                 vertexShader: (
                     (parent.ACTIVE_SHADER.title !== "Mip level map")
                         ? undefined
-                        : (ngon, cameraPosition)=>{
+                        : (ngon, renderState)=>{
                             const maxDistance = (300 * 300);
 
                             const distance = (
-                                ((ngon.vertices[0].x - cameraPosition.x) * (ngon.vertices[0].x - cameraPosition.x)) +
-                                ((ngon.vertices[0].y - cameraPosition.y) * (ngon.vertices[0].y - cameraPosition.y)) +
-                                ((ngon.vertices[0].z - cameraPosition.z) * (ngon.vertices[0].z - cameraPosition.z))
+                                ((ngon.vertices[0].x - renderState.cameraPosition.x) * (ngon.vertices[0].x - renderState.cameraPosition.x)) +
+                                ((ngon.vertices[0].y - renderState.cameraPosition.y) * (ngon.vertices[0].y - renderState.cameraPosition.y)) +
+                                ((ngon.vertices[0].z - renderState.cameraPosition.z) * (ngon.vertices[0].z - renderState.cameraPosition.z))
                             );
 
                             ngon.mipLevel = Math.max(0, Math.min(0.25, (distance / maxDistance)));

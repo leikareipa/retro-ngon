@@ -55,15 +55,17 @@ export const sample = {
 };
 
 // Vertex shader: Darkens the shade of vertices based on their distance from the camera.
-function vs_depth_fog(ngon, cameraPosition)
+function vs_depth_fog(ngon, renderState)
 {
-    const maxDistance = (200 * 200);
+    const maxDistance = 200**2;
 
     for (let v = 0; v < ngon.vertices.length; v++)
     {
-        const distance = (((ngon.vertices[v].x - cameraPosition.x) * (ngon.vertices[v].x  - cameraPosition.x)) +
-                          ((ngon.vertices[v].y - cameraPosition.y) * (ngon.vertices[v].y  - cameraPosition.y)) +
-                          ((ngon.vertices[v].z - cameraPosition.z) * (ngon.vertices[v].z  - cameraPosition.z)));
+        const distance = (
+            ((ngon.vertices[v].x - renderState.cameraPosition.x) * (ngon.vertices[v].x - renderState.cameraPosition.x)) +
+            ((ngon.vertices[v].y - renderState.cameraPosition.y) * (ngon.vertices[v].y - renderState.cameraPosition.y)) +
+            ((ngon.vertices[v].z - renderState.cameraPosition.z) * (ngon.vertices[v].z - renderState.cameraPosition.z))
+        );
 
         ngon.vertices[v].shade = (Math.max(0, Math.min(1 - (distance / maxDistance))) * 1.5);
     }
