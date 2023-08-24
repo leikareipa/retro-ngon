@@ -27,6 +27,7 @@ export const sample = {
     
         return {
             renderOptions: {
+                useDepthBuffer: false,
                 lights: [
                     Rngon.light(150, Rngon.vector(0, 70, -120)),
                 ],

@@ -31,7 +31,8 @@ export const sample = {
         return {
             renderPipeline: {
                 rasterizer: (renderState)=>render_terrain(renderState.pixelBuffer, this.heightmap, this.colormap, this.camera),
-                transformClipLighter: ()=>{},
+                transformClipLighter: null,
+                surfaceWiper: null,
             },
         };
     },

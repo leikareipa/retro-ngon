@@ -24,6 +24,9 @@ export const sample = {
         const scene = ((parent.MIPMAP_TYPE === "Distance")? sceneDistance : sceneAngle);
 
         return {
+            renderOptions: {
+                useDepthBuffer: false,
+            },
             renderPipeline: {
                 vertexShader: ((scene === sceneDistance)? vs_mipmap_distance : vs_mipmap_angle),
             },

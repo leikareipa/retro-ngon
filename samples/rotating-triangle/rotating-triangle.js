@@ -27,6 +27,9 @@ export const sample = {
         triangle.vertices[2].shade = 0.2;
 
         return {
+            renderOptions: {
+                useDepthBuffer: false,
+            },
             mesh: Rngon.mesh([triangle], {
                 rotate: Rngon.vector(0, (-40 + rotationSpeed * this.numTicks), 0),
             }),
