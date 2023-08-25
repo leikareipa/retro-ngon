@@ -62,7 +62,7 @@ Renders n-gonal meshes into a pixel buffer, and optionally displays the image on
 
     - **cameraDirection** ([vector](#vector) &lArr; *vector(0, 0, 0)*): The direction in which the scene is viewed for rendering.
 
-    - **useFragmentBuffer** (boolean &lArr; *false*): Whether to generate a fragment buffer which provides per-pixel metadata (e.g. world XYZ coordinates) to accompany the rasterized image, for use e.g. in pixel shaders. Automatically enabled if the `options.pixelShader` function accepts a "fragmentBuffer" parameter (although in some cases you may find the auto-detection unreliable). The fragment buffer, if generated, is accessible via `Rngon.state.default.fragmentBuffer` after the call. See also `options.fragments`.
+    - **useFragmentBuffer** (boolean &lArr; *false*): Whether to generate a fragment buffer which provides per-pixel metadata (e.g. world XYZ coordinates) to accompany the rasterized image, for use e.g. in pixel shaders. Must be set to *true* if using a pixel shader that accesses the fragment buffer, as otherwise the fragment buffer will be unavailable or stale. The fragment buffer, if generated, is accessible via `Rngon.state.default.fragmentBuffer` after the call. See also `options.fragments`.
     
     - **fragments** (undefined | object &lArr; *undefined*): Determines which metadata the fragment buffer (see `options.useFragmentBuffer`) will include. You can choose one or more of the following:
         
@@ -94,33 +94,21 @@ Renders n-gonal meshes into a pixel buffer, and optionally displays the image on
     
     - **pixelShader** (function | undefined &lArr; *undefined*): A function to be called by the renderer at the completion of rasterization to apply pixel-shading effects to the rendered image; or disabled if *undefined*. See the [pixel shader samples](/samples/pixel-shaders/pixel-shaders.js) for examples of usage.
         
-        - Function signature: pixelShader({renderWidth, renderHeight, pixelBuffer, fragmentBuffer, ngonCache, cameraPosition}) {..}. The function returns nothing.
+        - Function signature: pixelShader(renderState:[state](#state))
             
-            - **renderWidth** (number): The width of the rendered image.
-            
-            - **renderHeight** (number): The height of the rendered image.
-            
-            - **pixelBuffer** (Uint8ClampedArray): The pixels of the rendered image (32-bit RGBA).
-            
-            - **depthBuffer** (Float64Array): For each pixel in pixelBuffer, an associated depth value. The values are in the range [0,1], where 0 corresponds to `options.nearPlane` and 1 to `options.farPlane`.
-            
-            - **fragmentBuffer** (array): For each pixel in `pixelBuffer`, an object containing metadata about the pixel. See `options.fragments` for a list of the included data properties.
-            
-            - **ngonCache** (array): The screen-space n-gons that were rasterized.
-            
-            - **cameraPosition** ([vector](#vector)): The world-space coordinates from which the scene is being rendered.
+            - **renderState**: (Todo.)
 
         - The function returns nothing.
         
-        - Note: `options.useFragmentBuffer` must be set to *true* if the pixel shader accesses the fragment buffer. The renderer will in most cases automatically detect this and set the property accordingly, but in some cases you may need to manually assign it.
+        - Note: `options.useFragmentBuffer` must be set to *true* if the pixel shader accesses the fragment buffer.
     
     - **vertexShader** (function | undefined &lArr; *undefined*): A function to be called by `pipeline.transformClipLighter` for each of the scene's n-gons, to apply effects to the properties of the n-gon prior to rasterization; or disabled if *undefined*. The function will be called after world-space transformation and vertex lighting. See the [vertex shader samples](/samples/vertex-shaders/vertex-shaders.js) for examples of usage.
         
-        - Function signature: vertexShader(ngon, renderState)
+        - Function signature: vertexShader(ngon:[ngon](#ngon), renderState:[state](#state))
             
-            - **ngon** ([ngon](#ngon)): The target n-gon, in world-space coordinates and prior to clipping.
+            - **ngon**: The target n-gon, in world-space coordinates and prior to clipping.
             
-            - **renderState** ([state](#state)): (Todo.)
+            - **renderState**: (Todo.)
 
         - The function returns nothing.
 

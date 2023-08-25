@@ -138,26 +138,28 @@
                             }
                         },
                         // Insert the portal pass's image over portal polygons.
-                        pixelShader({renderWidth, renderHeight, pixelBuffer, fragmentBuffer, ngonCache})
+                        pixelShader(renderState)
                         {
+                            const {width, height, data:pixels} = renderState.pixelBuffer;
+                            const fragments = renderState.fragmentBuffer.data;
                             const reflectionPixelBuffer = Rngon.state["portal"].pixelBuffer.data;
 
-                            for (let y = 0; y < renderHeight; y++)
+                            for (let y = 0; y < height; y++)
                             {
-                                for (let x = 0; x < renderWidth; x++)
+                                for (let x = 0; x < width; x++)
                                 {
-                                    const fragment = fragmentBuffer[x + y * renderWidth];
+                                    const fragment = fragments[x + y * width];
                                     if (!fragment) {
                                         continue;
                                     }
 
-                                    const dstIdx = ((x + y * renderWidth) * 4);
-                                    const srcIdx = ((~~(x/2) + ~~(y/2) * ~~(renderWidth/2)) * 4);
+                                    const dstIdx = ((x + y * width) * 4);
+                                    const srcIdx = ((~~(x/2) + ~~(y/2) * ~~(width/2)) * 4);
 
                                     if (fragment.ngon.material.isPortal) {
-                                        pixelBuffer[dstIdx] = reflectionPixelBuffer[srcIdx] * 1.8;
-                                        pixelBuffer[dstIdx + 1] = reflectionPixelBuffer[srcIdx + 1] * 1.8;
-                                        pixelBuffer[dstIdx + 2] = reflectionPixelBuffer[srcIdx + 2] * 1.8;
+                                        pixels[dstIdx] = reflectionPixelBuffer[srcIdx] * 1.8;
+                                        pixels[dstIdx + 1] = reflectionPixelBuffer[srcIdx + 1] * 1.8;
+                                        pixels[dstIdx + 2] = reflectionPixelBuffer[srcIdx + 2] * 1.8;
                                     }
                                 }
                             }
@@ -257,19 +259,20 @@
                         cameraPosition: camera.position,
                     },
                     pipeline: {
-                        pixelShader({pixelBuffer})
+                        pixelShader(renderState)
                         {
+                            const pixels = renderState.pixelBuffer.data;
                             const prevPixelBuffer = Rngon.state[~~!stateId]?.pixelBuffer.data;
                             if (!prevPixelBuffer) return;
 
                             const blurStrength = 0.6;
 
-                            for (let i = 0; i < pixelBuffer.length; i += 4)
+                            for (let i = 0; i < pixels.length; i += 4)
                             {
-                                pixelBuffer[i+0] = lerp(pixelBuffer[i+0], prevPixelBuffer[i+0], blurStrength);
-                                pixelBuffer[i+1] = lerp(pixelBuffer[i+1], prevPixelBuffer[i+1], blurStrength);
-                                pixelBuffer[i+2] = lerp(pixelBuffer[i+2], prevPixelBuffer[i+2], blurStrength);
-                                pixelBuffer[i+3] = lerp(pixelBuffer[i+3], prevPixelBuffer[i+3], blurStrength);
+                                pixels[i+0] = lerp(pixels[i+0], prevPixelBuffer[i+0], blurStrength);
+                                pixels[i+1] = lerp(pixels[i+1], prevPixelBuffer[i+1], blurStrength);
+                                pixels[i+2] = lerp(pixels[i+2], prevPixelBuffer[i+2], blurStrength);
+                                pixels[i+3] = lerp(pixels[i+3], prevPixelBuffer[i+3], blurStrength);
                             }
                         },
                     },

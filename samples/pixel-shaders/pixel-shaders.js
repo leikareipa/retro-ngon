@@ -40,16 +40,7 @@ export const sample = {
         return {
             renderOptions: {
                 lights: this.lights,
-                // We use .bind() on the shader functions passed to the renderer, which
-                // makes the renderer unable to determine whether the shaders use the
-                // fragment buffer, so we need to manually inform it. We could just set
-                // this to 'true' always, but there's a performance gain in not using
-                // the fragment buffer when it's not needed.
-                useFragmentBuffer: (
-                    (parent.SHADER_PIPELINE_ENABLED && parent.ACTIVE_SHADER.function)
-                        ? parent.ACTIVE_SHADER.function.toString().match(/{(.+)?}/)[1].includes("fragmentBuffer")
-                        : false
-                ),
+                useFragmentBuffer: (parent.SHADER_PIPELINE_ENABLED && parent.ACTIVE_SHADER.function.fragments),
                 fragments: parent.ACTIVE_SHADER.function.fragments,
                 cameraDirection: this.camera.direction,
                 cameraPosition: this.camera.position,
@@ -83,10 +74,11 @@ export const sample = {
     numTicks: 0,
 };
 
-function ps_crt({renderWidth, renderHeight, pixelBuffer})
+function ps_crt(renderState)
 {
-    const sourceBuffer = new Uint8Array(pixelBuffer.length);
-    sourceBuffer.set(pixelBuffer);
+    const {width, height, data:pixels} = renderState.pixelBuffer;
+    const sourceBuffer = new Uint8Array(pixels.length);
+    sourceBuffer.set(pixels);
     
     const curvature = 0.1;
     const scaleX = 1;
@@ -94,14 +86,14 @@ function ps_crt({renderWidth, renderHeight, pixelBuffer})
     const colorSoftening = 1.5;
     const scanlineIntensity = 0.01;
     
-    const centerX = (renderWidth / 2);
-    const centerY = (renderHeight / 2);
+    const centerX = (width / 2);
+    const centerY = (height / 2);
     
-    for (let y = 0; y < renderHeight; y++)
+    for (let y = 0; y < height; y++)
     {
-        for (let x = 0; x < renderWidth; x++)
+        for (let x = 0; x < width; x++)
         {
-            const bufferIdx = ((x + y * renderWidth) * 4);
+            const bufferIdx = ((x + y * width) * 4);
     
             // Barrel distortion.
             {
@@ -119,20 +111,20 @@ function ps_crt({renderWidth, renderHeight, pixelBuffer})
                 const sourceY = Math.round((barrelY * centerY / scaleY) + centerY);
         
                 // Check if the source pixel is within bounds
-                if (sourceX >= 0 && sourceX < renderWidth && sourceY >= 0 && sourceY < renderHeight)
+                if (sourceX >= 0 && sourceX < width && sourceY >= 0 && sourceY < height)
                 {
                     // Copy the source pixel color
-                    const sourceIdx = (sourceX + sourceY * renderWidth) * 4;
-                    pixelBuffer[bufferIdx + 0] = sourceBuffer[sourceIdx + 0];
-                    pixelBuffer[bufferIdx + 1] = sourceBuffer[sourceIdx + 1];
-                    pixelBuffer[bufferIdx + 2] = sourceBuffer[sourceIdx + 2];
+                    const sourceIdx = (sourceX + sourceY * width) * 4;
+                    pixels[bufferIdx + 0] = sourceBuffer[sourceIdx + 0];
+                    pixels[bufferIdx + 1] = sourceBuffer[sourceIdx + 1];
+                    pixels[bufferIdx + 2] = sourceBuffer[sourceIdx + 2];
                 }
                 else
                 {
                     // Set the pixel to black if it's out of bounds
-                    pixelBuffer[bufferIdx + 0] = 0;
-                    pixelBuffer[bufferIdx + 1] = 0;
-                    pixelBuffer[bufferIdx + 2] = 0;
+                    pixels[bufferIdx + 0] = 0;
+                    pixels[bufferIdx + 1] = 0;
+                    pixels[bufferIdx + 2] = 0;
                 }
             }
 
@@ -140,19 +132,19 @@ function ps_crt({renderWidth, renderHeight, pixelBuffer})
             const scanlineFactor = ((y % 2 === 0)? (1 - scanlineIntensity) : 1);
 
             // Color softening.
-            const r = Math.min(pixelBuffer[bufferIdx] * colorSoftening, 255);
-            const g = Math.min(pixelBuffer[bufferIdx + 1] * colorSoftening, 255);
-            const b = Math.min(pixelBuffer[bufferIdx + 2] * colorSoftening, 255);
+            const r = Math.min(pixels[bufferIdx] * colorSoftening, 255);
+            const g = Math.min(pixels[bufferIdx + 1] * colorSoftening, 255);
+            const b = Math.min(pixels[bufferIdx + 2] * colorSoftening, 255);
 
-            pixelBuffer[bufferIdx] = (r * scanlineFactor);
-            pixelBuffer[bufferIdx + 1] = (g * scanlineFactor);
-            pixelBuffer[bufferIdx + 2] = (b * scanlineFactor);
+            pixels[bufferIdx] = (r * scanlineFactor);
+            pixels[bufferIdx + 1] = (g * scanlineFactor);
+            pixels[bufferIdx + 2] = (b * scanlineFactor);
         }
     }
 }
 
 // Pixel shader: Applies a dithering effect to the rendered image.
-function ps_dithering({renderWidth, renderHeight, pixelBuffer})
+function ps_dithering(renderState)
 {
     const ditherMatrix = [
         [ 1, 9, 3, 11 ],
@@ -161,14 +153,15 @@ function ps_dithering({renderWidth, renderHeight, pixelBuffer})
         [ 16, 8, 14, 6 ]
     ];
 
+    const {width, height, data:pixels} = renderState.pixelBuffer;
     const ditherLevels = 16; // Number of color levels after dithering
     const ditherScaleFactor = (255 / (ditherLevels - 1));
 
-    for (let y = 0; y < renderHeight; y++)
+    for (let y = 0; y < height; y++)
     {
-        for (let x = 0; x < renderWidth; x++)
+        for (let x = 0; x < width; x++)
         {
-            const bufferIdx = (x + y * renderWidth) * 4;
+            const bufferIdx = (x + y * width) * 4;
 
             for (let channel = 0; channel < 3; channel++)
             {
@@ -176,13 +169,13 @@ function ps_dithering({renderWidth, renderHeight, pixelBuffer})
                 const ditherThreshold = (ditherMatrix[y % 4][x % 4] / 17);
 
                 // Get the original pixel color value and normalize it to the range [0, 1]
-                const originalValue = (pixelBuffer[bufferIdx + channel] / 255);
+                const originalValue = (pixels[bufferIdx + channel] / 255);
 
                 // Quantize the pixel color value using ditherLevels
                 const quantizedValue = Math.round((originalValue * (ditherLevels - 1)) + ditherThreshold);
 
                 // Scale the quantized value back to the range [0, 255] and set it as the new pixel color
-                pixelBuffer[bufferIdx + channel] = Math.round(quantizedValue * ditherScaleFactor);
+                pixels[bufferIdx + channel] = Math.round(quantizedValue * ditherScaleFactor);
             }
         }
     }
@@ -191,15 +184,19 @@ function ps_dithering({renderWidth, renderHeight, pixelBuffer})
 // Pixel shader: Draws a 1-pixel-thin outline over any pixel that lies on the edge of
 // an n-gon whose material has the 'hasHalo' property set to true and which does not
 // border another n-gon that has that property set.
-function ps_selective_outline({renderWidth, renderHeight, fragmentBuffer, depthBuffer, pixelBuffer})
+function ps_selective_outline(renderState)
 {
-    for (let y = 0; y < renderHeight; y++)
+    const {width, height, data:pixels} = renderState.pixelBuffer;
+    const fragments = renderState.fragmentBuffer.data;
+    const depth = renderState.depthBuffer.data;
+
+    for (let y = 0; y < height; y++)
     {
-        for (let x = 0; x < renderWidth; x++)
+        for (let x = 0; x < width; x++)
         {
-            const bufferIdx = (x + y * renderWidth);
-            const thisFragment = fragmentBuffer[bufferIdx];
-            const thisDepth = depthBuffer[bufferIdx];
+            const bufferIdx = (x + y * width);
+            const thisFragment = fragments[bufferIdx];
+            const thisDepth = depth[bufferIdx];
             const ngon = thisFragment.ngon;
 
             if (!ngon || !ngon.material.hasHalo)
@@ -207,20 +204,20 @@ function ps_selective_outline({renderWidth, renderHeight, fragmentBuffer, depthB
                 continue;
             }
 
-            let leftFragment   = (fragmentBuffer[((x - 1) + (y    ) * renderWidth)] || null);
-            let topFragment    = (fragmentBuffer[((x    ) + (y - 1) * renderWidth)] || null);
-            let rightFragment  = (fragmentBuffer[((x + 1) + (y    ) * renderWidth)] || null);
-            let bottomFragment = (fragmentBuffer[((x    ) + (y + 1) * renderWidth)] || null);
+            let leftFragment   = (fragments[((x - 1) + (y    ) * width)] || null);
+            let topFragment    = (fragments[((x    ) + (y - 1) * width)] || null);
+            let rightFragment  = (fragments[((x + 1) + (y    ) * width)] || null);
+            let bottomFragment = (fragments[((x    ) + (y + 1) * width)] || null);
 
-            const leftDepth   = depthBuffer[((x - 1) + (y    ) * renderWidth)];
-            const topDepth    = depthBuffer[((x    ) + (y - 1) * renderWidth)];
-            const rightDepth  = depthBuffer[((x + 1) + (y    ) * renderWidth)];
-            const bottomDepth = depthBuffer[((x    ) + (y + 1) * renderWidth)];
+            const leftDepth   = depth[((x - 1) + (y    ) * width)];
+            const topDepth    = depth[((x    ) + (y - 1) * width)];
+            const rightDepth  = depth[((x + 1) + (y    ) * width)];
+            const bottomDepth = depth[((x    ) + (y + 1) * width)];
 
             if (x == 0) leftFragment = null;
             if (y == 0) topFragment = null;
-            if (x == (renderWidth - 1)) rightFragment = null;
-            if (y == (renderHeight - 1)) bottomFragment = null;
+            if (x == (width - 1)) rightFragment = null;
+            if (y == (height - 1)) bottomFragment = null;
 
             const leftNgon   = leftFragment.ngon;
             const topNgon    = topFragment.ngon;
@@ -232,9 +229,9 @@ function ps_selective_outline({renderWidth, renderHeight, fragmentBuffer, depthB
                 (rightNgon  && !rightNgon.material.hasHalo  && (rightDepth >= thisDepth))  ||
                 (bottomNgon && !bottomNgon.material.hasHalo && (bottomDepth >= thisDepth)))
             {
-                pixelBuffer[(bufferIdx * 4) + 0] = 255;
-                pixelBuffer[(bufferIdx * 4) + 1] = 255;
-                pixelBuffer[(bufferIdx * 4) + 2] = 0;
+                pixels[(bufferIdx * 4) + 0] = 255;
+                pixels[(bufferIdx * 4) + 1] = 255;
+                pixels[(bufferIdx * 4) + 2] = 0;
             }
         }
     }
@@ -243,33 +240,36 @@ function ps_selective_outline({renderWidth, renderHeight, fragmentBuffer, depthB
 };
 
 // Pixel shader: Draws a wireframe (outline) around each visible n-gon.
-function ps_wireframe({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
+function ps_wireframe(renderState)
 {
-    for (let y = 0; y < renderHeight; y++)
-    {
-        for (let x = 0; x < renderWidth; x++)
-        {
-            const bufferIdx = (x + y * renderWidth);
-            const thisFragment = fragmentBuffer[bufferIdx];
+    const {width, height, data:pixels} = renderState.pixelBuffer;
+    const fragments = renderState.fragmentBuffer.data;
 
-            let leftFragment   = (fragmentBuffer[((x - 1) + (y    ) * renderWidth)] || null);
-            let topFragment    = (fragmentBuffer[((x    ) + (y - 1) * renderWidth)] || null);
-            let rightFragment  = (fragmentBuffer[((x + 1) + (y    ) * renderWidth)] || null);
-            let bottomFragment = (fragmentBuffer[((x    ) + (y + 1) * renderWidth)] || null);
+    for (let y = 0; y < height; y++)
+    {
+        for (let x = 0; x < width; x++)
+        {
+            const bufferIdx = (x + y * width);
+            const thisFragment = fragments[bufferIdx];
+
+            let leftFragment   = (fragments[((x - 1) + (y    ) * width)] || null);
+            let topFragment    = (fragments[((x    ) + (y - 1) * width)] || null);
+            let rightFragment  = (fragments[((x + 1) + (y    ) * width)] || null);
+            let bottomFragment = (fragments[((x    ) + (y + 1) * width)] || null);
 
             if (x == 0) leftFragment = null;
             if (y == 0) topFragment = null;
-            if (x == (renderWidth - 1)) rightFragment = null;
-            if (y == (renderHeight - 1)) bottomFragment = null;
+            if (x == (width - 1)) rightFragment = null;
+            if (y == (height - 1)) bottomFragment = null;
 
             if ((leftFragment   && (leftFragment.ngon != thisFragment.ngon)) ||
                 (topFragment    && (topFragment.ngon != thisFragment.ngon)) ||
                 (rightFragment  && (rightFragment.ngon != thisFragment.ngon)) ||
                 (bottomFragment && (bottomFragment.ngon != thisFragment.ngon)))
             {
-                pixelBuffer[(bufferIdx * 4) + 0] = 0;
-                pixelBuffer[(bufferIdx * 4) + 1] = 0;
-                pixelBuffer[(bufferIdx * 4) + 2] = 0;
+                pixels[(bufferIdx * 4) + 0] = 0;
+                pixels[(bufferIdx * 4) + 1] = 0;
+                pixels[(bufferIdx * 4) + 2] = 0;
             }
         }
     }
@@ -278,16 +278,18 @@ function ps_wireframe({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
 };
 
 // Pixel shader.
-function ps_per_pixel_light({renderState, renderWidth, renderHeight, fragmentBuffer, pixelBuffer, ngonCache})
+function ps_per_pixel_light(renderState)
 {
+    const {width, height, data:pixels} = renderState.pixelBuffer;
+    const fragments = renderState.fragmentBuffer.data;
     const light = renderState.lights[0];
     const lightReach = (100 * 100);
     const lightIntensity = 1.5;
     const lightDirection = this.Rngon.vector();
 
-    for (let i = 0; i < (renderWidth * renderHeight); i++)
+    for (let i = 0; i < (width * height); i++)
     {
-        const thisFragment = fragmentBuffer[i];
+        const thisFragment = fragments[i];
         const thisNgon = (thisFragment.ngon || null);
 
         if (!thisNgon)
@@ -325,15 +327,15 @@ function ps_per_pixel_light({renderState, renderWidth, renderHeight, fragmentBuf
 
             const colorMul = (distanceMul * shadeMul * lightIntensity);
 
-            pixelBuffer[(i * 4) + 0] *= colorMul;
-            pixelBuffer[(i * 4) + 1] *= colorMul;
-            pixelBuffer[(i * 4) + 2] *= colorMul;
+            pixels[(i * 4) + 0] *= colorMul;
+            pixels[(i * 4) + 1] *= colorMul;
+            pixels[(i * 4) + 2] *= colorMul;
         }
         else
         {
-            pixelBuffer[(i * 4) + 0] = 0;
-            pixelBuffer[(i * 4) + 1] = 0;
-            pixelBuffer[(i * 4) + 2] = 0;
+            pixels[(i * 4) + 0] = 0;
+            pixels[(i * 4) + 1] = 0;
+            pixels[(i * 4) + 2] = 0;
         }
     }
 } ps_per_pixel_light.fragments = {
@@ -347,65 +349,72 @@ function ps_per_pixel_light({renderState, renderWidth, renderHeight, fragmentBuf
 // Pixel shader: Desatures pixel colors based on their distance to the camera - pixels
 // that are further away are desatured to a greater extent. The desaturation algo is
 // adapted from http://alienryderflex.com/saturation.html.
-function ps_depth_desaturate({renderWidth, renderHeight, pixelBuffer, depthBuffer})
+function ps_depth_desaturate(renderState)
 {
+    const {width, height, data:pixels} = renderState.pixelBuffer;
+    const depth = renderState.depthBuffer.data;
     const Pr = .299;
     const Pg = .587;
     const Pb = .114;
     const maxDepth = 0.2;
 
-    for (let i = 0; i < (renderWidth * renderHeight); i++)
+    for (let i = 0; i < (width * height); i++)
     {
-        const depth = Math.max(0, Math.min(1, (depthBuffer[i] / maxDepth)));
+        const thisDepth = Math.max(0, Math.min(1, (depth[i] / maxDepth)));
 
-        let red   = pixelBuffer[(i * 4) + 0];
-        let green = pixelBuffer[(i * 4) + 1];
-        let blue  = pixelBuffer[(i * 4) + 2];
+        let red   = pixels[(i * 4) + 0];
+        let green = pixels[(i * 4) + 1];
+        let blue  = pixels[(i * 4) + 2];
 
         const P = Math.sqrt((red * red * Pr) + (green * green * Pg) + (blue * blue * Pb));
-        const saturationLevel = (1 - depth);
+        const saturationLevel = (1 - thisDepth);
 
         red   = P + (red   - P) * saturationLevel;
         green = P + (green - P) * saturationLevel;
         blue  = P + (blue  - P) * saturationLevel;
 
-        pixelBuffer[(i * 4) + 0] = red;
-        pixelBuffer[(i * 4) + 1] = green;
-        pixelBuffer[(i * 4) + 2] = blue;
+        pixels[(i * 4) + 0] = red;
+        pixels[(i * 4) + 1] = green;
+        pixels[(i * 4) + 2] = blue;
     }
 }
 
 // Pixel shader: Obscures pixels progressively the further they are from the camera.
-function ps_distance_fog({renderWidth, renderHeight, depthBuffer, pixelBuffer})
+function ps_distance_fog(renderState)
 {
+    const {width, height, data:pixels} = renderState.pixelBuffer;
+    const depth = renderState.depthBuffer.data;
     const maxDepth = 0.2;
 
-    for (let i = 0; i < (renderWidth * renderHeight); i++)
+    for (let i = 0; i < (width * height); i++)
     {
-        const depth = Math.max(0, Math.min(1, (depthBuffer[i] / maxDepth)));
-        pixelBuffer[(i * 4) + 3] = (255 * (1 - depth));
+        const thisDepth = Math.max(0, Math.min(1, (depth[i] / maxDepth)));
+        pixels[(i * 4) + 3] = (255 * (1 - thisDepth));
     }
 }
 
 // Pixel shader: Applies edge anti-aliasing to the pixel buffer
-function ps_fxaa({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
+function ps_fxaa(renderState)
 {
-    for (let y = 0; y < renderHeight; y++)
+    const {width, height, data:pixels} = renderState.pixelBuffer;
+    const fragments = renderState.fragmentBuffer.data;
+
+    for (let y = 0; y < height; y++)
     {
-        for (let x = 0; x < renderWidth; x++)
+        for (let x = 0; x < width; x++)
         {
-            const thisFragment = fragmentBuffer[x + y * renderWidth];
+            const thisFragment = fragments[x + y * width];
             const thisMaterial = thisFragment.ngon.material;
 
-            let leftFragment   = fragmentBuffer[((x - 1) + (y    ) * renderWidth)];
-            let topFragment    = fragmentBuffer[((x    ) + (y - 1) * renderWidth)];
-            let rightFragment  = fragmentBuffer[((x + 1) + (y    ) * renderWidth)];
-            let bottomFragment = fragmentBuffer[((x    ) + (y + 1) * renderWidth)] ;
+            let leftFragment   = fragments[((x - 1) + (y    ) * width)];
+            let topFragment    = fragments[((x    ) + (y - 1) * width)];
+            let rightFragment  = fragments[((x + 1) + (y    ) * width)];
+            let bottomFragment = fragments[((x    ) + (y + 1) * width)] ;
 
             if (x == 0) leftFragment = null;
             if (y == 0) topFragment = null;
-            if (x == (renderWidth - 1)) rightFragment = null;
-            if (y == (renderHeight - 1)) bottomFragment = null;
+            if (x == (width - 1)) rightFragment = null;
+            if (y == (height - 1)) bottomFragment = null;
 
             if (
                 (leftFragment && (leftFragment.ngon.material !== thisMaterial)) ||
@@ -413,19 +422,19 @@ function ps_fxaa({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
                 (rightFragment && (rightFragment.ngon.material !== thisMaterial)) ||
                 (bottomFragment && (bottomFragment.ngon.material !== thisMaterial))
             ){
-                let idx = ((x + y * renderWidth) * 4);
+                let idx = ((x + y * width) * 4);
                 
                 for (let i = 0; i < 3; i++)
                 {
                     const neighborAvg = (
-                        (pixelBuffer[(x - 1 + y * renderWidth) * 4 + i] +
-                         pixelBuffer[(x + 1 + y * renderWidth) * 4 + i] +
-                         pixelBuffer[(x + (y - 1) * renderWidth) * 4 + i] +
-                         pixelBuffer[(x + (y + 1) * renderWidth) * 4 + i])
+                        (pixels[(x - 1 + y * width) * 4 + i] +
+                         pixels[(x + 1 + y * width) * 4 + i] +
+                         pixels[(x + (y - 1) * width) * 4 + i] +
+                         pixels[(x + (y + 1) * width) * 4 + i])
                         * 0.25
                     );
 
-                    pixelBuffer[idx + i] = ((pixelBuffer[idx + i] * 0.4) + (neighborAvg * 0.6));
+                    pixels[idx + i] = ((pixels[idx + i] * 0.4) + (neighborAvg * 0.6));
                 }
             }
         }
@@ -435,26 +444,27 @@ function ps_fxaa({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
 };
 
 // Pixel shader: Applies a vignette effect to the pixel buffer.
-function ps_vignette({renderWidth, renderHeight, pixelBuffer})
+function ps_vignette(renderState)
 {
-    const centerX = (renderWidth / 2);
-    const centerY = (renderHeight / 2);
+    const {width, height, data:pixels} = renderState.pixelBuffer;
+    const centerX = (width / 2);
+    const centerY = (height / 2);
     const radius = Math.max(centerX, centerY);
     const intensity = 1.0;
 
-    for (let y = 0; y < renderHeight; y++)
+    for (let y = 0; y < height; y++)
     {
-        for (let x = 0; x < renderWidth; x++)
+        for (let x = 0; x < width; x++)
         {
             const dx = x - centerX;
             const dy = y - centerY;
             const distanceSquared = (dx * dx) + (dy * dy);
             const vignette = Math.max(0, 1 - (distanceSquared / (radius * radius)));
 
-            const i = (x + y * renderWidth) * 4;
-            pixelBuffer[i + 0] *= (1 - intensity + (vignette * intensity));
-            pixelBuffer[i + 1] *= (1 - intensity + (vignette * intensity));
-            pixelBuffer[i + 2] *= (1 - intensity + (vignette * intensity));
+            const i = (x + y * width) * 4;
+            pixels[i + 0] *= (1 - intensity + (vignette * intensity));
+            pixels[i + 1] *= (1 - intensity + (vignette * intensity));
+            pixels[i + 2] *= (1 - intensity + (vignette * intensity));
         }
     }
 }

@@ -123,16 +123,7 @@ export function Surface(canvasElement, renderState)
             // Apply a custom pixel shader effect on renderState.pixelBuffer.
             if (renderState.usePixelShader)
             {
-                renderState.modules.pixel_shader({
-                    renderState,
-                    renderWidth: surfaceWidth,
-                    renderHeight: surfaceHeight,
-                    fragmentBuffer: renderState.fragmentBuffer.data,
-                    pixelBuffer: renderState.pixelBuffer.data,
-                    depthBuffer: renderState.depthBuffer.data,
-                    ngonCache: renderState.ngonCache.ngons,
-                    cameraPosition: renderState.cameraPosition,
-                });
+                renderState.modules.pixel_shader(renderState);
             }
 
             if (!renderOffscreen)

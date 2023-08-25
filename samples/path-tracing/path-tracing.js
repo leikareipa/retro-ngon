@@ -181,11 +181,14 @@ function vs_copy_ngons(ngon)
 }
 
 // A pixel shader to shade each pixel based on path-traced rays' light contributions.
-function ps_path_trace({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
+function ps_path_trace(renderState)
 {
-    for (let i = 0; i < (renderWidth * renderHeight); i++)
+    const {width, height, data:pixels} = renderState.pixelBuffer;
+    const fragments = renderState.fragmentBuffer.data;
+
+    for (let i = 0; i < (width * height); i++)
     {
-        const thisFragment = fragmentBuffer[i];
+        const thisFragment = fragments[i];
         const thisNgon = thisFragment.ngon;
 
         if (!thisNgon)
@@ -231,9 +234,9 @@ function ps_path_trace({renderWidth, renderHeight, fragmentBuffer, pixelBuffer})
             accumulation.numSamples++;
         }
 
-        pixelBuffer[(i * 4) + 0] *= (accumulation.red / accumulation.numSamples);
-        pixelBuffer[(i * 4) + 1] *= (accumulation.green / accumulation.numSamples);
-        pixelBuffer[(i * 4) + 2] *= (accumulation.blue / accumulation.numSamples);
+        pixels[(i * 4) + 0] *= (accumulation.red / accumulation.numSamples);
+        pixels[(i * 4) + 1] *= (accumulation.green / accumulation.numSamples);
+        pixels[(i * 4) + 2] *= (accumulation.blue / accumulation.numSamples);
     }
 
     return;
