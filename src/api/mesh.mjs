@@ -6,7 +6,10 @@
  */
 
 import {validate_object} from "../schema.mjs";
-import {Matrix} from "../matrix.mjs";
+import {
+    Matrix,
+    matrix_multiply,
+} from "./matrix.mjs";
 import {Vector} from "./vector.mjs";
 import {Ngon} from "./ngon.mjs";
 
@@ -79,5 +82,5 @@ export function mesh_to_object_space_matrix(mesh)
         mesh.scale.z
     );
 
-    return Matrix.multiply(Matrix.multiply(translationMatrix, rotationMatrix), scalingMatrix);
+    return matrix_multiply(matrix_multiply(translationMatrix, rotationMatrix), scalingMatrix);
 }

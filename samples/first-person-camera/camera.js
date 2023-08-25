@@ -8,8 +8,6 @@
  * 
  */
 
-const PI_180 = (Math.PI / 180);
-
 // Sets up the given DOM element to grab the mouse when the user clicks on the
 // element; and intercepts mouse and keyboard events to update the camera's
 // position and direction.
@@ -38,16 +36,16 @@ const PI_180 = (Math.PI / 180);
 //
 //
 export function first_person_camera(domElementId = "", {
-        position = {x:0, y:0, z:0},
-        direction = {x:0, y:0, z:0},
-        rotationSpeed = {x: 1, y: 1},
-        movementSpeed = 0.1,
-        allowMovement = true,
-        allowRotation = true,
-        allowPointerLock = true,
-        callback_pointer_lock_acquired = ()=>{},
-        callback_pointer_lock_released = ()=>{},
-    } = {})
+    position = {x:0, y:0, z:0},
+    direction = {x:0, y:0, z:0},
+    rotationSpeed = {x: 1, y: 1},
+    movementSpeed = 0.1,
+    allowMovement = true,
+    allowRotation = true,
+    allowPointerLock = true,
+    callback_pointer_lock_acquired = ()=>{},
+    callback_pointer_lock_released = ()=>{},
+} = {})
 {
     const targetDOMCanvas = document.getElementById(domElementId);
     if (!targetDOMCanvas)
@@ -171,65 +169,9 @@ export function first_person_camera(domElementId = "", {
         return;
     }
 
-    function rotation_matrix(x, y, z)
-    {
-        // Degrees to radians.
-        x *= PI_180;
-        y *= PI_180;
-        z *= PI_180;
-
-        const mx = [
-            1,       0,            0,            0,
-            0,       Math.cos(x),  -Math.sin(x), 0,
-            0,       Math.sin(x),  Math.cos(x),  0,
-            0,       0,            0,            1,
-        ];
-
-        const my = [
-            Math.cos(y),  0,       Math.sin(y),  0,
-            0,            1,       0,            0,
-            -Math.sin(y), 0,       Math.cos(y),  0,
-            0,            0,       0,            1,
-        ];
-
-        const mz = [
-            Math.cos(z),  -Math.sin(z), 0,       0,
-            Math.sin(z),  Math.cos(z),  0,       0,
-            0,            0,            1,       0,
-            0,            0,            0,       1,
-        ];
-
-        return multiply_matrix(mx, multiply_matrix(my, mz));
-    }
-
-    function multiply_matrix(m1 = [], m2 = [])
-    {
-        console.assert?.(
-            ((m1.length === 16) && (m2.length === 16)),
-            "Expected 4 x 4 matrices."
-        );
-
-        let mResult = new Array(16);
-
-        for (let i = 0; i < 4; i++)
-        {
-            for (let j = 0; j < 4; j++)
-            {
-                mResult[i + (j * 4)] = (
-                    (m1[i + (0 * 4)] * m2[0 + (j * 4)]) +
-                    (m1[i + (1 * 4)] * m2[1 + (j * 4)]) +
-                    (m1[i + (2 * 4)] * m2[2 + (j * 4)]) +
-                    (m1[i + (3 * 4)] * m2[3 + (j * 4)])
-                );
-            }
-        }
-
-        return mResult;
-    }
-
     function get_accumulated_movement(forwardVector, movementSpeed)
     {
-        const cameraRotationMatrix = rotation_matrix(0, forwardVector.y, 0);
+        const cameraRotationMatrix = Rngon.matrix.rotation(0, forwardVector.y, 0);
 
         const accumulatedMovement = Rngon.vector(
             (movementStatus.left?    1 : movementStatus.right?    -1 : 0),

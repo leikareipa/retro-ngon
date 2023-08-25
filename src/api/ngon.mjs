@@ -8,6 +8,7 @@
 import {validate_object} from "../schema.mjs";
 import {Vertex} from "./vertex.mjs";
 import {Vector} from "./vector.mjs";
+import {Matrix} from "./matrix.mjs";
 import {Color} from "./color.mjs";
 
 export const ngonDefaultMaterial = {
@@ -139,7 +140,7 @@ export function Ngon(
     return publicInterface;
 }
 
-export function ngon_perspective_divide(ngon)
+export function ngon_perspective_divide(ngon = Ngon())
 {
     for (const vert of ngon.vertices)
     {
@@ -148,7 +149,7 @@ export function ngon_perspective_divide(ngon)
     }
 }
 
-export function ngon_transform(ngon, matrix)
+export function ngon_transform(ngon = Ngon(), matrix = Matrix())
 {
     for (const vert of ngon.vertices)
     {

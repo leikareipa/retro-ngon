@@ -46,24 +46,18 @@ export function Vector(x = 0, y = 0, z = 0)
     return publicInterface;
 }
 
-// Transforms the vector by the given 4x4 matrix.
-Vector.transform = function(v = vector(), m)
+Vector.transform = function(v = Vector(), m = Matrix())
 {
-    Assert?.(
-        (m.length === 16),
-        "Expected a 4 x 4 matrix to transform the vector by."
-    );
-
-    const x_ = ((m[0] * v.x) + (m[4] * v.y) + (m[ 8] * v.z));
-    const y_ = ((m[1] * v.x) + (m[5] * v.y) + (m[ 9] * v.z));
-    const z_ = ((m[2] * v.x) + (m[6] * v.y) + (m[10] * v.z));
+    const x_ = ((m.data[0] * v.x) + (m.data[4] * v.y) + (m.data[ 8] * v.z));
+    const y_ = ((m.data[1] * v.x) + (m.data[5] * v.y) + (m.data[ 9] * v.z));
+    const z_ = ((m.data[2] * v.x) + (m.data[6] * v.y) + (m.data[10] * v.z));
 
     v.x = x_;
     v.y = y_;
     v.z = z_;
 }
 
-Vector.normalize = function(v = vector())
+Vector.normalize = function(v = Vector())
 {
     const sn = ((v.x * v.x) + (v.y * v.y) + (v.z * v.z));
 
@@ -76,14 +70,14 @@ Vector.normalize = function(v = vector())
     }
 }
 
-Vector.dot = function(v = vector(), other = vector())
+Vector.dot = function(v = Vector(), other = Vector())
 {
     return ((v.x * other.x) + (v.y * other.y) + (v.z * other.z));
 }
 
-Vector.cross = function(v = vector(), other = vector())
+Vector.cross = function(v = Vector(), other = Vector())
 {
-    const c = vector();
+    const c = Vector();
 
     c.x = ((v.y * other.z) - (v.z * other.y));
     c.y = ((v.z * other.x) - (v.x * other.z));

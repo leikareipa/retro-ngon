@@ -8,7 +8,7 @@
 import {mesh_to_object_space_matrix} from "../api/mesh.mjs";
 import {Assert} from "../assert.mjs";
 import {Vector} from "../api/vector.mjs";
-import {Matrix} from "../matrix.mjs";
+import {matrix_multiply} from "../api/matrix.mjs";
 import {
     ngon_clip_to_viewport,
     ngon_perspective_divide,
@@ -29,7 +29,7 @@ export function transform_clip_lighter({
     const ngonCache = renderState.ngonCache;
     const vertexCache = renderState.vertexCache;
     const vertexNormalCache = renderState.vertexNormalCache;
-    const clipSpaceMatrix = Matrix.multiply(perspectiveMatrix, cameraMatrix);
+    const clipSpaceMatrix = matrix_multiply(perspectiveMatrix, cameraMatrix);
     const objectSpaceMatrix = mesh_to_object_space_matrix(mesh);
 
     for (const ngon of mesh.ngons)

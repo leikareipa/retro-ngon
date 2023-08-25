@@ -14,6 +14,7 @@ The renderer's public API consists of the following components:
 | state               | (A description is coming.)                             |
 | light               | (A description is coming.)                             |
 | default             | (A description is coming.)                             |
+| matrix              | (A description is coming.)                             |
 
 The API is available via the `Rngon` namespace after you've imported the renderer's distributable into your application (see [Installation](/README.md#installation)):
 

@@ -16,6 +16,7 @@ if (!IS_PRODUCTION_BUILD) {
 import {render} from "./api/render.mjs";
 import {Color} from "./api/color.mjs";
 import {Light} from "./api/light.mjs";
+import {Matrix} from "./api/matrix.mjs";
 import {Mesh} from "./api/mesh.mjs";
 import {Ngon} from "./api/ngon.mjs";
 import {Texture} from "./api/texture.mjs";
@@ -37,6 +38,7 @@ export const Rngon = {
     state: State,
     light: Light,
     mesh: Mesh,
+    matrix: Matrix,
     ngon: Ngon,
     texture: Texture,
     vector: Vector,

@@ -5,58 +5,80 @@
  *
  */
 
-import {Matrix} from "../../src/matrix.mjs";
-import {good, tr4} from "./utest2.mjs";
+import {
+    Matrix,
+    matrix_perspective,
+    matrix_ortho,
+    matrix_multiply,
+} from "../../src/api/matrix.mjs";
+import {good, bad, tr4} from "./utest2.mjs";
 
 export default ()=>{
-    // Matrix.translation
+    // It's a 4 x 4 matrix, so constructor input should be 16 numbers.
+    bad(
+        ()=>Matrix(1, 1),
+    );
+
+    // Empty matrices should be default-initialized to identity.
+    {
+        const m = Matrix();
+        good(
+            ()=>m.data.length === 16,
+            ()=>m.data[0]===1 && m.data[4]===0 && m.data[ 8]===0 && m.data[12]===0 &&
+                m.data[1]===0 && m.data[5]===1 && m.data[ 9]===0 && m.data[13]===0 &&
+                m.data[2]===0 && m.data[6]===0 && m.data[10]===1 && m.data[14]===0 &&
+                m.data[3]===0 && m.data[7]===0 && m.data[11]===0 && m.data[15]===1,
+        );
+    }
+
+    // Translation
     {
         const m = Matrix.translation(452.8541, 2.5412, 8745.1645);
         good(
-            ()=>m.length === 16,
-            ()=>tr4(m[0])===1.0000 && tr4(m[4])===0.0000 && tr4(m[ 8])===0.0000 && tr4(m[12])===452.8541  && 
-                tr4(m[1])===0.0000 && tr4(m[5])===1.0000 && tr4(m[ 9])===0.0000 && tr4(m[13])===2.5412    && 
-                tr4(m[2])===0.0000 && tr4(m[6])===0.0000 && tr4(m[10])===1.0000 && tr4(m[14])===8745.1645 && 
-                tr4(m[3])===0.0000 && tr4(m[7])===0.0000 && tr4(m[11])===0.0000 && tr4(m[15])===1.0000,
+            ()=>m.data.length === 16,
+            ()=>tr4(m.data[0])===1.0000 && tr4(m.data[4])===0.0000 && tr4(m.data[ 8])===0.0000 && tr4(m.data[12])===452.8541  && 
+                tr4(m.data[1])===0.0000 && tr4(m.data[5])===1.0000 && tr4(m.data[ 9])===0.0000 && tr4(m.data[13])===2.5412    && 
+                tr4(m.data[2])===0.0000 && tr4(m.data[6])===0.0000 && tr4(m.data[10])===1.0000 && tr4(m.data[14])===8745.1645 && 
+                tr4(m.data[3])===0.0000 && tr4(m.data[7])===0.0000 && tr4(m.data[11])===0.0000 && tr4(m.data[15])===1.0000,
         );
     }
 
-    // Matrix.perspective
+    // Perspective
     {
-        const m = Matrix.perspective(0.7545, 1.7155, 0.9138, 97852.8647);
+        const m = matrix_perspective(0.7545, 1.7155, 0.9138, 97852.8647);
         good(
-            ()=>m.length === 16,
-            ()=>tr4(m[0])===1.4711 && tr4(m[4])===0.0000 && tr4(m[ 8])===0.0000 && tr4(m[12])===0.0000  && 
-                tr4(m[1])===0.0000 && tr4(m[5])===2.5238 && tr4(m[ 9])===0.0000 && tr4(m[13])===0.0000  && 
-                tr4(m[2])===0.0000 && tr4(m[6])===0.0000 && tr4(m[10])===1.0000 && tr4(m[14])===-1.8276 && 
-                tr4(m[3])===0.0000 && tr4(m[7])===0.0000 && tr4(m[11])===1.0000 && tr4(m[15])===0.0000,
+            ()=>m.data.length === 16,
+            ()=>tr4(m.data[0])===1.4711 && tr4(m.data[4])===0.0000 && tr4(m.data[ 8])===0.0000 && tr4(m.data[12])===0.0000  && 
+                tr4(m.data[1])===0.0000 && tr4(m.data[5])===2.5238 && tr4(m.data[ 9])===0.0000 && tr4(m.data[13])===0.0000  && 
+                tr4(m.data[2])===0.0000 && tr4(m.data[6])===0.0000 && tr4(m.data[10])===1.0000 && tr4(m.data[14])===-1.8276 && 
+                tr4(m.data[3])===0.0000 && tr4(m.data[7])===0.0000 && tr4(m.data[11])===1.0000 && tr4(m.data[15])===0.0000,
         );
     }
 
-    // Matrix.ortho
+    // Ortho
     {
-        const m = Matrix.ortho(4567.2434, 3.1284);
+        const m = matrix_ortho(4567.2434, 3.1284);
         good(
-            ()=>m.length === 16,
-            ()=>tr4(m[0])===2283.6217 && tr4(m[4])===0.0000  && tr4(m[ 8])===0.0000 && tr4(m[12])===2283.1217 && 
-                tr4(m[1])===0.0000    && tr4(m[5])===-1.5642 && tr4(m[ 9])===0.0000 && tr4(m[13])===1.0642    && 
-                tr4(m[2])===0.0000    && tr4(m[6])===0.0000  && tr4(m[10])===1.0000 && tr4(m[14])===0.0000    && 
-                tr4(m[3])===0.0000    && tr4(m[7])===0.0000  && tr4(m[11])===0.0000 && tr4(m[15])===1.0000,
+            ()=>m.data.length === 16,
+            ()=>tr4(m.data[0])===2283.6217 && tr4(m.data[4])===0.0000  && tr4(m.data[ 8])===0.0000 && tr4(m.data[12])===2283.1217 && 
+                tr4(m.data[1])===0.0000    && tr4(m.data[5])===-1.5642 && tr4(m.data[ 9])===0.0000 && tr4(m.data[13])===1.0642    && 
+                tr4(m.data[2])===0.0000    && tr4(m.data[6])===0.0000  && tr4(m.data[10])===1.0000 && tr4(m.data[14])===0.0000    && 
+                tr4(m.data[3])===0.0000    && tr4(m.data[7])===0.0000  && tr4(m.data[11])===0.0000 && tr4(m.data[15])===1.0000,
         );
     }
 
-    // Matrix.multiply
+    // Multiply
     {
-        const m = Matrix.multiply(
+        const m = matrix_multiply(
             Matrix.translation(452.8541, 2.5412, 8745.1645),
-            Matrix.perspective(0.7545, 1.7155, 0.9138, 97852.8647)
+            matrix_perspective(0.7545, 1.7155, 0.9138, 97852.8647)
         );
         good(
-            ()=>m.length === 16,
-            ()=>tr4(m[0])===1.4711 && tr4(m[4])===0.0000 && tr4(m[ 8])===452.8541  && tr4(m[12])===0.0000  && 
-                tr4(m[1])===0.0000 && tr4(m[5])===2.5238 && tr4(m[ 9])===2.5412    && tr4(m[13])===0.0000  && 
-                tr4(m[2])===0.0000 && tr4(m[6])===0.0000 && tr4(m[10])===8746.1645 && tr4(m[14])===-1.8276 && 
-                tr4(m[3])===0.0000 && tr4(m[7])===0.0000 && tr4(m[11])===1.0000    && tr4(m[15])===0.0000,
+            ()=>m.data.length === 16,
+            ()=>tr4(m.data[0])===1.4711 && tr4(m.data[4])===0.0000 && tr4(m.data[ 8])===452.8541  && tr4(m.data[12])===0.0000  && 
+                tr4(m.data[1])===0.0000 && tr4(m.data[5])===2.5238 && tr4(m.data[ 9])===2.5412    && tr4(m.data[13])===0.0000  && 
+                tr4(m.data[2])===0.0000 && tr4(m.data[6])===0.0000 && tr4(m.data[10])===8746.1645 && tr4(m.data[14])===-1.8276 && 
+                tr4(m.data[3])===0.0000 && tr4(m.data[7])===0.0000 && tr4(m.data[11])===1.0000    && tr4(m.data[15])===0.0000,
         );
 
         /// TODO: Verify that the input matrices aren't modified.

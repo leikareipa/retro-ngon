@@ -6,7 +6,12 @@
  */
 
 import {Assert} from "./assert.mjs";
-import {Matrix} from "./matrix.mjs";
+import {
+    Matrix,
+    matrix_multiply,
+    matrix_perspective,
+    matrix_ortho
+} from "./api/matrix.mjs";
 import {Ngon} from "./api/ngon.mjs";
 import {Vertex} from "./api/vertex.mjs";
 import {Vector} from "./api/vector.mjs";
@@ -41,7 +46,7 @@ export function Surface(canvasElement, renderState)
         return null;
     }
 
-    const cameraMatrix = Matrix.multiply(
+    const cameraMatrix = matrix_multiply(
         Matrix.rotation(
             renderState.cameraDirection.x,
             renderState.cameraDirection.y,
@@ -54,14 +59,14 @@ export function Surface(canvasElement, renderState)
         )
     );
 
-    const perspectiveMatrix = Matrix.perspective(
+    const perspectiveMatrix = matrix_perspective(
         (renderState.fov * (Math.PI / 180)),
         (surfaceWidth / surfaceHeight),
         renderState.nearPlaneDistance,
         renderState.farPlaneDistance
     );
 
-    const screenSpaceMatrix = Matrix.ortho(
+    const screenSpaceMatrix = matrix_ortho(
         (surfaceWidth + 1),
         (surfaceHeight + 1)
     );
