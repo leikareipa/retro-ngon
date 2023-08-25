@@ -146,7 +146,7 @@ const quad = Rngon.ngon([
     Rngon.vertex(1, -1, 0),
     Rngon.vertex(1, 1, 0),
     Rngon.vertex(-1, 1, 0)], {
-        color: Rngon.color(255, 255, 0),
+        color: Rngon.color.yellow,
 });
 
 const mesh = Rngon.mesh([quad], {
@@ -289,7 +289,7 @@ An object with the following properties:
 const line = Rngon.ngon([
     Rngon.vertex(-1, -1, 0),
     Rngon.vertex( 1, -1, 0)], {
-        color: Rngon.color(255, 0, 0),
+        color: Rngon.color.red,
 });
 ```
 
@@ -385,6 +385,16 @@ A frozen object with the following properties:
 
 - **alpha** (number): The `alpha` argument.
 
+### Sample usage
+
+```javascript
+// A fully opaque yellow color.
+const color = Rngon.color(255, 255, 0);
+
+// A fully opaque yellow color using CSS color names.
+const color = Rngon.color.yellow; 
+```
+
 <a id="texture"></a>
 
 ## texture([data])
@@ -397,7 +407,7 @@ Note: Textures with a power-of-two resolution may render faster and support more
 
 ### Parameters
 
-- **data** (object &lArr; `Rngon.default.texture`): The texture's data:
+- **data** (object &lArr; `Rngon.default.texture`): The texture's data.
 
     - **width** (number &lArr; *0*): The width of the image.
 
@@ -429,6 +439,16 @@ An object with the following properties:
 
 - **mipLevels** (array): Downscaled versions of the original image. Each element in the array is an object of the form "{width, height, pixels: [red, green, blue, alpha, red, green, blue, ...]}". The first element is the full-sized image, the second element is half the size of the first, the third half the size of the second, etc., down to an image the size of 1 &times; 1.
 
+### Utility functions
+
+<a id="texture.load"></a>
+
+#### texture.load(filename)
+
+Constructs a [texture](#texture) using `data` loaded asynchronously from a JSON file. Returns a Promise that resolves with the texture object.
+
+- **filename** (string): The name of a JSON file containing the `data` object.
+
 ### Sample usage
 
 ```javascript
@@ -446,6 +466,18 @@ const texture = Rngon.texture({
 ```
 
 ```javascript
-// Create a texture with the 'data' object loaded from a JSON file.
+// Create a texture with the 'data' argument loaded from a JSON file.
 const texture = await Rngon.texture.load("texture.json");
+
+// The contents of the texture.json file could be something like this:
+{
+    "width": 2,
+    "height": 2,
+    "pixels": [
+        255, 200, 0, 255,
+        200, 255, 0, 255,
+        255, 0, 200, 255,
+        0, 255, 200, 255
+    ]
+}
 ```
