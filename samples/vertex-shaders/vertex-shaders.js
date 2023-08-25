@@ -62,9 +62,9 @@ function vs_depth_fog(ngon, renderState)
     for (let v = 0; v < ngon.vertices.length; v++)
     {
         const distance = (
-            ((ngon.vertices[v].x - renderState.cameraPosition.x) * (ngon.vertices[v].x - renderState.cameraPosition.x)) +
-            ((ngon.vertices[v].y - renderState.cameraPosition.y) * (ngon.vertices[v].y - renderState.cameraPosition.y)) +
-            ((ngon.vertices[v].z - renderState.cameraPosition.z) * (ngon.vertices[v].z - renderState.cameraPosition.z))
+            ((ngon.vertices[v].x - renderState.cameraPosition.x)**2) +
+            ((ngon.vertices[v].y - renderState.cameraPosition.y)**2) +
+            ((ngon.vertices[v].z - renderState.cameraPosition.z)**2)
         );
 
         ngon.vertices[v].shade = (Math.max(0, Math.min(1 - (distance / maxDistance))) * 1.5);
