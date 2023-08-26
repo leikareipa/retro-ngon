@@ -424,9 +424,11 @@ An object with the following properties:
 
 - **height** (number): The `data.height` argument.
 
-- **pixels** (Uint8ClampedArray): The decoded pixel data from `data.pixels`, as consecutive RGBA values ([red, green, blue, alpha, red, green, blue, ...]).
+- **pixels** (Uint8ClampedArray): The decoded pixel data from `data.pixels`, as consecutive RGBA values ([red, green, blue, alpha, red, green, blue, ...]). If you modify this array, call `refresh()` to update the mip levels.
 
-- **mipLevels** (array): Downscaled versions of the original image. Each element in the array is an object of the form "{width, height, pixels: [red, green, blue, alpha, red, green, blue, ...]}". The first element is the full-sized image, the second element is half the size of the first, the third half the size of the second, etc., down to an image the size of 1 &times; 1.
+- **mipLevels** (array): Progressively downscaled versions of the base image. Each element in the array is an object of the form "{width, height, pixels: [red, green, blue, alpha, red, green, blue, ...]}". The first element is the full-sized image, the second element is half the size of the first, the third half the size of the second, etc., down to an image the size of 1 &times; 1.
+
+- **refresh** (function): Rebuilds the texture's mip levels from the `pixels` array, without creating a new [texture](#texture) object.
 
 ### Utility functions
 
@@ -452,6 +454,10 @@ const texture = Rngon.texture({
         0, 255, 200, 255
     ],
 });
+
+// Change the color of the first pixel.
+texture.pixels[0] = 100;
+texture.refresh();
 ```
 
 ```javascript

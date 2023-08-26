@@ -100,9 +100,11 @@ export function Texture(data = {})
 
     const publicInterface = {
         $constructor: "Texture",
-        mipLevels: generate_mipmaps(data),
+        refresh: regenerate_mipmaps,
         ...data,
     };
+
+    publicInterface.refresh();
 
     validate_object?.(publicInterface, schema.interface);
     
@@ -199,42 +201,40 @@ function decode_pixel_data(data)
     );
 }
 
-// Generates mipmaps from the pixel data passed to Rngon.texture().
-// 
 // Each successive mipmap is one half of the previous mipmap's width and height, starting
 // from the full resolution and working down to 1 x 1. So mipmaps[0] is the original
 // full-resolution texture, and mipmaps[mipmaps.length-1] is the smallest, 1 x 1 texture.
-function generate_mipmaps(data)
+function regenerate_mipmaps()
 {
-    const mipmaps = [];
+    this.mipLevels = [];
 
     for (let m = 0; ; m++)
     {
-        const mipWidth = Math.max(1, Math.floor(data.width / Math.pow(2, m)));
-        const mipHeight = Math.max(1, Math.floor(data.height / Math.pow(2, m)));
+        const mipWidth = Math.max(1, Math.floor(this.width / Math.pow(2, m)));
+        const mipHeight = Math.max(1, Math.floor(this.height / Math.pow(2, m)));
 
         // Downscale the texture image to the next mip level.
         const mipPixelData = [];
         {
-            const deltaW = (data.width / mipWidth);
-            const deltaH = (data.height / mipHeight);
+            const deltaW = (this.width / mipWidth);
+            const deltaH = (this.height / mipHeight);
     
             for (let y = 0; y < mipHeight; y++)
             {
                 for (let x = 0; x < mipWidth; x++)
                 {
                     const dstIdx = ((x + y * mipWidth) * numColorChannels);
-                    const srcIdx = ((Math.floor(x * deltaW) + Math.floor(y * deltaH) * data.width) * numColorChannels);
+                    const srcIdx = ((Math.floor(x * deltaW) + Math.floor(y * deltaH) * this.width) * numColorChannels);
 
                     for (let c = 0; c < numColorChannels; c++)
                     {
-                        mipPixelData[dstIdx + c] = data.pixels[srcIdx + c];
+                        mipPixelData[dstIdx + c] = this.pixels[srcIdx + c];
                     }
                 }
             }
         }
 
-        mipmaps.push({
+        this.mipLevels.push({
             width: mipWidth,
             height: mipHeight,
             pixels: mipPixelData,
@@ -244,7 +244,7 @@ function generate_mipmaps(data)
         if ((mipWidth === 1) && (mipHeight === 1))
         {
             Assert?.(
-                (mipmaps.length > 0),
+                (this.mipLevels.length > 0),
                 "Failed to generate mip levels for a texture."
             );
 
@@ -252,5 +252,5 @@ function generate_mipmaps(data)
         }
     }
 
-    return mipmaps;
+    return;
 }
