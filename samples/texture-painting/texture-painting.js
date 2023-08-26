@@ -24,7 +24,7 @@ export const sample = {
             });
          
             canvasEl.addEventListener("mousedown", (event)=>{
-                this.mousePos = {
+                this.mousePos = this.prevMousePos = {
                     x: (event.clientX * this.renderScale - 0.5),
                     y: (event.clientY * this.renderScale - 0.5),
                 };
@@ -97,7 +97,7 @@ function paint()
 
     let realX = startX;
     let realY = startY;
-    while (lineLength--)
+    while (lineLength-- >= 0)
     {
         const x = ~~realX;
         const y = ~~realY;
