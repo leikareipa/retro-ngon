@@ -40,7 +40,7 @@ export const sample = {
         return {
             renderOptions: {
                 lights: this.lights,
-                useFragmentBuffer: (parent.SHADER_PIPELINE_ENABLED && parent.ACTIVE_SHADER.function.fragments),
+                useFragmentBuffer: Boolean(parent.SHADER_PIPELINE_ENABLED && parent.ACTIVE_SHADER.function.fragments),
                 fragments: parent.ACTIVE_SHADER.function.fragments,
                 cameraDirection: this.camera.direction,
                 cameraPosition: this.camera.position,
