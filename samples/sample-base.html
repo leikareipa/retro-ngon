@@ -126,7 +126,7 @@
 
                     const renderInfo = Rngon.render({
                         target: "canvas",
-                        scene: (scene.mesh? [scene.mesh] : defaultScene),
+                        meshes: (scene.mesh? [scene.mesh] : defaultScene),
                         options: {
                             ...defaultRenderOptions,
                             ...(scene.renderOptions || {}),

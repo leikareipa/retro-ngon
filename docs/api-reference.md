@@ -27,7 +27,7 @@ The API is available via the `Rngon` namespace after you've imported the rendere
 
 <a id="render"></a>
 
-## render({target, scene, options, pipeline})
+## render({meshes, target, options, pipeline})
 
 Renders n-gonal meshes into a pixel buffer, and optionally displays the image on a \<canvas\>.
 
@@ -37,7 +37,7 @@ Renders n-gonal meshes into a pixel buffer, and optionally displays the image on
 
 - **target** (HTMLCanvasElement | string | null &lArr; *null*): Destination for the rendered image. Canvas element; `id` attribute of canvas element; or *null* for none. The raw pixel buffer is accessible via `Rngon.state.default.pixelBuffer` after the call.
 
-- **scene** (array): The [mesh](#mesh) objects to be rendered.
+- **meshes** (array): The [mesh](#mesh) objects to be rendered.
 
 - **options** (object &lArr; `Rngon.default.render.options`): Additional rendering options.
 
@@ -144,7 +144,7 @@ const mesh = Rngon.mesh([quad], {
 
 Rngon.render({
     target: "canvas",
-    scene: [mesh],
+    meshes: [mesh],
     options: {
         cameraPosition: Rngon.vector(0, 0, -5),
     },
@@ -219,7 +219,7 @@ A polygon made up of *n* vertices, also known as an n-gon. Single-vertex n-gons 
 
         - "ortho": Map by automatically-generated UV coordinates in 2D screen space. Disregards perspective and rotation. UV coordinates provided by the n-gon's [vertex](#vertex) objects are ignored.
 
-        - "affine": Affine texture-mapping using the UV coordinates provided by the n-gon's [vertex](#vertex) objects. For perspective-correct affine mapping, also enable the `options.useFullInterpolation` property to [render()](#rendertarget-scene-options-pipeline).
+        - "affine": Affine texture-mapping using the UV coordinates provided by the n-gon's [vertex](#vertex) objects. For perspective-correct affine mapping, also enable the `options.useFullInterpolation` property to [render()](#render).
 
     - **textureFiltering** (string &lArr; *"none"*): The filtering effect to be applied when rasterizing `material.texture`:
 

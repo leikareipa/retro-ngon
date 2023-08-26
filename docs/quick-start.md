@@ -38,7 +38,7 @@ const quadMesh = Rngon.mesh([quad], {
 
 Rngon.render({
     target: "canvas",
-    scene: [quadMesh],
+    meshes: [quadMesh],
     options: {
         resolution: 1,
         cameraPosition: Rngon.vector(0, 0, -5),
@@ -115,7 +115,7 @@ const quad = Rngon.ngon([
 ```javascript
 Rngon.render({
     target: "canvas",
-    scene: [quadMesh],
+    meshes: [quadMesh],
     options: {
         resolution: 0.2,
         cameraPosition: Rngon.vector(0, 0, -5),
@@ -139,7 +139,7 @@ Rngon.render({
 ```javascript
 Rngon.render({
     target: "...",
-    scene: [...],
+    meshes: [...],
     options: {...},
     pipeline: {
         pixelShader: sample_shader,

@@ -49,7 +49,7 @@ const schema = {
                 "string",
                 "null",
             ],
-            scene: [["Mesh"]],
+            meshes: [["Mesh"]],
             options: ["object"],
             pipeline: ["object"],
         },
@@ -109,12 +109,12 @@ const schema = {
 
 export function render({
     target = null,
-    scene,
+    meshes,
     options = {},
     pipeline = {},
 } = {})
 {
-    validate_object?.({target, scene, options, pipeline}, schema.arguments);
+    validate_object?.({target, meshes, options, pipeline}, schema.arguments);
 
     const renderCallInfo = {
         renderWidth: 0,
@@ -177,7 +177,7 @@ export function render({
         // depending on whether the user asked us for the latter option.
         if (surface && (!options.hibernateWhenTargetNotVisible || surface.is_in_view()))
         {
-            surface.display_meshes(scene);
+            surface.display_meshes(meshes);
             renderCallInfo.numNgonsRendered = state.ngonCache.count;
         }
     }

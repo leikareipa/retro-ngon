@@ -285,7 +285,7 @@ function run_bencmark(sceneMeshes = [], renderOptions = {}, renderPipeline = {})
 
             const renderInfo = Rngon.render({
                 target: (isHeadless? undefined : canvasId),
-                scene: sceneMeshes,
+                meshes: sceneMeshes,
                 options: {
                     ...renderOptions,
                     cameraDirection: Rngon.vector(cameraDirection.x, cameraDirection.y, cameraDirection.z),

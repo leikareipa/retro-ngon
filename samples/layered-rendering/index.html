@@ -222,13 +222,13 @@
 
                 totalRenderTimeMs += Rngon.render({
                     target: "layer-1",
-                    scene: [roomMesh],
+                    meshes: [roomMesh],
                     options
                 }).totalRenderTimeMs;
                 
                 totalRenderTimeMs += Rngon.render({
                     target: "layer-2",
-                    scene: [objectMesh],
+                    meshes: [objectMesh],
                     options,
                     pipeline: {
                         surfaceWiper: ((layerVisibility !== "#2")? pixel_only_wiper : undefined),

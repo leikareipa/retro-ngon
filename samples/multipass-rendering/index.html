@@ -82,7 +82,7 @@
                 // Render the scene from the viewpoint of the portal.
                 Rngon.render({
                     target: "canvas",
-                    scene: scene,
+                    meshes: scene,
                     options: {
                         state: "portal",
                         resolution: 0.125,
@@ -111,7 +111,7 @@
                 // pass's image over portal polygons.
                 Rngon.render({
                     target: "canvas",
-                    scene: scene,
+                    meshes: scene,
                     options: {
                         resolution: 0.25,
                         cameraDirection: camera.direction,
@@ -172,7 +172,7 @@
             {
                 Rngon.render({
                     target: "canvas",
-                    scene: scene,
+                    meshes: scene,
                     options: {
                         state: "big",
                         resolution: 0.5,
@@ -183,7 +183,7 @@
 
                 Rngon.render({
                     target: "canvas",
-                    scene: scene,
+                    meshes: scene,
                     options: {
                         resolution: 0.25,
                         cameraDirection: camera.direction,
@@ -251,7 +251,7 @@
 
                 Rngon.render({
                     target: "canvas",
-                    scene: scene,
+                    meshes: scene,
                     options: {
                         state: stateId,
                         resolution: 0.25,
