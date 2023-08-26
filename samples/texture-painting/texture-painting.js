@@ -58,6 +58,7 @@ export const sample = {
             paint.call(this);
             this.prevMousePos = this.mousePos;
         }
+
         return {
             mesh: Rngon.mesh([this.triangle]),
             renderOptions: {
@@ -100,9 +101,15 @@ function paint()
     {
         const x = ~~realX;
         const y = ~~realY;
+        
         const fragmentIdx = (x + y * Rngon.state.default.fragmentBuffer.width);
-        const {textureUScaled:texelU, textureVScaled:texelV} = Rngon.state.default.fragmentBuffer.data[fragmentIdx];
+        const fragment = Rngon.state.default.fragmentBuffer.data[fragmentIdx];
+        if (!fragment)
+        {
+            continue;
+        }
 
+        const {textureUScaled:texelU, textureVScaled:texelV} = fragment;
         if (![typeof texelU, typeof texelV].includes("undefined"))
         {
             const texelIdx = (texelU + texelV * this.texture.width);
