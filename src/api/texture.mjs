@@ -78,12 +78,11 @@ const schema = {
             "width": ["number"],
             "height": ["number"],
             "pixels": ["Uint8ClampedArray"],
-            "mipLevels": [["object"]],
+            "mipLevels": [["object", "Texture"]],
         },
     },
 };
 
-// Texture with 32-bit color.
 export function Texture(data = {})
 {
     data = structuredClone(data);
@@ -206,9 +205,23 @@ function decode_pixel_data(data)
 // full-resolution texture, and mipmaps[mipmaps.length-1] is the smallest, 1 x 1 texture.
 function regenerate_mipmaps()
 {
-    this.mipLevels = [];
+    Assert?.(
+        this.hasOwnProperty("$constructor") &&
+        (this.$constructor === "Texture"),
+        "Expected 'this' to point to a Texture"
+    );
 
-    for (let m = 0; ; m++)
+    // The first mip level is the base image, so we can just reference the base data.
+    this.mipLevels = [this];
+
+    if (
+        (this.width === 1) &&
+        (this.height === 1)
+    ){
+        return;
+    }
+
+    for (let m = 1; ; m++)
     {
         const mipWidth = Math.max(1, Math.floor(this.width / Math.pow(2, m)));
         const mipHeight = Math.max(1, Math.floor(this.height / Math.pow(2, m)));
