@@ -29,7 +29,7 @@ import {State} from "./api/state.mjs";
 export const Rngon = {
     version: {
         major: 0,
-        minor: 3,
+        minor: 4,
         isProductionBuild: IS_PRODUCTION_BUILD,
     },
     default: Default,
