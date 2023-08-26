@@ -135,10 +135,7 @@ export function Surface(canvasElement, renderState)
             {
                 if (renderState.useContextShader)
                 {
-                    renderState.modules.context_shader({
-                        context: renderContext,
-                        image: renderState.pixelBuffer,
-                    });
+                    renderState.modules.context_shader(renderContext, renderState.pixelBuffer);
                 }
                 else
                 {

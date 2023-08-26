@@ -59,7 +59,7 @@ export const sample = {
     numTicks: 0,
 };
 
-function cs_radial_fade({context, image})
+function cs_radial_fade(context, image)
 {
     context.putImageData(image, 0, 0);
 
@@ -79,7 +79,7 @@ function cs_radial_fade({context, image})
     context.fillRect(0, 0, image.width, image.height);
 }
 
-function cs_screen_fade({context, image})
+function cs_screen_fade(context, image)
 {
     context.putImageData(image, 0, 0);
 
@@ -87,7 +87,7 @@ function cs_screen_fade({context, image})
     context.fillRect(0, 0, image.width, image.height);
 }
 
-function cs_rasterized_overlay({context, image})
+function cs_rasterized_overlay(context, image)
 {
     context.putImageData(image, 0, 0);
 
@@ -119,7 +119,7 @@ const flogImg = new Image();
 let isFlogImgLoaded = false;
 flogImg.src = "./flog.png";
 flogImg.onload = ()=>{isFlogImgLoaded = true};
-function cs_osd({context, image})
+function cs_osd(context, image)
 {
     context.putImageData(image, 0, 0);
 
@@ -152,7 +152,7 @@ function cs_osd({context, image})
     }
 }
 
-function cs_shake({context, image})
+function cs_shake(context, image)
 {
     context.putImageData(
         image,
