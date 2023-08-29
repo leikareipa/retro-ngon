@@ -88,42 +88,46 @@ Pixel shaders can have a large impact on the frame rate, but otherwise this 800-
 
 After downloading the repository, follow these steps to build the code into a single-file distributable that you can use in your apps.
 
-1. Install the required developer dependencies:
+1. Install the required developer dependencies
 
-```bash
-$ yarn install
-```
+    ```bash
+    $ yarn install
+    ```
 
-These dependencies are needed only to build the distributable. They don't need to be bundled with your application.
+    These dependencies are needed only to build the distributable. They don't need to be bundled with your application.
 
-2. Build the distributable:
+2. Build the distributable
 
-```bash
-$ yarn run build
-```
+    ```bash
+    $ yarn run build
+    ```
 
-- Optionally, you can build the distributable in developer mode with `$ yarn run build:dev`. The developer mode includes additional run-time error checks and data validation, which help you find bugs at the cost of run-time performance. Keep an eye on your browser's developer console.
+    Optionally, you can build the distributable in developer mode with `$ yarn run build:dev`. The developer mode includes additional run-time error checks and data validation, which help you find bugs at the cost of run-time performance. Keep an eye on your browser's developer console.
 
-The build process should produce a distributable in two flavors:
+3. Import the distributable into your app
 
-1. [distributable/rngon.global.js](/distributable/rngon.global.js)
-2. [distributable/rngon.module.js](/distributable/rngon.module.js)
+    The build process from step 2 should produce a distributable in two flavors:
 
-The first file can be imported globally:
+    - [distributable/rngon.global.js](/distributable/rngon.global.js)
+    - [distributable/rngon.module.js](/distributable/rngon.module.js)
 
-```html
-<script src="rngon.global.js"></script>
-```
+    The first file can be imported globally:
 
-The second file can be imported into a module:
+    ```html
+    <script src="rngon.global.js"></script>
+    ```
 
-```html
-<script type="module">
-    import {Rngon} from "rngon.module.js";
-</script>
-```
+    The second file can be imported into a module:
 
-Both methods expose the rendering API as an `Rngon` object. To learn how to use the API, head over to the [quick-start guide](/docs/quick-start.md) or have a look at the [API reference](/docs/api-reference.md).
+    ```html
+    <script type="module">
+        import {Rngon} from "rngon.module.js";
+    </script>
+    ```
+
+    Both methods expose the rendering API as an `Rngon` object.
+    
+4. To learn how to use the API, head over to the [quick-start guide](/docs/quick-start.md) or have a look at the [API reference](/docs/api-reference.md).
 
 ### Testing
 
