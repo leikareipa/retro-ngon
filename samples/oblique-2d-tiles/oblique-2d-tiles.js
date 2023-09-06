@@ -199,11 +199,7 @@ export const sample = {
                 transformClipLighter: ({renderState, mesh})=>
                 {
                     mesh.ngons.forEach(n=>apply_lighting_to_tile(renderState, n));
-
-                    // The n-gons don't need transforming, so we can just assign them directly
-                    // to the renderer's n-gon cache; from which they'll be picked up for rasterization.
-                    renderState.ngonCache.ngons = mesh.ngons;
-                    renderState.ngonCache.count = mesh.ngons.length;
+                    renderState.screenSpaceNgons = mesh.ngons;
                 },
             },
             mesh: Rngon.mesh(ngons),

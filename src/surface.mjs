@@ -306,15 +306,13 @@ function prepare_ngon_cache(renderState, meshes = [Ngon()])
     return;
 }
 
-// Marks any non-power-of-two affine-mapped faces in the n-gon cache as using the
-// non-power-of-two affine texture mapper. This needs to be done since the default
-// affine mapper expects textures to be power-of-two.
-function mark_npot_textures(renderState)
+// Marks any non-power-of-two affine-mapped faces in the given array of n-gons
+// as using the non-power-of-two affine texture mapper. This needs to be done
+// since the default affine mapper expects textures to be power-of-two.
+function mark_npot_textures(ngons)
 {
-    for (let i = 0; i < renderState.ngonCache.count; i++)
+    for (const ngon of ngons)
     {
-        const ngon = renderState.ngonCache.ngons[i];
-
         if (ngon.material.texture &&
             ngon.material.textureMapping === "affine")
         {

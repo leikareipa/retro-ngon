@@ -184,7 +184,7 @@ export function render({
         if (surface && (!options.hibernateWhenTargetNotVisible || surface.is_in_view()))
         {
             surface.display_meshes(meshes);
-            renderCallInfo.numNgonsRendered = state.ngonCache.count;
+            renderCallInfo.numNgonsRendered = state.screenSpaceNgons.length;
         }
     }
 

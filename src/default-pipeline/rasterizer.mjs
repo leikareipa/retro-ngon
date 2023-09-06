@@ -56,9 +56,8 @@ function lerp(x, y, interval)
 // state's n-gon cache.
 export function rasterizer(renderState)
 {
-    for (let n = 0; n < renderState.ngonCache.count; n++)
+    for (const ngon of renderState.screenSpaceNgons)
     {
-        const ngon = renderState.ngonCache.ngons[n];
         Assert?.(ngon.vertices.length, "Encountered an n-gon with 0 vertices");
         
         switch (ngon.vertices.length)

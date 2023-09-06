@@ -119,6 +119,10 @@ function default_state() {
         // expose a way to toggle it otherwise.
         allowWindowAlert: false,
 
+        // An array containing the screen-space n-gons to be rasterized. The array is derived
+        // from the n-gons passed to render(), following transformation and clipping.
+        screenSpaceNgons: undefined,
+
         // Pre-allocated memory; stores the n-gons that were most recently passed to render()
         // and then transformed into screen space. In other words, these are the n-gons that
         // were rendered into the most recent frame.

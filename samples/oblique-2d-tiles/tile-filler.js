@@ -19,9 +19,8 @@ export function tile_filler(renderState)
     const leftEdge = {};
     const rightEdge = {};
 
-    for (let n = 0; n < renderState.ngonCache.count; n++)
+    for (const ngon of renderState.screenSpaceNgons)
     {
-        const ngon = renderState.ngonCache.ngons[n];
         const material = ngon.material;
         const texture = material.texture;
 

@@ -71,7 +71,6 @@ export function transform_clip_lighter({
             cachedNgon.normal.x = ngon.normal.x;
             cachedNgon.normal.y = ngon.normal.y;
             cachedNgon.normal.z = ngon.normal.z;
-            cachedNgon.isActive = true;
             cachedNgon.mipLevel = ngon.mipLevel;
         }
 
@@ -118,7 +117,6 @@ export function transform_clip_lighter({
         
                     if (Vector.dot(cachedNgon.normal, viewVector) >= 0)
                     {
-                        cachedNgon.isActive = false;
                         ngonCache.count--;
                         continue;
                     }
@@ -161,12 +159,7 @@ export function transform_clip_lighter({
         }
     };
 
-    // Mark as inactive any cached n-gons that we didn't touch, so the renderer knows
-    // to ignore them for the current frame.
-    for (let i = ngonCache.count; i < ngonCache.ngons.length; i++)
-    {
-        ngonCache.ngons[i].isActive = false;
-    }
+    renderState.screenSpaceNgons = ngonCache.ngons.slice(0, ngonCache.count);
 
     return;
 }
