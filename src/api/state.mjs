@@ -92,12 +92,12 @@ function default_state() {
 
         // The render resolution when using off-screen rendering. Has no effect on the
         // resolution of on-screen, into-canvas rendering.
-        offscreenRenderWidth: 1,
-        offscreenRenderHeight: 1,
+        offscreenRenderWidth: undefined,
+        offscreenRenderHeight: undefined,
 
         // A scalar for the internal render resolution. Values below 1 mean the image
         // will be rendered at a resolution lower than the display size, then upscaled.
-        renderScale: 1,
+        renderScale: undefined,
 
         useFullInterpolation: true,
 

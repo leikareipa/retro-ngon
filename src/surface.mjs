@@ -165,16 +165,35 @@ function setup_onscreen(renderState, canvasElement)
 
     Assert?.(
         ((canvasElement instanceof Element) && renderContext),
-        "Invalid canvas element."
+        "Invalid canvas element"
     );
 
-    // Size the canvas as per the requested render scale.
-    const surfaceWidth = Math.floor(parseInt(window.getComputedStyle(canvasElement).getPropertyValue("width")) * renderState.renderScale);
-    const surfaceHeight = Math.floor(parseInt(window.getComputedStyle(canvasElement).getPropertyValue("height")) * renderState.renderScale);
-    Assert?.(
-        ((surfaceWidth > 0) && (surfaceHeight > 0)),
-        "Failed to query the dimensions of the target canvas."
-    );
+    let surfaceWidth = undefined;
+    let surfaceHeight = undefined;
+
+    if (typeof renderState.renderScale === "number")
+    {
+        surfaceWidth = Math.floor(parseInt(window.getComputedStyle(canvasElement).getPropertyValue("width")) * renderState.renderScale);
+        surfaceHeight = Math.floor(parseInt(window.getComputedStyle(canvasElement).getPropertyValue("height")) * renderState.renderScale);
+        
+        Assert?.(
+            (surfaceWidth > 0) &&
+            (surfaceHeight > 0),
+            "Failed to query the dimensions of the target canvas"
+        );
+    }
+    else
+    {
+        Assert?.(
+            (typeof renderState.renderWidth === "number") &&
+            (typeof renderState.renderHeight === "number"),
+            "Invalid render resolution"
+        );
+
+        surfaceWidth = renderState.renderWidth;
+        surfaceHeight = renderState.renderHeight;
+    }
+    
     canvasElement.setAttribute("width", surfaceWidth);
     canvasElement.setAttribute("height", surfaceHeight);
 
@@ -195,8 +214,8 @@ function setup_onscreen(renderState, canvasElement)
 function setup_offscreen(renderState)
 {
     return {
-        surfaceWidth: renderState.offscreenRenderWidth,
-        surfaceHeight: renderState.offscreenRenderHeight,
+        surfaceWidth: renderState.renderWidth,
+        surfaceHeight: renderState.renderHeight,
         renderContext: {
             createImageData: function(width, height)
             {

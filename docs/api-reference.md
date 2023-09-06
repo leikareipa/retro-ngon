@@ -35,17 +35,19 @@ Renders n-gonal meshes into a pixel buffer, and optionally displays the image on
 
 ### Parameters
 
-- **target** (HTMLCanvasElement | string | null &lArr; *null*): Destination for the rendered image. Canvas element; `id` attribute of canvas element; or *null* for none. The raw pixel buffer is accessible via `Rngon.state.default.pixelBuffer` after the call.
+- **target** (HTMLCanvasElement | string | null &lArr; *null*): Where to display the rendered image. Canvas element; `id` attribute of canvas element; or *null* for no display. The raw pixel buffer is accessible via `Rngon.state.default.pixelBuffer` after the call.
 
 - **meshes** (array): The [mesh](#mesh) objects to be rendered.
 
 - **options** (object &lArr; `Rngon.default.render.options`): Additional rendering options.
 
-    - **resolution** (number | object &lArr; *1*): Resolution of the output image. If `target` is HTMLCanvasElement or string, the output resolution is the size of the canvas (according to `window.getComputedStyle`) multiplied by this number, whose range is (0,1]. Otherwise, the value is an object with these properties:
+    - **resolution** (number | object &lArr; *1*): The resolution of the output image.
 
-        - **width** (number &lArr; *640*): Width in pixels.
+        - *number*: The resolution is the size of the \<canvas\> element (according to `window.getComputedStyle`) multiplied by this number.
 
-        - **height** (number &lArr; *480*): Height in pixels.
+        - *object*: The resolution is given by the `width` and `height` properties of this object; e.g. {width:640, height:480} for a rendering the size of 640 &times; 480.
+
+        - Note: If `target` is a \<canvas\>, the browser may scale the display of the output image to fit the \<canvas\> element.
 
     - **fov** (number &lArr; *43*): Field-of-view size.
 

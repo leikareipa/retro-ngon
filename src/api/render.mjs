@@ -204,10 +204,10 @@ function setup_render_state(options = {}, pipeline = {})
     state.renderScale = (
         (typeof options.resolution === "number")
             ? options.resolution
-            : 1 // Will use options.width and options.height instead.
+            : undefined
     );
-    state.offscreenRenderWidth = options.resolution.width;
-    state.offscreenRenderHeight = options.resolution.height;
+    state.renderWidth = options.resolution.width;
+    state.renderHeight = options.resolution.height;
 
     state.nearPlaneDistance = options.nearPlane;
     state.farPlaneDistance = options.farPlane;
