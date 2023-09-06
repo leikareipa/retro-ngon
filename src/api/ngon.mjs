@@ -12,8 +12,8 @@ import {Matrix} from "./matrix.mjs";
 import {Color} from "./color.mjs";
 
 export const ngonDefaultMaterial = {
-    color: Color(255, 255, 255, 255),
-    wireframeColor: Color(0, 0, 0, 255),
+    color: Color.white,
+    wireframeColor: Color.black,
     texture: undefined,
     textureMapping: "ortho",
     textureFiltering: "none",
