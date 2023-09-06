@@ -77,58 +77,45 @@ export function Surface(canvasElement, renderState)
 
         // Rasterizes the given meshes' n-gons onto this surface. Following this call,
         // the rasterized pixels will be in renderState.pixelBuffer, and the meshes'
-        // n-gons - with their vertices transformed to screen space - in renderState.ngonCache.
-        // If a <canvas> element id was specified for this surface, the rasterized
-        // pixels will also be painted onto that canvas.
+        // screen-space n-gons in renderState.screenSpaceNgons. If a <canvas> element
+        // id was specified for this surface, the rasterized pixels will also be
+        // painted onto that canvas.
         display_meshes: function(meshes = [])
         {
             renderState.modules.surface_wiper?.(renderState);
 
-            // Prepare the meshes' n-gons for rendering. This will place the transformed
-            // n-gons in renderState.ngonCache.
+            if (meshes.length)
             {
-                prepare_vertex_cache(renderState, meshes);
-                prepare_ngon_cache(renderState, meshes);
-
-                if (renderState.modules.transform_clip_lighter)
+                // Prepare the meshes' n-gons for rendering.
                 {
-                    for (const mesh of meshes)
+                    prepare_vertex_cache(renderState, meshes);
+                    prepare_ngon_cache(renderState, meshes);
+
+                    if (renderState.modules.transform_clip_lighter)
                     {
-                        renderState.modules.transform_clip_lighter({
-                            renderState,
-                            mesh,
-                            cameraMatrix,
-                            perspectiveMatrix,
-                            screenSpaceMatrix,
-                        });
-                    };
+                        for (const mesh of meshes)
+                        {
+                            renderState.modules.transform_clip_lighter({
+                                renderState,
+                                mesh,
+                                cameraMatrix,
+                                perspectiveMatrix,
+                                screenSpaceMatrix,
+                            });
+                        };
+                    }
+
+                    renderState.modules.ngon_sorter?.(renderState);
+
+                    mark_npot_textures(renderState.screenSpaceNgons);
                 }
 
-                // When using a depth buffer, we can get better performance by pre-sorting
-                // the n-gons in reverse painter order, where the closest n-gons are rendered
-                // first, as it allows for early discarding of occluded pixels.
-                if (renderState.useDepthBuffer)
+                renderState.modules.rasterizer?.(renderState);
+
+                if (renderState.usePixelShader)
                 {
-                    renderState.ngonCache.ngons.sort((ngonA, ngonB)=>
-                    {
-                        // Separate inactive n-gons (which are to be ignored when rendering the current
-                        // frame) from the n-gons we're intended to render.
-                        const a = (ngonA.isActive? (ngonA.vertices.reduce((acc, v)=>(acc + v.z), 0) / ngonA.vertices.length) : Number.MAX_VALUE);
-                        const b = (ngonB.isActive? (ngonB.vertices.reduce((acc, v)=>(acc + v.z), 0) / ngonB.vertices.length) : Number.MAX_VALUE);
-                        return ((a === b)? 0 : ((a > b)? 1 : -1));
-                    });
+                    renderState.modules.pixel_shader(renderState);
                 }
-
-                mark_npot_textures(renderState);
-            }
-
-            // Render the n-gons from the n-gon cache into renderState.pixelBuffer.
-            renderState.modules.rasterizer?.(renderState);
-
-            // Apply a custom pixel shader effect on renderState.pixelBuffer.
-            if (renderState.usePixelShader)
-            {
-                renderState.modules.pixel_shader(renderState);
             }
 
             if (!renderOffscreen)

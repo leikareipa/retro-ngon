@@ -87,11 +87,31 @@ Renders n-gonal meshes into a pixel buffer, and optionally displays the image on
 
 - **pipeline** (object &lArr; `Rngon.default.render.pipeline`): The render pipeline.
     
-    - **transformClipLighter** (function | null &lArr; `Rngon.default.render.pipeline.transformClipLighter()`): A function to be called by the renderer to transform, clip, and light the meshes; or disabled if *null*.
+    - **ngonSorter** (function | undefined &lArr; `Rngon.default.render.pipeline.ngonSorter`): A function to be called by the renderer to sort the input meshes' n-gons prior to rendering; or disabled if *undefined*. The default behavior is to sort in reverse painter order (on the Z axis, closest first) if `options.useDepthBuffer` is *true* and otherwise to do no sorting.
+        
+        - Function signature: ngonSorter(renderState:[state](#state))
+            
+            - **renderState**: (Todo.)
+
+        - The function returns nothing.
     
-    - **rasterizer** (function | null &lArr; `Rngon.default.render.pipeline.rasterizer()`): A function to be called by the renderer to rasterize the meshes; or disabled if *null*.
+    - **transformClipLighter** (function | null &lArr; `Rngon.default.render.pipeline.transformClipLighter`): A function to be called by the renderer to transform, clip, and light the meshes; or disabled if *null*.
     
-    - **surfaceWiper** (function | null &lArr; `Rngon.default.render.pipeline.surfaceWiper()`): A function to be called by the renderer to clear the render surface of previous renderings (pixel colors, depth values, etc.); or disabled entirely if *null*.
+    - **rasterizer** (function | null &lArr; `Rngon.default.render.pipeline.rasterizer`): A function to be called by the renderer to rasterize the meshes; or disabled if *null*.
+        
+        - Function signature: rasterizer(renderState:[state](#state))
+            
+            - **renderState**: (Todo.)
+
+        - The function returns nothing.
+    
+    - **surfaceWiper** (function | null &lArr; `Rngon.default.render.pipeline.surfaceWiper`): A function to be called by the renderer to clear the render surface of previous renderings (pixel colors, depth values, etc.); or disabled entirely if *null*.
+        
+        - Function signature: surfaceWiper(renderState:[state](#state))
+            
+            - **renderState**: (Todo.)
+
+        - The function returns nothing.
     
     - **pixelShader** (function | undefined &lArr; *undefined*): A function to be called by the renderer at the completion of rasterization to apply pixel-shading effects to the rendered image; or disabled if *undefined*. See the [pixel shader samples](/samples/pixel-shaders/pixel-shaders.js) for examples of usage.
         
@@ -211,7 +231,7 @@ A polygon made up of *n* vertices, also known as an n-gon. Single-vertex n-gons 
 
 - **material** (object &lArr; `Rngon.default.ngon.material`): The material properties that define the n-gon's appearance:
 
-    - **color** ([color](#color) &lArr; *color(255, 255, 255, 255)*): Base color. If the `material.texture` property is *null*, the n-gon will be rendered in this color. Otherwise, the renderer will multiply texel colors by (C / 255), where C is the corresponding channel of the base color.
+    - **color** ([color](#color) &lArr; *color.white*): Base color. If the `material.texture` property is *null*, the n-gon will be rendered in this color. Otherwise, the renderer will multiply texel colors by (C / 255), where C is the corresponding channel of the base color.
 
     - **texture** ([texture](#texture) | undefined &lArr; *undefined*): The image to be rendered onto the n-gon's face. If *undefined*, or if there are fewer than 3 vertices, the n-gon will be rendered without a texture.
 
@@ -235,7 +255,7 @@ A polygon made up of *n* vertices, also known as an n-gon. Single-vertex n-gons 
 
     - **hasWireframe** (boolean &lArr; *false*): Whether the n-gon should be rendered with a wireframe outline. See also `material.wireframeColor`.
 
-    - **wireframeColor** ([color](#color) &lArr; *color(0, 0, 0)*): If `material.hasWireframe` is *true*, this value sets the wireframe's color.
+    - **wireframeColor** ([color](#color) &lArr; *color.black*): If `material.hasWireframe` is *true*, this value sets the wireframe's color.
 
     - **hasFill** (boolean &lArr; *true*): Whether the face of the n-gon should be rendered. If *false* and `material.hasWireframe` is *true*, the n-gon's wireframe outline will be rendered.
 

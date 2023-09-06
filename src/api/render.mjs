@@ -9,6 +9,7 @@ import {validate_object} from "../schema.mjs";
 import {rasterizer} from "../default-pipeline/rasterizer.mjs";
 import {transform_clip_lighter} from "../default-pipeline/transform-clip-lighter.mjs";
 import {surface_wiper} from "../default-pipeline/surface-wiper.mjs";
+import {ngon_sorter} from "../default-pipeline/ngon-sorter.mjs";
 import {Surface} from "../surface.mjs";
 import {Assert} from "../assert.mjs";
 import {Vector} from "./vector.mjs";
@@ -32,6 +33,7 @@ export const renderDefaultOptions = {
 };
 
 export const renderDefaultPipeline = {
+    ngonSorter: ngon_sorter,
     surfaceWiper: surface_wiper,
     rasterizer: rasterizer,
     transformClipLighter: transform_clip_lighter,
@@ -75,7 +77,11 @@ const schema = {
     },
     pipeline: {
         where: "in render({pipeline})",
-        properties: { 
+        properties: {
+            ngonSorter: [
+                "undefined",
+                "function"
+            ],
             surfaceWiper: [
                 "undefined",
                 "null",
@@ -234,6 +240,7 @@ function setup_render_state(options = {}, pipeline = {})
         }
     }
 
+    state.modules.ngon_sorter = pipeline.ngonSorter;
     state.modules.rasterizer = pipeline.rasterizer;
     state.modules.transform_clip_lighter = pipeline.transformClipLighter;
     state.modules.surface_wiper = pipeline.surfaceWiper;

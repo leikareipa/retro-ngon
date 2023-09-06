@@ -20,6 +20,7 @@ function default_state() {
         // user can provide custom modules to be used in place of the default ones).
         // Each module is a function that performs a set of tasks.
         modules: {
+            ngon_sorter: undefined,
             transform_clip_lighter: undefined,
             surface_wiper: undefined,
             rasterizer: undefined,
