@@ -23,11 +23,11 @@ You can view various interactive render samples [here](https://www.tarpeeksihyva
 
 Being a retro-oriented software renderer written in JavaScript, the retro n-gon renderer thrives in low resolutions and low polycounts, its performance generally lacking for modern-style rendering.
 
-I'd generally expect the renderer to find a home powering nostalgia projects reminiscent of the 90s and early 2000. Retro-themed games, model visualization, etc.
+I'd generally expect the renderer to find a home powering nostalgia projects reminiscent of the 1990s. Retro-themed games, model visualization, etc.
 
 ## Performance
 
-The repository provides [performance benchmarks](/tests/performance/) to gauge the renderer's performance on your system.
+The repository provides [performance benchmarks](#performance-benchmarks) to gauge the renderer's performance on your system.
 
 Below are benchmark results (frames per second) running in Google Chrome on an AMD Ryzen 5000 series desktop CPU.
 

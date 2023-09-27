@@ -1,4 +1,4 @@
-# API reference
+# API reference for the retro n-gon renderer
 
 The renderer's public API consists of the following components:
 

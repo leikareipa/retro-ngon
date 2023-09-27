@@ -1,4 +1,4 @@
-# Quick-start guide
+# Quick-start guide for the retro n-gon renderer
 
 ## Build the distributable
 
