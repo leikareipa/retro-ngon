@@ -160,3 +160,7 @@ You can also run the benchmarks in a browser window (after hosting the files on 
 The benefits of running them this way is that you get to see the render output and at the end a graph showing the frame rate as a function of time.
 
 When run in a browser window, the benchmarks' render resoluton is determined by the size of the viewport as well as the `scale` URL parameter: for example, with a viewport of 1920 &times; 1080 and `scale=0.25`, the render resolution will be 480 &times; 270.
+
+## Doggo
+
+![](./dog1.jpg)
