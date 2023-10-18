@@ -10,14 +10,22 @@ You can view various interactive render samples [here](https://www.tarpeeksihyva
 - Programmable render pipeline
 - Good performance (for retro uses)
 
-![Tomb Raider](/screenshot.png)\
-*A scene from [Tomb Raider](https://en.wikipedia.org/wiki/Tomb_Raider_(1996_video_game)), rendered with a CRT-like shader. (Based on assets created by Core Design for Tomb Raider. Core Design is not associated with this renderer.)*
-
 ## Documentation
 
 - [Installation](#installation)
 - [Quick-start guide](/docs/quick-start.md)
 - [API reference](/docs/api-reference.md)
+
+## Screenshots
+
+![Tomb Raider](/screenshot1.png)\
+*A scene from Tomb Raider, rendered with a real-time dithering shader and dithered texture filtering. (Based on assets created by Core Design for Tomb Raider. Core Design is not associated with this renderer.)*
+
+![Rally-Sport](/screenshot2.png)\
+*Replicating the 2.5D "vector graphics" rendering style of a 1990s DOS game. (Based on assets created by Jukka Jäkälä for Rally-Sport. Jukka Jäkälä is not associated with this renderer.)*
+
+![Windows 95](/screenshot3.png)\
+*The renderer serving as a 2D UI rasterizer in a Windows 95-styled front-end framework. (Based on assets created by Microsoft for Windows 95. Microsoft is not associated with this renderer.)*
 
 ## Suggested use cases
 
