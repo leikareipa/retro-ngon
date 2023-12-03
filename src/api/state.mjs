@@ -121,7 +121,7 @@ function default_state() {
 
         // An array containing the screen-space n-gons to be rasterized. The array is derived
         // from the n-gons passed to render(), following transformation and clipping.
-        screenSpaceNgons: undefined,
+        screenSpaceNgons: [],
 
         // Pre-allocated memory; stores the n-gons that were most recently passed to render()
         // and then transformed into screen space. In other words, these are the n-gons that
