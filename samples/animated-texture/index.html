@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width">
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <title>Animated textures - Render sample - Retro n-gon renderer</title>
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" integrity="sha384-gfdkjb5BdAXd+lj+gudLWI+BXq4IuLW5IT+brZEZsLFm++aCMlF1V92rMkPaX4PP" crossorigin="anonymous">
+        <link rel="stylesheet" type="text/css" href="../sample-base.css">
+        <style>
+            body
+            {
+                background-color: #6e6e6e;
+            }
+        </style>
+    </head>
+    <body id="sample-container">
+        <script src="./perlin.js"></script>
+        <div class="content">
+
+            <iframe id="render-target">
+            </iframe>
+
+        </div>
+
+        <script>
+            const renderer = (new URLSearchParams(window.location.search).get("renderer") || "dev");
+            const renderTarget = document.getElementById("render-target");
+            renderTarget.src = `../sample-base.html?sample=animated-texture&renderer=${renderer}`;
+        </script>
+    </body>
+</html>
