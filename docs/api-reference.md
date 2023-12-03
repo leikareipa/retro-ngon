@@ -420,11 +420,11 @@ Note: Textures with a power-of-two resolution may render faster and support more
 
 - **data** (object &lArr; `Rngon.default.texture`): The texture's data.
 
-    - **width** (number &lArr; *0*): The width of the image.
+    - **width** (number &lArr; *1*): The width of the image.
 
-    - **height** (number &lArr; *0*): The height of the image.
+    - **height** (number &lArr; *1*): The height of the image.
 
-    - **pixels** (array | string &lArr; *[]*): The texture's pixels. The layout of the data is determimned by the `data.channels` property, and the encoding of the data is determined by the `data.encoding` property.
+    - **pixels** (array | string | undefined &lArr; *undefined*): The texture's pixels. The layout of the data is determined by the `data.channels` property, and the encoding of the data is determined by the `data.encoding` property. If *undefined*, will be initialized to an empty array of size **width** * **height** * 4.
 
     - **channels** (string &lArr; *"rgba:8+8+8+8"*): Specifies the layout of the pixel data:
 

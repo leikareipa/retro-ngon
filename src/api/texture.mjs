@@ -15,7 +15,7 @@ const numColorChannels = 4;
 export const textureDefaultData = {
     width: 1,
     height: 1,
-    pixels: [255, 255, 255, 255],
+    pixels: undefined,
     encoding: "none",
     channels: "rgba:8+8+8+8",
 };
@@ -91,6 +91,11 @@ export function Texture(data = {})
     for (const key of Object.keys(textureDefaultData))
     {
         data.hasOwnProperty(key)? 1 : (data[key] = textureDefaultData[key]);
+    }
+
+    if (data.pixels === undefined)
+    {
+        data.pixels = new Array(data.width * data.height * 4);
     }
 
     validate_object?.(data, schema.arguments);
