@@ -15,8 +15,8 @@ const resourceOrigin = (process.env.RESOURCE_ORIGIN || "http://localhost:8222");
 
     await page.waitForSelector("#benchmark-graph-container", {timeout: 0});
     const benchResults = await page.evaluate(()=>window.benchResults);
-
-    const [averageFPS, minimumFPS, maximumFPS] = (()=>{
+    const resolution = await page.evaluate(()=>Rngon.state.default.resolution);
+    const [average, minimum, maximum] = (()=>{
         const renderFPS = benchResults.map(r=>r.renderFPS);
         return [
             Math.round(renderFPS.reduce((total, fps)=>(total + fps)) / benchResults.length),
@@ -25,7 +25,7 @@ const resourceOrigin = (process.env.RESOURCE_ORIGIN || "http://localhost:8222");
         ];
     })();
 
-    console.log("Average", averageFPS, "Minimum", minimumFPS, "Maximum", maximumFPS);
+    console.log({average, minimum, maximum}, resolution);
     process.exit();
 })();
 
