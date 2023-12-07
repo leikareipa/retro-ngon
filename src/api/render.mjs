@@ -175,9 +175,8 @@ export function render({
     // Render a single frame.
     {
         const surface = Surface(target, state);
-
-        renderCallInfo.renderWidth = surface.width;
-        renderCallInfo.renderHeight = surface.height;
+        state.resolution.width = renderCallInfo.renderWidth = surface.width;
+        state.resolution.height = renderCallInfo.renderHeight = surface.height;
 
         // We'll render either always or only when the render canvas is in view,
         // depending on whether the user asked us for the latter option.

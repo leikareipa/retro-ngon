@@ -29,6 +29,12 @@ function default_state() {
             context_shader: undefined,
         },
 
+        // The most recent output resolution.
+        resolution: {
+            width: undefined,
+            height: undefined,
+        },
+
         // Pixel buffer for rasterization. This will be scaled to match the requested
         // render resolution; and the renderer's rasterization pass will populate it
         // with the rendered frame's pixel values.
@@ -89,11 +95,6 @@ function default_state() {
 
         useContextShader: false,
         context_shader: undefined,
-
-        // The render resolution when using off-screen rendering. Has no effect on the
-        // resolution of on-screen, into-canvas rendering.
-        offscreenRenderWidth: undefined,
-        offscreenRenderHeight: undefined,
 
         // A scalar for the internal render resolution. Values below 1 mean the image
         // will be rendered at a resolution lower than the display size, then upscaled.
