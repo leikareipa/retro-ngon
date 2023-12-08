@@ -286,6 +286,7 @@ function ps_per_pixel_light(renderState)
     const lightReach = (100 * 100);
     const lightIntensity = 1.5;
     const lightDirection = this.Rngon.vector();
+    const surfaceNormal = this.Rngon.vector();
 
     for (let i = 0; i < (width * height); i++)
     {
@@ -307,24 +308,16 @@ function ps_per_pixel_light(renderState)
 
         if ((thisFragment.shade > 0) && (distanceMul > 0))
         {
-            let shadeMul;
-            {
-                // Use pre-computed shading, if available.
-                if (thisNgon.material.vertexShading !== "none")
-                {
-                    shadeMul = thisFragment.shade;
-                }
-                else
-                {
-                    lightDirection.x = (light.position.x - thisFragment.worldX);
-                    lightDirection.y = (light.position.y - thisFragment.worldY);
-                    lightDirection.z = (light.position.z - thisFragment.worldZ);
-                    this.Rngon.vector.normalize(lightDirection);
+            lightDirection.x = (light.position.x - thisFragment.worldX);
+            lightDirection.y = (light.position.y - thisFragment.worldY);
+            lightDirection.z = (light.position.z - thisFragment.worldZ);
+            this.Rngon.vector.normalize(lightDirection);
 
-                    shadeMul = Math.max(0, Math.min(1, this.Rngon.vector.dot(thisNgon.normal, lightDirection)));
-                }
-            }
+            surfaceNormal.x = thisFragment.normalX;
+            surfaceNormal.y = thisFragment.normalY;
+            surfaceNormal.z = thisFragment.normalZ;
 
+            const shadeMul = Math.max(0, Math.min(1, this.Rngon.vector.dot(surfaceNormal, lightDirection)));
             const colorMul = (distanceMul * shadeMul * lightIntensity);
 
             pixels[(i * 4) + 0] *= colorMul;
@@ -343,6 +336,9 @@ function ps_per_pixel_light(renderState)
     worldX: true,
     worldY: true,
     worldZ: true,
+    normalX: true,
+    normalY: true,
+    normalZ: true,
     shade: true,
 };
 
