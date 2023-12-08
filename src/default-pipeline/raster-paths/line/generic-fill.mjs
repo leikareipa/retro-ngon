@@ -36,12 +36,15 @@ export function line_generic_fill(
     const deltaShade = ((endShade - startShade) / lineLength);
 
     // Rasterize the line.
-    let realX = startX;
-    let realY = startY;
-    let depth = startDepth;
-    let shade = startShade;
+    let i = 0;
     while (lineLength--)
     {
+        const realX = (startX + (deltaX * i));
+        const realY = (startY + (deltaY * i));
+        const depth = (startDepth + (deltaDepth * i));
+        const shade = (startShade + (deltaShade * i));
+        i++;
+
         const x = ~~realX;
         const y = ~~realY;
         const pixelBufferIdx = (x + y * renderWidth);
@@ -82,11 +85,6 @@ export function line_generic_fill(
                 depthBuffer[pixelBufferIdx] = depth;
             }
         }
-
-        realX += deltaX;
-        realY += deltaY;
-        depth += deltaDepth;
-        shade += deltaShade;
     }
 
     return true;

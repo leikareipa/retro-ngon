@@ -53,34 +53,34 @@ export function poly_plain_textured_fill_with_color({
             const rightW = (fullInterpolation? 1 : rightEdge.invW);
 
             const deltaInvW = (fullInterpolation? ((rightEdge.invW - leftEdge.invW) / spanWidth) : 0);
-            let iplInvW = (fullInterpolation? (leftEdge.invW - deltaInvW) : 1);
+            const startInvW = (fullInterpolation? leftEdge.invW : 1);
 
             const deltaDepth = ((rightEdge.depth/rightW - leftEdge.depth/leftW) / spanWidth);
-            let iplDepth = (leftEdge.depth/leftW - deltaDepth);
+            const startDepth = (leftEdge.depth/leftW);
 
-            const deltaShade = ((rightEdge.shade - leftEdge.shade) / spanWidth);
-            let iplShade = (leftEdge.shade - deltaShade);
+            const deltaShade = ((rightEdge.shade/rightW - leftEdge.shade/leftW) / spanWidth);
+            const startShade = (leftEdge.shade/leftW);
 
             const deltaU = ((rightEdge.u/rightW - leftEdge.u/leftW) / spanWidth);
-            let iplU = (leftEdge.u/leftW - deltaU);
+            const startU = (leftEdge.u/leftW);
 
             const deltaV = ((rightEdge.v/rightW - leftEdge.v/leftW) / spanWidth);
-            let iplV = (leftEdge.v/leftW - deltaV);
+            const startV = (leftEdge.v/leftW);
 
             let pixelBufferIdx = ((spanStartX + y * pixelBufferWidth) - 1);
 
             let x = (spanStartX - 1);
+            let ix = 0;
             while (++x < spanEndX)
             {
                 // Update values that're interpolated horizontally along the span.
-                {
-                    iplDepth += deltaDepth;
-                    iplShade += deltaShade;
-                    iplU += deltaU;
-                    iplV += deltaV;
-                    iplInvW += deltaInvW;
-                    pixelBufferIdx++;
-                }
+                const iplDepth = (startDepth + (deltaDepth * ix));
+                const iplShade = (startShade + (deltaShade * ix));
+                const iplInvW = (startInvW + (deltaInvW * ix));
+                const iplU = (startU + (deltaU * ix));
+                const iplV = (startV + (deltaV * ix));
+                pixelBufferIdx++;
+                ix++;
 
                 const depth = (iplDepth / iplInvW);
                 if (depthBuffer[pixelBufferIdx] <= depth)
@@ -131,7 +131,7 @@ export function poly_plain_textured_fill_with_color({
                 
                 // Draw the pixel.
                 {
-                    const shade = (material.renderVertexShade? iplShade : 1);
+                    const shade = (material.renderVertexShade? (iplShade / iplInvW) : 1);
                     const red   = (textureMipLevel.pixels[texelIdx + 0] * shade * material.color.unitRange.red);
                     const green = (textureMipLevel.pixels[texelIdx + 1] * shade * material.color.unitRange.green);
                     const blue  = (textureMipLevel.pixels[texelIdx + 2] * shade * material.color.unitRange.blue);
@@ -164,7 +164,7 @@ export function poly_plain_textured_fill_with_color({
                         fragments.ngon? fragment.ngon = ngon : 1;
                         fragments.textureUScaled? fragment.textureUScaled = ~~u : 1;
                         fragments.textureVScaled? fragment.textureVScaled = ~~v : 1;
-                        fragments.shade? fragment.shade = iplShade : 1;
+                        fragments.shade? fragment.shade = (iplShade / iplInvW) : 1;
                     }
                 }
             }

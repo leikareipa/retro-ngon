@@ -180,56 +180,47 @@ rasterizer.polygon = function(
             const edgeHeight = (endY - startY);
             
             // Ignore horizontal edges.
-            if (edgeHeight === 0) return;
-
-            const w1 = vert1.w;
-            const w2 = vert2.w;
+            if (edgeHeight === 0)
+            {
+                return;
+            }
 
             const startX = Math.min(renderWidth, Math.max(0, Math.floor(vert1.x)));
             const endX = Math.min(renderWidth, Math.max(0, Math.floor(vert2.x)));
             const deltaX = ((endX - startX) / edgeHeight);
 
-            const startDepth = ((vert1.z / renderState.farPlaneDistance) / w1);
-            const deltaDepth = ((((vert2.z / renderState.farPlaneDistance) / w2) - startDepth) / edgeHeight);
-
-            const startShade = vert1.shade;
-            const deltaShade = ((vert2.shade - startShade) / edgeHeight);
-
             const u1 = (material.texture? vert1.u : 1);
             const v1 = (material.texture? (1 - vert1.v) : 1);
             const u2 = (material.texture? vert2.u : 1);
             const v2 = (material.texture? (1 - vert2.v) : 1);
-            const startU = (u1 / w1);
-            const deltaU = (((u2 / w2) - startU) / edgeHeight);
-            const startV = (v1 / w1);
-            const deltaV = (((v2 / w2) - startV) / edgeHeight);
 
-            const startInvW = (1 / w1);
-            const deltaInvW = (((1 / w2) - startInvW) / edgeHeight);
+            const w1 = vert1.w;
+            const w2 = vert2.w;
 
             const edge = (isLeftEdge? leftEdges[numLeftEdges++] : rightEdges[numRightEdges++]);
             edge.top = startY;
             edge.bottom = endY;
             edge.x = startX;
             edge.delta.x = deltaX;
-            edge.depth = startDepth;
-            edge.delta.depth = deltaDepth;
-            edge.shade = startShade;
-            edge.delta.shade = deltaShade;
-            edge.u = startU;
-            edge.delta.u = deltaU;
-            edge.v = startV;
-            edge.delta.v = deltaV;
-            edge.invW = startInvW;
-            edge.delta.invW = deltaInvW;
+            edge.depth = ((vert1.z / renderState.farPlaneDistance) / w1);
+            edge.delta.depth = ((((vert2.z / renderState.farPlaneDistance) / w2) - edge.depth) / edgeHeight);
+            edge.shade = (vert1.shade / w1);
+            edge.delta.shade = (((vert2.shade / w2) - edge.shade) / edgeHeight);
+            edge.u = (u1 / w1);
+            edge.delta.u = (((u2 / w2) - edge.u) / edgeHeight);
+            edge.v = (v1 / w1);
+            edge.delta.v = (((v2 / w2) - edge.v) / edgeHeight);
+            edge.invW = (1 / w1);
+            edge.delta.invW = (((1 / w2) - edge.invW) / edgeHeight);
+            
             if (useFragmentBuffer)
             {
                 edge.worldX = (vert1.worldX / w1);
-                edge.delta.worldX = (((vert2.worldX / w2) - (vert1.worldX / w1)) / edgeHeight);
+                edge.delta.worldX = (((vert2.worldX / w2) - edge.worldX) / edgeHeight);
                 edge.worldY = (vert1.worldY / w1);
-                edge.delta.worldY = (((vert2.worldY / w2) - (vert1.worldY / w1)) / edgeHeight);
+                edge.delta.worldY = (((vert2.worldY / w2) - edge.worldY) / edgeHeight);
                 edge.worldZ = (vert1.worldZ / w1);
-                edge.delta.worldZ = (((vert2.worldZ / w2) - (vert1.worldZ / w1)) / edgeHeight);
+                edge.delta.worldZ = (((vert2.worldZ / w2) - edge.worldZ) / edgeHeight);
             }
         }
     }

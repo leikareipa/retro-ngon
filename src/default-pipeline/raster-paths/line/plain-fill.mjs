@@ -32,10 +32,13 @@ export function line_plain_fill(
     );
 
     // Rasterize the line.
-    let realX = startX;
-    let realY = startY;
+    let i = 0;
     while (lineLength--)
     {
+        const realX = (startX + (deltaX * i));
+        const realY = (startY + (deltaY * i));
+        i++;
+
         const x = ~~realX;
         const y = ~~realY;
         
@@ -49,8 +52,6 @@ export function line_plain_fill(
             renderState.pixelBuffer32[pixelBufferIdx] = color32;
         }
 
-        realX += deltaX;
-        realY += deltaY;
     }
 
     return true;

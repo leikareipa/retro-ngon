@@ -76,33 +76,34 @@ export function poly_generic_fill({
             const rightW = (fullInterpolation? 1 : rightEdge.invW);
 
             const deltaInvW = (fullInterpolation? ((rightEdge.invW - leftEdge.invW) / spanWidth) : 0);
-            let iplInvW = (fullInterpolation? (leftEdge.invW - deltaInvW) : 1);
+            const startInvW = (fullInterpolation? leftEdge.invW : 1);
 
             const deltaDepth = ((rightEdge.depth/rightW - leftEdge.depth/leftW) / spanWidth);
-            let iplDepth = (leftEdge.depth/leftW - deltaDepth);
+            const startDepth = (leftEdge.depth/leftW);
 
-            const deltaShade = ((rightEdge.shade - leftEdge.shade) / spanWidth);
-            let iplShade = (leftEdge.shade - deltaShade);
+            const deltaShade = ((rightEdge.shade/rightW - leftEdge.shade/leftW) / spanWidth);
+            const startShade = (leftEdge.shade/leftW);
 
             const deltaU = ((rightEdge.u/rightW - leftEdge.u/leftW) / spanWidth);
-            let iplU = (leftEdge.u/leftW - deltaU);
+            const startU = (leftEdge.u/leftW);
 
             const deltaV = ((rightEdge.v/rightW - leftEdge.v/leftW) / spanWidth);
-            let iplV = (leftEdge.v/leftW - deltaV);
+            const startV = (leftEdge.v/leftW);
 
             const deltaWorldX = ((rightEdge.worldX/rightW - leftEdge.worldX/leftW) / spanWidth);
-            let iplWorldX = (leftEdge.worldX/leftW - deltaWorldX);
+            const startWorldX = (leftEdge.worldX/leftW);
 
             const deltaWorldY = ((rightEdge.worldY/rightW - leftEdge.worldY/leftW) / spanWidth);
-            let iplWorldY = (leftEdge.worldY/leftW - deltaWorldY);
+            const startWorldY = (leftEdge.worldY/leftW);
 
             const deltaWorldZ = ((rightEdge.worldZ/rightW - leftEdge.worldZ/leftW) / spanWidth);
-            let iplWorldZ = (leftEdge.worldZ/leftW - deltaWorldZ);
+            const startWorldZ = (leftEdge.worldZ/leftW);
 
             // Assumes the depth buffer consists of 1 element per pixel.
             let pixelBufferIdx = ((spanStartX + y * pixelBufferWidth) - 1);
 
             let x = (spanStartX - 1);
+            let ix = 0;
             while (++x < spanEndX)
             {
                 // Will hold the texture coordinates used if we end up drawing
@@ -110,17 +111,16 @@ export function poly_generic_fill({
                 let u = 0.0, v = 0.0;
 
                 // Update values that're interpolated horizontally along the span.
-                {
-                    iplDepth += deltaDepth;
-                    iplShade += deltaShade;
-                    iplU += deltaU;
-                    iplV += deltaV;
-                    iplInvW += deltaInvW;
-                    iplWorldX += deltaWorldX;
-                    iplWorldY += deltaWorldY;
-                    iplWorldZ += deltaWorldZ;
-                    pixelBufferIdx++;
-                }
+                const iplDepth = startDepth + deltaDepth * ix;
+                const iplShade = startShade + deltaShade * ix;
+                const iplU = startU + deltaU * ix;
+                const iplV = startV + deltaV * ix;
+                const iplInvW = startInvW + deltaInvW * ix;
+                const iplWorldX = startWorldX + deltaWorldX * ix;
+                const iplWorldY = startWorldY + deltaWorldY * ix;
+                const iplWorldZ = startWorldZ + deltaWorldZ * ix;
+                pixelBufferIdx++;
+                ix++;
 
                 const depth = (iplDepth / iplInvW);
                 if (depthBuffer && (depthBuffer[pixelBufferIdx] <= depth))
@@ -128,7 +128,7 @@ export function poly_generic_fill({
                     continue;
                 }
 
-                let shade = (material.renderVertexShade? iplShade : 1);
+                let shade = (material.renderVertexShade? (iplShade / iplInvW) : 1);
 
                 // The color we'll write into the pixel buffer for this pixel; assuming
                 // it passes the alpha test, the depth test, etc.
@@ -317,7 +317,7 @@ export function poly_generic_fill({
                         fragments.ngon? fragment.ngon = ngon : 1;
                         fragments.textureUScaled? fragment.textureUScaled = ~~u : 1;
                         fragments.textureVScaled? fragment.textureVScaled = ~~v : 1;
-                        fragments.shade? fragment.shade = iplShade : 1;
+                        fragments.shade? fragment.shade = (iplShade / iplInvW) : 1;
                         fragments.worldX? fragment.worldX = (iplWorldX / iplInvW) : 1;
                         fragments.worldY? fragment.worldY = (iplWorldY / iplInvW) : 1;
                         fragments.worldZ? fragment.worldZ = (iplWorldZ / iplInvW) : 1;
@@ -328,25 +328,25 @@ export function poly_generic_fill({
 
         // Update values that're interpolated vertically along the edges.
         {
-            leftEdge.x      += leftEdge.delta.x;
-            leftEdge.depth  += leftEdge.delta.depth;
-            leftEdge.shade  += leftEdge.delta.shade;
-            leftEdge.u      += leftEdge.delta.u;
-            leftEdge.v      += leftEdge.delta.v;
-            leftEdge.invW   += leftEdge.delta.invW;
-            leftEdge.worldX += leftEdge.delta.worldX;
-            leftEdge.worldY += leftEdge.delta.worldY;
-            leftEdge.worldZ += leftEdge.delta.worldZ;
+            leftEdge.x       += leftEdge.delta.x;
+            leftEdge.depth   += leftEdge.delta.depth;
+            leftEdge.shade   += leftEdge.delta.shade;
+            leftEdge.u       += leftEdge.delta.u;
+            leftEdge.v       += leftEdge.delta.v;
+            leftEdge.invW    += leftEdge.delta.invW;
+            leftEdge.worldX  += leftEdge.delta.worldX;
+            leftEdge.worldY  += leftEdge.delta.worldY;
+            leftEdge.worldZ  += leftEdge.delta.worldZ;
 
-            rightEdge.x     += rightEdge.delta.x;
-            rightEdge.depth += rightEdge.delta.depth;
-            rightEdge.shade += rightEdge.delta.shade;
-            rightEdge.u     += rightEdge.delta.u;
-            rightEdge.v     += rightEdge.delta.v;
-            rightEdge.invW  += rightEdge.delta.invW;
-            rightEdge.worldX += rightEdge.delta.worldX;
-            rightEdge.worldY += rightEdge.delta.worldY;
-            rightEdge.worldZ += rightEdge.delta.worldZ;
+            rightEdge.x       += rightEdge.delta.x;
+            rightEdge.depth   += rightEdge.delta.depth;
+            rightEdge.shade   += rightEdge.delta.shade;
+            rightEdge.u       += rightEdge.delta.u;
+            rightEdge.v       += rightEdge.delta.v;
+            rightEdge.invW    += rightEdge.delta.invW;
+            rightEdge.worldX  += rightEdge.delta.worldX;
+            rightEdge.worldY  += rightEdge.delta.worldY;
+            rightEdge.worldZ  += rightEdge.delta.worldZ;
         }
 
         // We can move onto the next edge when we're at the end of the current one.

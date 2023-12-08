@@ -45,26 +45,26 @@ export function poly_plain_solid_fill({
             const rightW = (fullInterpolation? 1 : rightEdge.invW);
 
             const deltaInvW = (fullInterpolation? ((rightEdge.invW - leftEdge.invW) / spanWidth) : 0);
-            let iplInvW = (fullInterpolation? (leftEdge.invW - deltaInvW) : 1);
+            const startInvW = (fullInterpolation? leftEdge.invW : 1);
 
             const deltaDepth = ((rightEdge.depth/rightW - leftEdge.depth/leftW) / spanWidth);
-            let iplDepth = (leftEdge.depth/leftW - deltaDepth);
+            const startDepth = (leftEdge.depth/leftW);
 
-            const deltaShade = ((rightEdge.shade - leftEdge.shade) / spanWidth);
-            let iplShade = (leftEdge.shade - deltaShade);
+            const deltaShade = ((rightEdge.shade/rightW - leftEdge.shade/leftW) / spanWidth);
+            const startShade = (leftEdge.shade/leftW);
 
             let pixelBufferIdx = ((spanStartX + y * pixelBufferWidth) - 1);
 
             let x = (spanStartX - 1);
+            let ix = 0;
             while (++x < spanEndX)
             {
                 // Update values that're interpolated horizontally along the span.
-                {
-                    iplDepth += deltaDepth;
-                    iplShade += deltaShade;
-                    iplInvW += deltaInvW;
-                    pixelBufferIdx++;
-                }
+                const iplDepth = (startDepth + (deltaDepth * ix));
+                const iplShade = (startShade + (deltaShade * ix));
+                const iplInvW = (startInvW + (deltaInvW * ix));
+                pixelBufferIdx++;
+                ix++;
 
                 const depth = (iplDepth / iplInvW);
                 if (depthBuffer[pixelBufferIdx] <= depth) 
@@ -76,7 +76,7 @@ export function poly_plain_solid_fill({
                 {
                     // The color we'll write into the pixel buffer for this pixel; assuming
                     // it passes the alpha test, the depth test, etc.
-                    const shade = (material.renderVertexShade? iplShade : 1);
+                    const shade = (material.renderVertexShade? (iplShade / iplInvW) : 1);
                     const red   = (material.color.red   * shade);
                     const green = (material.color.green * shade);
                     const blue  = (material.color.blue  * shade);
@@ -107,7 +107,7 @@ export function poly_plain_solid_fill({
                     {
                         const fragment = fragmentBuffer[pixelBufferIdx];
                         fragments.ngon? fragment.ngon = ngon : 1;
-                        fragments.shade? fragment.shade = iplShade : 1;
+                        fragments.shade? fragment.shade = (iplShade / iplInvW) : 1;
                     }
                 }
             }
