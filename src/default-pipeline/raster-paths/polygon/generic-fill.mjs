@@ -99,6 +99,15 @@ export function poly_generic_fill({
             const deltaWorldZ = ((rightEdge.worldZ/rightW - leftEdge.worldZ/leftW) / spanWidth);
             const startWorldZ = (leftEdge.worldZ/leftW);
 
+            const deltaNormalX = ((rightEdge.normalX/rightW - leftEdge.normalX/leftW) / spanWidth);
+            const startNormalX = (leftEdge.normalX/leftW);
+
+            const deltaNormalY = ((rightEdge.normalY/rightW - leftEdge.normalY/leftW) / spanWidth);
+            const startNormalY = (leftEdge.normalY/leftW);
+
+            const deltaNormalZ = ((rightEdge.normalZ/rightW - leftEdge.normalZ/leftW) / spanWidth);
+            const startNormalZ = (leftEdge.normalZ/leftW);
+
             // Assumes the depth buffer consists of 1 element per pixel.
             let pixelBufferIdx = ((spanStartX + y * pixelBufferWidth) - 1);
 
@@ -111,14 +120,17 @@ export function poly_generic_fill({
                 let u = 0.0, v = 0.0;
 
                 // Update values that're interpolated horizontally along the span.
-                const iplDepth = startDepth + deltaDepth * ix;
-                const iplShade = startShade + deltaShade * ix;
-                const iplU = startU + deltaU * ix;
-                const iplV = startV + deltaV * ix;
-                const iplInvW = startInvW + deltaInvW * ix;
-                const iplWorldX = startWorldX + deltaWorldX * ix;
-                const iplWorldY = startWorldY + deltaWorldY * ix;
-                const iplWorldZ = startWorldZ + deltaWorldZ * ix;
+                const iplDepth = (startDepth + (deltaDepth * ix));
+                const iplShade = (startShade + (deltaShade * ix));
+                const iplU = (startU + (deltaU * ix));
+                const iplV = (startV + (deltaV * ix));
+                const iplInvW = (startInvW + (deltaInvW * ix));
+                const iplWorldX = (startWorldX + (deltaWorldX * ix));
+                const iplWorldY = (startWorldY + (deltaWorldY * ix));
+                const iplWorldZ = (startWorldZ + (deltaWorldZ * ix));
+                const iplNormalX = (startNormalX + (deltaNormalX * ix));
+                const iplNormalY = (startNormalY + (deltaNormalY * ix));
+                const iplNormalZ = (startNormalZ + (deltaNormalZ * ix));
                 pixelBufferIdx++;
                 ix++;
 
@@ -321,6 +333,9 @@ export function poly_generic_fill({
                         fragments.worldX? fragment.worldX = (iplWorldX / iplInvW) : 1;
                         fragments.worldY? fragment.worldY = (iplWorldY / iplInvW) : 1;
                         fragments.worldZ? fragment.worldZ = (iplWorldZ / iplInvW) : 1;
+                        fragments.normalX? fragment.normalX = (iplNormalX / iplInvW) : 1;
+                        fragments.normalY? fragment.normalY = (iplNormalY / iplInvW) : 1;
+                        fragments.normalZ? fragment.normalZ = (iplNormalZ / iplInvW) : 1;
                     }
                 }
             }
@@ -337,6 +352,9 @@ export function poly_generic_fill({
             leftEdge.worldX  += leftEdge.delta.worldX;
             leftEdge.worldY  += leftEdge.delta.worldY;
             leftEdge.worldZ  += leftEdge.delta.worldZ;
+            leftEdge.normalX += leftEdge.delta.normalX;
+            leftEdge.normalY += leftEdge.delta.normalY;
+            leftEdge.normalZ += leftEdge.delta.normalZ;
 
             rightEdge.x       += rightEdge.delta.x;
             rightEdge.depth   += rightEdge.delta.depth;
@@ -347,6 +365,9 @@ export function poly_generic_fill({
             rightEdge.worldX  += rightEdge.delta.worldX;
             rightEdge.worldY  += rightEdge.delta.worldY;
             rightEdge.worldZ  += rightEdge.delta.worldZ;
+            rightEdge.normalX += rightEdge.delta.normalX;
+            rightEdge.normalY += rightEdge.delta.normalY;
+            rightEdge.normalZ += rightEdge.delta.normalZ;
         }
 
         // We can move onto the next edge when we're at the end of the current one.

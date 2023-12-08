@@ -102,6 +102,10 @@ export function transform_clip_lighter({
                     {
                         Vector.transform(cachedNgon.vertexNormals[v], objectSpaceMatrix);
                         Vector.normalize(cachedNgon.vertexNormals[v]);
+
+                        cachedNgon.vertices[v].normalX = cachedNgon.vertexNormals[v].x;
+                        cachedNgon.vertices[v].normalY = cachedNgon.vertexNormals[v].y;
+                        cachedNgon.vertices[v].normalZ = cachedNgon.vertexNormals[v].z;
                     }
 
                     Vector.transform(cachedNgon.normal, objectSpaceMatrix);

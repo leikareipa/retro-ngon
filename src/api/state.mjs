@@ -84,6 +84,9 @@ function default_state() {
             worldX: true,
             worldY: true,
             worldZ: true,
+            normalX: true,
+            normalY: true,
+            normalZ: true,
         },
 
         // If true, enables the fragment buffer and allows the use of pixel shaders.

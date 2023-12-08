@@ -112,6 +112,7 @@ rasterizer.polygon = function(
             material.texture &&
             depthBuffer &&
             !(fragments.worldX || fragments.worldY || fragments.worldZ) &&
+            !(fragments.normalX || fragments.normalY || fragments.normalZ) &&
             !material.allowAlphaReject &&
             !material.allowAlphaBlend &&
             (material.textureMapping === "affine") &&
@@ -134,6 +135,7 @@ rasterizer.polygon = function(
             !material.texture &&
             depthBuffer &&
             !(fragments.worldX || fragments.worldY || fragments.worldZ) &&
+            !(fragments.normalX || fragments.normalY || fragments.normalZ) &&
             !material.allowAlphaReject &&
             !material.allowAlphaBlend
         ){
@@ -221,6 +223,13 @@ rasterizer.polygon = function(
                 edge.delta.worldY = (((vert2.worldY / w2) - edge.worldY) / edgeHeight);
                 edge.worldZ = (vert1.worldZ / w1);
                 edge.delta.worldZ = (((vert2.worldZ / w2) - edge.worldZ) / edgeHeight);
+
+                edge.normalX = (vert1.normalX / w1);
+                edge.delta.normalX = (((vert2.normalX / w2) - edge.normalX) / edgeHeight);
+                edge.normalY = (vert1.normalY / w1);
+                edge.delta.normalY = (((vert2.normalY / w2) - edge.normalY) / edgeHeight);
+                edge.normalZ = (vert1.normalZ / w1);
+                edge.delta.normalZ = (((vert2.normalZ / w2) - edge.normalZ) / edgeHeight);
             }
         }
     }

@@ -22,6 +22,9 @@ const schema = {
             "worldX": ["number"],
             "worldY": ["number"],
             "worldZ": ["number"],
+            "normalX": ["number"],
+            "normalY": ["number"],
+            "normalZ": ["number"],
         },
     },
     interface: {
@@ -40,6 +43,9 @@ const schema = {
             "worldX": ["number"],
             "worldY": ["number"],
             "worldZ": ["number"],
+            "normalX": ["number"],
+            "normalY": ["number"],
+            "normalZ": ["number"],
         },
     },
 };
@@ -50,6 +56,9 @@ export function Vertex(
     z = 0,
     u = 0,
     v = 0,
+    normalX = 1,
+    normalY = 0,
+    normalZ = 0,
     w = 1,
     shade = 1,
     worldX = x,
@@ -57,7 +66,7 @@ export function Vertex(
     worldZ = z,
 )
 {
-    validate_object?.({x, y, z, u, v, w, shade, worldX, worldY, worldZ}, schema.arguments);
+    validate_object?.({x, y, z, u, v, w, shade, worldX, worldY, worldZ, normalX, normalY, normalZ}, schema.arguments);
 
     const publicInterface = {
         $constructor: "Vertex",
@@ -69,14 +78,15 @@ export function Vertex(
         v,
         w,
 
-        // A value in the range >= 0 that defines how lit this vertex is. A value of
-        // 1 corresponds to fully lit, 0 to fully unlit.
         shade,
 
-        // The vertex's original coordinates, before any transformations.
         worldX,
         worldY,
         worldZ,
+
+        normalX,
+        normalY,
+        normalZ,
     };
 
     validate_object?.(publicInterface, schema.interface);
