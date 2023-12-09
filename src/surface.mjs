@@ -82,7 +82,7 @@ export function Surface(canvasElement, renderState)
         // painted onto that canvas.
         display_meshes: function(meshes = [])
         {
-            renderState.modules.surface_wiper?.(renderState);
+            renderState.pipeline.surface_wiper?.(renderState);
 
             if (meshes.length)
             {
@@ -91,11 +91,11 @@ export function Surface(canvasElement, renderState)
                     prepare_vertex_cache(renderState, meshes);
                     prepare_ngon_cache(renderState, meshes);
 
-                    if (renderState.modules.transform_clip_lighter)
+                    if (renderState.pipeline.transform_clip_lighter)
                     {
                         for (const mesh of meshes)
                         {
-                            renderState.modules.transform_clip_lighter({
+                            renderState.pipeline.transform_clip_lighter({
                                 renderState,
                                 mesh,
                                 cameraMatrix,
@@ -105,16 +105,16 @@ export function Surface(canvasElement, renderState)
                         };
                     }
 
-                    renderState.modules.ngon_sorter?.(renderState);
+                    renderState.pipeline.ngon_sorter?.(renderState);
 
                     mark_npot_textures(renderState.screenSpaceNgons);
                 }
 
-                renderState.modules.rasterizer?.(renderState);
+                renderState.pipeline.rasterizer?.(renderState);
 
                 if (renderState.usePixelShader)
                 {
-                    renderState.modules.pixel_shader(renderState);
+                    renderState.pipeline.pixel_shader(renderState);
                 }
             }
 
@@ -122,7 +122,7 @@ export function Surface(canvasElement, renderState)
             {
                 if (renderState.useContextShader)
                 {
-                    renderState.modules.context_shader(renderContext, renderState.pixelBuffer);
+                    renderState.pipeline.context_shader(renderContext, renderState.pixelBuffer);
                 }
                 else
                 {

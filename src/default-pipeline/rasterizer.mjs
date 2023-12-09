@@ -113,7 +113,7 @@ rasterizer.polygon = function(
     };
 
     // Rasterize the polygon using the most appropriate raster path.
-    if (material.hasFill && !renderState.modules.raster_path?.(rasterPathArgs))
+    if (material.hasFill && !renderState.pipeline.raster_path?.(rasterPathArgs))
     {
         let raster_fn = poly_generic_fill;
 

@@ -16,10 +16,7 @@ State.default = default_state();
 // based on settings requested by the user.
 function default_state() {
     return {
-        // Modules provide core renderer functionality in overridable packages (the
-        // user can provide custom modules to be used in place of the default ones).
-        // Each module is a function that performs a set of tasks.
-        modules: {
+        pipeline: {
             ngon_sorter: undefined,
             transform_clip_lighter: undefined,
             surface_wiper: undefined,

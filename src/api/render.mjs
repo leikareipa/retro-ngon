@@ -244,21 +244,21 @@ function setup_render_state(options = {}, pipeline = {})
         }
     }
 
-    state.modules.ngon_sorter = pipeline.ngonSorter;
-    state.modules.rasterizer = pipeline.rasterizer;
-    state.modules.transform_clip_lighter = pipeline.transformClipLighter;
-    state.modules.surface_wiper = pipeline.surfaceWiper;
+    state.pipeline.ngon_sorter = pipeline.ngonSorter;
+    state.pipeline.rasterizer = pipeline.rasterizer;
+    state.pipeline.transform_clip_lighter = pipeline.transformClipLighter;
+    state.pipeline.surface_wiper = pipeline.surfaceWiper;
 
     state.usePixelShader = Boolean(pipeline.pixelShader);
-    state.modules.pixel_shader = pipeline.pixelShader;
+    state.pipeline.pixel_shader = pipeline.pixelShader;
 
     state.useVertexShader = Boolean(pipeline.vertexShader);
-    state.modules.vertex_shader = pipeline.vertexShader;
+    state.pipeline.vertex_shader = pipeline.vertexShader;
 
     state.useContextShader = Boolean(pipeline.contextShader);
-    state.modules.context_shader = pipeline.contextShader;
+    state.pipeline.context_shader = pipeline.contextShader;
 
-    state.modules.raster_path = pipeline.rasterPath;
+    state.pipeline.raster_path = pipeline.rasterPath;
 
     return state;
 }
