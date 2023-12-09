@@ -103,8 +103,17 @@ rasterizer.polygon = function(
     sort_vertices();
     define_edges();
 
+    const rasterPathArgs = {
+        renderState,
+        ngon,
+        leftEdges,
+        rightEdges,
+        numLeftEdges,
+        numRightEdges,
+    };
+
     // Rasterize the polygon using the most appropriate raster path.
-    if (material.hasFill)
+    if (material.hasFill && !renderState.modules.raster_path?.(rasterPathArgs))
     {
         let raster_fn = poly_generic_fill;
 
@@ -142,14 +151,7 @@ rasterizer.polygon = function(
             raster_fn = poly_plain_solid_fill;
         }
 
-        raster_fn({
-            renderState,
-            ngon,
-            leftEdges,
-            rightEdges,
-            numLeftEdges,
-            numRightEdges,
-        });
+        raster_fn(rasterPathArgs);
     }
 
     // Draw a wireframe around any n-gons that wish for one.

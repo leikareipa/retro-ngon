@@ -80,6 +80,12 @@ Renders n-gonal meshes into a pixel buffer, and optionally displays the image on
         - **worldY**: The Y coordinate of the pixel's surface in world-space.
         
         - **worldZ**: The Z coordinate of the pixel's surface in world-space.
+        
+        - **normalX**: The X coordinate of the pixel's surface normal.
+        
+        - **normalY**: The Y coordinate of the pixel's surface normal.
+        
+        - **normalZ**: The Z coordinate of the pixel's surface normal.
 
         - **shade**: The pixel's lightness level as computed by `pipeline.transformClipLighter`, in the range [0,1].
 
@@ -91,49 +97,73 @@ Renders n-gonal meshes into a pixel buffer, and optionally displays the image on
     
     - **ngonSorter** (function | undefined &lArr; `Rngon.default.render.pipeline.ngonSorter`): A function to be called by the renderer to sort the input meshes' n-gons prior to rendering; or disabled if *undefined*. The default behavior is to sort in reverse painter order (on the Z axis, closest first) if `options.useDepthBuffer` is *true* and otherwise to do no sorting.
         
-        - Function signature: ngonSorter(renderState:[state](#state))
+        - function ngonSorter(renderState:[state](#state))
             
             - **renderState**: (Todo.)
 
-        - The function returns nothing.
+            - Returns nothing.
     
-    - **transformClipLighter** (function | null &lArr; `Rngon.default.render.pipeline.transformClipLighter`): A function to be called by the renderer to transform, clip, and light the meshes; or disabled if *null*.
+    - **transformClipLighter** (function | null &lArr; `Rngon.default.render.pipeline.transformClipLighter`): A function to be called by the renderer to transform, clip and light the meshes; or disabled if *null*.
     
     - **rasterizer** (function | null &lArr; `Rngon.default.render.pipeline.rasterizer`): A function to be called by the renderer to rasterize the meshes; or disabled if *null*.
         
-        - Function signature: rasterizer(renderState:[state](#state))
+        - function rasterizer(renderState:[state](#state))
             
             - **renderState**: (Todo.)
 
-        - The function returns nothing.
+            - Returns nothing.
+
+        - See `pipeline.rasterPath` for a lighter-weight option for custom rasterization.
     
-    - **surfaceWiper** (function | null &lArr; `Rngon.default.render.pipeline.surfaceWiper`): A function to be called by the renderer to clear the render surface of previous renderings (pixel colors, depth values, etc.); or disabled entirely if *null*.
+    - **surfaceWiper** (function | null &lArr; `Rngon.default.render.pipeline.surfaceWiper`): A function to be called by the renderer to clear the render surface of previous renderings (pixel colors, depth values, etc.); or disabled if *null*.
         
-        - Function signature: surfaceWiper(renderState:[state](#state))
+        - function surfaceWiper(renderState:[state](#state))
             
             - **renderState**: (Todo.)
 
-        - The function returns nothing.
+            - Returns nothing.
     
-    - **pixelShader** (function | undefined &lArr; *undefined*): A function to be called by the renderer at the completion of rasterization to apply pixel-shading effects to the rendered image; or disabled if *undefined*. See the [pixel shader samples](/samples/pixel-shaders/pixel-shaders.js) for examples of usage.
+    - **rasterPath** (function | undefined &lArr; *undefined*): A function to be called by the default `pipeline.rasterizer` to rasterize a polygon (an [ngon](#ngon) with at least 3 vertices). If *undefined*, a suitable default raster path will be used. See [the default polygon raster paths](/src/default-pipeline/raster-paths/polygon/) for examples of usage.
         
-        - Function signature: pixelShader(renderState:[state](#state))
+        - function rasterPath({renderState:[state](#state), ngon:[ngon](#ngon), leftEdges:Array, rightEdges:Array, numLeftEdges:Number, numRightEdges:Number})
             
             - **renderState**: (Todo.)
 
-        - The function returns nothing.
+            - **ngon**: Metadata about the polygon to be rasterized. See `leftEdges` and `rightEdges` for the screen-space shape to be rasterized.
+
+            - **leftEdges**: An array of screen-space edges defining the left-hand side of the polygon. Sorted from lowest Y to highest Y.
+
+            - **rightEdges**: An array of screen-space edges defining the right-hand side of the polygon. Sorted from lowest Y to highest Y.
+
+            - **numLeftEdges**: The first *n* entries in `leftEdges` are relevant.
+
+            - **numRightEdges**: The first *n* entries in `rightEdges` are relevant.
+
+            - Returns *true* if the n-gon was successfully processed; *false* otherwise. If *false* is returned, a suitable default raster path will be used instead.
+
+        - The gist of a typical raster path function is that it rasterizes each horizontal pixel span between the left and right edges, making use of the interpolation parameters provided in the edge objects to decide the color of each pixel.
+
+        - The benefit of implementing a custom raster path instead of a custom rasterizer (`pipeline.rasterizer`) is that a raster path doesn't need to decompose the polygon into edges prior to rasterization. If you just want to implement custom rasterization and are happy with the default edge decomposition, a custom raster path is the way to go.
+
+    - **pixelShader** (function | undefined &lArr; *undefined*): A function to be called by the renderer at the completion of rasterization to apply pixel-shading effects to the rendered image; or disabled if *undefined*. See [the pixel shader samples](/samples/pixel-shaders/pixel-shaders.js) for examples of usage.
         
-        - Note: `options.useFragmentBuffer` must be set to *true* if the pixel shader accesses the fragment buffer.
+        - function pixelShader(renderState:[state](#state))
+            
+            - **renderState**: (Todo.)
+
+            - Returns nothing.
+        
+        - `options.useFragmentBuffer` must be set to *true* if the pixel shader accesses the fragment buffer. Use `options.fragments` to control the contents of the fragment buffer.
     
-    - **vertexShader** (function | undefined &lArr; *undefined*): A function to be called by `pipeline.transformClipLighter` for each of the scene's n-gons, to apply effects to the properties of the n-gon prior to rasterization; or disabled if *undefined*. The function will be called after world-space transformation and vertex lighting. See the [vertex shader samples](/samples/vertex-shaders/vertex-shaders.js) for examples of usage.
+    - **vertexShader** (function | undefined &lArr; *undefined*): A function to be called by `pipeline.transformClipLighter` for each of the scene's n-gons, to apply effects to the properties of the n-gon prior to rasterization; or disabled if *undefined*. The function will be called after world-space transformation and vertex lighting. See [the vertex shader samples](/samples/vertex-shaders/vertex-shaders.js) for examples of usage.
         
-        - Function signature: vertexShader(ngon:[ngon](#ngon), renderState:[state](#state))
+        - function vertexShader(ngon:[ngon](#ngon), renderState:[state](#state))
             
             - **ngon**: The target n-gon, in world-space coordinates and prior to clipping.
             
             - **renderState**: (Todo.)
 
-        - The function returns nothing.
+            - Returns nothing.
 
 ### Returns
 
@@ -154,9 +184,9 @@ An object with the following properties:
 
 const quad = Rngon.ngon([
     Rngon.vertex(-1, -1, 0),
-    Rngon.vertex(1, -1, 0),
-    Rngon.vertex(1, 1, 0),
-    Rngon.vertex(-1, 1, 0)], {
+    Rngon.vertex( 1, -1, 0),
+    Rngon.vertex( 1,  1, 0),
+    Rngon.vertex(-1,  1, 0)], {
         color: Rngon.color.yellow,
 });
 
@@ -470,10 +500,10 @@ const texture = Rngon.texture({
     width: 2,
     height: 2,
     pixels: [
-        255, 200, 0, 255,
-        200, 255, 0, 255,
-        255, 0, 200, 255,
-        0, 255, 200, 255
+        255, 200, 0,   255,
+        200, 255, 0,   255,
+        255, 0,   200, 255,
+        0,   255, 200, 255
     ],
 });
 
@@ -491,10 +521,10 @@ const texture = await Rngon.texture.load("texture.json");
     "width": 2,
     "height": 2,
     "pixels": [
-        255, 200, 0, 255,
-        200, 255, 0, 255,
-        255, 0, 200, 255,
-        0, 255, 200, 255
+        255, 200, 0,   255,
+        200, 255, 0,   255,
+        255, 0,   200, 255,
+        0,   255, 200, 255
     ]
 }
 ```

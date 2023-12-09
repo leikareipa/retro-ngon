@@ -40,6 +40,7 @@ export const renderDefaultPipeline = {
     pixelShader: undefined,
     vertexShader: undefined,
     contextShader: undefined,
+    rasterPath: undefined,
 };
 
 const schema = {
@@ -106,6 +107,10 @@ const schema = {
                 "function"
             ],
             contextShader: [
+                "undefined",
+                "function"
+            ],
+            rasterPath: [
                 "undefined",
                 "function"
             ],
@@ -252,6 +257,8 @@ function setup_render_state(options = {}, pipeline = {})
 
     state.useContextShader = Boolean(pipeline.contextShader);
     state.modules.context_shader = pipeline.contextShader;
+
+    state.modules.raster_path = pipeline.rasterPath;
 
     return state;
 }

@@ -27,6 +27,7 @@ function default_state() {
             vertex_shader: undefined,
             pixel_shader: undefined,
             context_shader: undefined,
+            raster_path: undefined,
         },
 
         // The most recent output resolution.
