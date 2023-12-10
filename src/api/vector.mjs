@@ -21,7 +21,7 @@ const schema = {
         },
     },
     arguments: {
-        where: "in arguments passed to vector()",
+        where: "in arguments to vector()",
         properties: {
             "x": ["number"],
             "y": ["number"],

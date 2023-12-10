@@ -6,7 +6,7 @@
  * Sample usage:
  * 
  *   const schema = {
- *     where: "in arguments passed to color()",
+ *     where: "in arguments to color()",
  *     properties: {                    // The properties to be validated.
  *       "red": ["number"],             // red is required to be of type number.
  *       "green": {
@@ -60,7 +60,7 @@ export const validate_object = ((typeof window === "object") && IS_PRODUCTION_BU
 
         if (missingProperties.length)
         {
-            throw new Error(`Missing property '${missingProperties.map(p=>(propertyChain + p)).join("', '")}' ${schema.where}`);
+            throw new Error(`Missing property '${missingProperties.map(p=>(propertyChain + p)).join("', '")}' ${schema.where}.`);
         }
     }
 
@@ -74,7 +74,7 @@ export const validate_object = ((typeof window === "object") && IS_PRODUCTION_BU
             }
             else
             {
-                throw new Error(`Unsupported property '${propertyChain + objectKey}' ${schema.where}`);
+                throw new Error(`Unsupported property '${propertyChain + objectKey}' ${schema.where}.`);
             }
         }
 
@@ -104,7 +104,7 @@ export const validate_object = ((typeof window === "object") && IS_PRODUCTION_BU
                 {
                     if (objectValue !== valueEvaluator)
                     {
-                        throw new Error(`The property '${propertyChain + objectKey}' ${schema.where} doesn't evaluate to "${schemaProperty.value}"`);
+                        throw new Error(`The property '${propertyChain + objectKey}' ${schema.where} doesn't evaluate to "${schemaProperty.value}".`);
                     }
 
                     break;
@@ -116,7 +116,7 @@ export const validate_object = ((typeof window === "object") && IS_PRODUCTION_BU
         {
             if (objectValueType.toLowerCase() !== "object")
             {
-                throw new TypeError(`The property '${propertyChain + objectKey}' ${schema.where} must be of type Object`);
+                throw new TypeError(`The property '${propertyChain + objectKey}' ${schema.where} must be of type Object.`);
             }
 
             validate_object(
@@ -149,7 +149,7 @@ export const validate_object = ((typeof window === "object") && IS_PRODUCTION_BU
 
                 if (!allElementsMatchSchema)
                 {
-                    throw new TypeError(`The array '${propertyChain + objectKey}' ${schema.where} contains one or more unsupported element types`);
+                    throw new TypeError(`The array '${propertyChain + objectKey}' ${schema.where} contains one or more unsupported element types.`);
                 }
             }
             else
@@ -158,7 +158,7 @@ export const validate_object = ((typeof window === "object") && IS_PRODUCTION_BU
 
                 if (!stringTypes.includes(objectValueType.toLowerCase()))
                 {
-                    throw new TypeError(`The property '${propertyChain + objectKey}' ${schema.where} is of unsupported type ${objectValueType}`);
+                    throw new TypeError(`The property '${propertyChain + objectKey}' ${schema.where} is of unsupported type ${objectValueType}.`);
                 }
             }
         }

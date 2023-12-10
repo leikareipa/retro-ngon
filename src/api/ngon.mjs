@@ -31,7 +31,7 @@ export const ngonDefaultMaterial = {
 
 const schema = {
     arguments: {
-        where: "in arguments passed to ngon()",
+        where: "in arguments to ngon()",
         properties: {
             "vertices": [["Vertex"]],
             "material": ["object"],

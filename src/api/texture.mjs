@@ -22,7 +22,7 @@ export const textureDefaultData = {
 
 const schema = {
     arguments: {
-        where: "in arguments passed to texture()",
+        where: "in arguments to texture()",
         allowAdditionalProperties: true,
         properties: {
             "pixels": ["Uint8ClampedArray", ["number"], "string"],

@@ -10,7 +10,7 @@ import {Assert} from "../assert.mjs";
 
 const schema = {
     arguments: {
-        where: "in arguments passed to color()",
+        where: "in arguments to color()",
         properties: {
             "red": ["number"],
             "green": ["number"],

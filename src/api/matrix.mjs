@@ -36,7 +36,7 @@ import {validate_object} from "../schema.mjs";
 
 const schema = {
     arguments: {
-        where: "in arguments passed to matrix()",
+        where: "in arguments to matrix()",
         properties: {
             "data": {
                 type: [["number"]],

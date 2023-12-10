@@ -10,7 +10,7 @@ import {Matrix} from "./matrix.mjs";
 
 const schema = {
     arguments: {
-        where: "in arguments passed to vertex()",
+        where: "in arguments to vertex()",
         properties: {
             "x": ["number"],
             "y": ["number"],

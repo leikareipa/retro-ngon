@@ -110,7 +110,7 @@ After downloading the repository, follow these steps to build the code into a si
     $ yarn run build
     ```
 
-    Optionally, you can build the distributable in developer mode with `$ yarn run build:dev`. The developer mode includes additional run-time error checks and data validation, which help you find bugs at the cost of run-time performance. Keep an eye on your browser's developer console.
+    For additional run-time data validation and error reporting (at the cost of performance), build with `$ yarn run build:dev` and see your browser's developer console.
 
 3. Import the distributable into your app
 

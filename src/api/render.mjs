@@ -45,7 +45,7 @@ export const renderDefaultPipeline = {
 
 const schema = {
     arguments: {
-        where: "in arguments passed to render()",
+        where: "in arguments to render()",
         properties: {
             target: [
                 "HTMLCanvasElement",
@@ -156,26 +156,29 @@ export function render({
             (typeof options.resolution === "object") &&
             (typeof options.resolution.width === "number") &&
             (typeof options.resolution.height === "number"),
-            "Undefined render resolution. Off-screen rendering requires `options.resolution` to be an object of the form {width, height}."
+            "No on-screen render target given. Off-screen rendering requires `options.resolution` to be an object of the form {width, height}."
+        );
+    }
+    else if (typeof target === "string")
+    {
+        const originalId = target;
+        target = document.getElementById(target);
+
+        Assert?.(
+            (target instanceof HTMLCanvasElement),
+
+            `The render target <canvas id="${originalId}"> doesn't exist in the document.`
+        );
+    }
+    else
+    {
+        Assert?.(
+            (target instanceof HTMLCanvasElement),
+            `The render target ${target} isn't an instance of HTMLCanvasElement.`
         );
     }
 
     const state = setup_render_state(options, pipeline);
-
-    // The canvas element can be passed in in a couple of ways, e.g. as a string that
-    // identifies the DOM element, or directly as a DOM element object. So let's figure
-    // out what we received, and turn it into a DOM element object for the renderer
-    // to operate on.
-    if (typeof target === "string")
-    {
-        target = document.getElementById(target);
-    }
-
-    Assert?.(
-        ((target === null) ||
-         (target instanceof HTMLCanvasElement)),
-        "Invalid canvas element for rendering into."
-    );
 
     // Render a single frame.
     {

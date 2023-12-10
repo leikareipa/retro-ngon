@@ -10,7 +10,7 @@ import {Vector} from "./vector.mjs";
 
 const schema = {
     arguments: {
-        where: "in arguments passed to light()",
+        where: "in arguments to light()",
         properties: {
             "intensity": ["number"],
             "position": ["Vector"],

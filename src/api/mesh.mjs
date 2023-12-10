@@ -21,7 +21,7 @@ export const meshDefaultTransform = {
 
 const schema = {
     arguments: {
-        where: "in arguments passed to mesh()",
+        where: "in arguments to mesh()",
         properties: {
             "ngons": [["Ngon"]],
             "transform": ["object"],

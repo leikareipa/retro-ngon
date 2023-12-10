@@ -4,17 +4,17 @@ The renderer's public API consists of the following components:
 
 | Component           | Brief description                                      |
 | ------------------- | ------------------------------------------------------ |
-| [render](#render)   | Renders n-gonal meshes.                                |
-| [ngon](#ngon)       | A geometric primitive defined by *n* vertices (n-gon). |
-| [vertex](#vertex)   | One corner of an n-gon.                                |
-| [mesh](#mesh)       | A set of n-gons with shared geometric transformations. |
-| [vector](#vector)   | A three-component vector.                              |
 | [color](#color)     | A 32-bit RGBA color value.                             |
+| default             | *(A description is coming.)*                           |
+| light               | *(A description is coming.)*                           |
+| matrix              | *(A description is coming.)*                           |
+| [mesh](#mesh)       | A set of n-gons with shared geometric transformations. |
+| [ngon](#ngon)       | A geometric primitive defined by *n* vertices (n-gon). |
+| [render](#render)   | Renders n-gonal meshes.                                |
+| state               | *(A description is coming.)*                           |
 | [texture](#texture) | A 2D image for texturing n-gons.                       |
-| state               | (A description is coming.)                             |
-| light               | (A description is coming.)                             |
-| default             | (A description is coming.)                             |
-| matrix              | (A description is coming.)                             |
+| [vector](#vector)   | A three-component vector.                              |
+| [vertex](#vertex)   | One corner of an n-gon.                                |
 
 The API is available via the `Rngon` namespace after you've imported the renderer's distributable into your application (see [Installation](/README.md#installation)):
 
@@ -416,7 +416,7 @@ A 32-bit, four-channel, RGBA color value, where each color channel is 8 bits.
 
 ### Returns
 
-A frozen object with the following properties:
+An object with the following properties:
 
 - **red** (number): The `red` argument.
 
@@ -426,14 +426,24 @@ A frozen object with the following properties:
 
 - **alpha** (number): The `alpha` argument.
 
+### Utilities
+
+<a id="color.colorname"></a>
+
+#### color.\<colorname\>
+
+Pre-defined [color](#color) objects corresponding to named web colors.
+
+See e.g. https://developer.mozilla.org/en-US/docs/Web/CSS/named-color for a list of supported color names.
+
 ### Sample usage
 
 ```javascript
 // A fully opaque yellow color.
 const color = Rngon.color(255, 255, 0);
 
-// A fully opaque yellow color using CSS color names.
-const color = Rngon.color.yellow; 
+// A fully opaque yellow color using web color names.
+const color = Rngon.color.yellow;
 ```
 
 <a id="texture"></a>
@@ -482,7 +492,7 @@ An object with the following properties:
 
 - **refresh** (function): Rebuilds the texture's mip levels from the `pixels` array, without creating a new [texture](#texture) object.
 
-### Utility functions
+### Utilities
 
 <a id="texture.load"></a>
 
