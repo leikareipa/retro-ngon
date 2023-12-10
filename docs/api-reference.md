@@ -35,7 +35,7 @@ Renders n-gonal meshes into a pixel buffer, and optionally displays the image on
 
 ### Parameters
 
-- **target** (HTMLCanvasElement | string | null &lArr; *null*): Where to display the rendered image. Canvas element; `id` attribute of canvas element; or *null* for no display. The raw pixel buffer is accessible via `Rngon.state.default.pixelBuffer` after the call.
+- **target** (HTMLCanvasElement | string | undefined &lArr; *undefined*): Where to display the rendered image. Canvas element; `id` attribute of canvas element; or *undefined* to not display it. In all cases, the image is also accessible via `Rngon.state.default.pixelBuffer` after the call.
 
 - **meshes** (array): The [mesh](#mesh) objects to be rendered.
 

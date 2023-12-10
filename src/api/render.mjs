@@ -50,7 +50,7 @@ const schema = {
             target: [
                 "HTMLCanvasElement",
                 "string",
-                "null",
+                "undefined",
             ],
             meshes: [["Mesh"]],
             options: ["object"],
@@ -119,7 +119,7 @@ const schema = {
 };
 
 export function render({
-    target = null,
+    target,
     meshes,
     options = {},
     pipeline = {},
@@ -150,7 +150,7 @@ export function render({
     validate_object?.(options, schema.options);
     validate_object?.(pipeline, schema.pipeline);
 
-    if (target === null)
+    if (target === undefined)
     {
         Assert?.(
             (typeof options.resolution === "object") &&
