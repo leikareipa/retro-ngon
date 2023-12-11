@@ -20,7 +20,7 @@ export const sample = {
         });
 
         this.lights = [
-            Rngon.light(70, Rngon.vector(11, 45, -35)),
+            Rngon.light(11, 45, -35, {intensity: 70}),
         ];
 
         // To allow the pixel shader functions access to the Rngon namespace.
@@ -34,8 +34,8 @@ export const sample = {
         this.camera.update();
 
         // Move the light around in a circle.
-        this.lights[0].position.x += (Math.cos(this.numTicks / 70) * 0.5);
-        this.lights[0].position.z += (Math.sin(this.numTicks / 70) * 0.5);
+        this.lights[0].x += (Math.cos(this.numTicks / 70) * 0.5);
+        this.lights[0].z += (Math.sin(this.numTicks / 70) * 0.5);
 
         return {
             renderOptions: {
@@ -283,46 +283,46 @@ function ps_per_pixel_light(renderState)
     const {width, height, data:pixels} = renderState.pixelBuffer;
     const fragments = renderState.fragmentBuffer.data;
     const light = renderState.lights[0];
-    const lightReach = (100 * 100);
-    const lightIntensity = 1.5;
+    const lightReach = Math.sqrt(100**2);
+    const lightIntensity = 1.75;
     const lightDirection = this.Rngon.vector();
     const surfaceNormal = this.Rngon.vector();
 
     for (let i = 0; i < (width * height); i++)
     {
         const thisFragment = fragments[i];
-        const thisNgon = (thisFragment.ngon || null);
 
-        if (!thisNgon)
+        if (!thisFragment)
         { 
             continue;
         }
 
-        const distance = (
-            ((thisFragment.worldX - light.position.x) * (thisFragment.worldX - light.position.x)) +
-            ((thisFragment.worldY - light.position.y) * (thisFragment.worldY - light.position.y)) +
-            ((thisFragment.worldZ - light.position.z) * (thisFragment.worldZ - light.position.z))
+        const distanceToLight = Math.sqrt(
+            ((thisFragment.worldX - light.x) ** 2) +
+            ((thisFragment.worldY - light.y) ** 2) +
+            ((thisFragment.worldZ - light.z) ** 2)
         );
 
-        const distanceMul = Math.max(0, Math.min(1, (1 - (distance / lightReach))));
-
-        if ((thisFragment.shade > 0) && (distanceMul > 0))
+        if (distanceToLight <= lightReach)
         {
-            lightDirection.x = (light.position.x - thisFragment.worldX);
-            lightDirection.y = (light.position.y - thisFragment.worldY);
-            lightDirection.z = (light.position.z - thisFragment.worldZ);
+            lightDirection.x = (light.x - thisFragment.worldX);
+            lightDirection.y = (light.y - thisFragment.worldY);
+            lightDirection.z = (light.z - thisFragment.worldZ);
             this.Rngon.vector.normalize(lightDirection);
 
             surfaceNormal.x = thisFragment.normalX;
             surfaceNormal.y = thisFragment.normalY;
             surfaceNormal.z = thisFragment.normalZ;
 
-            const shadeMul = Math.max(0, Math.min(1, this.Rngon.vector.dot(surfaceNormal, lightDirection)));
-            const colorMul = (distanceMul * shadeMul * lightIntensity);
+            const shade = (
+                (1 - (distanceToLight / lightReach)) *
+                this.Rngon.vector.dot(surfaceNormal, lightDirection) *
+                lightIntensity
+            );
 
-            pixels[(i * 4) + 0] *= colorMul;
-            pixels[(i * 4) + 1] *= colorMul;
-            pixels[(i * 4) + 2] *= colorMul;
+            pixels[(i * 4) + 0] *= shade;
+            pixels[(i * 4) + 1] *= shade;
+            pixels[(i * 4) + 2] *= shade;
         }
         else
         {
@@ -332,14 +332,12 @@ function ps_per_pixel_light(renderState)
         }
     }
 } ps_per_pixel_light.fragments = {
-    ngon: true,
     worldX: true,
     worldY: true,
     worldZ: true,
     normalX: true,
     normalY: true,
     normalZ: true,
-    shade: true,
 };
 
 // Pixel shader: Desatures pixel colors based on their distance to the camera - pixels

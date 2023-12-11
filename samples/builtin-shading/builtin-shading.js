@@ -36,7 +36,7 @@ export const sample = {
         return {
             renderOptions: {
                 lights: [
-                    Rngon.light(150, Rngon.vector(0, 70, -120)),
+                    Rngon.light(0, 70, -120, {intensity: 150}),
                 ],
             },
             mesh: Rngon.mesh(scene.ngons, meshSettings)

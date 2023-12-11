@@ -1,19 +1,19 @@
 /*
- * 2020 Tarpeeksi Hyvae Soft
+ * 2020-2023 Tarpeeksi Hyvae Soft
  *
  * Software: Retro n-gon renderer
  *
  */
 
 import {validate_object} from "../schema.mjs";
-import {Vector} from "./vector.mjs";
 
 const schema = {
     arguments: {
         where: "in arguments to light()",
         properties: {
-            "intensity": ["number"],
-            "position": ["Vector"],
+            "x": ["number"],
+            "y": ["number"],
+            "z": ["number"],
             "options": ["object"],
         },
     },
@@ -24,26 +24,29 @@ const schema = {
             "$constructor": {
                 value: "Light",
             },
-            "intensity": ["number"],
-            "position": ["Vector"],
+            "x": ["number"],
+            "y": ["number"],
+            "z": ["number"],
         },
     },
 };
 
 // A light source. This is a work-in-progress implementation.
 export function Light(
-    intensity = 100,
-    position = Vector(0, 0, 0),
+    x = 0,
+    y = 0,
+    z = 0,
     options = {}
 )
 {
-    validate_object?.({intensity, position, options}, schema.arguments);
+    validate_object?.({x, y, z, options}, schema.arguments);
 
     const publicInterface = {
         $constructor: "Light",
+        x,
+        y,
+        z,
         ...options,
-        intensity,
-        position,
     };
 
     validate_object?.(publicInterface, schema.interface);

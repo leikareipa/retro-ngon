@@ -212,16 +212,16 @@ function apply_lighting(ngon, renderState)
                 const vertex = ngon.vertices[v];
 
                 const distance = Math.sqrt(
-                    ((vertex.x - light.position.x) * (vertex.x - light.position.x)) +
-                    ((vertex.y - light.position.y) * (vertex.y - light.position.y)) +
-                    ((vertex.z - light.position.z) * (vertex.z - light.position.z))
+                    ((vertex.x - light.x) ** 2) +
+                    ((vertex.y - light.y) ** 2) +
+                    ((vertex.z - light.z) ** 2)
                 );
 
                 const distanceMul = (1 / (1 + distance));
 
-                lightDirection.x = (light.position.x - vertex.x);
-                lightDirection.y = (light.position.y - vertex.y);
-                lightDirection.z = (light.position.z - vertex.z);
+                lightDirection.x = (light.x - vertex.x);
+                lightDirection.y = (light.y - vertex.y);
+                lightDirection.z = (light.z - vertex.z);
                 Vector.normalize(lightDirection);
 
                 const angle = ((ngon.vertices.length < 3)? 1 : Vector.dot(ngon.vertexNormals[v], lightDirection));
@@ -232,16 +232,16 @@ function apply_lighting(ngon, renderState)
         else if (ngon.material.vertexShading === "flat")
         {
             const distance = Math.sqrt(
-                ((faceX - light.position.x) * (faceX - light.position.x)) +
-                ((faceY - light.position.y) * (faceY - light.position.y)) +
-                ((faceZ - light.position.z) * (faceZ - light.position.z))
+                ((faceX - light.x) ** 2) +
+                ((faceY - light.y) ** 2) +
+                ((faceZ - light.z) ** 2)
             );
 
             const distanceMul = (1 / (1 + distance));
 
-            lightDirection.x = (light.position.x - faceX);
-            lightDirection.y = (light.position.y - faceY);
-            lightDirection.z = (light.position.z - faceZ);
+            lightDirection.x = (light.x - faceX);
+            lightDirection.y = (light.y - faceY);
+            lightDirection.z = (light.z - faceZ);
             Vector.normalize(lightDirection);
 
             const angle = ((ngon.vertices.length < 3)? 1 : Vector.dot(ngon.normal, lightDirection));

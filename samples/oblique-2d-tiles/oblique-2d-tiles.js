@@ -178,18 +178,19 @@ export const sample = {
                 get lights()
                 {
                     return [
-                        Rngon.light(20, Rngon.vector(...tile_pos_to_world_pos(21, 7))),
-                        Rngon.light(20, Rngon.vector(...tile_pos_to_world_pos(15, 7))),
+                        Rngon.light(...tile_pos_to_world_pos(21, 7), {intensity: 20}),
+                        Rngon.light(...tile_pos_to_world_pos(15, 7), {intensity: 20}),
 
                         // A light that follows the mouse cursor.
-                        Rngon.light(20, Rngon.vector((mousePos.x * defaultRenderOptions.resolution), (mousePos.y * defaultRenderOptions.resolution))),
+                        Rngon.light((mousePos.x * defaultRenderOptions.resolution), (mousePos.y * defaultRenderOptions.resolution), 0, {intensity: 20}),
                     ];
 
                     function tile_pos_to_world_pos(tileX, tileY)
                     {
                         return [
                             Math.floor(camera.pos.x + (tileX * (groundTileWidth / 2))),
-                            Math.floor(camera.pos.y + (tileY * (groundTileHeight / 2)))
+                            Math.floor(camera.pos.y + (tileY * (groundTileHeight / 2))),
+                            0,
                         ];
                     }
                 },

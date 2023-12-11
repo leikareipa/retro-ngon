@@ -158,7 +158,7 @@ export const validate_object = ((typeof window === "object") && IS_PRODUCTION_BU
 
                 if (!stringTypes.includes(objectValueType.toLowerCase()))
                 {
-                    throw new TypeError(`The property '${propertyChain + objectKey}' ${schema.where} is of unsupported type ${objectValueType}.`);
+                    throw new TypeError(`The property '${propertyChain + objectKey}' ${schema.where} is of unsupported type "${objectValueType}".`);
                 }
             }
         }

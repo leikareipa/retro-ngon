@@ -27,8 +27,8 @@
                         shade: true,
                     },
                     lights: [
-                        Rngon.light(1.5, Rngon.vector(409, 115, 758), {reach: 350}),
-                        Rngon.light(2, Rngon.vector(481, 182, 113), {reach: 450}),
+                        Rngon.light(409, 115, 758, {intensity: 1.5, reach: 350}),
+                        Rngon.light(481, 182, 113, {intensity: 2, reach: 450}),
                     ],
                 },
                 renderPipeline: {
@@ -61,18 +61,18 @@
                     for (const light of lights)
                     {
                         const distance = (
-                            ((thisFragment.worldX - light.position.x)**2) +
-                            ((thisFragment.worldY - light.position.y)**2) +
-                            ((thisFragment.worldZ - light.position.z)**2)
+                            ((thisFragment.worldX - light.x)**2) +
+                            ((thisFragment.worldY - light.y)**2) +
+                            ((thisFragment.worldZ - light.z)**2)
                         );
 
                         const distanceMul = Math.max(0, Math.min(1, (1 - (distance / (light.reach * light.reach)))));
 
                         if ((thisFragment.shade > 0) && (distanceMul > 0))
                         {
-                            lightDirection.x = (light.position.x - thisFragment.worldX);
-                            lightDirection.y = (light.position.y - thisFragment.worldY);
-                            lightDirection.z = (light.position.z - thisFragment.worldZ);
+                            lightDirection.x = (light.x - thisFragment.worldX);
+                            lightDirection.y = (light.y - thisFragment.worldY);
+                            lightDirection.z = (light.z - thisFragment.worldZ);
                             Rngon.vector.normalize(lightDirection);
 
                             const shadeMul = Math.max(0, Math.min(1, Rngon.vector.dot(thisNgon.normal, lightDirection)));

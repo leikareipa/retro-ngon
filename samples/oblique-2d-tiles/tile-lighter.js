@@ -51,8 +51,10 @@ export function apply_lighting_to_tile(renderState, ngon)
                 case 3: vY = (ngon.vertices[1].y - groundTileHeight); vX -= offset; vY += offset; break;
             }
 
-            const distance = Math.sqrt(((vX - light.position.x) * (vX - light.position.x)) +
-                                       ((vY - light.position.y) * (vY - light.position.y)));
+            const distance = Math.sqrt(
+                ((vX - light.x) ** 2) +
+                ((vY - light.y) ** 2)
+            );
 
             const distanceMul = (1 / (1 + distance));
 

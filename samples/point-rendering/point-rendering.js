@@ -30,7 +30,7 @@ export const sample = {
                 cameraDirection: Rngon.vector(7, 90, 0),
                 cameraPosition: Rngon.vector(-70, 33, -7),
                 lights: [
-                    Rngon.light(30, Rngon.vector(-60, 0, 0)),
+                    Rngon.light(-60, 0, 0, {intensity: 30}),
                 ],
             },
             mesh: Rngon.mesh(teapot.ngons, {
