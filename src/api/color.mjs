@@ -10,7 +10,7 @@ import {Assert} from "../assert.mjs";
 
 const schema = {
     arguments: {
-        where: "in arguments to color()",
+        where: "in arguments to Rngon::color()",
         properties: {
             "red": ["number"],
             "green": ["number"],
@@ -19,7 +19,7 @@ const schema = {
         },
     },
     interface: {
-        where: "in the return value of color()",
+        where: "in the return value of Rngon::color()",
         properties: {
             "$constructor": {
                 value: "Color",

@@ -6,7 +6,7 @@ The renderer's public API consists of the following components:
 | ------------------- | ------------------------------------------------------ |
 | [color](#color)     | A 32-bit RGBA color value.                             |
 | default             | *(A description is coming.)*                           |
-| light               | *(A description is coming.)*                           |
+| [light](#light)     | A light source.                                        |
 | matrix              | *(A description is coming.)*                           |
 | [mesh](#mesh)       | A set of n-gons with shared geometric transformations. |
 | [ngon](#ngon)       | A geometric primitive defined by *n* vertices (n-gon). |
@@ -14,6 +14,7 @@ The renderer's public API consists of the following components:
 | state               | *(A description is coming.)*                           |
 | [texture](#texture) | A 2D image for texturing n-gons.                       |
 | [vector](#vector)   | A three-component vector.                              |
+| version             | *(A description is coming.)*                           |
 | [vertex](#vertex)   | One corner of an n-gon.                                |
 
 The API is available via the `Rngon` namespace after you've imported the renderer's distributable into your application (see [Installation](/README.md#installation)):
@@ -58,6 +59,8 @@ Renders n-gonal meshes into a pixel buffer, and optionally displays the image on
     - **nearPlane** (number &lArr; *1*): Vertices closer to the camera will be clipped.
 
     - **farPlane** (number &lArr; *1000*): Vertices further from the camera will be clipped.
+
+    - **lights** (array &lArr; *[]*): An array of [light](#light) objects, representing the scene's light sources.
 
     - **useFullInterpolation** (boolean = *true*): Whether to apply full perspective correction in property interpolation (e.g. of texture UV coordinates) during rasterization. If set to *false*, artifacts like warping of textures may become evident.
 
@@ -229,6 +232,8 @@ Note: If both `transform.translate` and `transform.rotate` are given, rotation w
 
 An object with the following properties:
 
+- **$constructor** (string &lArr; *"Mesh"*) 
+
 - **ngons** (array): The `ngons` argument.
 
 - **translate** ([vector](#vector)): The `transform.translate` argument.
@@ -295,9 +300,9 @@ A polygon made up of *n* vertices, also known as an n-gon. Single-vertex n-gons 
 
     - **isInScreenSpace** (boolean &lArr; *false*): Whether the XY coordinates of the n-gon's vertices are in screen space. If they are, the renderer won't transform them further (e.g. according to camera position or mesh transformations) before rasterization. If *true*, you must ensure that all vertex XY coordinates are integers that lie within the boundaries of the rendered image.
 
-    - **vertexShading** (string &lArr; *"none"*): The type of shading to be used when applying the scene's light sources to the n-gon:
+    - **vertexShading** (string &lArr; *"none"*): How the scene's light sources should affect the appearance of the n-gon:
 
-        - "none": Light sources do not affect the appearance of the n-gon.
+        - "none": Light sources don't affect the appearance of the n-gon.
 
         - "flat": The n-gon's face receives a solid shade based on the angle between the incident light and the n-gon's face normal.
         
@@ -314,6 +319,8 @@ A polygon made up of *n* vertices, also known as an n-gon. Single-vertex n-gons 
 ### Returns
 
 An object with the following properties:
+
+- **$constructor** (string &lArr; *"Ngon"*) 
 
 - **vertices** (array): The value of the `vertices` argument.
 
@@ -360,6 +367,8 @@ Note: In the renderer's coordinate space, X is horizontal (positive = right), an
 
 An object with the following properties:
 
+- **$constructor** (string &lArr; *"Vertex"*) 
+
 - **x** (number): The `x` argument.
 
 - **y** (number): The `y` argument.
@@ -372,11 +381,72 @@ An object with the following properties:
 
 - **shade** (number): A positive number defining the vertex's degree of shade, with 0 being fully unlit, 0.5 half lit, and 1 fully lit. The value is computed at render-time.
 
+<a id="light"></a>
+
+## light([x[, y[, z[, options]]]])
+
+A light source.
+
+(Implemented in [api/light.mjs](/src/api/light.mjs).)
+
+### See also
+
+- *[render](#render)::options.lights*
+- *[ngon](#ngon)::material.vertexShading*
+- *[ngon](#ngon)::material.renderVertexShade*
+
+### Parameters
+
+- **x** (number &lArr; *0*): The X coordinate of the light's position in world space.
+
+- **y** (number &lArr; *0*): The Y coordinate of the light's position in world space.
+
+- **z** (number &lArr; *0*): The Z coordinate of the light's position in world space.
+
+- **options** (object &lArr; *{}*): Additional metadata about the light source:
+
+    - **intensity** (number): The light's luminosity. Higher values result in brighter light.
+
+    All properties included in `options` are exposed in the return value.
+
+### Returns
+
+An object with the following properties:
+
+- **$constructor** (string &lArr; *"Light"*) 
+
+- **x** (number): The `x` argument.
+
+- **y** (number): The `y` argument.
+
+- **z** (number): The `z` argument.
+
+- **...options**: A spread of the `options` argument.
+
+### Sample usage
+
+```javascript
+const line = Rngon.ngon([
+    Rngon.vertex(0, 0),
+    Rngon.vertex(1, 0)], {
+        vertexShading: "gouraud",
+});
+
+Rngon.render({
+    meshes: [Rngon.mesh([line])],
+    options: {
+        lights: [Rngon.light(4, 4, 4, {intensity: 100})],
+    },
+});
+```
+
 <a id="vector"></a>
 
 ## vector([x[, y[, z]]])
 
 A three-component vector.
+
+(Implemented in [api/vector.mjs](/src/api/vector.mjs).)
 
 ### Parameters
 
@@ -389,6 +459,8 @@ A three-component vector.
 ### Returns
 
 An object with the following properties:
+
+- **$constructor** (string &lArr; *"Vector"*) 
 
 - **x** (number): The `x` argument.
 
@@ -417,6 +489,8 @@ A 32-bit, four-channel, RGBA color value, where each color channel is 8 bits.
 ### Returns
 
 An object with the following properties:
+
+- **$constructor** (string &lArr; *"Color"*) 
 
 - **red** (number): The `red` argument.
 
@@ -481,6 +555,8 @@ Note: Textures with a power-of-two resolution may render faster and support more
 ### Returns
 
 An object with the following properties:
+
+- **$constructor** (string &lArr; *"Texture"*) 
 
 - **width** (number): The `data.width` argument.
 

@@ -31,7 +31,7 @@ export const ngonDefaultMaterial = {
 
 const schema = {
     arguments: {
-        where: "in arguments to ngon()",
+        where: "in arguments to Rngon::ngon()",
         properties: {
             "vertices": [["Vertex"]],
             "material": ["object"],
@@ -39,7 +39,7 @@ const schema = {
         },
     },
     interface: {
-        where: "in the return value of ngon()",
+        where: "in the return value of Rngon::ngon()",
         properties: {
             "$constructor": {
                 value: "Ngon",

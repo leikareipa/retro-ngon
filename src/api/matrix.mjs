@@ -36,7 +36,7 @@ import {validate_object} from "../schema.mjs";
 
 const schema = {
     arguments: {
-        where: "in arguments to matrix()",
+        where: "in arguments to Rngon::matrix()",
         properties: {
             "data": {
                 type: [["number"]],
@@ -50,7 +50,7 @@ const schema = {
         },
     },
     interface: {
-        where: "in the return value of matrix()",
+        where: "in the return value of Rngon::matrix()",
         properties: {
             "$constructor": {
                 value: "Matrix",

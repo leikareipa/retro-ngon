@@ -21,14 +21,14 @@ export const meshDefaultTransform = {
 
 const schema = {
     arguments: {
-        where: "in arguments to mesh()",
+        where: "in arguments to Rngon::mesh()",
         properties: {
             "ngons": [["Ngon"]],
             "transform": ["object"],
         },
     },
     interface: {
-        where: "in the return value of mesh()",
+        where: "in the return value of Rngon::mesh()",
         allowAdditionalProperties: true,
         properties: {
             "$constructor": {

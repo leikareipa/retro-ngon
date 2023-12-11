@@ -9,16 +9,23 @@ import {validate_object} from "../schema.mjs";
 
 const schema = {
     arguments: {
-        where: "in arguments to light()",
+        where: "in arguments to Rngon::light()",
         properties: {
             "x": ["number"],
             "y": ["number"],
             "z": ["number"],
-            "options": ["object"],
+            "options": {
+                subschema: {
+                    allowAdditionalProperties: true,
+                    properties: {
+                        "intensity": ["number"],
+                    },
+                },
+            },
         },
     },
     interface: {
-        where: "in the return value of light()",
+        where: "in the return value of Rngon::light()",
         allowAdditionalProperties: true,
         properties: {
             "$constructor": {
@@ -31,7 +38,6 @@ const schema = {
     },
 };
 
-// A light source. This is a work-in-progress implementation.
 export function Light(
     x = 0,
     y = 0,

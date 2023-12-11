@@ -6,11 +6,10 @@
  */
 
 import {validate_object} from "../schema.mjs";
-import {Assert} from "../assert.mjs";
 
 const schema = {
     interface: {
-        where: "in the return value of vector()",
+        where: "in the return value of Rngon::vector()",
         properties: {
             "$constructor": {
                 value: "Vector",
@@ -21,7 +20,7 @@ const schema = {
         },
     },
     arguments: {
-        where: "in arguments to vector()",
+        where: "in arguments to Rngon::vector()",
         properties: {
             "x": ["number"],
             "y": ["number"],

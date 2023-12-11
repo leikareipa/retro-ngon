@@ -45,7 +45,7 @@ export const renderDefaultPipeline = {
 
 const schema = {
     arguments: {
-        where: "in arguments to render()",
+        where: "in arguments to Rngon::render()",
         properties: {
             target: [
                 "HTMLCanvasElement",

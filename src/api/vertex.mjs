@@ -10,7 +10,7 @@ import {Matrix} from "./matrix.mjs";
 
 const schema = {
     arguments: {
-        where: "in arguments to vertex()",
+        where: "in arguments to Rngon::vertex()",
         properties: {
             "x": ["number"],
             "y": ["number"],
@@ -28,7 +28,7 @@ const schema = {
         },
     },
     interface: {
-        where: "in the return value of vertex()",
+        where: "in the return value of Rngon::vertex()",
         properties: {
             "$constructor": {
                 value: "Vertex",

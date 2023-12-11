@@ -22,7 +22,7 @@ export const textureDefaultData = {
 
 const schema = {
     arguments: {
-        where: "in arguments to texture()",
+        where: "in arguments to Rngon::texture()",
         allowAdditionalProperties: true,
         properties: {
             "pixels": ["Uint8ClampedArray", ["number"], "string"],
@@ -69,7 +69,7 @@ const schema = {
         },
     },
     interface: {
-        where: "in the return value of texture()",
+        where: "in the return value of Rngon::texture()",
         allowAdditionalProperties: true,
         properties: {
             "$constructor": {
