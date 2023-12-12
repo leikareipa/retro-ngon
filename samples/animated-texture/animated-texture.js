@@ -27,7 +27,7 @@ export const sample = {
         this.perlin();
 
         // If mipmapping is enabled, you should regenerate the texture's mipmap levels. 
-        //this.texture.refresh();
+        //this.texture.regenerate_mipmaps();
  
         return {
             renderOptions: {

@@ -122,11 +122,11 @@ function paint()
         realY += deltaY;
     }
 
-    // Since we modified the texture's pixels, we should call texture.refresh() to
+    // Since we modified the texture's pixels, we should call texture.regenerate_mipmaps() to
     // update all of the texture's mip levels with the new pixel data. However, in
     // this rendering sample, we only ever display the first mip level (which is
     // the base image), so we can save some performance by not refreshing the other
     // mip levels.
     //
-    //this.texture.refresh();
+    //this.texture.regenerate_mipmaps();
 }

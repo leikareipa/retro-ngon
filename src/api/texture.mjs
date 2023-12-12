@@ -104,11 +104,11 @@ export function Texture(data = {})
 
     const publicInterface = {
         $constructor: "Texture",
-        refresh: regenerate_mipmaps,
+        regenerate_mipmaps,
         ...data,
     };
 
-    publicInterface.refresh();
+    publicInterface.regenerate_mipmaps();
 
     validate_object?.(publicInterface, schema.interface);
     

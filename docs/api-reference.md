@@ -621,7 +621,7 @@ const texture = Rngon.texture({
 
 // Change the color of the first pixel.
 texture.pixels[0] = 100;
-texture.refresh();
+texture.regenerate_mipmaps();
 ```
 
 ```javascript
