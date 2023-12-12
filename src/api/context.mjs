@@ -22,7 +22,7 @@ function default_context() {
             rasterizer: undefined,
             vertex_shader: undefined,
             pixel_shader: undefined,
-            context_shader: undefined,
+            canvas_shader: undefined,
             raster_path: undefined,
         },
 
@@ -93,8 +93,8 @@ function default_context() {
         useVertexShader: false,
         vertex_shader: undefined,
 
-        useContextShader: false,
-        context_shader: undefined,
+        useCanvasShader: false,
+        canvas_shader: undefined,
 
         // A scalar for the internal render resolution. Values below 1 mean the image
         // will be rendered at a resolution lower than the display size, then upscaled.

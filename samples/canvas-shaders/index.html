@@ -3,7 +3,7 @@
     <head>
         <meta name="viewport" content="width=device-width">
         <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-        <title>Context shaders - Render sample - Retro n-gon renderer</title>
+        <title>Canvas shaders - Render sample - Retro n-gon renderer</title>
         <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" integrity="sha384-gfdkjb5BdAXd+lj+gudLWI+BXq4IuLW5IT+brZEZsLFm++aCMlF1V92rMkPaX4PP" crossorigin="anonymous">
         <link rel="stylesheet" type="text/css" href="../sample-base.css">
         <style>
@@ -23,7 +23,7 @@
                 <div class="infobox shader">
                     <div class="adjust left" onclick="change_shader(-1);"></div>
                     <div class="content" style="width: 10rem;">
-                        <div class="title">Context shader</div>
+                        <div class="title">Canvas shader</div>
                         <div class="value">Off</div>
                     </div>
                     <div class="adjust right" onclick="change_shader(1);"></div>
@@ -37,7 +37,7 @@
                 Click to capture mouse, ESDF & QA to move
             `;
 
-            import {sample} from "./context-shaders.js";
+            import {sample} from "./canvas-shaders.js";
 
             const shaders = sample.shaders;
             window.ACTIVE_SHADER = shaders[0];
@@ -56,7 +56,7 @@
 
             const renderer = (new URLSearchParams(window.location.search).get("renderer") || "dev");
             const renderTarget = document.getElementById("render-target");
-            renderTarget.src = `../sample-base.html?sample=context-shaders&renderer=${renderer}`;
+            renderTarget.src = `../sample-base.html?sample=canvas-shaders&renderer=${renderer}`;
         </script>
     </body>
 </html>

@@ -39,7 +39,7 @@ export const renderDefaultPipeline = {
     transformClipLighter: transform_clip_lighter,
     pixelShader: undefined,
     vertexShader: undefined,
-    contextShader: undefined,
+    canvasShader: undefined,
     rasterPath: undefined,
 };
 
@@ -106,7 +106,7 @@ const schema = {
                 "undefined",
                 "function"
             ],
-            contextShader: [
+            canvasShader: [
                 "undefined",
                 "function"
             ],
@@ -258,8 +258,8 @@ function setup_render_context(options = {}, pipeline = {})
     context.useVertexShader = Boolean(pipeline.vertexShader);
     context.pipeline.vertex_shader = pipeline.vertexShader;
 
-    context.useContextShader = Boolean(pipeline.contextShader);
-    context.pipeline.context_shader = pipeline.contextShader;
+    context.useCanvasShader = Boolean(pipeline.canvasShader);
+    context.pipeline.canvas_shader = pipeline.canvasShader;
 
     context.pipeline.raster_path = pipeline.rasterPath;
 

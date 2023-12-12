@@ -120,9 +120,9 @@ export function Surface(canvasElement, renderContext)
 
             if (!renderOffscreen)
             {
-                if (renderContext.useContextShader)
+                if (renderContext.useCanvasShader)
                 {
-                    renderContext.pipeline.context_shader(canvasContext, renderContext.pixelBuffer);
+                    renderContext.pipeline.canvas_shader(canvasContext, renderContext.pixelBuffer);
                 }
                 else
                 {
