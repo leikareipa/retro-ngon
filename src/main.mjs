@@ -27,11 +27,11 @@ import {State} from "./api/state.mjs";
 
 // The public API.
 export const Rngon = {
-    version: {
+    version: Object.freeze({
         major: 0,
         minor: 4,
         isProductionBuild: IS_PRODUCTION_BUILD,
-    },
+    }),
     default: Default,
     render,
     color: Color,
