@@ -5,16 +5,15 @@
  *
  */
 
-export function State(id = "default") {
-    return (State[id] || (State[id] = default_state()));
+export const defaultContextName = "default";
+
+export function Context(id = defaultContextName) {
+    return (Context[id] || (Context[id] = default_context()));
 };
 
-State.default = default_state();
+Context.default = default_context();
 
-// Global app state, for internal use by the renderer. Unless otherwise noted, these
-// parameters should not be modified directly; they're instead set by the renderer
-// based on settings requested by the user.
-function default_state() {
+function default_context() {
     return {
         pipeline: {
             ngon_sorter: undefined,

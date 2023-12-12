@@ -21,13 +21,13 @@ import {Vector} from "./api/vector.mjs";
 // to an off-screen buffer only.
 //
 // Returns null if the surface could not be created.
-export function Surface(canvasElement, renderState)
+export function Surface(canvasElement, renderContext)
 {
     const renderOffscreen = (canvasElement === null);
 
-    let surfaceWidth = undefined,
-        surfaceHeight = undefined,
-        renderContext = undefined;
+    let surfaceWidth = undefined;
+    let surfaceHeight = undefined;
+    let canvasContext = undefined;
 
     try
     {
@@ -35,10 +35,10 @@ export function Surface(canvasElement, renderState)
             surfaceWidth,
             surfaceHeight,
             canvasElement,
-            renderContext
-        } = (renderOffscreen? setup_offscreen(renderState) : setup_onscreen(renderState, canvasElement)));
+            canvasContext
+        } = (renderOffscreen? setup_offscreen(renderContext) : setup_onscreen(renderContext, canvasElement)));
 
-        massage_state(renderState, renderContext, surfaceWidth, surfaceHeight);
+        massage_context(canvasContext, renderContext, surfaceWidth, surfaceHeight);
     }
     catch (error)
     {
@@ -48,22 +48,22 @@ export function Surface(canvasElement, renderState)
 
     const cameraMatrix = matrix_multiply(
         Matrix.rotation(
-            renderState.cameraDirection.x,
-            renderState.cameraDirection.y,
-            renderState.cameraDirection.z
+            renderContext.cameraDirection.x,
+            renderContext.cameraDirection.y,
+            renderContext.cameraDirection.z
         ),
         Matrix.translation(
-            -renderState.cameraPosition.x,
-            -renderState.cameraPosition.y,
-            -renderState.cameraPosition.z
+            -renderContext.cameraPosition.x,
+            -renderContext.cameraPosition.y,
+            -renderContext.cameraPosition.z
         )
     );
 
     const perspectiveMatrix = matrix_perspective(
-        (renderState.fov * (Math.PI / 180)),
+        (renderContext.fov * (Math.PI / 180)),
         (surfaceWidth / surfaceHeight),
-        renderState.nearPlaneDistance,
-        renderState.farPlaneDistance
+        renderContext.nearPlaneDistance,
+        renderContext.farPlaneDistance
     );
 
     const screenSpaceMatrix = matrix_ortho(
@@ -76,27 +76,27 @@ export function Surface(canvasElement, renderState)
         height: surfaceHeight,
 
         // Rasterizes the given meshes' n-gons onto this surface. Following this call,
-        // the rasterized pixels will be in renderState.pixelBuffer, and the meshes'
-        // screen-space n-gons in renderState.screenSpaceNgons. If a <canvas> element
+        // the rasterized pixels will be in renderContext.pixelBuffer, and the meshes'
+        // screen-space n-gons in renderContext.screenSpaceNgons. If a <canvas> element
         // id was specified for this surface, the rasterized pixels will also be
         // painted onto that canvas.
         display_meshes: function(meshes = [])
         {
-            renderState.pipeline.surface_wiper?.(renderState);
+            renderContext.pipeline.surface_wiper?.(renderContext);
 
             if (meshes.length)
             {
                 // Prepare the meshes' n-gons for rendering.
                 {
-                    prepare_vertex_cache(renderState, meshes);
-                    prepare_ngon_cache(renderState, meshes);
+                    prepare_vertex_cache(renderContext, meshes);
+                    prepare_ngon_cache(renderContext, meshes);
 
-                    if (renderState.pipeline.transform_clip_lighter)
+                    if (renderContext.pipeline.transform_clip_lighter)
                     {
                         for (const mesh of meshes)
                         {
-                            renderState.pipeline.transform_clip_lighter({
-                                renderState,
+                            renderContext.pipeline.transform_clip_lighter({
+                                renderContext,
                                 mesh,
                                 cameraMatrix,
                                 perspectiveMatrix,
@@ -105,28 +105,28 @@ export function Surface(canvasElement, renderState)
                         };
                     }
 
-                    renderState.pipeline.ngon_sorter?.(renderState);
+                    renderContext.pipeline.ngon_sorter?.(renderContext);
 
-                    mark_npot_textures(renderState.screenSpaceNgons);
+                    mark_npot_textures(renderContext.screenSpaceNgons);
                 }
 
-                renderState.pipeline.rasterizer?.(renderState);
+                renderContext.pipeline.rasterizer?.(renderContext);
 
-                if (renderState.usePixelShader)
+                if (renderContext.usePixelShader)
                 {
-                    renderState.pipeline.pixel_shader(renderState);
+                    renderContext.pipeline.pixel_shader(renderContext);
                 }
             }
 
             if (!renderOffscreen)
             {
-                if (renderState.useContextShader)
+                if (renderContext.useContextShader)
                 {
-                    renderState.pipeline.context_shader(renderContext, renderState.pixelBuffer);
+                    renderContext.pipeline.context_shader(canvasContext, renderContext.pixelBuffer);
                 }
                 else
                 {
-                    renderContext.putImageData(renderState.pixelBuffer, 0, 0);
+                    canvasContext.putImageData(renderContext.pixelBuffer, 0, 0);
                 }
             }
         },
@@ -159,22 +159,22 @@ export function Surface(canvasElement, renderState)
 }
 
 // Initializes the target DOM <canvas> element for rendering into. Throws on errors.
-function setup_onscreen(renderState, canvasElement)
+function setup_onscreen(renderContext, canvasElement)
 {
-    const renderContext = canvasElement?.getContext("2d");
+    const canvasContext = canvasElement?.getContext("2d");
 
     Assert?.(
-        ((canvasElement instanceof Element) && renderContext),
+        ((canvasElement instanceof Element) && canvasContext),
         "Invalid canvas element"
     );
 
     let surfaceWidth = undefined;
     let surfaceHeight = undefined;
 
-    if (typeof renderState.renderScale === "number")
+    if (typeof renderContext.renderScale === "number")
     {
-        surfaceWidth = Math.floor(parseInt(window.getComputedStyle(canvasElement).getPropertyValue("width")) * renderState.renderScale);
-        surfaceHeight = Math.floor(parseInt(window.getComputedStyle(canvasElement).getPropertyValue("height")) * renderState.renderScale);
+        surfaceWidth = Math.floor(parseInt(window.getComputedStyle(canvasElement).getPropertyValue("width")) * renderContext.renderScale);
+        surfaceHeight = Math.floor(parseInt(window.getComputedStyle(canvasElement).getPropertyValue("height")) * renderContext.renderScale);
         
         Assert?.(
             (surfaceWidth > 0) &&
@@ -185,13 +185,13 @@ function setup_onscreen(renderState, canvasElement)
     else
     {
         Assert?.(
-            (typeof renderState.renderWidth === "number") &&
-            (typeof renderState.renderHeight === "number"),
+            (typeof renderContext.renderWidth === "number") &&
+            (typeof renderContext.renderHeight === "number"),
             "Invalid render resolution"
         );
 
-        surfaceWidth = renderState.renderWidth;
-        surfaceHeight = renderState.renderHeight;
+        surfaceWidth = renderContext.renderWidth;
+        surfaceHeight = renderContext.renderHeight;
     }
     
     canvasElement.setAttribute("width", surfaceWidth);
@@ -201,7 +201,7 @@ function setup_onscreen(renderState, canvasElement)
         surfaceWidth,
         surfaceHeight,
         canvasElement,
-        renderContext
+        canvasContext
     };
 }
 
@@ -211,12 +211,12 @@ function setup_onscreen(renderState, canvasElement)
 // is more about just skipping initialization of the <canvas> element.
 //
 // Throws on errors.
-function setup_offscreen(renderState)
+function setup_offscreen(renderContext)
 {
     return {
-        surfaceWidth: renderState.renderWidth,
-        surfaceHeight: renderState.renderHeight,
-        renderContext: {
+        surfaceWidth: renderContext.renderWidth,
+        surfaceHeight: renderContext.renderHeight,
+        canvasContext: {
             createImageData: function(width, height)
             {
                 return new ImageData(width, height);
@@ -225,34 +225,34 @@ function setup_offscreen(renderState)
     };
 }
 
-// Initializes the internal render buffers if they're not already in a suitable renderState.
-function massage_state(renderState, renderContext, surfaceWidth, surfaceHeight)
+// Initializes the internal render buffers if they're not already in a suitable renderContext.
+function massage_context(canvasContext, renderContext, surfaceWidth, surfaceHeight)
 {
     if (
-        (typeof renderState.pixelBuffer === "undefined") ||
-        (renderState.pixelBuffer.width != surfaceWidth) ||
-        (renderState.pixelBuffer.height != surfaceHeight)
+        (typeof renderContext.pixelBuffer === "undefined") ||
+        (renderContext.pixelBuffer.width != surfaceWidth) ||
+        (renderContext.pixelBuffer.height != surfaceHeight)
     ){
-        renderState.pixelBuffer = renderContext.createImageData(surfaceWidth, surfaceHeight);
-        renderState.pixelBuffer8 = new Uint8ClampedArray(renderState.pixelBuffer.data.buffer);
-        renderState.pixelBuffer32 = new Uint32Array(renderState.pixelBuffer.data.buffer);
+        renderContext.pixelBuffer = canvasContext.createImageData(surfaceWidth, surfaceHeight);
+        renderContext.pixelBuffer8 = new Uint8ClampedArray(renderContext.pixelBuffer.data.buffer);
+        renderContext.pixelBuffer32 = new Uint32Array(renderContext.pixelBuffer.data.buffer);
     }
 
     if (
-        renderState.useFragmentBuffer &&
-        ((renderState.fragmentBuffer.width != surfaceWidth) ||
-         (renderState.fragmentBuffer.height != surfaceHeight))
+        renderContext.useFragmentBuffer &&
+        ((renderContext.fragmentBuffer.width != surfaceWidth) ||
+         (renderContext.fragmentBuffer.height != surfaceHeight))
     ){
-        renderState.fragmentBuffer.resize(surfaceWidth, surfaceHeight);
+        renderContext.fragmentBuffer.resize(surfaceWidth, surfaceHeight);
     }
 
     if (
-        renderState.useDepthBuffer &&
-        ((renderState.depthBuffer.width != surfaceWidth) ||
-         (renderState.depthBuffer.height != surfaceHeight) ||
-         !renderState.depthBuffer.data.length)
+        renderContext.useDepthBuffer &&
+        ((renderContext.depthBuffer.width != surfaceWidth) ||
+         (renderContext.depthBuffer.height != surfaceHeight) ||
+         !renderContext.depthBuffer.data.length)
     ){
-        renderState.depthBuffer.resize(surfaceWidth, surfaceHeight); 
+        renderContext.depthBuffer.resize(surfaceWidth, surfaceHeight); 
     }
 
     return;
@@ -260,15 +260,15 @@ function massage_state(renderState, renderContext, surfaceWidth, surfaceHeight)
 
 // Creates or resizes the vertex cache to fit at least the number of vertices contained
 // in the given array of meshes.
-function prepare_vertex_cache(renderState, meshes = [Ngon()])
+function prepare_vertex_cache(renderContext, meshes = [Ngon()])
 {
     Assert?.(
         (meshes instanceof Array),
         "Invalid arguments to n-gon cache initialization."
     );
 
-    const vertexCache = renderState.vertexCache;
-    const vertexNormalCache = renderState.vertexNormalCache;
+    const vertexCache = renderContext.vertexCache;
+    const vertexNormalCache = renderContext.vertexNormalCache;
     let totalVertexCount = 0;
 
     for (const mesh of meshes)
@@ -302,14 +302,14 @@ function prepare_vertex_cache(renderState, meshes = [Ngon()])
 
 // Creates or resizes the n-gon cache to fit at least the number of n-goans contained
 // in the given array of meshes.
-function prepare_ngon_cache(renderState, meshes = [Ngon()])
+function prepare_ngon_cache(renderContext, meshes = [Ngon()])
 {
     Assert?.(
         (meshes instanceof Array),
         "Invalid arguments to n-gon cache initialization."
     );
 
-    const ngonCache = renderState.ngonCache;
+    const ngonCache = renderContext.ngonCache;
     const totalNgonCount = meshes.reduce((totalCount, mesh)=>(totalCount + mesh.ngons.length), 0);
 
     if (!ngonCache ||

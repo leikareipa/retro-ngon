@@ -15,7 +15,7 @@ const resourceOrigin = (process.env.RESOURCE_ORIGIN || "http://localhost:8222");
 
     await page.waitForSelector("#benchmark-graph-container", {timeout: 0});
     const benchResults = await page.evaluate(()=>window.benchResults);
-    const resolution = await page.evaluate(()=>Rngon.state.default.resolution);
+    const resolution = await page.evaluate(()=>Rngon.context.default.resolution);
     const [average, minimum, maximum] = (()=>{
         const renderFPS = benchResults.map(r=>r.renderFPS);
         return [

@@ -13,7 +13,7 @@
 const groundTileWidth = 22;
 const groundTileHeight = 22;
 
-export function apply_lighting_to_tile(renderState, ngon)
+export function apply_lighting_to_tile(renderContext, ngon)
 {
     if (ngon.material.vertexShading !== "gouraud")
     {
@@ -26,7 +26,7 @@ export function apply_lighting_to_tile(renderState, ngon)
     }
 
     // Find the brightest shade falling on this n-gon's vertices.
-    for (const light of renderState.lights)
+    for (const light of renderContext.lights)
     {
         for (let v = 0; v < ngon.vertices.length; v++)
         {

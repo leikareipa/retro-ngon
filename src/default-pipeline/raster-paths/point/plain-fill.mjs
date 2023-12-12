@@ -9,12 +9,12 @@ import {Vertex} from "../../../api/vertex.mjs";
 import {Color} from "../../../api/color.mjs";
 
 export function point_plain_fill(
-    renderState,
+    renderContext,
     vertex = Vertex(),
     color = Color(),
 )
 {
-    renderState.pixelBuffer32[Math.floor(vertex.x) + Math.floor(vertex.y) * renderState.pixelBuffer.width] = (
+    renderContext.pixelBuffer32[Math.floor(vertex.x) + Math.floor(vertex.y) * renderContext.pixelBuffer.width] = (
         (255 << 24) +
         (color.blue << 16) +
         (color.green << 8) +

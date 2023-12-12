@@ -18,7 +18,7 @@ import {
 // Applies lighting to the given n-gons, and transforms them into screen space
 // for rendering. The processed n-gons are stored in the internal n-gon cache.
 export function transform_clip_lighter({
-    renderState,
+    renderContext,
     mesh,
     cameraMatrix,
     perspectiveMatrix,
@@ -26,9 +26,9 @@ export function transform_clip_lighter({
 } = {})
 {
     const viewVector = {x:0.0, y:0.0, z:0.0};
-    const ngonCache = renderState.ngonCache;
-    const vertexCache = renderState.vertexCache;
-    const vertexNormalCache = renderState.vertexNormalCache;
+    const ngonCache = renderContext.ngonCache;
+    const vertexCache = renderContext.vertexCache;
+    const vertexNormalCache = renderContext.vertexNormalCache;
     const clipSpaceMatrix = matrix_multiply(perspectiveMatrix, cameraMatrix);
     const objectSpaceMatrix = mesh_to_object_space_matrix(mesh);
 
@@ -86,7 +86,7 @@ export function transform_clip_lighter({
 
                 // Interpolated world XYZ coordinates will be made available via the fragment
                 // buffer, but aren't needed if shaders are disabled.
-                if (renderState.useFragmentBuffer)
+                if (renderContext.useFragmentBuffer)
                 {
                     for (let v = 0; v < cachedNgon.vertices.length; v++)
                     {
@@ -115,9 +115,9 @@ export function transform_clip_lighter({
                 // Backface culling.
                 if (!cachedNgon.material.isTwoSided && (cachedNgon.vertices.length > 2))
                 {
-                    viewVector.x = (cachedNgon.vertices[0].x - renderState.cameraPosition.x);
-                    viewVector.y = (cachedNgon.vertices[0].y - renderState.cameraPosition.y);
-                    viewVector.z = (cachedNgon.vertices[0].z - renderState.cameraPosition.z);
+                    viewVector.x = (cachedNgon.vertices[0].x - renderContext.cameraPosition.x);
+                    viewVector.y = (cachedNgon.vertices[0].y - renderContext.cameraPosition.y);
+                    viewVector.z = (cachedNgon.vertices[0].z - renderContext.cameraPosition.z);
         
                     if (Vector.dot(cachedNgon.normal, viewVector) >= 0)
                     {
@@ -128,12 +128,12 @@ export function transform_clip_lighter({
 
                 if (cachedNgon.material.vertexShading !== "none")
                 {
-                    apply_lighting(cachedNgon, renderState);
+                    apply_lighting(cachedNgon, renderContext);
                 }
 
-                if (renderState.useVertexShader)
+                if (renderContext.useVertexShader)
                 {
-                    renderState.pipeline.vertex_shader(cachedNgon, renderState);
+                    renderContext.pipeline.vertex_shader(cachedNgon, renderContext);
                 }
             }
 
@@ -162,12 +162,12 @@ export function transform_clip_lighter({
         }
     };
 
-    renderState.screenSpaceNgons = ngonCache.ngons.slice(0, ngonCache.count);
+    renderContext.screenSpaceNgons = ngonCache.ngons.slice(0, ngonCache.count);
 
     return;
 }
 
-function apply_lighting(ngon, renderState)
+function apply_lighting(ngon, renderContext)
 {
     Assert?.(
         ["flat", "gouraud"].includes(ngon.material.vertexShading),
@@ -200,7 +200,7 @@ function apply_lighting(ngon, renderState)
     }
 
     // Find the brightest shade falling on this n-gon.
-    for (const light of renderState.lights)
+    for (const light of renderContext.lights)
     {
         // If we've already found the maximum brightness, we don't need to continue.
         //if (shade >= 255) break;

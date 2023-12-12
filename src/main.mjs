@@ -23,7 +23,7 @@ import {Texture} from "./api/texture.mjs";
 import {Vector} from "./api/vector.mjs";
 import {Vertex} from "./api/vertex.mjs";
 import {Default} from "./api/default.mjs";
-import {State} from "./api/state.mjs";
+import {Context} from "./api/context.mjs";
 
 // The public API.
 export const Rngon = {
@@ -35,7 +35,7 @@ export const Rngon = {
     default: Default,
     render,
     color: Color,
-    state: State,
+    context: Context,
     light: Light,
     mesh: Mesh,
     matrix: Matrix,

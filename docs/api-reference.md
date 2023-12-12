@@ -1,28 +1,30 @@
 # API reference for the retro n-gon renderer
 
+## Introduction
+
 The renderer's public API consists of the following components:
 
-| Component           | Brief description                                      |
-| ------------------- | ------------------------------------------------------ |
-| [color](#color)     | A 32-bit RGBA color value.                             |
-| default             | *(A description is coming.)*                           |
-| [light](#light)     | A light source.                                        |
-| matrix              | *(A description is coming.)*                           |
-| [mesh](#mesh)       | A set of n-gons with shared geometric transformations. |
-| [ngon](#ngon)       | A geometric primitive defined by *n* vertices (n-gon). |
-| [render](#render)   | Renders n-gonal meshes.                                |
-| state               | *(A description is coming.)*                           |
-| [texture](#texture) | A 2D image for texturing n-gons.                       |
-| [vector](#vector)   | A three-component vector.                              |
-| version             | *(A description is coming.)*                           |
-| [vertex](#vertex)   | One corner of an n-gon.                                |
+| Component           | Brief description                                        |
+| ------------------- | -------------------------------------------------------- |
+| [color](#color)     | A four-channel RGBA color value.                         |
+| context             | *(A description is coming.)*                             |
+| default             | *(A description is coming.)*                             |
+| [light](#light)     | A light source.                                          |
+| matrix              | *(A description is coming.)*                             |
+| [mesh](#mesh)       | A set of n-gons with shared geometric transformations.   |
+| [ngon](#ngon)       | A geometric primitive defined by *n* vertices (*n*-gon). |
+| [render](#render)   | Renders n-gonal meshes.                                  |
+| [texture](#texture) | A 2D image for texturing n-gons.                         |
+| [vector](#vector)   | A three-component vector.                                |
+| [version](#version) | Provides the renderer's version.                         |
+| [vertex](#vertex)   | One corner of an n-gon.                                  |
 
 The API is available via the `Rngon` namespace after you've imported the renderer's distributable into your application (see [Installation](/README.md#installation)):
 
 ```html
 <script src="distributable/rngon.global.js"></script>
 <script>
-    console.log(Rngon.texture) // ƒ texture(...) ...
+    console.log(Rngon.texture) // f texture(...) ...
 </script>
 ```
 
@@ -36,7 +38,7 @@ Renders n-gonal meshes into a pixel buffer, and optionally displays the image on
 
 ### Parameters
 
-- **target** (HTMLCanvasElement | string | undefined &lArr; *undefined*): Where to display the rendered image. Canvas element; `id` attribute of canvas element; or *undefined* to not display it. In all cases, the image is also accessible via `Rngon.state.default.pixelBuffer` after the call.
+- **target** (HTMLCanvasElement | string | undefined &lArr; *undefined*): Where to display the rendered image. Canvas element; `id` attribute of canvas element; or *undefined* to not display it. In all cases, the image is also accessible via `Rngon.context.default.pixelBuffer` after the call.
 
 - **meshes** (array): The [mesh](#mesh) objects to be rendered.
 
@@ -52,7 +54,7 @@ Renders n-gonal meshes into a pixel buffer, and optionally displays the image on
 
     - **fov** (number &lArr; *43*): Field-of-view size.
 
-    - **useDepthBuffer** (boolean &lArr; *true*): Whether to generate a depth buffer to discard occluded pixels. The depth buffer, if generated, is accessible via `Rngon.state.default.depthBuffer` after the call.
+    - **useDepthBuffer** (boolean &lArr; *true*): Whether to generate a depth buffer to discard occluded pixels. The depth buffer, if generated, is accessible via `Rngon.context.default.depthBuffer` after the call.
 
     - **hibernateWhenTargetNotVisible** (boolean &lArr; *true*): Return without rendering if the target canvas is not within the browser's viewport. Ignored if `target` is *null*.
 
@@ -68,7 +70,7 @@ Renders n-gonal meshes into a pixel buffer, and optionally displays the image on
 
     - **cameraDirection** ([vector](#vector) &lArr; *vector(0, 0, 0)*): The direction in which the scene is viewed for rendering.
 
-    - **useFragmentBuffer** (boolean &lArr; *false*): Whether to generate a fragment buffer which provides per-pixel metadata (e.g. world XYZ coordinates) to accompany the rasterized image, for use e.g. in pixel shaders. Must be set to *true* if using a pixel shader that accesses the fragment buffer, as otherwise the fragment buffer will be unavailable or stale. The fragment buffer, if generated, is accessible via `Rngon.state.default.fragmentBuffer` after the call. See also `options.fragments`.
+    - **useFragmentBuffer** (boolean &lArr; *false*): Whether to generate a fragment buffer which provides per-pixel metadata (e.g. world XYZ coordinates) to accompany the rasterized image, for use e.g. in pixel shaders. Must be set to *true* if using a pixel shader that accesses the fragment buffer, as otherwise the fragment buffer will be unavailable or stale. The fragment buffer, if generated, is accessible via `Rngon.context.default.fragmentBuffer` after the call. See also `options.fragments`.
     
     - **fragments** (undefined | object &lArr; *undefined*): Determines which metadata the fragment buffer (see `options.useFragmentBuffer`) will include. You can choose one or more of the following:
         
@@ -100,9 +102,9 @@ Renders n-gonal meshes into a pixel buffer, and optionally displays the image on
     
     - **ngonSorter** (function | undefined &lArr; `Rngon.default.render.pipeline.ngonSorter`): A function to be called by the renderer to sort the input meshes' n-gons prior to rendering; or disabled if *undefined*. The default behavior is to sort in reverse painter order (on the Z axis, closest first) if `options.useDepthBuffer` is *true* and otherwise to do no sorting.
         
-        - function ngonSorter(renderState:[state](#state))
+        - function ngonSorter(renderContext:[context](#context))
             
-            - **renderState**: (Todo.)
+            - **renderContext**: (Todo.)
 
             - Returns nothing.
     
@@ -110,9 +112,9 @@ Renders n-gonal meshes into a pixel buffer, and optionally displays the image on
     
     - **rasterizer** (function | null &lArr; `Rngon.default.render.pipeline.rasterizer`): A function to be called by the renderer to rasterize the meshes; or disabled if *null*.
         
-        - function rasterizer(renderState:[state](#state))
+        - function rasterizer(renderContext:[context](#context))
             
-            - **renderState**: (Todo.)
+            - **renderContext**: (Todo.)
 
             - Returns nothing.
 
@@ -120,17 +122,17 @@ Renders n-gonal meshes into a pixel buffer, and optionally displays the image on
     
     - **surfaceWiper** (function | null &lArr; `Rngon.default.render.pipeline.surfaceWiper`): A function to be called by the renderer to clear the render surface of previous renderings (pixel colors, depth values, etc.); or disabled if *null*.
         
-        - function surfaceWiper(renderState:[state](#state))
+        - function surfaceWiper(renderContext:[context](#context))
             
-            - **renderState**: (Todo.)
+            - **renderContext**: (Todo.)
 
             - Returns nothing.
     
     - **rasterPath** (function | undefined &lArr; *undefined*): A function to be called by the default `pipeline.rasterizer` to rasterize a polygon (an [ngon](#ngon) with at least 3 vertices). If *undefined*, a suitable default raster path will be used. See [the default polygon raster paths](/src/default-pipeline/raster-paths/polygon/) for examples of usage.
         
-        - function rasterPath({renderState:[state](#state), ngon:[ngon](#ngon), leftEdges:Array, rightEdges:Array, numLeftEdges:Number, numRightEdges:Number})
+        - function rasterPath({renderContext:[context](#context), ngon:[ngon](#ngon), leftEdges:Array, rightEdges:Array, numLeftEdges:Number, numRightEdges:Number})
             
-            - **renderState**: (Todo.)
+            - **renderContext**: (Todo.)
 
             - **ngon**: Metadata about the polygon to be rasterized. See `leftEdges` and `rightEdges` for the screen-space shape to be rasterized.
 
@@ -150,9 +152,9 @@ Renders n-gonal meshes into a pixel buffer, and optionally displays the image on
 
     - **pixelShader** (function | undefined &lArr; *undefined*): A function to be called by the renderer at the completion of rasterization to apply pixel-shading effects to the rendered image; or disabled if *undefined*. See [the pixel shader samples](/samples/pixel-shaders/pixel-shaders.js) for examples of usage.
         
-        - function pixelShader(renderState:[state](#state))
+        - function pixelShader(renderContext:[context](#context))
             
-            - **renderState**: (Todo.)
+            - **renderContext**: (Todo.)
 
             - Returns nothing.
         
@@ -160,11 +162,11 @@ Renders n-gonal meshes into a pixel buffer, and optionally displays the image on
     
     - **vertexShader** (function | undefined &lArr; *undefined*): A function to be called by `pipeline.transformClipLighter` for each of the scene's n-gons, to apply effects to the properties of the n-gon prior to rasterization; or disabled if *undefined*. The function will be called after world-space transformation and vertex lighting. See [the vertex shader samples](/samples/vertex-shaders/vertex-shaders.js) for examples of usage.
         
-        - function vertexShader(ngon:[ngon](#ngon), renderState:[state](#state))
+        - function vertexShader(ngon:[ngon](#ngon), renderContext:[context](#context))
             
             - **ngon**: The target n-gon, in world-space coordinates and prior to clipping.
             
-            - **renderState**: (Todo.)
+            - **renderContext**: (Todo.)
 
             - Returns nothing.
 
@@ -468,11 +470,35 @@ An object with the following properties:
 
 - **z** (number): The `z` argument.
 
+<a id="version"></a>
+
+## version
+
+An object that provides the renderer's version.
+
+(Implemented in [main.mjs](/src/main.mjs).)
+
+### Properties
+
+- **major** (number): Major version.
+
+- **minor** (number): Minor version.
+
+- **isProductionBuild** (boolean): Whether the renderer's distributable was built without debugging support.
+
+### Sample usage
+
+```javascript
+if (MyApp.isInProduction && !Rngon.version.isProductionBuild) {
+    window.alert("wat");
+}
+```
+
 <a id="color"></a>
 
 ## color([red[, green[, blue[, alpha]]]])
 
-A 32-bit, four-channel, RGBA color value, where each color channel is 8 bits.
+Four-channel RGBA color, with channel values in the range [0, 255].
 
 (Implemented in [api/color.mjs](/src/api/color.mjs).)
 

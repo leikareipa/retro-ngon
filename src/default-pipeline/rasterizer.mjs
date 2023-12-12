@@ -52,29 +52,29 @@ function lerp(x, y, interval)
     return (x + (interval * (y - x)));
 }
 
-// Rasterizes into the render state's pixel buffer all n-gons currently stored in the
-// state's n-gon cache.
-export function rasterizer(renderState)
+// Rasterizes into the render context's pixel buffer all n-gons currently stored in the
+// context's n-gon cache.
+export function rasterizer(renderContext)
 {
-    for (const ngon of renderState.screenSpaceNgons)
+    for (const ngon of renderContext.screenSpaceNgons)
     {
         Assert?.(ngon.vertices.length, "Encountered an n-gon with 0 vertices");
         
         switch (ngon.vertices.length)
         {
             case 0: continue;
-            case 1: rasterizer.point(renderState, ngon.vertices[0], ngon.material.color); break;
-            case 2: rasterizer.line(renderState, ngon.vertices[0], ngon.vertices[1], ngon.material.color, ngon.material.renderVertexShade); break;
-            default: rasterizer.polygon(renderState, ngon); break;
+            case 1: rasterizer.point(renderContext, ngon.vertices[0], ngon.material.color); break;
+            case 2: rasterizer.line(renderContext, ngon.vertices[0], ngon.vertices[1], ngon.material.color, ngon.material.renderVertexShade); break;
+            default: rasterizer.polygon(renderContext, ngon); break;
         }
     }
     
     return;
 }
 
-// Rasterizes a polygon with 3+ vertices into the render state's pixel buffer.
+// Rasterizes a polygon with 3+ vertices into the render context's pixel buffer.
 rasterizer.polygon = function(
-    renderState,
+    renderContext,
     ngon = Ngon(),
 )
 {
@@ -88,11 +88,11 @@ rasterizer.polygon = function(
         "Overflowing the vertex buffer"
     );
 
-    const useFragmentBuffer = renderState.useFragmentBuffer;
-    const fragments = renderState.fragments;
-    const depthBuffer = (renderState.useDepthBuffer? renderState.depthBuffer.data : null);
-    const renderWidth = renderState.pixelBuffer.width;
-    const renderHeight = renderState.pixelBuffer.height;
+    const useFragmentBuffer = renderContext.useFragmentBuffer;
+    const fragments = renderContext.fragments;
+    const depthBuffer = (renderContext.useDepthBuffer? renderContext.depthBuffer.data : null);
+    const renderWidth = renderContext.pixelBuffer.width;
+    const renderHeight = renderContext.pixelBuffer.height;
     const material = ngon.material;
 
     let numLeftVerts = 0;
@@ -104,7 +104,7 @@ rasterizer.polygon = function(
     define_edges();
 
     const rasterPathArgs = {
-        renderState,
+        renderContext,
         ngon,
         leftEdges,
         rightEdges,
@@ -113,7 +113,7 @@ rasterizer.polygon = function(
     };
 
     // Rasterize the polygon using the most appropriate raster path.
-    if (material.hasFill && !renderState.pipeline.raster_path?.(rasterPathArgs))
+    if (material.hasFill && !renderContext.pipeline.raster_path?.(rasterPathArgs))
     {
         let raster_fn = poly_generic_fill;
 
@@ -155,16 +155,16 @@ rasterizer.polygon = function(
     }
 
     // Draw a wireframe around any n-gons that wish for one.
-    if (renderState.showGlobalWireframe || material.hasWireframe)
+    if (renderContext.showGlobalWireframe || material.hasWireframe)
     {
         for (let l = 1; l < numLeftVerts; l++)
         {
-            rasterizer.line(renderState, leftVerts[l-1], leftVerts[l], material.wireframeColor, material.renderVertexShade);
+            rasterizer.line(renderContext, leftVerts[l-1], leftVerts[l], material.wireframeColor, material.renderVertexShade);
         }
 
         for (let r = 1; r < numRightVerts; r++)
         {
-            rasterizer.line(renderState, rightVerts[r-1], rightVerts[r], material.wireframeColor, material.renderVertexShade);
+            rasterizer.line(renderContext, rightVerts[r-1], rightVerts[r], material.wireframeColor, material.renderVertexShade);
         }
     }
 
@@ -206,8 +206,8 @@ rasterizer.polygon = function(
             edge.bottom = endY;
             edge.x = startX;
             edge.delta.x = deltaX;
-            edge.depth = ((vert1.z / renderState.farPlaneDistance) / w1);
-            edge.delta.depth = ((((vert2.z / renderState.farPlaneDistance) / w2) - edge.depth) / edgeHeight);
+            edge.depth = ((vert1.z / renderContext.farPlaneDistance) / w1);
+            edge.delta.depth = ((((vert2.z / renderContext.farPlaneDistance) / w2) - edge.depth) / edgeHeight);
             edge.shade = (vert1.shade / w1);
             edge.delta.shade = (((vert2.shade / w2) - edge.shade) / edgeHeight);
             edge.u = (u1 / w1);
@@ -274,10 +274,10 @@ rasterizer.polygon = function(
     }
 }
 
-// Rasterizes a line between the two given vertices into the render state's pixel buffer.
+// Rasterizes a line between the two given vertices into the render context's pixel buffer.
 // Assumes the vertices are in screen space.
 rasterizer.line = function(
-    renderState,
+    renderContext,
     vert1 = Vertex(),
     vert2 = Vertex(),
     color = Color(),
@@ -289,8 +289,8 @@ rasterizer.line = function(
         return;
     }
 
-    const renderWidth = renderState.pixelBuffer.width;
-    const renderHeight = renderState.pixelBuffer.height;
+    const renderWidth = renderContext.pixelBuffer.width;
+    const renderHeight = renderContext.pixelBuffer.height;
 
     // If the line is fully outside the screen.
     if (
@@ -307,22 +307,22 @@ rasterizer.line = function(
         let raster_fn = line_generic_fill;
 
         if (
-            !renderState.useDepthBuffer &&
+            !renderContext.useDepthBuffer &&
             (!renderShade || ((vert1.shade === 1) && (vert2.shade === 1)))
         ){
             raster_fn = line_plain_fill;
         }
 
-        raster_fn(renderState, vert1, vert2, color, renderShade);
+        raster_fn(renderContext, vert1, vert2, color, renderShade);
     }
 
     return;
 };
 
-// Rasterizes the given vertex as a point into the render state's pixel buffer.
+// Rasterizes the given vertex as a point into the render context's pixel buffer.
 // Assumes the vertex is in screen space.
 rasterizer.point = function(
-    renderState,
+    renderContext,
     vert = Vertex(),
     color = Color(),
 )
@@ -332,8 +332,8 @@ rasterizer.point = function(
         return;
     }
 
-    const renderWidth = renderState.pixelBuffer.width;
-    const renderHeight = renderState.pixelBuffer.height;
+    const renderWidth = renderContext.pixelBuffer.width;
+    const renderHeight = renderContext.pixelBuffer.height;
 
     // If the point is fully outside the screen.
     if (
@@ -350,13 +350,13 @@ rasterizer.point = function(
         let raster_fn = point_generic_fill;
 
         if (
-            !renderState.useDepthBuffer &&
+            !renderContext.useDepthBuffer &&
             (vert.shade === 1)
         ){
             raster_fn = point_plain_fill;
         }
 
-        raster_fn(renderState, vert, color);
+        raster_fn(renderContext, vert, color);
     }
 
     return;

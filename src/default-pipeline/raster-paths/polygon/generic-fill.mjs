@@ -21,7 +21,7 @@ const textureDitherFilterKernel = {
 };
 
 export function poly_generic_fill({
-    renderState,
+    renderContext,
     ngon,
     leftEdges,
     rightEdges,
@@ -31,12 +31,12 @@ export function poly_generic_fill({
 {
     if (!numLeftEdges || !numRightEdges) return true;
 
-    const fullInterpolation = renderState.useFullInterpolation;
-    const useFragmentBuffer = renderState.useFragmentBuffer;
-    const fragments = renderState.fragments;
-    const fragmentBuffer = renderState.fragmentBuffer.data;
-    const depthBuffer = (renderState.useDepthBuffer? renderState.depthBuffer.data : null);
-    const pixelBufferWidth = renderState.pixelBuffer.width;
+    const fullInterpolation = renderContext.useFullInterpolation;
+    const useFragmentBuffer = renderContext.useFragmentBuffer;
+    const fragments = renderContext.fragments;
+    const fragmentBuffer = renderContext.fragmentBuffer.data;
+    const depthBuffer = (renderContext.useDepthBuffer? renderContext.depthBuffer.data : null);
+    const pixelBufferWidth = renderContext.pixelBuffer.width;
     const material = ngon.material;
     const texture = (material.texture || null);
     const uvDitherKernel = (
@@ -303,14 +303,14 @@ export function poly_generic_fill({
                     if (shade > 1)
                     {
                         const idx = (pixelBufferIdx * 4);
-                        renderState.pixelBuffer8[idx+0] = red;
-                        renderState.pixelBuffer8[idx+1] = green;
-                        renderState.pixelBuffer8[idx+2] = blue;
-                        renderState.pixelBuffer8[idx+3] = 255;
+                        renderContext.pixelBuffer8[idx+0] = red;
+                        renderContext.pixelBuffer8[idx+1] = green;
+                        renderContext.pixelBuffer8[idx+2] = blue;
+                        renderContext.pixelBuffer8[idx+3] = 255;
                     }
                     else
                     {
-                        renderState.pixelBuffer32[pixelBufferIdx] = (
+                        renderContext.pixelBuffer32[pixelBufferIdx] = (
                             (255 << 24) +
                             (blue << 16) +
                             (green << 8) +

@@ -9,17 +9,17 @@ import {Vertex} from "../../../api/vertex.mjs";
 import {Color} from "../../../api/color.mjs";
 
 export function point_generic_fill(
-    renderState,
+    renderContext,
     vertex = Vertex(),
     color = Color(),
 )
 {
-    const depthBuffer = (renderState.useDepthBuffer? renderState.depthBuffer.data : null);
-    const renderWidth = renderState.pixelBuffer.width;
+    const depthBuffer = (renderContext.useDepthBuffer? renderContext.depthBuffer.data : null);
+    const renderWidth = renderContext.pixelBuffer.width;
     const x = Math.floor(vertex.x);
     const y = Math.floor(vertex.y);
     const pixelBufferIdx = (x + y * renderWidth);
-    const depth = (vertex.z / renderState.farPlaneDistance);
+    const depth = (vertex.z / renderContext.farPlaneDistance);
 
     if (depthBuffer && (depthBuffer[pixelBufferIdx] <= depth))
     {
@@ -38,14 +38,14 @@ export function point_generic_fill(
         if (shade > 1)
         {
             const idx = (pixelBufferIdx * 4);
-            renderState.pixelBuffer8[idx+0] = red;
-            renderState.pixelBuffer8[idx+1] = green;
-            renderState.pixelBuffer8[idx+2] = blue;
-            renderState.pixelBuffer8[idx+3] = 255;
+            renderContext.pixelBuffer8[idx+0] = red;
+            renderContext.pixelBuffer8[idx+1] = green;
+            renderContext.pixelBuffer8[idx+2] = blue;
+            renderContext.pixelBuffer8[idx+3] = 255;
         }
         else
         {
-            renderState.pixelBuffer32[pixelBufferIdx] = (
+            renderContext.pixelBuffer32[pixelBufferIdx] = (
                 (255 << 24) +
                 (blue << 16) +
                 (green << 8) +

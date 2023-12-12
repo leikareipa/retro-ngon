@@ -60,7 +60,7 @@ export const sample = {
 };
 
 // Vertex shader. Adjusts the n-gon's mipmap level based on its distance from the viewer.
-function vs_mipmap_distance(ngon, renderState)
+function vs_mipmap_distance(ngon, renderContext)
 {
     if (ngon.material.hasMipmapping)
     {
@@ -68,9 +68,9 @@ function vs_mipmap_distance(ngon, renderState)
         const maxLevel = ((parent.MIPMAP_LEVEL === "Auto")? 1.0 : parent.MIPMAP_LEVEL);
         const maxDistance = (700**2);
         const distance = (
-            ((ngon.vertices[0].x - renderState.cameraPosition.x)**2) +
-            ((ngon.vertices[0].y - renderState.cameraPosition.y)**2) +
-            ((ngon.vertices[0].z - renderState.cameraPosition.z)**2)
+            ((ngon.vertices[0].x - renderContext.cameraPosition.x)**2) +
+            ((ngon.vertices[0].y - renderContext.cameraPosition.y)**2) +
+            ((ngon.vertices[0].z - renderContext.cameraPosition.z)**2)
         );    
 
         ngon.mipLevel = Math.max(minLevel, Math.min(maxLevel, (distance / maxDistance)));

@@ -127,8 +127,8 @@ export const sample = {
 
         // Construct the ground tile mesh.
         {
-            const numTilesX = 1 + Math.ceil(Rngon.state.default.pixelBuffer?.width / groundTileWidth);
-            const numTilesY = 1 + Math.ceil(Rngon.state.default.pixelBuffer?.height / (groundTileHeight / 2));
+            const numTilesX = 1 + Math.ceil(Rngon.context.default.pixelBuffer?.width / groundTileWidth);
+            const numTilesY = 1 + Math.ceil(Rngon.context.default.pixelBuffer?.height / (groundTileHeight / 2));
             
             let startX = Math.floor(this.camera.pos.x + -(groundTileWidth / 2));
             let startY = Math.floor(this.camera.pos.y + -(groundTileHeight / 2));
@@ -197,10 +197,10 @@ export const sample = {
             },
             renderPipeline: {
                 rasterizer: tile_filler,
-                transformClipLighter: ({renderState, mesh})=>
+                transformClipLighter: ({renderContext, mesh})=>
                 {
-                    mesh.ngons.forEach(n=>apply_lighting_to_tile(renderState, n));
-                    renderState.screenSpaceNgons = mesh.ngons;
+                    mesh.ngons.forEach(n=>apply_lighting_to_tile(renderContext, n));
+                    renderContext.screenSpaceNgons = mesh.ngons;
                 },
             },
             mesh: Rngon.mesh(ngons),

@@ -9,14 +9,14 @@ import {Vertex} from "../../../api/vertex.mjs";
 import {Color} from "../../../api/color.mjs";
 
 export function line_plain_fill(
-    renderState,
+    renderContext,
     vert1 = Vertex(),
     vert2 = Vertex(),
     color = Color(),
 )
 {
-    const renderWidth = renderState.pixelBuffer.width;
-    const renderHeight = renderState.pixelBuffer.height;
+    const renderWidth = renderContext.pixelBuffer.width;
+    const renderHeight = renderContext.pixelBuffer.height;
     const startX = Math.floor(vert1.x);
     const startY = Math.floor(vert1.y);
     const endX = Math.floor(vert2.x);
@@ -49,7 +49,7 @@ export function line_plain_fill(
             (y < renderHeight)
         ){
             const pixelBufferIdx = (x + y * renderWidth);
-            renderState.pixelBuffer32[pixelBufferIdx] = color32;
+            renderContext.pixelBuffer32[pixelBufferIdx] = color32;
         }
 
     }

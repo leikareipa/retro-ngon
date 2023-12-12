@@ -9,16 +9,16 @@ import {Vertex} from "../../../api/vertex.mjs";
 import {Color} from "../../../api/color.mjs";
 
 export function line_generic_fill(
-    renderState,
+    renderContext,
     vert1 = Vertex(),
     vert2 = Vertex(),
     color = Color(),
     renderShade = true,
 )
 {
-    const depthBuffer = (renderState.useDepthBuffer? renderState.depthBuffer.data : null);
-    const renderWidth = renderState.pixelBuffer.width;
-    const renderHeight = renderState.pixelBuffer.height;
+    const depthBuffer = (renderContext.useDepthBuffer? renderContext.depthBuffer.data : null);
+    const renderWidth = renderContext.pixelBuffer.width;
+    const renderHeight = renderContext.pixelBuffer.height;
 
     // Interpolated values.
     const startX = Math.floor(vert1.x);
@@ -28,8 +28,8 @@ export function line_generic_fill(
     let lineLength = Math.ceil(Math.sqrt((endX - startX)**2 + (endY - startY)**2));
     const deltaX = ((endX - startX) / lineLength);
     const deltaY = ((endY - startY) / lineLength);
-    const startDepth = (vert1.z / renderState.farPlaneDistance);
-    const endDepth = (vert2.z / renderState.farPlaneDistance);
+    const startDepth = (vert1.z / renderContext.farPlaneDistance);
+    const endDepth = (vert2.z / renderContext.farPlaneDistance);
     const deltaDepth = ((endDepth - startDepth) / lineLength);
     const startShade = (renderShade? vert1.shade : 1);
     const endShade = (renderShade? vert2.shade : 1);
@@ -65,14 +65,14 @@ export function line_generic_fill(
             if (shade > 1)
             {
                 const idx = (pixelBufferIdx * 4);
-                renderState.pixelBuffer8[idx+0] = red;
-                renderState.pixelBuffer8[idx+1] = green;
-                renderState.pixelBuffer8[idx+2] = blue;
-                renderState.pixelBuffer8[idx+3] = 255;
+                renderContext.pixelBuffer8[idx+0] = red;
+                renderContext.pixelBuffer8[idx+1] = green;
+                renderContext.pixelBuffer8[idx+2] = blue;
+                renderContext.pixelBuffer8[idx+3] = 255;
             }
             else
             {
-                renderState.pixelBuffer32[pixelBufferIdx] = (
+                renderContext.pixelBuffer32[pixelBufferIdx] = (
                     (255 << 24) +
                     (blue << 16) +
                     (green << 8) +

@@ -74,9 +74,9 @@ export const sample = {
     numTicks: 0,
 };
 
-function ps_crt(renderState)
+function ps_crt(renderContext)
 {
-    const {width, height, data:pixels} = renderState.pixelBuffer;
+    const {width, height, data:pixels} = renderContext.pixelBuffer;
     const sourceBuffer = new Uint8Array(pixels.length);
     sourceBuffer.set(pixels);
     
@@ -144,7 +144,7 @@ function ps_crt(renderState)
 }
 
 // Pixel shader: Applies a dithering effect to the rendered image.
-function ps_dithering(renderState)
+function ps_dithering(renderContext)
 {
     const ditherMatrix = [
         [ 1, 9, 3, 11 ],
@@ -153,7 +153,7 @@ function ps_dithering(renderState)
         [ 16, 8, 14, 6 ]
     ];
 
-    const {width, height, data:pixels} = renderState.pixelBuffer;
+    const {width, height, data:pixels} = renderContext.pixelBuffer;
     const ditherLevels = 16; // Number of color levels after dithering
     const ditherScaleFactor = (255 / (ditherLevels - 1));
 
@@ -184,11 +184,11 @@ function ps_dithering(renderState)
 // Pixel shader: Draws a 1-pixel-thin outline over any pixel that lies on the edge of
 // an n-gon whose material has the 'hasHalo' property set to true and which does not
 // border another n-gon that has that property set.
-function ps_selective_outline(renderState)
+function ps_selective_outline(renderContext)
 {
-    const {width, height, data:pixels} = renderState.pixelBuffer;
-    const fragments = renderState.fragmentBuffer.data;
-    const depth = renderState.depthBuffer.data;
+    const {width, height, data:pixels} = renderContext.pixelBuffer;
+    const fragments = renderContext.fragmentBuffer.data;
+    const depth = renderContext.depthBuffer.data;
 
     for (let y = 0; y < height; y++)
     {
@@ -240,10 +240,10 @@ function ps_selective_outline(renderState)
 };
 
 // Pixel shader: Draws a wireframe (outline) around each visible n-gon.
-function ps_wireframe(renderState)
+function ps_wireframe(renderContext)
 {
-    const {width, height, data:pixels} = renderState.pixelBuffer;
-    const fragments = renderState.fragmentBuffer.data;
+    const {width, height, data:pixels} = renderContext.pixelBuffer;
+    const fragments = renderContext.fragmentBuffer.data;
 
     for (let y = 0; y < height; y++)
     {
@@ -278,11 +278,11 @@ function ps_wireframe(renderState)
 };
 
 // Pixel shader.
-function ps_per_pixel_light(renderState)
+function ps_per_pixel_light(renderContext)
 {
-    const {width, height, data:pixels} = renderState.pixelBuffer;
-    const fragments = renderState.fragmentBuffer.data;
-    const light = renderState.lights[0];
+    const {width, height, data:pixels} = renderContext.pixelBuffer;
+    const fragments = renderContext.fragmentBuffer.data;
+    const light = renderContext.lights[0];
     const lightReach = Math.sqrt(100**2);
     const lightIntensity = 1.75;
     const lightDirection = this.Rngon.vector();
@@ -343,10 +343,10 @@ function ps_per_pixel_light(renderState)
 // Pixel shader: Desatures pixel colors based on their distance to the camera - pixels
 // that are further away are desatured to a greater extent. The desaturation algo is
 // adapted from http://alienryderflex.com/saturation.html.
-function ps_depth_desaturate(renderState)
+function ps_depth_desaturate(renderContext)
 {
-    const {width, height, data:pixels} = renderState.pixelBuffer;
-    const depth = renderState.depthBuffer.data;
+    const {width, height, data:pixels} = renderContext.pixelBuffer;
+    const depth = renderContext.depthBuffer.data;
     const Pr = .299;
     const Pg = .587;
     const Pb = .114;
@@ -374,10 +374,10 @@ function ps_depth_desaturate(renderState)
 }
 
 // Pixel shader: Obscures pixels progressively the further they are from the camera.
-function ps_distance_fog(renderState)
+function ps_distance_fog(renderContext)
 {
-    const {width, height, data:pixels} = renderState.pixelBuffer;
-    const depth = renderState.depthBuffer.data;
+    const {width, height, data:pixels} = renderContext.pixelBuffer;
+    const depth = renderContext.depthBuffer.data;
     const maxDepth = 0.2;
 
     for (let i = 0; i < (width * height); i++)
@@ -388,10 +388,10 @@ function ps_distance_fog(renderState)
 }
 
 // Pixel shader: Applies edge anti-aliasing to the pixel buffer
-function ps_fxaa(renderState)
+function ps_fxaa(renderContext)
 {
-    const {width, height, data:pixels} = renderState.pixelBuffer;
-    const fragments = renderState.fragmentBuffer.data;
+    const {width, height, data:pixels} = renderContext.pixelBuffer;
+    const fragments = renderContext.fragmentBuffer.data;
 
     for (let y = 0; y < height; y++)
     {
@@ -438,9 +438,9 @@ function ps_fxaa(renderState)
 };
 
 // Pixel shader: Applies a vignette effect to the pixel buffer.
-function ps_vignette(renderState)
+function ps_vignette(renderContext)
 {
-    const {width, height, data:pixels} = renderState.pixelBuffer;
+    const {width, height, data:pixels} = renderContext.pixelBuffer;
     const centerX = (width / 2);
     const centerY = (height / 2);
     const radius = Math.max(centerX, centerY);

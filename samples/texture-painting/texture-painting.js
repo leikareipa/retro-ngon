@@ -102,8 +102,8 @@ function paint()
         const x = ~~realX;
         const y = ~~realY;
         
-        const fragmentIdx = (x + y * Rngon.state.default.fragmentBuffer.width);
-        const fragment = Rngon.state.default.fragmentBuffer.data[fragmentIdx];
+        const fragmentIdx = (x + y * Rngon.context.default.fragmentBuffer.width);
+        const fragment = Rngon.context.default.fragmentBuffer.data[fragmentIdx];
         if (!fragment)
         {
             continue;

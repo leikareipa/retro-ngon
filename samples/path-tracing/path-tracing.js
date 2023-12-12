@@ -63,12 +63,12 @@ export const sample = {
         // The accumulation buffer needs to be reset if the size of the rendering changes,
         // since otherwise the pixels in the buffer won't match the raster buffer's pixels.
         if (
-            Rngon.state.default.pixelBuffer &&
-            ((Rngon.state.default.pixelBuffer.width != this.latestRenderResolution.width) ||
-             (Rngon.state.default.pixelBuffer.height != this.latestRenderResolution.height))
+            Rngon.context.default.pixelBuffer &&
+            ((Rngon.context.default.pixelBuffer.width != this.latestRenderResolution.width) ||
+             (Rngon.context.default.pixelBuffer.height != this.latestRenderResolution.height))
         ){
-            this.latestRenderResolution.width = Rngon.state.default.pixelBuffer.width;
-            this.latestRenderResolution.height = Rngon.state.default.pixelBuffer.height;
+            this.latestRenderResolution.width = Rngon.context.default.pixelBuffer.width;
+            this.latestRenderResolution.height = Rngon.context.default.pixelBuffer.height;
             this.reset_accumulation_buffer();
         }
 
@@ -181,10 +181,10 @@ function vs_copy_ngons(ngon)
 }
 
 // A pixel shader to shade each pixel based on path-traced rays' light contributions.
-function ps_path_trace(renderState)
+function ps_path_trace(renderContext)
 {
-    const {width, height, data:pixels} = renderState.pixelBuffer;
-    const fragments = renderState.fragmentBuffer.data;
+    const {width, height, data:pixels} = renderContext.pixelBuffer;
+    const fragments = renderContext.fragmentBuffer.data;
 
     for (let i = 0; i < (width * height); i++)
     {

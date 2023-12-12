@@ -39,11 +39,11 @@
                 },
             });
 
-            function perpixel_lighter(renderState)
+            function perpixel_lighter(renderContext)
             {
-                const {width, height, data:pixels} = renderState.pixelBuffer;
-                const fragments = renderState.fragmentBuffer.data;
-                const lights = renderState.lights;
+                const {width, height, data:pixels} = renderContext.pixelBuffer;
+                const fragments = renderContext.fragmentBuffer.data;
+                const lights = renderContext.lights;
                 const lightDirection = Rngon.vector();
 
                 for (let i = 0; i < (width * height); i++)

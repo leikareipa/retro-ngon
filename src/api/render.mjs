@@ -13,12 +13,12 @@ import {ngon_sorter} from "../default-pipeline/ngon-sorter.mjs";
 import {Surface} from "../surface.mjs";
 import {Assert} from "../assert.mjs";
 import {Vector} from "./vector.mjs";
-import {State} from "../api/state.mjs";
+import {Context, defaultContextName} from "../api/context.mjs";
 
 export const renderDefaultOptions = {
     cameraPosition: Vector(0, 0, 0),
     cameraDirection: Vector(0, 0, 0),
-    state: "default",
+    context: defaultContextName,
     resolution: 1,
     fov: 43,
     nearPlane: 1,
@@ -62,7 +62,7 @@ const schema = {
         properties: { 
             cameraPosition: ["Vector"],
             cameraDirection: ["Vector"],
-            state: ["string", "number"],
+            context: ["string", "number"],
             resolution: ["number", "object"],
             fov: ["number"],
             nearPlane: ["number"],
@@ -178,20 +178,20 @@ export function render({
         );
     }
 
-    const state = setup_render_state(options, pipeline);
+    const context = setup_render_context(options, pipeline);
 
     // Render a single frame.
     {
-        const surface = Surface(target, state);
-        state.resolution.width = renderCallInfo.renderWidth = surface.width;
-        state.resolution.height = renderCallInfo.renderHeight = surface.height;
+        const surface = Surface(target, context);
+        context.resolution.width = renderCallInfo.renderWidth = surface.width;
+        context.resolution.height = renderCallInfo.renderHeight = surface.height;
 
         // We'll render either always or only when the render canvas is in view,
         // depending on whether the user asked us for the latter option.
         if (surface && (!options.hibernateWhenTargetNotVisible || surface.is_in_view()))
         {
             surface.display_meshes(meshes);
-            renderCallInfo.numNgonsRendered = state.screenSpaceNgons.length;
+            renderCallInfo.numNgonsRendered = context.screenSpaceNgons.length;
         }
     }
 
@@ -200,68 +200,68 @@ export function render({
     return renderCallInfo;
 };
 
-function setup_render_state(options = {}, pipeline = {})
+function setup_render_context(options = {}, pipeline = {})
 {
-    const state = State(options.state);
+    const context = Context(options.context);
 
-    state.useDepthBuffer = Boolean(options.useDepthBuffer);
-    state.showGlobalWireframe = Boolean(options.globalWireframe);
-    state.lights = options.lights;
+    context.useDepthBuffer = Boolean(options.useDepthBuffer);
+    context.showGlobalWireframe = Boolean(options.globalWireframe);
+    context.lights = options.lights;
 
-    state.renderScale = (
+    context.renderScale = (
         (typeof options.resolution === "number")
             ? options.resolution
             : undefined
     );
-    state.renderWidth = options.resolution.width;
-    state.renderHeight = options.resolution.height;
+    context.renderWidth = options.resolution.width;
+    context.renderHeight = options.resolution.height;
 
-    state.nearPlaneDistance = options.nearPlane;
-    state.farPlaneDistance = options.farPlane;
+    context.nearPlaneDistance = options.nearPlane;
+    context.farPlaneDistance = options.farPlane;
 
-    state.fov = options.fov;
-    state.cameraDirection = options.cameraDirection;
-    state.cameraPosition = options.cameraPosition;
+    context.fov = options.fov;
+    context.cameraDirection = options.cameraDirection;
+    context.cameraPosition = options.cameraPosition;
 
-    state.useFullInterpolation = Boolean(options.useFullInterpolation);
+    context.useFullInterpolation = Boolean(options.useFullInterpolation);
 
-    state.useFragmentBuffer = Boolean(
+    context.useFragmentBuffer = Boolean(
         options.useFragmentBuffer ||
         // Detect whether the shader function's parameter list includes the fragment buffer.
         // Note that this doesn't always work, e.g. when the function has been .bind()ed.
-        (state.usePixelShader && state.pixel_shader?.toString().match(/{(.+)?}/)[1].includes("fragmentBuffer"))
+        (context.usePixelShader && context.pixel_shader?.toString().match(/{(.+)?}/)[1].includes("fragmentBuffer"))
     );
 
     if (typeof options.fragments === "object")
     {
-        for (const key of Object.keys(state.fragments))
+        for (const key of Object.keys(context.fragments))
         {
-            state.fragments[key] = (options.fragments[key] ?? false);
+            context.fragments[key] = (options.fragments[key] ?? false);
         }
     }
     else
     {
-        for (const key of Object.keys(state.fragments))
+        for (const key of Object.keys(context.fragments))
         {
-            state.fragments[key] = state.useFragmentBuffer;
+            context.fragments[key] = context.useFragmentBuffer;
         }
     }
 
-    state.pipeline.ngon_sorter = pipeline.ngonSorter;
-    state.pipeline.rasterizer = pipeline.rasterizer;
-    state.pipeline.transform_clip_lighter = pipeline.transformClipLighter;
-    state.pipeline.surface_wiper = pipeline.surfaceWiper;
+    context.pipeline.ngon_sorter = pipeline.ngonSorter;
+    context.pipeline.rasterizer = pipeline.rasterizer;
+    context.pipeline.transform_clip_lighter = pipeline.transformClipLighter;
+    context.pipeline.surface_wiper = pipeline.surfaceWiper;
 
-    state.usePixelShader = Boolean(pipeline.pixelShader);
-    state.pipeline.pixel_shader = pipeline.pixelShader;
+    context.usePixelShader = Boolean(pipeline.pixelShader);
+    context.pipeline.pixel_shader = pipeline.pixelShader;
 
-    state.useVertexShader = Boolean(pipeline.vertexShader);
-    state.pipeline.vertex_shader = pipeline.vertexShader;
+    context.useVertexShader = Boolean(pipeline.vertexShader);
+    context.pipeline.vertex_shader = pipeline.vertexShader;
 
-    state.useContextShader = Boolean(pipeline.contextShader);
-    state.pipeline.context_shader = pipeline.contextShader;
+    context.useContextShader = Boolean(pipeline.contextShader);
+    context.pipeline.context_shader = pipeline.contextShader;
 
-    state.pipeline.raster_path = pipeline.rasterPath;
+    context.pipeline.raster_path = pipeline.rasterPath;
 
-    return state;
+    return context;
 }

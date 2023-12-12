@@ -84,7 +84,7 @@
                     target: "canvas",
                     meshes: scene,
                     options: {
-                        state: "portal",
+                        context: "portal",
                         resolution: 0.125,
                         cameraDirection: camera.direction,
                         cameraPosition: Rngon.vector(-105.77, 69.72, -66.2),
@@ -138,11 +138,11 @@
                             }
                         },
                         // Insert the portal pass's image over portal polygons.
-                        pixelShader(renderState)
+                        pixelShader(renderContext)
                         {
-                            const {width, height, data:pixels} = renderState.pixelBuffer;
-                            const fragments = renderState.fragmentBuffer.data;
-                            const reflectionPixelBuffer = Rngon.state["portal"].pixelBuffer.data;
+                            const {width, height, data:pixels} = renderContext.pixelBuffer;
+                            const fragments = renderContext.fragmentBuffer.data;
+                            const reflectionPixelBuffer = Rngon.context["portal"].pixelBuffer.data;
 
                             for (let y = 0; y < height; y++)
                             {
@@ -174,7 +174,7 @@
                     target: "canvas",
                     meshes: scene,
                     options: {
-                        state: "big",
+                        context: "big",
                         resolution: 0.5,
                         cameraDirection: camera.direction,
                         cameraPosition: camera.position,
@@ -190,9 +190,9 @@
                         cameraPosition: camera.position,
                     },
                     pipeline: {
-                        surfaceWiper(renderState) {
-                            const dstBuf = renderState.pixelBuffer;
-                            const srcBuf = Rngon.state["big"].pixelBuffer;
+                        surfaceWiper(renderContext) {
+                            const dstBuf = renderContext.pixelBuffer;
+                            const srcBuf = Rngon.context["big"].pixelBuffer;
                             bilinear_scale(dstBuf, srcBuf);
                         },
                         transformClipLighter: null,
@@ -246,23 +246,23 @@
             {
                 camera.update();
 
-                // We use 2 render states, "0" and "1", alternating between them.
-                const stateId = (numTicks % 2);
+                // We use 2 render contexts, "0" and "1", alternating between them.
+                const contextId = (numTicks % 2);
 
                 Rngon.render({
                     target: "canvas",
                     meshes: scene,
                     options: {
-                        state: stateId,
+                        context: contextId,
                         resolution: 0.25,
                         cameraDirection: camera.direction,
                         cameraPosition: camera.position,
                     },
                     pipeline: {
-                        pixelShader(renderState)
+                        pixelShader(renderContext)
                         {
-                            const pixels = renderState.pixelBuffer.data;
-                            const prevPixelBuffer = Rngon.state[~~!stateId]?.pixelBuffer.data;
+                            const pixels = renderContext.pixelBuffer.data;
+                            const prevPixelBuffer = Rngon.context[~~!contextId]?.pixelBuffer.data;
                             if (!prevPixelBuffer) return;
 
                             const blurStrength = 0.6;
