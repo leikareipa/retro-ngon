@@ -15,6 +15,8 @@ Context.default = default_context();
 
 function default_context() {
     return {
+        $constructor: "Context",
+        
         pipeline: {
             ngon_sorter: undefined,
             transform_clip_lighter: undefined,

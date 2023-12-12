@@ -15,6 +15,29 @@ import {
 import {Ngon} from "./api/ngon.mjs";
 import {Vertex} from "./api/vertex.mjs";
 import {Vector} from "./api/vector.mjs";
+import {validate_object} from "./schema.mjs";
+
+const schema = {
+    arguments: {
+        where: "in arguments to Rngon::surface()",
+        properties: {
+            "canvasElement": ["HTMLCanvasElement"],
+            "renderContext": ["Context"],
+        },
+    },
+    interface: {
+        where: "in the return value of Rngon::surface()",
+        properties: {
+            "$constructor": {
+                value: "Surface",
+            },
+            "width": ["number"],
+            "height": ["number"],
+            "display_meshes": ["function"],
+            "is_in_view": ["function"],
+        },
+    },
+};
 
 // A surface for rendering onto. Will also paint the rendered image onto a HTML5 <canvas>
 // element unless the 'canvasElement' parameter is null, in which case rendering will be
@@ -23,6 +46,8 @@ import {Vector} from "./api/vector.mjs";
 // Returns null if the surface could not be created.
 export function Surface(canvasElement, renderContext)
 {
+    validate_object?.({canvasElement, renderContext}, schema.arguments);
+
     const renderOffscreen = (canvasElement === null);
 
     let surfaceWidth = undefined;
@@ -72,6 +97,8 @@ export function Surface(canvasElement, renderContext)
     );
 
     const publicInterface = {
+        $constructor: "Surface",
+        
         width: surfaceWidth,
         height: surfaceHeight,
 
@@ -154,6 +181,8 @@ export function Surface(canvasElement, renderContext)
             );
         },
     };
+
+    validate_object?.(publicInterface, schema.interface);
 
     return publicInterface;
 }
