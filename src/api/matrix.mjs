@@ -72,12 +72,7 @@ export function Matrix(...data)
 {
     if (!data.length)
     {
-        data.push(
-            1, 0, 0, 0,
-            0, 1, 0, 0,
-            0, 0, 1, 0,
-            0, 0, 0, 1,
-        );
+        data = Matrix.identity().data;
     }
     
     validate_object?.({data}, schema.arguments);
@@ -111,6 +106,16 @@ Matrix.multiply = function(m1 = Matrix(), m2 = Matrix())
 
     return result;
 };
+
+Matrix.identity = function()
+{
+    return Matrix(
+        1, 0, 0, 0,
+        0, 1, 0, 0,
+        0, 0, 1, 0,
+        0, 0, 0, 1,
+    );
+}
 
 Matrix.scaling = function(x = 0, y = 0, z = 0)
 {
