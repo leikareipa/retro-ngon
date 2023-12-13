@@ -92,6 +92,26 @@ export function Matrix(...data)
     return publicInterface;
 }
 
+Matrix.multiply = function(m1 = Matrix(), m2 = Matrix())
+{
+    let result = Matrix();
+
+    for (let i = 0; i < 4; i++)
+    {
+        for (let j = 0; j < 16; j += 4)
+        {
+            result.data[i+j] = (
+                (m1.data[i]    * m2.data[j])   +
+                (m1.data[i+4]  * m2.data[j+1]) +
+                (m1.data[i+8]  * m2.data[j+2]) +
+                (m1.data[i+12] * m2.data[j+3])
+            );
+        }
+    }
+
+    return result;
+};
+
 Matrix.scaling = function(x = 0, y = 0, z = 0)
 {
     return Matrix(
@@ -102,7 +122,7 @@ Matrix.scaling = function(x = 0, y = 0, z = 0)
     );
 };
 
-Matrix.translation = function(x = 0, y = 0, z = 0)
+Matrix.translating = function(x = 0, y = 0, z = 0)
 {
     return Matrix(
         1, 0, 0, 0,
@@ -112,7 +132,7 @@ Matrix.translation = function(x = 0, y = 0, z = 0)
     );
 };
 
-Matrix.rotation = function(x = 0, y = 0, z = 0)
+Matrix.rotating = function(x = 0, y = 0, z = 0)
 {
     // Degrees to radians.
     const PI_180 = (Math.PI / 180);
@@ -148,51 +168,5 @@ Matrix.rotation = function(x = 0, y = 0, z = 0)
         0,   0,   0,  1,
     );
 
-    return matrix_multiply(mx, matrix_multiply(my, mz));
-};
-
-export function matrix_perspective(fov = 0, aspectRatio = 0, zNear = 0, zFar = 0)
-{
-    const fh = Math.tan(fov / 2);
-    const zr = (zNear - zFar);
-
-    return Matrix(
-        (1 / (fh * aspectRatio)), 0,           0,                         0,
-        0,                        (1 / fh),    0,                         0,
-        0,                        0,           ((-zNear - zFar) / zr),    1,
-        0,                        0,           (2 * zFar * (zNear / zr)), 0,
-    );
-}
-
-export function matrix_ortho(width = 0, height = 0)
-{
-    const wh = (width / 2);
-    const hh = (height / 2);
-
-    return Matrix(
-        wh,      0,      0, 0,
-        0,      -hh,     0, 0,
-        0,       0,      1, 0,
-        wh-0.5,  hh-0.5, 0, 1,
-    );
-};
-
-export function matrix_multiply(m1 = Matrix(), m2 = Matrix())
-{
-    let result = Matrix();
-
-    for (let i = 0; i < 4; i++)
-    {
-        for (let j = 0; j < 16; j += 4)
-        {
-            result.data[i+j] = (
-                (m1.data[i]    * m2.data[j])   +
-                (m1.data[i+4]  * m2.data[j+1]) +
-                (m1.data[i+8]  * m2.data[j+2]) +
-                (m1.data[i+12] * m2.data[j+3])
-            );
-        }
-    }
-
-    return result;
+    return Matrix.multiply(mx, Matrix.multiply(my, mz));
 };

@@ -8,12 +8,7 @@
 import {mesh_to_object_space_matrix} from "../api/mesh.mjs";
 import {Assert} from "../assert.mjs";
 import {Vector} from "../api/vector.mjs";
-import {matrix_multiply} from "../api/matrix.mjs";
-import {
-    ngon_clip_to_viewport,
-    ngon_perspective_divide,
-    ngon_transform,
-} from "../api/ngon.mjs";
+import {Matrix} from "../api/matrix.mjs";
 
 // Applies lighting to the given n-gons, and transforms them into screen space
 // for rendering. The processed n-gons are stored in the internal n-gon cache.
@@ -29,7 +24,7 @@ export function transform_clip_lighter({
     const ngonCache = renderContext.ngonCache;
     const vertexCache = renderContext.vertexCache;
     const vertexNormalCache = renderContext.vertexNormalCache;
-    const clipSpaceMatrix = matrix_multiply(perspectiveMatrix, cameraMatrix);
+    const clipSpaceMatrix = Matrix.multiply(perspectiveMatrix, cameraMatrix);
     const objectSpaceMatrix = mesh_to_object_space_matrix(mesh);
 
     for (const ngon of mesh.ngons)

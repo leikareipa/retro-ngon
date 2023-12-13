@@ -6,10 +6,7 @@
  */
 
 import {validate_object} from "../schema.mjs";
-import {
-    Matrix,
-    matrix_multiply,
-} from "./matrix.mjs";
+import {Matrix} from "./matrix.mjs";
 import {Vector} from "./vector.mjs";
 import {Ngon} from "./ngon.mjs";
 
@@ -64,13 +61,13 @@ export function Mesh(
 
 export function mesh_to_object_space_matrix(mesh)
 {
-    const translationMatrix = Matrix.translation(
+    const translationMatrix = Matrix.translating(
         mesh.translate.x,
         mesh.translate.y,
         mesh.translate.z
     );
 
-    const rotationMatrix = Matrix.rotation(
+    const rotationMatrix = Matrix.rotating(
         mesh.rotate.x,
         mesh.rotate.y,
         mesh.rotate.z
@@ -82,5 +79,5 @@ export function mesh_to_object_space_matrix(mesh)
         mesh.scale.z
     );
 
-    return matrix_multiply(matrix_multiply(translationMatrix, rotationMatrix), scalingMatrix);
+    return Matrix.multiply(Matrix.multiply(translationMatrix, rotationMatrix), scalingMatrix);
 }

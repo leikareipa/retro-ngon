@@ -6,12 +6,7 @@
  */
 
 import {Assert} from "./assert.mjs";
-import {
-    Matrix,
-    matrix_multiply,
-    matrix_perspective,
-    matrix_ortho
-} from "./api/matrix.mjs";
+import {Matrix} from "./api/matrix.mjs";
 import {Ngon} from "./api/ngon.mjs";
 import {Vertex} from "./api/vertex.mjs";
 import {Vector} from "./api/vector.mjs";
@@ -71,27 +66,27 @@ export function Surface(canvasElement, renderContext)
         return null;
     }
 
-    const cameraMatrix = matrix_multiply(
-        Matrix.rotation(
+    const cameraMatrix = Matrix.multiply(
+        Matrix.rotating(
             renderContext.cameraDirection.x,
             renderContext.cameraDirection.y,
             renderContext.cameraDirection.z
         ),
-        Matrix.translation(
+        Matrix.translating(
             -renderContext.cameraPosition.x,
             -renderContext.cameraPosition.y,
             -renderContext.cameraPosition.z
         )
     );
 
-    const perspectiveMatrix = matrix_perspective(
+    const perspectiveMatrix = perspective_matrix(
         (renderContext.fov * (Math.PI / 180)),
         (surfaceWidth / surfaceHeight),
         renderContext.nearPlaneDistance,
         renderContext.farPlaneDistance
     );
 
-    const screenSpaceMatrix = matrix_ortho(
+    const screenSpaceMatrix = ortho_matrix(
         (surfaceWidth + 1),
         (surfaceHeight + 1)
     );
@@ -378,4 +373,30 @@ function mark_npot_textures(ngons)
     }
 
     return;
+}
+
+function ortho_matrix(width = 0, height = 0)
+{
+    const wh = (width / 2);
+    const hh = (height / 2);
+
+    return Matrix(
+        wh,      0,      0, 0,
+        0,      -hh,     0, 0,
+        0,       0,      1, 0,
+        wh-0.5,  hh-0.5, 0, 1,
+    );
+}
+
+function perspective_matrix(fov = 0, aspectRatio = 0, zNear = 0, zFar = 0)
+{
+    const fh = Math.tan(fov / 2);
+    const zr = (zNear - zFar);
+
+    return Matrix(
+        (1 / (fh * aspectRatio)), 0,           0,                         0,
+        0,                        (1 / fh),    0,                         0,
+        0,                        0,           ((-zNear - zFar) / zr),    1,
+        0,                        0,           (2 * zFar * (zNear / zr)), 0,
+    );
 }

@@ -171,7 +171,7 @@ export function first_person_camera(domElementId = "", {
 
     function get_accumulated_movement(forwardVector, movementSpeed)
     {
-        const cameraRotationMatrix = Rngon.matrix.rotation(0, forwardVector.y, 0);
+        const cameraRotationMatrix = Rngon.matrix.rotating(0, forwardVector.y, 0);
 
         const accumulatedMovement = Rngon.vector(
             (movementStatus.left?    1 : movementStatus.right?    -1 : 0),
