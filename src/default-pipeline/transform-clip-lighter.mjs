@@ -9,6 +9,7 @@ import {mesh_to_object_space_matrix} from "../api/mesh.mjs";
 import {Assert} from "../assert.mjs";
 import {Vector} from "../api/vector.mjs";
 import {Matrix} from "../api/matrix.mjs";
+import {Ngon} from "../api/ngon.mjs";
 
 // Applies lighting to the given n-gons, and transforms them into screen space
 // for rendering. The processed n-gons are stored in the internal n-gon cache.
@@ -77,7 +78,7 @@ export function transform_clip_lighter({
             // World space. Any built-in lighting is applied, if requested by the n-gon's
             // material.
             {
-                ngon_transform(cachedNgon, objectSpaceMatrix);
+                Ngon.transform(cachedNgon, objectSpaceMatrix);
 
                 // Interpolated world XYZ coordinates will be made available via the fragment
                 // buffer, but aren't needed if shaders are disabled.
@@ -134,8 +135,8 @@ export function transform_clip_lighter({
 
             // Clip space. Vertices that fall outside of the view frustum will be removed.
             {
-                ngon_transform(cachedNgon, clipSpaceMatrix);
-                ngon_clip_to_viewport(cachedNgon);
+                Ngon.transform(cachedNgon, clipSpaceMatrix);
+                Ngon.clip_to_viewport(cachedNgon);
 
                 // If there are no vertices left after clipping, it means this n-gon is
                 // not visible on the screen at all, and so we don't need to consider it
@@ -151,8 +152,8 @@ export function transform_clip_lighter({
             // map directly into XY pixel coordinates in the rendered image (although
             // the values may still be in floating-point).
             {
-                ngon_transform(cachedNgon, screenSpaceMatrix);
-                ngon_perspective_divide(cachedNgon);
+                Ngon.transform(cachedNgon, screenSpaceMatrix);
+                Ngon.perspective_divide(cachedNgon);
             }
         }
     };

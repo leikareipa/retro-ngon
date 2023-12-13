@@ -140,7 +140,7 @@ export function Ngon(
     return publicInterface;
 }
 
-export function ngon_perspective_divide(ngon = Ngon())
+Ngon.perspective_divide = function(ngon = Ngon())
 {
     for (const vert of ngon.vertices)
     {
@@ -149,7 +149,7 @@ export function ngon_perspective_divide(ngon = Ngon())
     }
 }
 
-export function ngon_transform(ngon = Ngon(), matrix = Matrix())
+Ngon.transform = function(ngon = Ngon(), matrix = Matrix())
 {
     for (const vert of ngon.vertices)
     {
@@ -162,7 +162,7 @@ export function ngon_transform(ngon = Ngon(), matrix = Matrix())
 // https://github.com/BennyQBD/3DSoftwareRenderer.
 const axes = ["x", "y", "z"];
 const factors = [1, -1];
-export function ngon_clip_to_viewport(ngon)
+Ngon.clip_to_viewport = function(ngon)
 {
     for (const axis of axes)
     {
