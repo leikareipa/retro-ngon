@@ -10,7 +10,7 @@ The renderer's public API consists of the following components:
 | context             | *(A description is coming.)*                             |
 | default             | *(A description is coming.)*                             |
 | [light](#light)     | A light source.                                          |
-| matrix              | *(A description is coming.)*                             |
+| [matrix](#matrix)   | A four-by-four matrix.                                   |
 | [mesh](#mesh)       | A set of n-gons with shared geometric transformations.   |
 | [ngon](#ngon)       | A geometric primitive defined by *n* vertices (*n*-gon). |
 | [render](#render)   | Renders n-gonal meshes.                                  |
@@ -19,7 +19,7 @@ The renderer's public API consists of the following components:
 | [version](#version) | Provides the renderer's version.                         |
 | [vertex](#vertex)   | One corner of an n-gon.                                  |
 
-The API is available via the `Rngon` namespace after you've imported the renderer's distributable into your application (see [Installation](/README.md#installation)):
+The API is available via the `Rngon` namespace after you've imported the renderer's distributable into your application (see [README.md#Installation](/README.md#installation)):
 
 ```html
 <script src="distributable/rngon.global.js"></script>
@@ -260,7 +260,7 @@ mesh.scale.x = 100;
 
 ## ngon([vertices[, material[, normal]]])
 
-A polygon made up of *n* vertices, also known as an n-gon. Single-vertex n-gons are treated as points, and two-vertex n-gons as lines.
+A polygon made up of *n* vertices, also known as an *n*-gon. Single-vertex n-gons are treated as points, and two-vertex n-gons as lines.
 
 (Implemented in [api/ngon.mjs](/src/api/ngon.mjs).)
 
@@ -332,6 +332,26 @@ An object with the following properties:
 
 - **normal** ([vector](#vector)): The face normal.
 
+### Utilities
+
+<a id="ngon.clip_to_viewport"></a>
+
+#### ngon.clip_to_viewport(ngon:[ngon](#ngon))
+
+Clips the vertices of `ngon` against the sides of the viewport. Assumes that the vertices are in clip space.
+
+<a id="ngon.perspective_divide"></a>
+
+#### ngon.perspective_divide(ngon:[ngon](#ngon))
+
+Applies perspective division to the X and Y components of the vertices of `ngon`. Assumes that the vertices are in screen space.
+
+<a id="ngon.transform"></a>
+
+#### ngon.transform(ngon:[ngon](#ngon), matrix:[matrix](#matrix))
+
+Transforms the vertices of `ngon` by `matrix`.
+
 ### Sample usage
 
 ```javascript
@@ -382,6 +402,83 @@ An object with the following properties:
 - **v** (number): The `v` argument.
 
 - **shade** (number): A positive number defining the vertex's degree of shade, with 0 being fully unlit, 0.5 half lit, and 1 fully lit. The value is computed at render-time.
+
+### Utilities
+
+<a id="vertex.transform"></a>
+
+#### vertex.transform(vertex:[vertex](#vertex), matrix:[matrix](#matrix))
+
+Transforms `vertex` by `matrix`.
+
+<a id="matrix"></a>
+
+## matrix(...data)
+
+A four-by-four matrix.
+
+(Implemented in [matrix.mjs](/src/api/matrix.mjs).)
+
+### Parameters
+
+- **...data** (list of numbers &lArr; `...matrix.identity.data`): The 16 values of the matrix, row by row.
+
+### Returns
+
+- **$constructor** (string &lArr; *"Matrix"*) 
+
+- **data** (array): The values of the `...data` argument as an array.
+
+### Utilities
+
+<a id="matrix.identity"></a>
+
+#### matrix.identity()
+
+Constructs and returns a [matrix](#matrix) object representing an identity matrix:
+
+```javascript
+Matrix(
+    1, 0, 0, 0,
+    0, 1, 0, 0,
+    0, 0, 1, 0,
+    0, 0, 0, 1,
+);
+```
+
+<a id="matrix.multiply"></a>
+
+#### matrix.multiply(a:[matrix](#matrix), b:[matrix](#matrix))
+
+Constructs and returns a [matrix](#matrix) representing the multiplication of `a` by `b`.
+
+<a id="matrix.scaling"></a>
+
+#### matrix.scaling(x:number, y:number, z:number)
+
+Constructs and returns a [matrix](#matrix) for scaling a vector by `x`, `y` and `z` in the corresponding XYZ axes.
+
+<a id="matrix.translating"></a>
+
+#### matrix.translating(x:number, y:number, z:number)
+
+Constructs and returns a [matrix](#matrix) for translating a vector by `x`, `y` and `z` in the corresponding XYZ axes.
+
+<a id="matrix.rotating"></a>
+
+#### matrix.rotating(x:number, y:number, z:number)
+
+Constructs and returns a [matrix](#matrix) for rotating a vector by `x`, `y` and `z` in the corresponding XYZ axes. The arguments are given in degrees.
+
+### Sample usage
+
+```javascript
+const scalingMatrix = Rngon.matrix.scaling(2, 2, 1)
+const vector = Rngon.vector(1, 1, 1);
+Rngon.vector.transform(vector, scalingMatrix);
+
+console.log(vector) // {x: 2, y: 2, z: 1}
+```
 
 <a id="light"></a>
 
@@ -469,6 +566,32 @@ An object with the following properties:
 - **y** (number): The `y` argument.
 
 - **z** (number): The `z` argument.
+
+### Utilities
+
+<a id="vector.cross"></a>
+
+#### vector.cross(a:[vector](#vector), b:[vector](#vector))
+
+Returns the cross product between `a` and `b`.
+
+<a id="vector.dot"></a>
+
+#### vector.dot(a:[vector](#vector), b:[vector](#vector))
+
+Returns the dot product between `a` and `b`.
+
+<a id="vector.normalize"></a>
+
+#### vector.normalize(a:[vector](#vector))
+
+Normalizes `a`.
+
+<a id="vector.transform"></a>
+
+#### vector.transform(vector:[vector](#vector), matrix:[matrix](#matrix))
+
+Transforms `vector` by `matrix`.
 
 <a id="version"></a>
 
@@ -592,17 +715,15 @@ An object with the following properties:
 
 - **mipLevels** (array): Progressively downscaled versions of the base image. Each element in the array is an object of the form "{width, height, pixels: [red, green, blue, alpha, red, green, blue, ...]}". The first element is the full-sized image, the second element is half the size of the first, the third half the size of the second, etc., down to an image the size of 1 &times; 1.
 
-- **refresh** (function): Rebuilds the texture's mip levels from the `pixels` array, without creating a new [texture](#texture) object.
+- **regenerate_mipmaps** (function): Rebuilds the texture's mip levels from the `pixels` array.
 
 ### Utilities
 
 <a id="texture.load"></a>
 
-#### texture.load(filename)
+#### texture.load(filename:string)
 
 Constructs a [texture](#texture) using `data` loaded asynchronously from a JSON file. Returns a Promise that resolves with the texture object.
-
-- **filename** (string): The name of a JSON file containing the `data` object.
 
 ### Sample usage
 
