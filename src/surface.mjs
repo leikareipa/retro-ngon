@@ -16,7 +16,10 @@ const schema = {
     arguments: {
         where: "in arguments to Rngon::surface()",
         properties: {
-            "canvasElement": ["HTMLCanvasElement"],
+            "canvasElement": [
+                "HTMLCanvasElement",
+                "undefined"
+            ],
             "renderContext": ["Context"],
         },
     },
@@ -34,16 +37,11 @@ const schema = {
     },
 };
 
-// A surface for rendering onto. Will also paint the rendered image onto a HTML5 <canvas>
-// element unless the 'canvasElement' parameter is null, in which case rendering will be
-// to an off-screen buffer only.
-//
-// Returns null if the surface could not be created.
 export function Surface(canvasElement, renderContext)
 {
     validate_object?.({canvasElement, renderContext}, schema.arguments);
 
-    const renderOffscreen = (canvasElement === null);
+    const renderOffscreen = (canvasElement === undefined);
 
     let surfaceWidth = undefined;
     let surfaceHeight = undefined;
