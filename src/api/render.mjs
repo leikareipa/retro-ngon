@@ -13,12 +13,12 @@ import {ngon_sorter} from "../default-pipeline/ngon-sorter.mjs";
 import {Surface} from "../surface.mjs";
 import {Assert} from "../assert.mjs";
 import {Vector} from "./vector.mjs";
-import {Context, defaultContextName} from "../api/context.mjs";
+import {Context} from "../api/context.mjs";
 
 export const renderDefaultOptions = {
     cameraPosition: Vector(0, 0, 0),
     cameraDirection: Vector(0, 0, 0),
-    context: defaultContextName,
+    context: undefined,
     resolution: 1,
     fov: 43,
     nearPlane: 1,
@@ -61,7 +61,7 @@ const schema = {
         properties: { 
             cameraPosition: ["Vector"],
             cameraDirection: ["Vector"],
-            context: ["string", "number"],
+            context: ["string", "number", "undefined"],
             resolution: ["number", "object"],
             fov: ["number"],
             nearPlane: ["number"],

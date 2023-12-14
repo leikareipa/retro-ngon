@@ -7,16 +7,19 @@
 
 export const defaultContextName = "default";
 
-export function Context(id = defaultContextName) {
+export function Context(id = undefined) {
+    if (id === undefined) {
+        id = defaultContextName;
+    }
     return (Context[id] || (Context[id] = default_context()));
 };
 
-Context.default = default_context();
+Context[defaultContextName] = default_context();
 
 function default_context() {
     return {
         $constructor: "Context",
-        
+
         pipeline: {
             ngon_sorter: undefined,
             transform_clip_lighter: undefined,
@@ -39,7 +42,7 @@ function default_context() {
         // with the rendered frame's pixel values.
         pixelBuffer: undefined,
 
-        // Typed array (Uint32Array Uint8ClampedArray) views to the pixel buffer's data.
+        // Typed array (Uint8ClampedArray, Uint32Array) views to the pixel buffer's data.
         pixelBuffer8: undefined,
         pixelBuffer32: undefined,
 
@@ -103,9 +106,6 @@ function default_context() {
         renderScale: undefined,
 
         useFullInterpolation: true,
-
-        // If set to true, all n-gons will be rendered with a wireframe.
-        showGlobalWireframe: false,
 
         // Distance, in world units, to the near and far clipping planes.
         nearPlaneDistance: 1,
