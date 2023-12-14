@@ -27,7 +27,6 @@ export const renderDefaultOptions = {
     useFragmentBuffer: false,
     fragments: undefined,
     useFullInterpolation: true,
-    globalWireframe: false,
     hibernateWhenTargetNotVisible: true,
     lights: [],
 };
@@ -71,7 +70,6 @@ const schema = {
             useFragmentBuffer: ["boolean"],
             fragments: ["object", "undefined"],
             useFullInterpolation: ["boolean"],
-            globalWireframe: ["boolean"],
             hibernateWhenTargetNotVisible: ["boolean"],
             lights: [["Light", "object"]],
         },
@@ -205,7 +203,7 @@ function setup_render_context(options = {}, pipeline = {})
     const context = Context(options.context);
 
     context.useDepthBuffer = Boolean(options.useDepthBuffer);
-    context.showGlobalWireframe = Boolean(options.globalWireframe);
+
     context.lights = options.lights;
 
     context.renderScale = (

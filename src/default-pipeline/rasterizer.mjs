@@ -155,7 +155,7 @@ rasterizer.polygon = function(
     }
 
     // Draw a wireframe around any n-gons that wish for one.
-    if (renderContext.showGlobalWireframe || material.hasWireframe)
+    if (material.hasWireframe)
     {
         for (let l = 1; l < numLeftVerts; l++)
         {
