@@ -8,7 +8,7 @@
 import {meshDefaultTransform} from "./mesh.mjs";
 import {ngonDefaultMaterial} from "./ngon.mjs";
 import {textureDefaultData} from "./texture.mjs";
-import {defaultContextName} from "./context.mjs";
+import {contextDefaultName} from "./context.mjs";
 import {
     renderDefaultOptions,
     renderDefaultPipeline
@@ -26,5 +26,5 @@ export const Default = {
     ngon: {
         material: ngonDefaultMaterial,
     },
-    context: defaultContextName,
+    context: contextDefaultName,
 }

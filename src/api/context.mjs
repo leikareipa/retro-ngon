@@ -5,11 +5,11 @@
  *
  */
 
-export const defaultContextName = "default";
+export const contextDefaultName = "default";
 
 export function Context(id = undefined) {
     if (id === undefined) {
-        id = defaultContextName;
+        id = contextDefaultName;
     }
     return (Context.list[id] || (Context.list[id] = Context.instance()));
 };
@@ -150,5 +150,5 @@ Context.instance = function() {
 }
 
 Context.list = {
-    [defaultContextName]: Context.instance(),
+    [contextDefaultName]: Context.instance(),
 };

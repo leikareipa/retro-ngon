@@ -7,8 +7,8 @@ The renderer's public API consists of the following components:
 | Component           | Brief description                                        |
 | ------------------- | -------------------------------------------------------- |
 | [color](#color)     | A four-channel RGBA color value.                         |
-| context             | *(A description is coming.)*                             |
-| default             | *(A description is coming.)*                             |
+| [context](#context) | Provides access to render contexts.                      |
+| [default](#default) | Provides default arguments for other API components.     |
 | [light](#light)     | A light source.                                          |
 | [matrix](#matrix)   | A four-by-four matrix.                                   |
 | [mesh](#mesh)       | A set of n-gons with shared geometric transformations.   |
@@ -53,6 +53,8 @@ Renders n-gonal meshes into a pixel buffer, and optionally displays the image on
         - Note: If `target` is a \<canvas\>, the browser may scale the display of the output image to fit the \<canvas\> element.
 
     - **fov** (number &lArr; *43*): Field-of-view size.
+
+    - **context** (string | number | undefined &lArr; *undefined*): The name of the [context](#context) to use for rendering; or `Rngon.default.context` if *undefined*. A new context by this name will be created and initialized if it doesn't already exist; otherwise the existing context will be reused.
 
     - **useDepthBuffer** (boolean &lArr; *true*): Whether to generate a depth buffer to discard occluded pixels. The depth buffer, if generated, is accessible via `Rngon.context.default.depthBuffer` after the call.
 
@@ -592,6 +594,55 @@ Normalizes `a`.
 #### vector.transform(vector:[vector](#vector), matrix:[matrix](#matrix))
 
 Transforms `vector` by `matrix`.
+
+<a id="context"></a>
+
+## context
+
+An object that contains all render contexts created by calls to [render()](#render).
+
+A render context holds the internal state and data for a particular call to [render()](#render), including but not limited to scene geometry, lights, and render pipeline configuration.
+
+(Implemented in [api/context.mjs](/src/api/context.mjs).)
+
+### See also
+
+- For a list of the properties in a render context, see [api/context.mjs](/src/api/context.mjs)
+- *[render](#render)::options.context*
+
+### Sample usage
+
+```javascript
+Rngon.render({
+    options: {
+        context: "hello",
+        resolution: {
+            width: 600,
+            height: 600,
+        },
+    },
+});
+
+console.log(Rngon.context["hello"].pixelBuffer); // ImageData {width: 600, ...}
+```
+
+<a id="default"></a>
+
+## default
+
+An object that provides default arguments for other API components.
+
+(Implemented in [api/default.mjs](/src/api/default.mjs).)
+
+### Sample usage
+
+```javascript
+console.log(Rngon.default.texture.channels) // "rgba:8+8+8+8"
+console.log(Rngon.texture().channels) // "rgba:8+8+8+8"
+
+Rngon.default.texture.channels = "rgba:5+5+5+1";
+console.log(Rngon.texture().channels) // "rgba:5+5+5+1"
+```
 
 <a id="version"></a>
 
