@@ -11,12 +11,10 @@ export function Context(id = undefined) {
     if (id === undefined) {
         id = defaultContextName;
     }
-    return (Context[id] || (Context[id] = default_context()));
+    return (Context.list[id] || (Context.list[id] = Context.instance()));
 };
 
-Context[defaultContextName] = default_context();
-
-function default_context() {
+Context.instance = function() {
     return {
         $constructor: "Context",
 
@@ -150,3 +148,7 @@ function default_context() {
         lights: [],
     }
 }
+
+Context.list = {
+    [defaultContextName]: Context.instance(),
+};

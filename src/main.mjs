@@ -35,7 +35,7 @@ export const Rngon = {
     default: Default,
     render,
     color: Color,
-    context: Context,
+    context: Context.list,
     light: Light,
     mesh: Mesh,
     matrix: Matrix,
