@@ -73,7 +73,6 @@ export function transform_clip_lighter({
         // Transform vertices into screen space and apply clipping. We'll do the transforming
         // in steps: first into world space, then into clip space, and finally into screen
         // space.
-        if (!cachedNgon.material.isInScreenSpace)
         {
             // World space. Any built-in lighting is applied, if requested by the n-gon's
             // material.
@@ -133,27 +132,30 @@ export function transform_clip_lighter({
                 }
             }
 
-            // Clip space. Vertices that fall outside of the view frustum will be removed.
+            if (!cachedNgon.material.isInScreenSpace)
             {
-                Ngon.transform(cachedNgon, clipSpaceMatrix);
-                Ngon.clip_to_viewport(cachedNgon);
-
-                // If there are no vertices left after clipping, it means this n-gon is
-                // not visible on the screen at all, and so we don't need to consider it
-                // for rendering.
-                if (!cachedNgon.vertices.length)
+                // Clip space. Vertices that fall outside of the view frustum will be removed.
                 {
-                    ngonCache.count--;
-                    continue;
-                }
-            }
+                    Ngon.transform(cachedNgon, clipSpaceMatrix);
+                    Ngon.clip_to_viewport(cachedNgon);
 
-            // Screen space. Vertices will be transformed such that their XY coordinates
-            // map directly into XY pixel coordinates in the rendered image (although
-            // the values may still be in floating-point).
-            {
-                Ngon.transform(cachedNgon, screenSpaceMatrix);
-                Ngon.perspective_divide(cachedNgon);
+                    // If there are no vertices left after clipping, it means this n-gon is
+                    // not visible on the screen at all, and so we don't need to consider it
+                    // for rendering.
+                    if (!cachedNgon.vertices.length)
+                    {
+                        ngonCache.count--;
+                        continue;
+                    }
+                }
+
+                // Screen space. Vertices will be transformed such that their XY coordinates
+                // map directly into XY pixel coordinates in the rendered image (although
+                // the values may still be in floating-point).
+                {
+                    Ngon.transform(cachedNgon, screenSpaceMatrix);
+                    Ngon.perspective_divide(cachedNgon);
+                }
             }
         }
     };

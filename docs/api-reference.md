@@ -238,7 +238,7 @@ A selection of n-gons related to each other in some way, rendered as a unit with
          
     - **scale** ([vector](#vector) &lArr; *vector(1, 1, 1)*): Multipliers to XYZ vertex coordinates.
 
-Note: If both `mesh::transform.translate` and `mesh::transform.rotate` are given, rotation will be applied first.
+    - If both `mesh::transform.translate` and `mesh::transform.rotate` are given, rotation will be applied first.
 
 ### Returns
 
@@ -310,7 +310,7 @@ A polygon made up of *n* vertices, also known as an *n*-gon. Single-vertex n-gon
 
     - **isTwoSided** (boolean &lArr; *false*): Whether the n-gon should be visible from behind, as determined by the direction of its face normal.
 
-    - **isInScreenSpace** (boolean &lArr; *false*): Whether the XY coordinates of the n-gon's vertices are in screen space. If they are, the renderer won't transform them further (e.g. according to camera position or mesh transformations) before rasterization. If *true*, you must ensure that all vertex XY coordinates are integers that lie within the boundaries of the rendered image.
+    - **isInScreenSpace** (boolean &lArr; *false*): Whether the XY coordinates of the n-gon's vertices are in screen space. If they are, the renderer won't transform them into screen space nor clip them against the edges of the image before rasterization. If *true*, you must ensure that all vertex XY coordinates are integers that lie within the boundaries of the image.
 
     - **vertexShading** (string &lArr; *"none"*): How the scene's light sources should affect the appearance of the n-gon:
 
