@@ -21,7 +21,24 @@ const schema = {
         where: "in arguments to Rngon::mesh()",
         properties: {
             "ngons": [["Ngon"]],
-            "transform": ["object"],
+            "transform": {
+                subschema: {
+                    properties: {
+                        "translate": {
+                            optional: true,
+                            type: ["Vector"]
+                        },
+                        "rotate": {
+                            optional: true,
+                            type: ["Vector"]
+                        },
+                        "scale": {
+                            optional: true,
+                            type: ["Vector"]
+                        },
+                    },
+                },
+            },
         },
     },
     interface: {
