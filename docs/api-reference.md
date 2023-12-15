@@ -50,7 +50,7 @@ Renders n-gonal meshes into a pixel buffer, and optionally displays the image on
 
         - *object*: The resolution is given by the `width` and `height` properties of this object; e.g. {width:640, height:480} for a rendering the size of 640 &times; 480.
 
-        - Note: If `target` is a \<canvas\>, the browser may scale the display of the output image to fit the \<canvas\> element.
+        - Note: If `render::target` refers to a \<canvas\>, the browser may scale the display of the output image to fit the \<canvas\> element.
 
     - **fov** (number &lArr; *43*): Field-of-view size.
 
@@ -58,7 +58,7 @@ Renders n-gonal meshes into a pixel buffer, and optionally displays the image on
 
     - **useDepthBuffer** (boolean &lArr; *true*): Whether to generate a depth buffer to discard occluded pixels. The depth buffer, if generated, is accessible via `Rngon.context.default.depthBuffer` after the call.
 
-    - **hibernateWhenTargetNotVisible** (boolean &lArr; *true*): Return without rendering if the target canvas is not within the browser's viewport. Ignored if `target` is *null*.
+    - **hibernateWhenTargetNotVisible** (boolean &lArr; *true*): Return without rendering if the target canvas is not within the browser's viewport. Ignored if `render::target` is *null*.
 
     - **nearPlane** (number &lArr; *1*): Vertices closer to the camera will be clipped.
 
@@ -72,9 +72,9 @@ Renders n-gonal meshes into a pixel buffer, and optionally displays the image on
 
     - **cameraDirection** ([vector](#vector) &lArr; *vector(0, 0, 0)*): The direction in which the scene is viewed for rendering.
 
-    - **useFragmentBuffer** (boolean &lArr; *false*): Whether to generate a fragment buffer which provides per-pixel metadata (e.g. world XYZ coordinates) to accompany the rasterized image, for use e.g. in pixel shaders. Must be set to *true* if using a pixel shader that accesses the fragment buffer, as otherwise the fragment buffer will be unavailable or stale. The fragment buffer, if generated, is accessible via `Rngon.context.default.fragmentBuffer` after the call. See also `options.fragments`.
+    - **useFragmentBuffer** (boolean &lArr; *false*): Whether to generate a fragment buffer which provides per-pixel metadata (e.g. world XYZ coordinates) to accompany the rasterized image, for use e.g. in pixel shaders. Must be set to *true* if using a pixel shader that accesses the fragment buffer, as otherwise the fragment buffer will be unavailable or stale. The fragment buffer, if generated, is accessible via `Rngon.context.default.fragmentBuffer` after the call. See also `render::options.fragments`.
     
-    - **fragments** (undefined | object &lArr; *undefined*): Determines which metadata the fragment buffer (see `options.useFragmentBuffer`) will include. You can choose one or more of the following:
+    - **fragments** (undefined | object &lArr; *undefined*): Determines which metadata the fragment buffer (see `render::options.useFragmentBuffer`) will include. You can choose one or more of the following:
         
         - **ngon**: The n-gon (as an [ngon](#ngon) object) whose surface the pixel represents.
         
@@ -94,47 +94,49 @@ Renders n-gonal meshes into a pixel buffer, and optionally displays the image on
         
         - **normalZ**: The Z coordinate of the pixel's surface normal.
 
-        - **shade**: The pixel's lightness level as computed by `pipeline.transformClipLighter`, in the range [0,1].
+        - **shade**: The pixel's lightness level as computed by `render::pipeline.transformClipLighter`, in the range [0,1].
 
-        The value of `options.fragments` should be an object with one or more of the above keys set to *true* to have the corresponding data property included in the fragment buffer. If the value of `options.fragments` is *undefined*, each key will be initialized to the value of `options.useFragmentBuffer`, i.e. *true* when a fragment buffer is used and *false* otherwise.
+        The value of `render::options.fragments` should be an object with one or more of the above keys set to *true* to have the corresponding data property included in the fragment buffer. If the value of `render::options.fragments` is *undefined*, each key will be initialized to the value of `render::options.useFragmentBuffer`, i.e. *true* when a fragment buffer is used and *false* otherwise.
     
-    - **lights** (array &lArr; *[]*): The scene's light sources, as [light](#light) objects. N-gons will be lit according to their `material.vertexShading` property.
+    - **lights** (array &lArr; *[]*): The scene's light sources, as [light](#light) objects. N-gons will be lit according to their `ngon::material.vertexShading` property.
 
 - **pipeline** (object &lArr; `Rngon.default.render.pipeline`): The render pipeline.
     
-    - **ngonSorter** (function | undefined &lArr; `Rngon.default.render.pipeline.ngonSorter`): A function to be called by the renderer to sort the input meshes' n-gons prior to rendering; or disabled if *undefined*. The default behavior is to sort in reverse painter order (on the Z axis, closest first) if `options.useDepthBuffer` is *true* and otherwise to do no sorting.
+    - **ngonSorter** (function | undefined &lArr; `Rngon.default.render.pipeline.ngonSorter`): A function to be called by the renderer to sort the input meshes' n-gons prior to rendering; or disabled if *undefined*. The default behavior is to sort in reverse painter order (on the Z axis, closest first) if `render::options.useDepthBuffer` is *true* and otherwise to do no sorting. See [the default function](/src/default-pipeline/ngon-sorter.mjs) for a sample of usage.
         
         - function ngonSorter(renderContext:[context](#context))
             
-            - **renderContext**: (Todo.)
+            - Sorts the `renderContext.screenSpaceNgons` array in-place.
 
             - Returns nothing.
     
-    - **transformClipLighter** (function | null &lArr; `Rngon.default.render.pipeline.transformClipLighter`): A function to be called by the renderer to transform, clip and light the meshes; or disabled if *null*.
+    - **transformClipLighter** (function | null &lArr; `Rngon.default.render.pipeline.transformClipLighter`): A function to be called by the renderer to transform, clip and light each input meshe; or disabled if *null*. See [the default function](/src/default-pipeline/transform-clip-lighter.mjs) for a sample of usage.
+        
+        - function transformClipLighter(renderContext:[context](#context), mesh:[mesh](#mesh), cameraMatrix:[matrix](#matrix), perspectiveMatrix:[matrix](#matrix), screenSpaceMatrix:[matrix](#matrix))
+
+            - Copies the n-gons from `mesh` into `renderContext.screenSpaceNgons` and transforms, clips and lights the copies.
     
-    - **rasterizer** (function | null &lArr; `Rngon.default.render.pipeline.rasterizer`): A function to be called by the renderer to rasterize the meshes; or disabled if *null*.
+    - **rasterizer** (function | null &lArr; `Rngon.default.render.pipeline.rasterizer`): A function to be called by the renderer to rasterize the meshes; or disabled if *null*. See [the default function](/src/default-pipeline/rasterizer.mjs) for a sample of usage.
         
         - function rasterizer(renderContext:[context](#context))
             
-            - **renderContext**: (Todo.)
+            - Rasterizes the n-gons from the `renderContext.screenSpaceNgons` array.
 
             - Returns nothing.
 
-        - See `pipeline.rasterPath` for a lighter-weight option for custom rasterization.
+        - See `render::pipeline.rasterPath` for a lighter-weight option for custom rasterization.
     
-    - **surfaceWiper** (function | null &lArr; `Rngon.default.render.pipeline.surfaceWiper`): A function to be called by the renderer to clear the render surface of previous renderings (pixel colors, depth values, etc.); or disabled if *null*.
+    - **surfaceWiper** (function | null &lArr; `Rngon.default.render.pipeline.surfaceWiper`): A function to be called by the renderer to clear the render surface of previous renderings (pixel colors, depth values, etc.); or disabled if *null*. See [the default function](/src/default-pipeline/surface-wiper.mjs) for a sample of usage.
         
         - function surfaceWiper(renderContext:[context](#context))
             
-            - **renderContext**: (Todo.)
+            - Resets the contents of the `renderContext.pixelBuffer`, `renderContext.depthBuffer` and `renderContext.fragmentBuffer` buffers to their initial values.
 
             - Returns nothing.
     
-    - **rasterPath** (function | undefined &lArr; *undefined*): A function to be called by the default `pipeline.rasterizer` to rasterize a polygon (an [ngon](#ngon) with at least 3 vertices). If *undefined*, a suitable default raster path will be used. See [the default polygon raster paths](/src/default-pipeline/raster-paths/polygon/) for examples of usage.
+    - **rasterPath** (function | undefined &lArr; *undefined*): A function to be called by the default `render::pipeline.rasterizer` to rasterize a polygon (an [ngon](#ngon) with at least 3 vertices). If *undefined*, a suitable default raster path will be used. See [the default polygon raster paths](/src/default-pipeline/raster-paths/polygon/) for examples of usage.
         
         - function rasterPath({renderContext:[context](#context), ngon:[ngon](#ngon), leftEdges:Array, rightEdges:Array, numLeftEdges:Number, numRightEdges:Number})
-            
-            - **renderContext**: (Todo.)
 
             - **ngon**: Metadata about the polygon to be rasterized. See `leftEdges` and `rightEdges` for the screen-space shape to be rasterized.
 
@@ -150,25 +152,31 @@ Renders n-gonal meshes into a pixel buffer, and optionally displays the image on
 
         - The gist of a typical raster path function is that it rasterizes each horizontal pixel span between the left and right edges, making use of the interpolation parameters provided in the edge objects to decide the color of each pixel.
 
-        - The benefit of implementing a custom raster path instead of a custom rasterizer (`pipeline.rasterizer`) is that a raster path doesn't need to decompose the polygon into edges prior to rasterization. If you just want to implement custom rasterization and are happy with the default edge decomposition, a custom raster path is the way to go.
+        - The benefit of implementing a custom raster path instead of a custom rasterizer (`render::pipeline.rasterizer`) is that a raster path doesn't need to decompose the polygon into edges prior to rasterization. If you just want to implement custom rasterization and are happy with the default edge decomposition, a custom raster path is the way to go.
 
     - **pixelShader** (function | undefined &lArr; *undefined*): A function to be called by the renderer at the completion of rasterization to apply pixel-shading effects to the rendered image; or disabled if *undefined*. See [the pixel shader samples](/samples/pixel-shaders/pixel-shaders.js) for examples of usage.
         
         - function pixelShader(renderContext:[context](#context))
-            
-            - **renderContext**: (Todo.)
+
+            - Modifies the pixel values in `renderContext.pixelBuffer` to produce an effect. The function can also make use of other available metadata in `renderContext`, for example `renderContext.depthBuffer`.
 
             - Returns nothing.
         
-        - `options.useFragmentBuffer` must be set to *true* if the pixel shader accesses the fragment buffer. Use `options.fragments` to control the contents of the fragment buffer.
+        - If the pixel shader accesses the fragment buffer, `render::options.useFragmentBuffer` must be set to *true*. Use `render::options.fragments` to control the contents of the fragment buffer.
     
-    - **vertexShader** (function | undefined &lArr; *undefined*): A function to be called by `pipeline.transformClipLighter` for each of the scene's n-gons, to apply effects to the properties of the n-gon prior to rasterization; or disabled if *undefined*. The function will be called after world-space transformation and vertex lighting. See [the vertex shader samples](/samples/vertex-shaders/vertex-shaders.js) for examples of usage.
+    - **vertexShader** (function | undefined &lArr; *undefined*): A function to be called by `render::pipeline.transformClipLighter` for each of the scene's n-gons, to apply effects to the properties of the n-gon prior to rasterization; or disabled if *undefined*. The function will be called after world-space transformation and vertex lighting. See [the vertex shader samples](/samples/vertex-shaders/vertex-shaders.js) for examples of usage.
         
         - function vertexShader(ngon:[ngon](#ngon), renderContext:[context](#context))
             
             - **ngon**: The target n-gon, in world-space coordinates and prior to clipping.
-            
-            - **renderContext**: (Todo.)
+
+            - Returns nothing.
+    
+    - **canvasShader** (function | undefined &lArr; *undefined*): A function that paints the final rendered image onto the target \<canvas\> element. If *undefined*, a default painting routine will be used. Ignored if `render::target` is *undefined*. See [the canvas shader samples](/samples/canvas-shaders/canvas-shaders.js) for examples of usage.
+        
+        - function canvasShader(canvasContext:CanvasRenderingContext2D, image:ImageData)
+
+            - Paints `image` onto `canvasContext`, e.g. via `canvasContext.putImageData()`. The function can also apply other effects of the CanvasRenderingContext2D API.
 
             - Returns nothing.
 
@@ -230,7 +238,7 @@ A selection of n-gons related to each other in some way, rendered as a unit with
          
     - **scale** ([vector](#vector) &lArr; *vector(1, 1, 1)*): Multipliers to XYZ vertex coordinates.
 
-Note: If both `transform.translate` and `transform.rotate` are given, rotation will be applied first.
+Note: If both `mesh::transform.translate` and `mesh::transform.rotate` are given, rotation will be applied first.
 
 ### Returns
 
@@ -238,13 +246,13 @@ An object with the following properties:
 
 - **$constructor** (string &lArr; *"Mesh"*) 
 
-- **ngons** (array): The `ngons` argument.
+- **ngons** (array): The `mesh::ngons` argument.
 
-- **translate** ([vector](#vector)): The `transform.translate` argument.
+- **translate** ([vector](#vector)): The `mesh::transform.translate` argument.
 
-- **rotate** ([vector](#vector)): The `transform.rotate` argument.
+- **rotate** ([vector](#vector)): The `mesh::transform.rotate` argument.
 
-- **scale** ([vector](#vector)): The `transform.scale` argument.
+- **scale** ([vector](#vector)): The `mesh::transform.scale` argument.
 
 ### Sample usage
 
@@ -272,17 +280,17 @@ A polygon made up of *n* vertices, also known as an *n*-gon. Single-vertex n-gon
 
 - **material** (object &lArr; `Rngon.default.ngon.material`): The material properties that define the n-gon's appearance:
 
-    - **color** ([color](#color) &lArr; *color.white*): Base color. If the `material.texture` property is *null*, the n-gon will be rendered in this color. Otherwise, the renderer will multiply texel colors by (C / 255), where C is the corresponding channel of the base color.
+    - **color** ([color](#color) &lArr; *color.white*): Base color. If the `ngon::material.texture` property is *null*, the n-gon will be rendered in this color. Otherwise, the renderer will multiply texel colors by (C / 255), where C is the corresponding channel of the base color.
 
     - **texture** ([texture](#texture) | undefined &lArr; *undefined*): The image to be rendered onto the n-gon's face. If *undefined*, or if there are fewer than 3 vertices, the n-gon will be rendered without a texture.
 
-    - **textureMapping** (string &lArr; *"ortho"*): The method by which `material.texture` should be mapped onto the n-gon's face:
+    - **textureMapping** (string &lArr; *"ortho"*): The method by which `ngon::material.texture` should be mapped onto the n-gon's face:
 
         - "ortho": Map by automatically-generated UV coordinates in 2D screen space. Disregards perspective and rotation. UV coordinates provided by the n-gon's [vertex](#vertex) objects are ignored.
 
-        - "affine": Affine texture-mapping using the UV coordinates provided by the n-gon's [vertex](#vertex) objects. For perspective-correct affine mapping, also enable the `options.useFullInterpolation` property to [render()](#render).
+        - "affine": Affine texture-mapping using the UV coordinates provided by the n-gon's [vertex](#vertex) objects. For perspective-correct affine mapping, also enable the `render::options.useFullInterpolation` property.
 
-    - **textureFiltering** (string &lArr; *"none"*): The filtering effect to be applied when rasterizing `material.texture`:
+    - **textureFiltering** (string &lArr; *"none"*): The filtering effect to be applied when rasterizing `ngon::material.texture`:
 
         - "none": No filtering. The texture will appear pixelated when viewed up close.
 
@@ -294,11 +302,11 @@ A polygon made up of *n* vertices, also known as an *n*-gon. Single-vertex n-gon
 
         - "repeat": Discard UV coordinates' integer part. This option is available only for power-of-two textures; others will fall back to "clamp".
 
-    - **hasWireframe** (boolean &lArr; *false*): Whether the n-gon should be rendered with a wireframe outline. See also `material.wireframeColor`.
+    - **hasWireframe** (boolean &lArr; *false*): Whether the n-gon should be rendered with a wireframe outline. See also `ngon::material.wireframeColor`.
 
-    - **wireframeColor** ([color](#color) &lArr; *color.black*): If `material.hasWireframe` is *true*, this value sets the wireframe's color.
+    - **wireframeColor** ([color](#color) &lArr; *color.black*): If `ngon::material.hasWireframe` is *true*, this value sets the wireframe's color.
 
-    - **hasFill** (boolean &lArr; *true*): Whether the face of the n-gon should be rendered. If *false* and `material.hasWireframe` is *true*, the n-gon's wireframe outline will be rendered.
+    - **hasFill** (boolean &lArr; *true*): Whether the face of the n-gon should be rendered. If *false* and `ngon::material.hasWireframe` is *true*, the n-gon's wireframe outline will be rendered.
 
     - **isTwoSided** (boolean &lArr; *false*): Whether the n-gon should be visible from behind, as determined by the direction of its face normal.
 
@@ -312,13 +320,13 @@ A polygon made up of *n* vertices, also known as an *n*-gon. Single-vertex n-gon
         
         - "gouraud": Same as "flat" but computed per vertex, resulting in smooth shading across the n-gon's face. For this to work, n-gons must have pre-computed smooth vertex normals.
 
-    - **renderVertexShade** (boolean &lArr; *true*): Whether the shading values calculated as per the `material.vertexShading` property should be used during rendering. If *false*, this shading information won't directly affect the rendered image, but is accessible to pixel shaders.
+    - **renderVertexShade** (boolean &lArr; *true*): Whether the shading values calculated as per the `ngon::material.vertexShading` property should be used during rendering. If *false*, this shading information won't directly affect the rendered image, but is accessible to pixel shaders.
 
-    - **allowAlphaBlend** (boolean &lArr; *false*): Whether the alpha channel of the `material.color` property can modify the appearance of the n-gon. If *true*, the n-gon's pixels will be blended with their background according to the alpha value (0 = fully transparent, 255 = fully opaque).
+    - **allowAlphaBlend** (boolean &lArr; *false*): Whether the alpha channel of the `ngon::material.color` property can modify the appearance of the n-gon. If *true*, the n-gon's pixels will be blended with their background according to the alpha value (0 = fully transparent, 255 = fully opaque).
 
-    - **allowAlphaReject** (boolean &lArr; *false*): Whether the alpha channel of the `material.color` property can modify the appearance of the n-gon. If *true*, the pixel will be drawn only if the alpha value is 255.
+    - **allowAlphaReject** (boolean &lArr; *false*): Whether the alpha channel of the `ngon::material.color` property can modify the appearance of the n-gon. If *true*, the pixel will be drawn only if the alpha value is 255.
 
-- **normal** (array | [vector](#vector) &lArr; *vector(0, 1, 0)*): A vector determining the orientation of the n-gon's face. If given as a [vector](#vector) object, represents the face normal. If given as an array, each element must be a [vector](#vector) object that represents the normal of the corresponding vertex in the `vertices` parameter, and in this case the n-gon's face normal will be automatically calculated as the normalized average of these vertex normals.
+- **normal** (array | [vector](#vector) &lArr; *vector(0, 1, 0)*): A vector determining the orientation of the n-gon's face. If given as a [vector](#vector) object, represents the face normal. If given as an array, each element must be a [vector](#vector) object that represents the normal of the corresponding vertex in the `ngon::vertices` parameter, and in this case the n-gon's face normal will be automatically calculated as the normalized average of these vertex normals.
 
 ### Returns
 
@@ -326,11 +334,11 @@ An object with the following properties:
 
 - **$constructor** (string &lArr; *"Ngon"*) 
 
-- **vertices** (array): The value of the `vertices` argument.
+- **vertices** (array): The value of the `ngon::vertices` argument.
 
-- **material** (object): The value of the `material` argument.
+- **material** (object): The value of the `ngon::material` argument.
 
-- **vertexNormals** (array): For each element in the `vertices` array, a corresponding [vector](#vector) object representing the normal of the vertex.
+- **vertexNormals** (array): For each element in the `ngon::vertices` array, a corresponding [vector](#vector) object representing the normal of the vertex.
 
 - **normal** ([vector](#vector)): The face normal.
 
@@ -393,15 +401,15 @@ An object with the following properties:
 
 - **$constructor** (string &lArr; *"Vertex"*) 
 
-- **x** (number): The `x` argument.
+- **x** (number): The `vertex::x` argument.
 
-- **y** (number): The `y` argument.
+- **y** (number): The `vertex::y` argument.
 
-- **z** (number): The `z` argument.
+- **z** (number): The `vertex::z` argument.
 
-- **u** (number): The `u` argument.
+- **u** (number): The `vertex::u` argument.
 
-- **v** (number): The `v` argument.
+- **v** (number): The `vertex::v` argument.
 
 - **shade** (number): A positive number defining the vertex's degree of shade, with 0 being fully unlit, 0.5 half lit, and 1 fully lit. The value is computed at render-time.
 
@@ -429,7 +437,7 @@ A four-by-four matrix.
 
 - **$constructor** (string &lArr; *"Matrix"*) 
 
-- **data** (array): The values of the `...data` argument as an array.
+- **data** (array): The values of the `matrix::...data` argument as an array.
 
 ### Utilities
 
@@ -508,7 +516,7 @@ A light source.
 
     - **intensity** (number): The light's luminosity. Higher values result in brighter light.
 
-    All properties included in `options` are exposed in the return value.
+    All properties included in `light::options` are exposed in the return value.
 
 ### Returns
 
@@ -516,13 +524,13 @@ An object with the following properties:
 
 - **$constructor** (string &lArr; *"Light"*) 
 
-- **x** (number): The `x` argument.
+- **x** (number): The `light::x` argument.
 
-- **y** (number): The `y` argument.
+- **y** (number): The `light::y` argument.
 
-- **z** (number): The `z` argument.
+- **z** (number): The `light::z` argument.
 
-- **...options**: A spread of the `options` argument.
+- **...options**: A spread of the `light::options` argument.
 
 ### Sample usage
 
@@ -563,11 +571,11 @@ An object with the following properties:
 
 - **$constructor** (string &lArr; *"Vector"*) 
 
-- **x** (number): The `x` argument.
+- **x** (number): The `vector::x` argument.
 
-- **y** (number): The `y` argument.
+- **y** (number): The `vector::y` argument.
 
-- **z** (number): The `z` argument.
+- **z** (number): The `vector::z` argument.
 
 ### Utilities
 
@@ -601,7 +609,7 @@ Transforms `vector` by `matrix`.
 
 An object that contains all render contexts created by calls to [render()](#render).
 
-A render context holds the internal state and data for a particular call to [render()](#render), including but not limited to scene geometry, lights, and render pipeline configuration.
+An individual render context holds the internal state and data for a particular call to [render()](#render), including but not limited to scene geometry, lights, and render pipeline configuration.
 
 (Implemented in [api/context.mjs](/src/api/context.mjs).)
 
@@ -692,13 +700,13 @@ An object with the following properties:
 
 - **$constructor** (string &lArr; *"Color"*) 
 
-- **red** (number): The `red` argument.
+- **red** (number): The `color::red` argument.
 
-- **green** (number): The `green` argument.
+- **green** (number): The `color::green` argument.
 
-- **blue** (number): The `blue` argument.
+- **blue** (number): The `color::blue` argument.
 
-- **alpha** (number): The `alpha` argument.
+- **alpha** (number): The `color::alpha` argument.
 
 ### Utilities
 
@@ -738,7 +746,7 @@ Note: Textures with a power-of-two resolution may render faster and support more
 
     - **height** (number &lArr; *1*): The height of the image.
 
-    - **pixels** (array | string | undefined &lArr; *undefined*): The texture's pixels. The layout of the data is determined by the `data.channels` property, and the encoding of the data is determined by the `data.encoding` property. If *undefined*, will be initialized to an empty array of size **width** * **height** * 4.
+    - **pixels** (array | string | undefined &lArr; *undefined*): The texture's pixels. The layout of the data is determined by the `data.channels` property, and the encoding of the data is determined by the `texture::data.encoding` property. If *undefined*, will be initialized to an empty array of size **width** * **height** * 4.
 
     - **channels** (string &lArr; *"rgba:8+8+8+8"*): Specifies the layout of the pixel data:
 
@@ -748,9 +756,9 @@ Note: Textures with a power-of-two resolution may render faster and support more
 
     - **encoding** (string &lArr; *"none"*): Specifies the encoding of the pixel data:
 
-        - "none": The value of the `data.pixels` property is an array, and its elements are numbers according to the `data.channels` property.
+        - "none": The value of the `texture::data.pixels` property is an array, and its elements are numbers according to the `texture::data.channels` property.
 
-        - "base64": The value of the `data.pixels` property is a string representing a Base64-encoded array whose elements are numbers according to the `data.channels` property.
+        - "base64": The value of the `texture::data.pixels` property is a string representing a Base64-encoded array whose elements are numbers according to the `texture::data.channels` property.
 
 ### Returns
 
@@ -758,15 +766,15 @@ An object with the following properties:
 
 - **$constructor** (string &lArr; *"Texture"*) 
 
-- **width** (number): The `data.width` argument.
+- **width** (number): The `texture::data.width` argument.
 
-- **height** (number): The `data.height` argument.
+- **height** (number): The `texture::data.height` argument.
 
-- **pixels** (Uint8ClampedArray): The decoded pixel data from `data.pixels`, as consecutive RGBA values ([red, green, blue, alpha, red, green, blue, ...]). If you modify this array, call `refresh()` to update the mip levels.
+- **pixels** (Uint8ClampedArray): The decoded pixel data from `texture::data.pixels`, as consecutive RGBA values ([red, green, blue, alpha, red, green, blue, ...]). If you modify this array, call `regenerate_mipmaps()` to update the mip levels.
 
 - **mipLevels** (array): Progressively downscaled versions of the base image. Each element in the array is an object of the form "{width, height, pixels: [red, green, blue, alpha, red, green, blue, ...]}". The first element is the full-sized image, the second element is half the size of the first, the third half the size of the second, etc., down to an image the size of 1 &times; 1.
 
-- **regenerate_mipmaps** (function): Rebuilds the texture's mip levels from the `pixels` array.
+- **regenerate_mipmaps** (function): Rebuilds the texture's mip levels from the `texture::pixels` array.
 
 ### Utilities
 
@@ -774,7 +782,7 @@ An object with the following properties:
 
 #### texture.load(filename:string)
 
-Constructs a [texture](#texture) using `data` loaded asynchronously from a JSON file. Returns a Promise that resolves with the texture object.
+Constructs a [texture](#texture) using `texture::data` loaded asynchronously from a JSON file. Returns a Promise that resolves with the texture object.
 
 ### Sample usage
 
