@@ -25,8 +25,9 @@ export const renderDefaultOptions = {
     farPlane: 1000,
     useDepthBuffer: true,
     useFragmentBuffer: false,
-    fragments: undefined,
+    useBackfaceCulling: true,
     useFullInterpolation: true,
+    fragments: undefined,
     hibernateWhenTargetNotVisible: true,
     lights: [],
 };
@@ -68,8 +69,9 @@ const schema = {
             farPlane: ["number"],
             useDepthBuffer: ["boolean"],
             useFragmentBuffer: ["boolean"],
-            fragments: ["object", "undefined"],
+            useBackfaceCulling: ["boolean"],
             useFullInterpolation: ["boolean"],
+            fragments: ["object", "undefined"],
             hibernateWhenTargetNotVisible: ["boolean"],
             lights: [["Light", "object"]],
         },
@@ -203,6 +205,7 @@ function setup_render_context(options = {}, pipeline = {})
     const context = Context(options.context);
 
     context.useDepthBuffer = Boolean(options.useDepthBuffer);
+    context.useBackfaceCulling = Boolean(options.useBackfaceCulling);
 
     context.lights = options.lights;
 

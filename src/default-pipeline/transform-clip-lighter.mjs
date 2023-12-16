@@ -108,8 +108,11 @@ export function transform_clip_lighter({
                 }
 
                 // Backface culling.
-                if (!cachedNgon.material.isTwoSided && (cachedNgon.vertices.length > 2))
-                {
+                if (
+                    renderContext.useBackfaceCulling &&
+                    (cachedNgon.vertices.length > 2) &&
+                    !cachedNgon.material.isTwoSided
+                ){
                     viewVector.x = (cachedNgon.vertices[0].x - renderContext.cameraPosition.x);
                     viewVector.y = (cachedNgon.vertices[0].y - renderContext.cameraPosition.y);
                     viewVector.z = (cachedNgon.vertices[0].z - renderContext.cameraPosition.z);

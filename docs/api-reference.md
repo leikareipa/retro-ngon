@@ -92,6 +92,8 @@ Renders n-gonal meshes into a pixel buffer, and optionally displays the image on
 
         - Note: If `render::target` refers to a \<canvas\>, the browser may scale the display of the output image to fit the \<canvas\> element.
 
+    - **useBackfaceCulling** (boolean &lArr; *true*): Whether to remove back-facing polygons (n-gons with at least 3 vertices) prior to rasterization. See also `ngon::material.isTwoSided` if you want to disable backface culling for individual n-gons.
+
     - **useDepthBuffer** (boolean &lArr; *true*): Whether to generate a depth buffer to discard occluded pixels. The depth buffer, if generated, is accessible via `Rngon.context.default.depthBuffer` after the call.
 
     - **useFragmentBuffer** (boolean &lArr; *false*): Whether to generate a fragment buffer which provides per-pixel metadata (e.g. world XYZ coordinates) to accompany the rasterized image, for use e.g. in pixel shaders. Must be set to *true* if using a pixel shader that accesses the fragment buffer, as otherwise the fragment buffer will be unavailable or stale. The fragment buffer, if generated, is accessible via `Rngon.context.default.fragmentBuffer` after the call. See also `render::options.fragments`.
@@ -288,7 +290,7 @@ A polygon made up of *n* vertices, also known as an *n*-gon. Single-vertex n-gon
 
     - **hasFill** (boolean &lArr; *true*): Whether the face of the n-gon should be rendered. If *false* and `ngon::material.hasWireframe` is *true*, the n-gon's wireframe outline will be rendered.
 
-    - **isTwoSided** (boolean &lArr; *false*): Whether the n-gon should be visible from behind, as determined by the direction of its face normal.
+    - **isTwoSided** (boolean &lArr; *false*): Whether the n-gon should be visible from behind, as determined by the direction of its face normal. Has no effect if `render::options.useBackfaceCulling` is *false*.
 
     - **isInScreenSpace** (boolean &lArr; *false*): Whether the XY coordinates of the n-gon's vertices are in screen space. If they are, the renderer won't transform them into screen space nor clip them against the edges of the image before rasterization. If *true*, you must ensure that all vertex XY coordinates are integers that lie within the boundaries of the image.
 
