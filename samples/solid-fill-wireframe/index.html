@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width">
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <title>Solid fill + wireframe - Render sample - Retro n-gon renderer</title>
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" integrity="sha384-gfdkjb5BdAXd+lj+gudLWI+BXq4IuLW5IT+brZEZsLFm++aCMlF1V92rMkPaX4PP" crossorigin="anonymous">
+        <link rel="stylesheet" type="text/css" href="../sample-base.css">
+        <style>
+            body
+            {
+                background-color: #6e6e6e;
+            }
+        </style>
+    </head>
+    <body id="sample-container">
+        <script src="../../distributable/rngon.global.js"></script>
+
+        <canvas id="canvas" class="rngon-canvas rngon-pixelated-upscale"></canvas>
+
+        <div class="infoboxes-container">
+            <div class="infobox scale">
+                <div class="adjust left" onclick="change_render_scale(-1);"></div>
+                <div class="content">
+                    <div class="title">Scale</div>
+                    <div class="value">0.25</div>
+                </div>
+                <div class="adjust right" onclick="change_render_scale(1);"></div>
+            </div>
+            <div class="infobox fps">
+                <div class="content">
+                    <div class="title">FPS</div>
+                    <div class="value"><i class="fas fa-sm fa-spin fa-spinner"></i></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="infoboxes-container additional">
+            <div class="infobox effect">
+                <div class="adjust left" onclick="toggle_wireframe();"></div>
+                <div class="content" style="width: 7em;">
+                    <div class="title">Wireframe</div>
+                    <div class="value">On</div>
+                </div>
+                <div class="adjust right" onclick="toggle_wireframe();"></div>
+            </div>
+        </div>
+
+        <script type="module">
+            let isWireframeEnabled = true;
+
+            const renderOptions = {
+                resolution: 0.25,
+                useDepthBuffer: true,
+                cameraDirection: Rngon.vector(0, 0, 0),
+                cameraPosition: Rngon.vector(0, 0, -170),
+            };
+
+            window.change_render_scale = function(dir)
+            {
+                const scales = [0.05, 0.10, 0.15, 0.20, 0.25, 0.5, 0.75, 1];
+                const newScaleIdx = Math.max(0, Math.min((scales.length - 1), (scales.indexOf(renderOptions.resolution) + Math.sign(dir))));
+                renderOptions.resolution = (scales[newScaleIdx] || scales[0]);
+                document.querySelector(".infobox.scale .value").innerHTML = renderOptions.resolution.toFixed(2);
+            }
+
+            window.toggle_wireframe = function(aa)
+            {
+                isWireframeEnabled = !isWireframeEnabled;
+                document.querySelector(".infobox.effect .value").innerHTML = (isWireframeEnabled? "On" : "Off");
+            }
+
+            window.addEventListener("load", (async()=>
+            {
+                const rotationSpeed = 0.4;
+
+                const {scene} = await import("./scene.js");
+                await scene.initialize();
+
+                const sceneMeshes = [
+                    Rngon.mesh(scene.ngons, {
+                        scale: Rngon.vector(30, 30, 30),
+                        translate: Rngon.vector(-3, 3, 0),
+                    }),
+                ];
+
+                let fps = 0;
+                let numFpsReadings = 0;
+                render_loop();
+
+                function render_loop(timestamp = 0, frameTimeDeltaMs = 0, frameCount = 0)
+                {
+                    const startTime = performance.now();
+
+                    sceneMeshes[0].rotate.x = (-60 + rotationSpeed * frameCount);
+                    sceneMeshes[0].rotate.y = (-60 + rotationSpeed * frameCount);
+
+                    // First render pass: solid.
+                    {
+                        scene.material.hasWireframe = false;
+                        scene.material.hasFill = true;
+                        scene.material.depthOffset = (1 / renderOptions.resolution);
+
+                        Rngon.render({
+                            target: "canvas",
+                            meshes: sceneMeshes,
+                            options: renderOptions,
+                        });
+                    }
+
+                    // Second render pass: wireframe.
+                    if (isWireframeEnabled)
+                    {
+                        scene.material.hasWireframe = true;
+                        scene.material.hasFill = false;
+                        scene.material.depthOffset = 0;
+
+                        Rngon.render({
+                            target: "canvas",
+                            options: renderOptions,
+                            pipeline: {
+                                // Disable the surface wiper so we reuse the depth buffer
+                                // from the first pass.
+                                surfaceWiper: null,
+
+                                // Disable TCL so we reuse the pre-transformed meshes from
+                                // the first pass.
+                                transformClipLighter: null,
+                            },
+                        });
+                    }
+
+                    window.requestAnimationFrame((newTimestamp)=>{
+                        render_loop(
+                            newTimestamp,
+                            (newTimestamp - timestamp),
+                            (frameCount + 1)
+                        );
+                    });
+
+                    fps += (1000 / ((performance.now() - startTime) || 1));
+                    numFpsReadings++;
+
+                    if ((numFpsReadings % 10) === 0)
+                    {
+                        document.querySelector(".infobox.fps .value").textContent = Math.floor(fps / numFpsReadings);
+                        fps = numFpsReadings = 0;
+                    }
+                }
+            }));
+        </script>
+    </body>
+</html>
