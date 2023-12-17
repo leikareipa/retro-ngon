@@ -40,7 +40,7 @@ Renders n-gonal meshes into a pixel buffer, and optionally displays the image on
 
 - **target** (HTMLCanvasElement | string | undefined &lArr; *undefined*): Where to display the rendered image. Canvas element; `id` attribute of canvas element; or *undefined* to not display it. In all cases, the image is also accessible via `Rngon.context.default.pixelBuffer` after the call.
 
-- **meshes** (array): The [mesh](#mesh) objects to be rendered.
+- **meshes** (array | undefined &lArr; *undefined*): The [mesh](#mesh) objects to be rendered. If *undefined*, the objects from the previous render call on this render context (see `render::options.context`) will be used.
 
 - **options** (object &lArr; `Rngon.default.render.options`): Additional rendering options.
 

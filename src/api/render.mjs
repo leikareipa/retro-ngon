@@ -52,7 +52,7 @@ const schema = {
                 "string",
                 "undefined",
             ],
-            meshes: [["Mesh"]],
+            meshes: [["Mesh"], "undefined"],
             options: ["object"],
             pipeline: ["object"],
         },

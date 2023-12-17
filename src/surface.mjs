@@ -104,38 +104,40 @@ export function Surface(canvasElement, renderContext)
         {
             renderContext.pipeline.surface_wiper?.(renderContext);
 
+            // Prepare the meshes' n-gons for rendering.
+            //
+            // Note: If the array is empty, we assume the user wants to e.g. re-render
+            // whatever pre-prepared meshes there are in this render context from a
+            // previous render pass.
             if (meshes.length)
             {
-                // Prepare the meshes' n-gons for rendering.
-                {
-                    prepare_vertex_cache(renderContext, meshes);
-                    prepare_ngon_cache(renderContext, meshes);
+                prepare_vertex_cache(renderContext, meshes);
+                prepare_ngon_cache(renderContext, meshes);
 
-                    if (renderContext.pipeline.transform_clip_lighter)
+                if (renderContext.pipeline.transform_clip_lighter)
+                {
+                    for (const mesh of meshes)
                     {
-                        for (const mesh of meshes)
-                        {
-                            renderContext.pipeline.transform_clip_lighter({
-                                renderContext,
-                                mesh,
-                                cameraMatrix,
-                                perspectiveMatrix,
-                                screenSpaceMatrix,
-                            });
-                        };
-                    }
-
-                    renderContext.pipeline.ngon_sorter?.(renderContext);
-
-                    mark_npot_textures(renderContext.screenSpaceNgons);
+                        renderContext.pipeline.transform_clip_lighter({
+                            renderContext,
+                            mesh,
+                            cameraMatrix,
+                            perspectiveMatrix,
+                            screenSpaceMatrix,
+                        });
+                    };
                 }
 
-                renderContext.pipeline.rasterizer?.(renderContext);
+                renderContext.pipeline.ngon_sorter?.(renderContext);
 
-                if (renderContext.usePixelShader)
-                {
-                    renderContext.pipeline.pixel_shader(renderContext);
-                }
+                mark_npot_textures(renderContext.screenSpaceNgons);
+            }
+
+            renderContext.pipeline.rasterizer?.(renderContext);
+
+            if (renderContext.usePixelShader)
+            {
+                renderContext.pipeline.pixel_shader(renderContext);
             }
 
             if (!renderOffscreen)
