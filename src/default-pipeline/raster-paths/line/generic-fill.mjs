@@ -54,7 +54,7 @@ export function line_generic_fill(
             (y >= 0) &&
             (x < renderWidth) &&
             (y < renderHeight) &&
-            (!depthBuffer || (depthBuffer[pixelBufferIdx] > depth))
+            (!depthBuffer || (depthBuffer[pixelBufferIdx] >= depth))
         ){
             const red = (color.red * shade);
             const green = (color.green * shade);

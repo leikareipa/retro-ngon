@@ -201,13 +201,16 @@ rasterizer.polygon = function(
             const w1 = vert1.w;
             const w2 = vert2.w;
 
+            const offsetDepth1 = (vert1.z + ngon.material.depthOffset);
+            const offsetDepth2 = (vert2.z + ngon.material.depthOffset);
+
             const edge = (isLeftEdge? leftEdges[numLeftEdges++] : rightEdges[numRightEdges++]);
             edge.top = startY;
             edge.bottom = endY;
             edge.x = startX;
             edge.delta.x = deltaX;
-            edge.depth = ((vert1.z / renderContext.farPlaneDistance) / w1);
-            edge.delta.depth = ((((vert2.z / renderContext.farPlaneDistance) / w2) - edge.depth) / edgeHeight);
+            edge.depth = ((offsetDepth1 / renderContext.farPlaneDistance) / w1);
+            edge.delta.depth = ((((offsetDepth2 / renderContext.farPlaneDistance) / w2) - edge.depth) / edgeHeight);
             edge.shade = (vert1.shade / w1);
             edge.delta.shade = (((vert2.shade / w2) - edge.shade) / edgeHeight);
             edge.u = (u1 / w1);

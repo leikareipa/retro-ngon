@@ -27,6 +27,7 @@ export const ngonDefaultMaterial = {
     isInScreenSpace: false,
     allowAlphaReject: false,
     allowAlphaBlend: false,
+    depthOffset: 0,
 };
 
 const schema = {
@@ -66,6 +67,7 @@ const schema = {
                         "isInScreenSpace": ["boolean"],
                         "allowAlphaReject": ["boolean"],
                         "allowAlphaBlend": ["boolean"],
+                        "depthOffset": ["number"],
                     },
                 },
             },
