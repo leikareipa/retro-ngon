@@ -28,8 +28,8 @@ import {Context} from "./api/context.mjs";
 // The public API.
 export const Rngon = {
     version: Object.freeze({
-        major: 0,
-        minor: 4,
+        major: 1,
+        minor: 0,
         isProductionBuild: IS_PRODUCTION_BUILD,
     }),
     default: Default,
