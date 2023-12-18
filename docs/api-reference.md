@@ -92,7 +92,7 @@ Renders n-gonal meshes into a pixel buffer, and optionally displays the image on
 
         - Note: If `render::target` refers to a \<canvas\>, the browser may scale the display of the output image to fit the \<canvas\> element.
 
-    - **useBackfaceCulling** (boolean &lArr; *true*): Whether to remove back-facing polygons (n-gons with at least 3 vertices) prior to rasterization. See also `ngon::material.isTwoSided` if you want to disable back-face culling for individual n-gons.
+    - **useBackfaceCulling** (boolean &lArr; *false*): Whether to remove back-facing polygons (n-gons with at least 3 vertices) prior to rasterization. See also `ngon::material.isTwoSided` if you want to disable back-face culling for individual n-gons.
 
     - **useDepthBuffer** (boolean &lArr; *true*): Whether to generate a depth buffer to discard occluded pixels. The depth buffer, if generated, is accessible via `Rngon.context.default.depthBuffer` after the call.
 

@@ -25,7 +25,7 @@ export const renderDefaultOptions = {
     farPlane: 1000,
     useDepthBuffer: true,
     useFragmentBuffer: false,
-    useBackfaceCulling: true,
+    useBackfaceCulling: false,
     useFullInterpolation: true,
     fragments: undefined,
     hibernateWhenTargetNotVisible: true,
