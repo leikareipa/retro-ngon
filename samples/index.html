@@ -88,7 +88,7 @@
                     headerEl.append(usageEl)
                 }
 
-                const copyrightInfo = window.COPYRIGHT;
+                const copyrightInfo = (window.COPYRIGHT || frameEl.contentWindow.COPYRIGHT);
                 if (copyrightInfo)
                 {
                     const copyrightEl = document.createElement("aside");
