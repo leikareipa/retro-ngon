@@ -58,6 +58,7 @@ const schema = {
                 type: ["string"],
                 value(channels) {
                     const supported = [
+                        "binary",
                         "rgba:5+5+5+1",
                         "rgba:8+8+8+8",
                     ];
@@ -135,6 +136,12 @@ function decode_pixel_data(data)
 {
     if (data.encoding === "none")
     {
+        Assert?.(
+            (data.channels === "rgba:8+8+8+8") &&
+            (data.pixels.length === (data.width * data.height * 4)),
+            "Unencoded pixel data must be provided in 'rgba:8+8+8+8' format."
+        );
+
         if (!(data.pixels instanceof Uint8ClampedArray))
         {
             data.pixels = new Uint8ClampedArray(data.pixels);
@@ -142,9 +149,6 @@ function decode_pixel_data(data)
     }
     else
     {
-        // In Base64-encoded data, each pixel's RGBA is expected to be given as a 16-bit
-        // value, where each of the RGB channels takes up 5 bits and the alpha channel
-        // 1 bit.
         if (data.encoding === "base64")
         {
             const decoded = atob(data.pixels);
@@ -181,6 +185,25 @@ function decode_pixel_data(data)
                         data.pixels[i2++] = (((p >> 5)  & 0x1f) * 8);  // Green.
                         data.pixels[i2++] = (((p >> 10) & 0x1f) * 8);  // Blue.
                         data.pixels[i2++] = (((p >> 15) & 1) * 255);   // Alpha.
+                    }
+
+                    break;
+                }
+                case "binary":
+                {
+                    Assert?.(
+                        (decoded.length === (data.width * data.height)),
+                        "Unexpected data length for a Base64-encoded texture; expected 1 byte per pixel."
+                    );
+
+                    for (let i = 0; i < (data.width * data.height); i++)
+                    {
+                        const idx = (i * 4);
+                        const colorValue = (255 * decoded.charCodeAt(i));
+                        data.pixels[idx+0] = colorValue;
+                        data.pixels[idx+1] = colorValue;
+                        data.pixels[idx+2] = colorValue;
+                        data.pixels[idx+3] = colorValue;
                     }
 
                     break;

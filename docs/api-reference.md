@@ -733,7 +733,7 @@ const color = Rngon.color.yellow;
 
 ## texture([data])
 
-A 2D RGBA image for texturing n-gons. Supports 16 and 32-bit input data and generates mipmaps automatically.
+A 2D RGBA image for texturing n-gons. Supports 1, 16, and 32-bit input data and generates mipmaps automatically.
 
 Note: Textures with a power-of-two resolution may render faster and support more features than textures that are not a power of two.
 
@@ -743,15 +743,23 @@ Note: Textures with a power-of-two resolution may render faster and support more
 
 - **data** (object &lArr; `Rngon.default.texture`): The texture's data.
 
-    - **channels** (string &lArr; *"rgba:8+8+8+8"*): Specifies the layout of the pixel data:
+    - **channels** (string &lArr; *"rgba:8+8+8+8"*): Specifies the data layout of `texture::data.pixels`:
 
-        - "rgba:5+5+5+1": Each pixel is a 16-bit integer with 5 bits each for red, green, and blue; and 1 bit for alpha.
+        - "binary": Each element is an 8-bit binary value, either 0 (black/transparent) or 1 (white/opaque). One element per pixel.
+        
+            - `texture::data.encoding` must be "base64".
 
-        - "rgba:8+8+8+8": Each pixel consists of four consecutive 8-bit values for red, green, blue, and alpha.
+        - "rgba:5+5+5+1": Each element is a 16-bit unsigned integer with 5 bits each for red, green, and blue; and 1 bit for alpha. One element per pixel.
+        
+            - `texture::data.encoding` must be "base64".
 
-    - **encoding** (string &lArr; *"none"*): Specifies the encoding of the pixel data:
+        - "rgba:8+8+8+8": Each element is an 8-bit unsigned integer. Four elements per pixel.
 
-        - "none": The value of the `texture::data.pixels` property is an array, and its elements are numbers according to the `texture::data.channels` property.
+    - **encoding** (string &lArr; *"none"*): Specifies the encoding of `texture::data.pixels`:
+
+        - "none": The value of `texture::data.pixels` is an array.
+
+            - `texture::data.channels` must be "rgba:8+8+8+8".
 
         - "base64": The value of the `texture::data.pixels` property is a string representing a Base64-encoded array whose elements are numbers according to the `texture::data.channels` property.
 
