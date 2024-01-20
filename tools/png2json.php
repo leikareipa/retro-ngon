@@ -22,7 +22,7 @@ $commandLine = getopt("i:o:t:c:rab");
     $saveAsArray = isset($commandLine["a"]);
 
     $colorFormat = $commandLine["c"];
-    if (!in_array($colorFormat, array("rgba:8+8+8+1", "rgba:5+5+5+1", "binary")))
+    if (!in_array($colorFormat, array("rgba:8+8+8+8", "rgba:5+5+5+1", "binary")))
     {
         printf("ERROR: Unsupported color format \"%s\".\n", $colorFormat);
         exit(1);
