@@ -204,6 +204,8 @@ function setup_render_context(options = {}, pipeline = {})
 {
     const context = Context(options.context);
 
+    context.contextName = options.context;
+
     context.useDepthBuffer = Boolean(options.useDepthBuffer);
     context.useBackfaceCulling = Boolean(options.useBackfaceCulling);
 

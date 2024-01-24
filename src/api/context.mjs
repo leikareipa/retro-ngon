@@ -18,6 +18,9 @@ Context.instance = function() {
     return {
         $constructor: "Context",
 
+        // The name of this context, as passed to render::options.context.
+        contextName: undefined,
+
         pipeline: {
             ngon_sorter: undefined,
             transform_clip_lighter: undefined,
