@@ -2,7 +2,7 @@
 
 A low-level retro-oriented 3D software renderer for the HTML5 \<canvas\> (also supports rendering into an off-screen pixel buffer).
 
-You can view various interactive render samples [here](https://www.tarpeeksihyvaesoft.com/retro-ngon/samples/).
+You can view various interactive render samples [here](https://leikareipa.github.io/retro-ngon/samples/).
 
 ## Key features
 
