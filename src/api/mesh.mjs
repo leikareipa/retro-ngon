@@ -67,7 +67,7 @@ export function Mesh(
     const publicInterface = {
         $constructor: "Mesh",
         ngons,
-        ...meshDefaultTransform,
+        ...structuredClone(meshDefaultTransform),
         ...transform
     };
 
