@@ -6,19 +6,34 @@
  */
 
 import {Vertex} from "../../../api/vertex.mjs";
-import {Color} from "../../../api/color.mjs";
 
 export function line_generic_fill(
     renderContext,
     vert1 = Vertex(),
     vert2 = Vertex(),
-    color = Color(),
-    renderShade = true,
+    material = {},
 )
 {
+    const color = material.wireframeColor;
+
+    if (
+        material.allowAlphaReject &&
+        (color.alpha < 255)
+    ){
+        return true;
+    }
+
     const depthBuffer = (renderContext.useDepthBuffer? renderContext.depthBuffer.data : null);
     const renderWidth = renderContext.pixelBuffer.width;
     const renderHeight = renderContext.pixelBuffer.height;
+    const useFragmentBuffer = renderContext.useFragmentBuffer;
+    const fragmentBuffer = renderContext.fragmentBuffer.data;
+    const fragments = renderContext.fragments;
+    
+    let ngon = undefined;
+    if (useFragmentBuffer && fragments.ngon) {
+        ngon = Rngon.ngon([vert1, vert2], material);
+    }
 
     // Interpolated values.
     const startX = Math.floor(vert1.x);
@@ -31,8 +46,8 @@ export function line_generic_fill(
     const startDepth = (vert1.z / renderContext.farPlaneDistance);
     const endDepth = (vert2.z / renderContext.farPlaneDistance);
     const deltaDepth = ((endDepth - startDepth) / lineLength);
-    const startShade = (renderShade? vert1.shade : 1);
-    const endShade = (renderShade? vert2.shade : 1);
+    const startShade = (material.renderVertexShade? vert1.shade : 1);
+    const endShade = (material.renderVertexShade? vert2.shade : 1);
     const deltaShade = ((endShade - startShade) / lineLength);
 
     // Rasterize the line.
@@ -59,30 +74,38 @@ export function line_generic_fill(
             const red = (color.red * shade);
             const green = (color.green * shade);
             const blue = (color.blue * shade);
-    
-            // If shade is > 1, the color values may exceed 255, in which case we write into
-            // the clamped 8-bit view to get 'free' clamping.
-            if (shade > 1)
+            
+            if (!material.bypassPixelBuffer)
             {
-                const idx = (pixelBufferIdx * 4);
-                renderContext.pixelBuffer8[idx+0] = red;
-                renderContext.pixelBuffer8[idx+1] = green;
-                renderContext.pixelBuffer8[idx+2] = blue;
-                renderContext.pixelBuffer8[idx+3] = 255;
-            }
-            else
-            {
-                renderContext.pixelBuffer32[pixelBufferIdx] = (
-                    (255 << 24) +
-                    (blue << 16) +
-                    (green << 8) +
-                    ~~red
-                );
+                // If shade is > 1, the color values may exceed 255, in which case
+                // we write into the clamped 8-bit view to get 'free' clamping.
+                if (shade > 1)
+                {
+                    const idx = (pixelBufferIdx * 4);
+                    renderContext.pixelBuffer8[idx+0] = red;
+                    renderContext.pixelBuffer8[idx+1] = green;
+                    renderContext.pixelBuffer8[idx+2] = blue;
+                    renderContext.pixelBuffer8[idx+3] = 255;
+                }
+                else
+                {
+                    renderContext.pixelBuffer32[pixelBufferIdx] = (
+                        (255 << 24) +
+                        (blue << 16) +
+                        (green << 8) +
+                        ~~red
+                    );
+                }
             }
 
             if (depthBuffer)
             {
                 depthBuffer[pixelBufferIdx] = depth;
+            }
+
+            if (useFragmentBuffer && fragments.ngon)
+            {
+                fragmentBuffer[pixelBufferIdx].ngon = ngon;
             }
         }
     }

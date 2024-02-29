@@ -63,8 +63,8 @@ export function rasterizer(renderContext)
         switch (ngon.vertices.length)
         {
             case 0: continue;
-            case 1: rasterizer.point(renderContext, ngon.vertices[0], ngon.material.color); break;
-            case 2: rasterizer.line(renderContext, ngon.vertices[0], ngon.vertices[1], ngon.material.color, ngon.material.renderVertexShade); break;
+            case 1: rasterizer.point(renderContext, ngon.vertices[0], ngon.material); break;
+            case 2: rasterizer.line(renderContext, ngon.vertices[0], ngon.vertices[1], ngon.material); break;
             default: rasterizer.polygon(renderContext, ngon); break;
         }
     }
@@ -118,6 +118,7 @@ rasterizer.polygon = function(
         let raster_fn = poly_generic_fill;
 
         if (
+            !material.bypassPixelBuffer &&
             material.texture &&
             depthBuffer &&
             !(fragments.worldX || fragments.worldY || fragments.worldZ) &&
@@ -141,6 +142,7 @@ rasterizer.polygon = function(
             }
         }
         else if (
+            !material.bypassPixelBuffer &&
             !material.texture &&
             depthBuffer &&
             !(fragments.worldX || fragments.worldY || fragments.worldZ) &&
@@ -159,12 +161,12 @@ rasterizer.polygon = function(
     {
         for (let l = 1; l < numLeftVerts; l++)
         {
-            rasterizer.line(renderContext, leftVerts[l-1], leftVerts[l], material.wireframeColor, material.renderVertexShade);
+            rasterizer.line(renderContext, leftVerts[l-1], leftVerts[l], material);
         }
 
         for (let r = 1; r < numRightVerts; r++)
         {
-            rasterizer.line(renderContext, rightVerts[r-1], rightVerts[r], material.wireframeColor, material.renderVertexShade);
+            rasterizer.line(renderContext, rightVerts[r-1], rightVerts[r], material);
         }
     }
 
@@ -283,15 +285,9 @@ rasterizer.line = function(
     renderContext,
     vert1 = Vertex(),
     vert2 = Vertex(),
-    color = Color(),
-    renderShade = true,
+    material = {},
 )
 {
-    if (color.alpha !== 255)
-    {
-        return;
-    }
-
     const renderWidth = renderContext.pixelBuffer.width;
     const renderHeight = renderContext.pixelBuffer.height;
 
@@ -310,13 +306,16 @@ rasterizer.line = function(
         let raster_fn = line_generic_fill;
 
         if (
+            !material.bypassPixelBuffer &&
+            (material.color.alpha === 255) &&
+            !renderContext.useFragmentBuffer &&
             !renderContext.useDepthBuffer &&
-            (!renderShade || ((vert1.shade === 1) && (vert2.shade === 1)))
+            (!material.renderVertexShade || ((vert1.shade === 1) && (vert2.shade === 1)))
         ){
             raster_fn = line_plain_fill;
         }
 
-        raster_fn(renderContext, vert1, vert2, color, renderShade);
+        raster_fn(renderContext, vert1, vert2, material);
     }
 
     return;
@@ -327,11 +326,13 @@ rasterizer.line = function(
 rasterizer.point = function(
     renderContext,
     vert = Vertex(),
-    color = Color(),
+    material = {},
 )
 {
-    if (color.alpha != 255)
-    {
+    if (
+        material.allowAlphaReject &&
+        (material.color.alpha != 255)
+    ){
         return;
     }
 
@@ -353,13 +354,14 @@ rasterizer.point = function(
         let raster_fn = point_generic_fill;
 
         if (
+            !material.bypassPixelBuffer &&
             !renderContext.useDepthBuffer &&
             (vert.shade === 1)
         ){
             raster_fn = point_plain_fill;
         }
 
-        raster_fn(renderContext, vert, color);
+        raster_fn(renderContext, vert, material);
     }
 
     return;

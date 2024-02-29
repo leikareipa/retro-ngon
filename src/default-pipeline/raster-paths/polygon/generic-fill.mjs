@@ -298,24 +298,27 @@ export function poly_generic_fill({
                     green *= (shade * material.color.unitRange.green);
                     blue *= (shade * material.color.unitRange.blue);
 
-                    // If shade is > 1, the color values may exceed 255, in which case we write into
-                    // the clamped 8-bit view to get 'free' clamping.
-                    if (shade > 1)
+                    if (!material.bypassPixelBuffer)
                     {
-                        const idx = (pixelBufferIdx * 4);
-                        renderContext.pixelBuffer8[idx+0] = red;
-                        renderContext.pixelBuffer8[idx+1] = green;
-                        renderContext.pixelBuffer8[idx+2] = blue;
-                        renderContext.pixelBuffer8[idx+3] = 255;
-                    }
-                    else
-                    {
-                        renderContext.pixelBuffer32[pixelBufferIdx] = (
-                            (255 << 24) +
-                            (blue << 16) +
-                            (green << 8) +
-                            ~~red
-                        );
+                        // If shade is > 1, the color values may exceed 255, in which case we write into
+                        // the clamped 8-bit view to get 'free' clamping.
+                        if (shade > 1)
+                        {
+                            const idx = (pixelBufferIdx * 4);
+                            renderContext.pixelBuffer8[idx+0] = red;
+                            renderContext.pixelBuffer8[idx+1] = green;
+                            renderContext.pixelBuffer8[idx+2] = blue;
+                            renderContext.pixelBuffer8[idx+3] = 255;
+                        }
+                        else
+                        {
+                            renderContext.pixelBuffer32[pixelBufferIdx] = (
+                                (255 << 24) +
+                                (blue << 16) +
+                                (green << 8) +
+                                ~~red
+                            );
+                        }
                     }
 
                     if (depthBuffer)

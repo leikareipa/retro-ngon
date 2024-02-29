@@ -27,6 +27,7 @@ export const ngonDefaultMaterial = {
     isInScreenSpace: false,
     allowAlphaReject: false,
     allowAlphaBlend: false,
+    bypassPixelBuffer: false,
     depthOffset: 0,
 };
 

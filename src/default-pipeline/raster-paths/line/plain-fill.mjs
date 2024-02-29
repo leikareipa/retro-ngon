@@ -6,13 +6,12 @@
  */
 
 import {Vertex} from "../../../api/vertex.mjs";
-import {Color} from "../../../api/color.mjs";
 
 export function line_plain_fill(
     renderContext,
     vert1 = Vertex(),
     vert2 = Vertex(),
-    color = Color(),
+    material = {},
 )
 {
     const renderWidth = renderContext.pixelBuffer.width;
@@ -26,9 +25,9 @@ export function line_plain_fill(
     const deltaY = ((endY - startY) / lineLength);
     const color32 = (
         (255 << 24) +
-        (color.blue << 16) +
-        (color.green << 8) +
-        ~~color.red
+        (material.color.blue << 16) +
+        (material.color.green << 8) +
+        ~~material.color.red
     );
 
     // Rasterize the line.

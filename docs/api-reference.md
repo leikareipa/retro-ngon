@@ -280,9 +280,11 @@ A polygon made up of *n* vertices, also known as an *n*-gon. Single-vertex n-gon
 
 - **material** (object &lArr; `Rngon.default.ngon.material`): The material properties that define the n-gon's appearance:
 
-    - **allowAlphaBlend** (boolean &lArr; *false*): Whether the alpha channel of the `ngon::material.color` property can modify the appearance of the n-gon. If *true*, the n-gon's pixels will be blended with their background according to the alpha value (0 = fully transparent, 255 = fully opaque).
+    - **allowAlphaBlend** (boolean &lArr; *false*): Whether the alpha value of the `ngon::material.color` property is allowed to modify the appearance of the n-gon. If *true*, the n-gon's pixels will be blended with their background according to the alpha value (0 = fully transparent, ..., 255 = fully opaque).
 
-    - **allowAlphaReject** (boolean &lArr; *false*): Whether the alpha channel of the `ngon::material.color` property can modify the appearance of the n-gon. If *true*, the pixel will be drawn only if the alpha value is 255.
+    - **allowAlphaReject** (boolean &lArr; *false*): Whether the alpha value of the `ngon::material.color` property is allowed to modify the appearance of the n-gon. If *true*, the ngon will be rendered only if the alpha value is 255.
+
+    - **bypassPixelBuffer** (boolean &lArr; *false*): If *true*, the n-gon will not be rendered into the pixel buffer, but may be rendered into other buffers as per corresponding options (e.g. `render::options.useDepthBuffer`).
 
     - **color** ([color](#color) &lArr; *color.white*): Base color. If the `ngon::material.texture` property is *null*, the n-gon will be rendered in this color. Otherwise, the renderer will multiply texel colors by (C / 255), where C is the corresponding channel of the base color.
 
@@ -290,7 +292,7 @@ A polygon made up of *n* vertices, also known as an *n*-gon. Single-vertex n-gon
 
     - **hasWireframe** (boolean &lArr; *false*): Whether the n-gon should be rendered with a wireframe outline. See also `ngon::material.wireframeColor`.
 
-    - **hasFill** (boolean &lArr; *true*): Whether the face of the n-gon should be rendered. If *false* and `ngon::material.hasWireframe` is *true*, the n-gon's wireframe outline will be rendered.
+    - **hasFill** (boolean &lArr; *true*): Whether the face of the n-gon is to be rendered. If *false*, the n-gon will be rendered into none of the buffers (pixel, depth, etc.). If *false* and `ngon::material.hasWireframe` is *true*, the n-gon's wireframe outline will be rendered. See `ngon::material.bypassPixelBuffer` for rendering the n-gon into buffers other than the pixel buffer.
 
     - **isTwoSided** (boolean &lArr; *false*): Whether the n-gon should be visible from behind, as determined by the direction of its face normal. Has no effect if `render::options.useBackfaceCulling` is *false*.
 
