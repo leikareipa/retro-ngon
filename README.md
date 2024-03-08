@@ -8,7 +8,7 @@ A low-level retro-oriented 3D software renderer for the HTML5 \<canvas\> (also s
 
 - Genuine retro aesthetics
 - Programmable render pipeline
-- Good performance (for retro uses)
+- Good performance for retro uses
 
 ## Documentation
 
@@ -25,6 +25,8 @@ I'd generally expect the renderer to find a home powering nostalgia projects rem
 ## Performance
 
 The repository provides [performance benchmarks](#performance-benchmarks) to gauge the renderer's performance on your system.
+
+![A screenshot of the benchmark](/docs/images/bench-quake.jpg)
 
 Below are benchmark results (frames per second) running in Google Chrome on an AMD Ryzen 5000 series desktop CPU.
 
@@ -75,11 +77,9 @@ Below are benchmark results (frames per second) running in Google Chrome on an A
     </tfoot>
 </table>
 
-![A screenshot of the benchmark](/docs/images/bench-quake.jpg)
-
 Pixel shaders can have a large impact on the frame rate, but otherwise this 800-polygon scene with texturing and Gouraud shading is renderable at a high rate.*
 
-\*Note that the renderer performs no pre-rasterization visibility culling other than back-face removal and frustum clipping. It's at the discretion of the host application to apply more sophisticated culling techniques to maximize performance.
+\*The renderer performs no pre-rasterization visibility culling other than back-face removal and frustum clipping. It's at the discretion of the host application to apply more sophisticated culling techniques to maximize performance.
 
 ## Installation
 
