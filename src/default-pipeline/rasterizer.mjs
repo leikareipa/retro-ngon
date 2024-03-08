@@ -7,7 +7,6 @@
 
 import {Ngon} from "../api/ngon.mjs";
 import {Vertex} from "../api/vertex.mjs";
-import {Color} from "../api/color.mjs";
 import {Assert} from "../assert.mjs";
 
 import {poly_generic_fill} from "./raster-paths/polygon/generic-fill.mjs";
