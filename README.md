@@ -2,7 +2,7 @@
 
 A low-level retro-oriented 3D software renderer for the HTML5 \<canvas\> (also supports rendering into an off-screen pixel buffer).
 
-You can view various interactive render samples [here](https://leikareipa.github.io/retro-ngon/samples/).
+[You can view various interactive render samples here](https://leikareipa.github.io/retro-ngon/samples/).
 
 ## Key features
 
@@ -15,17 +15,6 @@ You can view various interactive render samples [here](https://leikareipa.github
 - [Installation](#installation)
 - [Quick-start guide](/docs/quick-start.md)
 - [API reference](/docs/api-reference.md)
-
-## Screenshots
-
-![Tomb Raider](/screenshot1.png)\
-*A scene from Tomb Raider, rendered with a real-time dithering shader and dithered texture filtering. (Based on assets created by Core Design for Tomb Raider. Core Design is not associated with this renderer.)*
-
-![Rally-Sport](/screenshot2.png)\
-*Replicating the 2.5D "vector graphics" rendering style of a 1990s DOS game. (Based on assets created by Jukka Jäkälä for Rally-Sport. Jukka Jäkälä is not associated with this renderer.)*
-
-![Windows 95](/screenshot3.png)\
-*The renderer serving as a 2D UI rasterizer in a Windows 95-styled front-end framework. (Based on assets created by Microsoft for Windows 95. Microsoft is not associated with this renderer.)*
 
 ## Suggested use cases
 
@@ -145,6 +134,8 @@ After downloading the repository, follow these steps to build the code into a si
 $ yarn run test:unit
 ```
 
+The unit tests are currently a bare minimum.
+
 #### Performance benchmarks
 
 ```bash
@@ -168,7 +159,3 @@ You can also run the benchmarks in a browser window (after hosting the files on 
 The benefits of running them this way is that you get to see the render output and at the end a graph showing the frame rate as a function of time.
 
 When run in a browser window, the benchmarks' render resoluton is determined by the size of the viewport as well as the `scale` URL parameter: for example, with a viewport of 1920 &times; 1080 and `scale=0.25`, the render resolution will be 480 &times; 270.
-
-## Doggo
-
-![](./dog1.jpg)
