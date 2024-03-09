@@ -1,69 +1,78 @@
-# Data converters for the retro n-gon renderer
+# Tools for the retro n-gon renderer
 
-## png2json.php &ndash; PNG to JSON converter
-Usage: `$ php png2json.php -i <INPUT_PNG_FILENAME> [-r -o <OUTPUT_JSON_FILENAME>]`
+The following tools are available:
 
-Converts PNG images into a JSON format compatible with the retro n-gon renderer. The output JSON will be of the following form:
-```
-{
-    "what": "A texture for the retro n-gon renderer",
-    "source": "<input_png_filename>",
-    "width": <input_png_width>,
-    "height": <input_png_height>,
-    "channels": "rgba:5+5+5+1" | "rgba:8+8+8+8",
-    "encoding": "base64" | "none",
-    "pixels":" <input_png_pixels_in_base64>"
-}
-```
-By default, the converter packs the input PNG's pixel data into 16 bits per pixel, where 5 bits are reserved for each of the RGB channels and 1 bit for alpha (fully opaque or fully transparent), storing the data as a Base64-encoded string in the `pixels` property. **Note:** Packing the pixel data into 16 bits results in some loss of color fidelity.
+- [Blender scene exporter](#blender-scene-exporter)
+- [Image-to-texture converter](#image-to-texture-converter)
+- [PNG-to-texture converter](#png-to-texture-converter) (command line)
 
-If you don't want the converted data to be packed into 16 bits, and instead be output with the full 32 bits of RGBA, you can add the `-r` (_raw_) command-line option. This will result in the JSON's `pixels` property being assigned an array of raw 8-bit pixel values, instead of a packed Base64-encoded string. **Note:** Raw pixel data in JSON format takes up a considerable amount of disk space relative to the image's original size. **Note:** Alpha will be stored with 8 bits, but its value can only be one of 0 or 255, where any value of alpha other than 255 in the input PNG will result in a converted alpha value of 0 (fully transparent).
+## Blender scene exporter
 
-JSON files created with this converter can be loaded into the retro n-gon renderer like so:
-```
-(async ()=>
-{
-    const texture = await Rngon.texture.load("file.json")
+The Python script `blender-export.py` provides a rough export script to convert Blender scenes into a format compatible with the renderer. Consider it an alpha solution, a placeholder for a better implementation.
 
-    // Safe to use the texture here, it's finished loading.
-})()
-```
+The script was made for Blender 2.76, but may work with other versions.
 
-## blender-export.py &ndash; Blender model exporter
-A very rough export script for Blender to convert 3d scenes modeled in it into a format compatible with the retro n-gon renderer. The script was made for Blender 2.76, but may work with other versions. It's currently pre-alpha; a stopgap for a more permanent Blender export solution; so unfortunately you can expect some issues while using it.
+### Usage
 
-To use the script, first create your model in Blender, or import one into it, then open and run the script inside Blender. The specifics of how to run scripts in Blender will depend on your version of the program etc. &ndash; if you're unsure of how to do it (which is likely, unless you're an experienced Blender user), just have a quick googling and it should become clear.
+1. Create or import a scene in Blender.
+2. Open and run `blender-export.py` in Blender.
+3. The script will export the screne into a file called `model.rngon-model.js`, in whatever file path Blender uses by default.
 
-The script will export vertex and UV coordinates, material diffuse color and intensity, and the filename of the texture in each material's first texture slot, if any. Prior to being able to use the exported model with the retro n-gon renderer, you need to also convert any texture images into the renderer's own format. Since PNG2JSON (see above) is the only such converter currently available, you may want to limit all of your textures to the PNG format.
+The script exports vertex and UV coordinates, material diffuse color and intensity, and the filename of the texture in each material's first texture slot, if any. It won't export camera settings etc.
 
-The exporter's output will be a JavaScript file containing an object that provides functionality for the retro n-gon renderer to interface with the model's 3d assets. Something like the following:
-```
-const model =
-{
-    ngons:[],
-    initialize: async function()
-    {
-        // ...Set up materials and textures.
+You'll need to convert any textures separately, using e.g. [PNG-to-texture converter](#png-to-texture-converter).
 
-        this.ngons = Object.freeze(
-        [
-            // ...Create the model's n-gons.
-        ]);
-    }
-}
+### Importing the converted scene
+
+You can load the converted scene into your rendering code like so:
+
+```javascript
+import scene from "model.rngon-model.js";
+await scene.initialize();
+const sceneMesh = Rngon.mesh(scene.ngons);
 ```
 
-Assuming you've exported a model from Blender into a file called `scene.js`, and the object in it is called `model`, the following code could be used to render it:
+Note that you may beed to edit `model.rngon-model.js` so that it exports the scene object.
+
+## Image-to-texture converter
+
+A web app to convert common image formats into the renderer's JSON format [is available here](https://leikareipa.github.io/desktop/apps/rngon-texture-converter/).
+
+See [PNG-to-texture converter#Importing the texture](#importing-the-texture) for instructions on how to import the JSON into your rendering code.
+
+## PNG-to-texture converter
+
+The PHP script `png2json.php` provides functionality to convert PNG images into the renderer's JSON texture format.
+
+### Usage
+
+Invoke the script using the PHP interpreter:
+
+`$ php png2json.php -i <INPUT_PNG_FILENAME> -o <OUTPUT_JSON_FILENAME>`
+
+By default, the output pixel data will be in Base64 encoded RGBA-5551 format.
+
+You can customize the output with these command-line options:
+
+| Option              | Description                                                  |
+|---------------------|------------------------------------------------------------- |
+| `-i <string>`       | Name and path of the input PNG file.                         |
+| `-o <string>`       | Name and path of the output JSON file.                       |
+| `-r`                | Save pixel data in RGBA-8888 format.                         |
+| `-b`                | Save pixel data in binary format (1 bit per pixel).          |
+| `-a`                | Output pixel data as an array.                               |
+| `-t <r,g,b>`        | Chroma key. Pixels with this color will be made transparent. |
+
+### Importing the texture
+
+You can import the JSON file in your rendering code like so:
+
+```javascript
+const texture = await Rngon.texture.load("file.json");
 ```
-<script src="distributable/rngon.global.js"></script>
-<script src="scene.js"></script>
-<canvas id="canvas" style="width: 300px; height: 300px;"></canvas>
-<script>
-    (async ()=>
-    {
-        await model.initialize()
-        const modelMesh = Rngon.mesh(model.ngons)
-        Rngon.render("canvas", [modelMesh])
-    })()
-</script>
+
+Alternatively, you can pre-wrap the JSON in a texture object:
+
+```javascript
+export default Rngon.texture({...});
 ```
