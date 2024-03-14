@@ -218,6 +218,39 @@ Rngon.render({
 });
 ```
 
+```javascript
+// Apply a pixel shader.
+
+Rngon.render({
+    target: "canvas",
+    meshes: [mesh],
+    pipeline: {
+        pixelShader: function vignette(renderContext) {
+            const {width, height, data:pixels} = renderContext.pixelBuffer;
+            const centerX = (width / 2);
+            const centerY = (height / 2);
+            const radius = Math.max(centerX, centerY);
+            const intensity = 1.0;
+
+            for (let y = 0; y < height; y++) {
+                for (let x = 0; x < width; x++) {
+                    const dx = x - centerX;
+                    const dy = y - centerY;
+                    const distanceSquared = (dx * dx) + (dy * dy);
+                    const vignette = Math.max(0, 1 - (distanceSquared / (radius * radius)));
+                    const scale = (1 - intensity + (vignette * intensity));
+
+                    const i = (x + y * width) * 4;
+                    pixels[i + 0] *= scale;
+                    pixels[i + 1] *= scale;
+                    pixels[i + 2] *= scale;
+                }
+            }
+        }
+    },
+});
+```
+
 <a id="mesh"></a>
 
 ## mesh([ngons[, transform]])
