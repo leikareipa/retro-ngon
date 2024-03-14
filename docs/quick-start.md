@@ -146,8 +146,7 @@ Rngon.render({
     },
 });
 
-function sample_shader(...)
-{
+function sample_shader(renderContext) {
     ...
 }
 ```
@@ -155,14 +154,13 @@ function sample_shader(...)
 2. A pixel shader to make every pixel in the image blue:
 
 ```javascript
-function sample_shader({renderWidth, renderHeight, pixelBuffer})
-{
-    for (let i = 0; i < (renderWidth * renderHeight); i++)
-    {
-        pixelBuffer[(i * 4) + 0] = 0;
-        pixelBuffer[(i * 4) + 1] = 150;
-        pixelBuffer[(i * 4) + 2] = 255;
-        pixelBuffer[(i * 4) + 3] = 255;
+function sample_shader(renderContext) {
+    const {width, height, data:pixels} = renderContext.pixelBuffer;
+    for (let i = 0; i < (width * height); i++) {
+        pixels[(i * 4) + 0] = 0;
+        pixels[(i * 4) + 1] = 150;
+        pixels[(i * 4) + 2] = 255;
+        pixels[(i * 4) + 3] = 255;
     }
 }
 ```
@@ -173,18 +171,34 @@ function sample_shader({renderWidth, renderHeight, pixelBuffer})
 3. A pixel shader to color half of our quad blue:
 
 ```javascript
-function sample_shader({renderWidth, renderHeight, pixelBuffer, fragmentBuffer})
-{
-    for (let i = 0; i < (renderWidth * renderHeight); i++)
-    {
-        if (fragmentBuffer[i]?.worldY < 0))
-        {
-            pixelBuffer[(i * 4) + 0] = 0;
-            pixelBuffer[(i * 4) + 1] = 150;
-            pixelBuffer[(i * 4) + 2] = 255;
+function sample_shader(renderContext) {
+    const {width, height, data:pixels} = renderContext.pixelBuffer;
+    const fragmentBuffer = renderContext.fragmentBuffer.data;
+    
+    for (let i = 0; i < (width * height); i++) {
+        if (fragmentBuffer[i]?.worldY < 0) {
+            pixels[(i * 4) + 0] = 0;
+            pixels[(i * 4) + 1] = 150;
+            pixels[(i * 4) + 2] = 255;
         }
     }
 }
+
+// When intending to use the fragment buffer, the 'useFragmentBuffer'
+// option to render() must to be set to true. For best performance,
+// you should only enable the fragment metadata that you intend to
+// access, via the 'fragments' option.
+Rngon.render({
+    options: {
+        useFragmentBuffer: true,
+        fragments: {
+            worldY: true,
+        },
+    },
+    target: "...",
+    meshes: [...],
+    pipeline: {...},
+});
 ```
 
 ![Before applying the shader](/docs/images/tutorials/shader-before-corner-blue.png)
