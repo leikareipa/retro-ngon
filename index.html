@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The retro n-gon renderer</title>
+    <script src="./distributable/rngon.global.js"></script>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            min-height: 100vh;
+            font-size: 16px;
+            background: whitesmoke;
+            color: #353535;
+        }
+        .container {
+            max-width: 75rem;
+            margin: 0 auto;
+            padding: 0 1.25em;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.25em 0;
+        }
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        nav a {
+            color: inherit;
+            text-decoration: none;
+            margin-left: 1.25em;
+        }
+        nav a:hover {
+            text-decoration: underline;
+        }
+        main {
+            padding-top: 1.5em;
+            display: flex;
+            flex-direction: column;
+            gap: 5.5em;
+        }
+        .hero {
+            text-align: center;
+        }
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.6em;
+        }
+        .hero p {
+            font-size: 1.25rem;
+            margin-bottom: 1.5em;
+        }
+        .sample {
+            height: 27rem;
+        }
+        .sample canvas {
+            image-rendering: pixelated;
+        }
+        .cta-button {
+            padding: 0.8em 1.6em;
+            border: none;
+            border-radius: 0.35em;
+            font-size: 1.125rem;
+            cursor: pointer;
+            transition: background-color linear 0.15s;
+            border-bottom: 1px solid #353535;
+            color: black;
+            background: #e5e5e5;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5em;
+        }
+        .cta-button.second {
+            border: 1px solid;
+            background-color: transparent;
+            color: #353535;
+        }
+        .features {
+            display: flex;
+            gap: 1.75em;
+        }
+        .feature {
+            flex-basis: calc(33.333% - 1.25em);
+            background-color: #e5e5e5;
+            padding: 1.875em;
+            border-radius: 2em;
+            border-top-right-radius: 0;
+        }
+        .feature div {
+            line-height: 1.4;
+        }
+        .feature h3 {
+            font-size: 1.25rem;
+            margin: 0;
+            margin-bottom: 0.625em;
+        }
+        .secondary-button {
+            background-color: transparent;
+            border: 0.125em solid;
+            padding: 0.7em 1.25em;
+            border-radius: 0.35em;
+            font-size: 1.125rem;
+            cursor: pointer;
+        }
+        .secondary-button:hover {
+            background-color: #fff;
+            color: #333;
+        }
+        footer {
+            text-align: center;
+            color: dimgray;
+            padding-bottom: 2em;
+        }
+        @media (max-width: 48em) {
+            .features {
+                flex-direction: column;
+            }
+            .feature {
+                flex-basis: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">The retro n-gon renderer</div>
+            <nav>
+                <a href="https://github.com/leikareipa/retro-ngon/tree/master/docs">Docs</a>
+                <a href="https://github.com/leikareipa/retro-ngon/issues">Community</a>
+            </nav>
+        </header>
+
+        <main>
+            <section class="hero">
+                <h1>Retro meets modern</h1>
+                <p>Old-school 3D software rendering for your JavaScript web apps.</p>
+                <div style="display: inline-flex; gap: 1.25em;">
+                    <a href="https://leikareipa.github.io/retro-ngon/samples/">
+                        <button class="cta-button second">
+                            View Samples
+                        </button>
+                    </a>
+                    <a href="https://github.com/leikareipa/retro-ngon">
+                        <button class="cta-button">
+                            <img src="https://github.com/favicon.ico" style="width: 1.15em;">
+                            Get Started
+                        </button>
+                    </a>
+                </div>
+            </section>
+            
+            <section class="sample">
+                <canvas id="output" style="width: 100%; height: 100%;"></canvas>
+            </section>
+
+            <section class="features">
+                <div class="feature">
+                    <h3>Open Source</h3>
+                    <div>Freely available on GitHub. Contribute, fork, and make it your own.</div>
+                </div>
+                <div class="feature">
+                    <h3>Easy to Use</h3>
+                    <div>Simple API that feels familiar to modern web developers.</div>
+                </div>
+                <div class="feature">
+                    <h3>Fully Featured</h3>
+                    <div>All the perks of software rendering, and the power of a programmable pipeline.</div>
+                </div>
+            </section>
+
+            <footer>
+                &copy; 2019&ndash;2024 Tarpeeksi Hyvae Soft.
+            </footer>
+        </main>
+    </div>
+    <script>
+        const n = Rngon.ngon;
+        const v = Rngon.vertex;
+        const no = Rngon.vector;
+        const texture = Rngon.texture({
+            width: 96,
+            height: 96,
+        });
+        const m = {
+            hasFill: false,
+            hasWireframe: true,
+        };
+        const cube = Rngon.mesh([
+            n([v(1,1,-1,1,1),v(1,-1,-1,1,0),v(-1,-1,-1,0,0),v(-1,1,-1,0,1),],m,no(0,0,-1)),
+            n([v(1,1,1,0,1),v(-1,1,1,1,1),v(-1,-1,1,1,0),v(1,-1,1,0,0),],m,no(0,0,1)),
+            n([v(1,1,-1,0,1),v(1,1,1,1,1),v(1,-1,1,1,0),v(1,-1,-1,0,0),],m,no(1,0,0)),
+            n([v(1,-1,-1,1,1),v(1,-1,1,1,0),v(-1,-1,1,0,0),v(-1,-1,-1,0,1),],m,no(0,-1,0)),
+            n([v(-1,-1,-1,0,1),v(-1,-1,1,1,1),v(-1,1,1,1,0),v(-1,1,-1,0,0),],m,no(-1,0,0)),
+            n([v(1,1,1,1,1),v(1,1,-1,1,0),v(-1,1,-1,0,0),v(-1,1,1,0,1),],m,no(0,1,0)),
+        ],{
+            scale: Rngon.vector(30, 25, 25),
+            rotate: Rngon.vector(0, 0, 0),
+        });
+
+        (function render() {
+            Rngon.render({
+                target: "output",
+                meshes: [cube],
+                options: {
+                    resolution: 0.25,
+                    cameraPosition: Rngon.vector(0, 0, -90),
+                },
+            });
+
+            window.requestAnimationFrame(render);
+        })();
+    </script>
+</body>
+</html>
