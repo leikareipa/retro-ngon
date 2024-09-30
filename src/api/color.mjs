@@ -221,6 +221,7 @@ Color.tan = Object.freeze(Color(210, 180, 140));
 Color.teal = Object.freeze(Color(0, 128, 128));
 Color.thistle = Object.freeze(Color(216, 191, 216));
 Color.tomato = Object.freeze(Color(255, 99, 71));
+Color.transparent = Object.freeze(Color(0, 0, 0, 0));
 Color.turquoise = Object.freeze(Color(64, 224, 208));
 Color.violet = Object.freeze(Color(238, 130, 238));
 Color.wheat = Object.freeze(Color(245, 222, 179));
