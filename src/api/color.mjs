@@ -43,8 +43,8 @@ const schema = {
 // Red, green, blue, alpha; in the range [0,255].
 export function Color(
     red = 0,
-    green = 0,
-    blue = 0,
+    green = red,
+    blue = red,
     alpha = 255
 )
 {

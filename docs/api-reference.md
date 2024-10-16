@@ -724,9 +724,9 @@ Four-channel RGBA color, with channel values in the range [0, 255].
 
 - **red** (number &lArr; *0*): The red channel.
 
-- **green** (number &lArr; *0*): The green channel.
+- **green** (number &lArr; red): The green channel.
 
-- **blue** (number &lArr; *0*): The blue channel.
+- **blue** (number &lArr; red): The blue channel.
 
 - **alpha** (number &lArr; *255*): The alpha channel.
 
