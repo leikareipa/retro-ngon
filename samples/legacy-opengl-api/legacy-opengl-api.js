@@ -1,5 +1,5 @@
 /*
- * 2023 Tarpeeksi Hyvae Soft
+ * 2023 ArtisaaniSoft
  *
  * Software: Retro n-gon renderer
  * 
@@ -150,7 +150,7 @@ const OPENGL_1_1 = (()=>{
     function GetString(name) {
         switch (name) {
             case this.VERSION: return "1.1";
-            case this.VENDOR: return "Tarpeeksi Hyvae Soft";
+            case this.VENDOR: return "ArtisaaniSoft";
             case this.RENDERER: return "The retro n-gon renderer";
             default: return "";
         };

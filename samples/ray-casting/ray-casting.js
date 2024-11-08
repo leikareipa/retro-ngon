@@ -1,5 +1,5 @@
 /*
- * 2023 Tarpeeksi Hyvae Soft
+ * 2023 ArtisaaniSoft
  *
  * Software: Retro n-gon renderer / render sample
  * 

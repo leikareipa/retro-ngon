@@ -1,5 +1,5 @@
 /*
- * 2022 Tarpeeksi Hyvae Soft
+ * 2022 ArtisaaniSoft
  *
  * Software: Retro n-gon renderer / render sample
  * 

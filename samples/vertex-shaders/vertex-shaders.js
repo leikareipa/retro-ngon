@@ -1,5 +1,5 @@
 /*
- * 2020, 2021 Tarpeeksi Hyvae Soft
+ * 2020, 2021 ArtisaaniSoft
  *
  * Software: Retro n-gon renderer / render sample
  * 

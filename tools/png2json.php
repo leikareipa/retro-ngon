@@ -1,6 +1,6 @@
 <?php
 /*
- * 2019-2024 Tarpeeksi Hyvae Soft
+ * 2019-2024 ArtisaaniSoft
  * 
  * Software: PNG2JSON for the retro n-gon renderer
  *

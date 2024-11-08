@@ -1,5 +1,5 @@
 #
-# Tarpeeksi Hyvae Soft 2019 /
+# ArtisaaniSoft 2019 /
 # Retro n-gon renderer
 #
 # A barebones Blender export script for the retro n-gon renderer. Only lightly tested,
